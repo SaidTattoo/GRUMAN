@@ -1,17 +1,19 @@
 import { Routes } from '@angular/router';
+import { UsersComponent } from './admin/users/users.component'; // Importa el nuevo componente
+import { AuthGuard } from './guards/auth.guard';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: 'auth/login', // Redirige a la ruta de login
+    pathMatch: 'full',
+  },
+  {
+    path: '',
     component: FullComponent,
     children: [
-      {
-        path: '',
-        redirectTo: '/dashboards/dashboard1',
-        pathMatch: 'full',
-      },
       {
         path: 'starter',
         loadChildren: () =>
@@ -22,7 +24,7 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/dashboards/dashboards.routes').then(
             (m) => m.DashboardsRoutes
-          ),
+          ), canActivate: [AuthGuard],
       },
       {
         path: 'ui-components',
@@ -70,6 +72,11 @@ export const routes: Routes = [
             (m) => m.ThemePagesRoutes
           ),
       },
+      {
+        path: 'admin/users',
+        component: UsersComponent,
+        canActivate: [AuthGuard], // Protege la ruta con el guardia de autenticación
+      },
     ],
   },
   {
@@ -77,7 +84,7 @@ export const routes: Routes = [
     component: BlankComponent,
     children: [
       {
-        path: 'authentication',
+        path: 'auth',
         loadChildren: () =>
           import('./pages/authentication/authentication.routes').then(
             (m) => m.AuthenticationRoutes
@@ -94,6 +101,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'authentication/error',
+    redirectTo: 'auth/login', // Redirige a la ruta de login para rutas no encontradas
   },
 ];

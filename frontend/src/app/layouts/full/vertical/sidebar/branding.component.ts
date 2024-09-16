@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
 import { CoreService } from 'src/app/services/core.service';
 
 @Component({
@@ -11,25 +12,53 @@ import { CoreService } from 'src/app/services/core.service';
       @if(options.theme === 'light') {
       <a href="/">
         <img
-          src="./assets/images/logos/dark-logo.svg"
+          src="./assets/images/empresas/atlantis_logo.jpg"
+          style="width: 100%"
           class="align-middle m-2"
           alt="logo"
         />
+        <img [src]="getCompanyLogo()" class="align-middle m-2" alt="logo" />
       </a>
       } @if(options.theme === 'dark') {
       <a href="/">
         <img
-          src="./assets/images/logos/light-logo.svg"
+          src="./assets/images/empresas/atlantis_logo.jpg"
+          style="width: 100%"
           class="align-middle m-2"
           alt="logo"
         />
+        <img [src]="getCompanyLogo()" class="align-middle m-2" alt="logo" />
       </a>
       }
     </div>
   `,
 })
-export class BrandingComponent {
+export class BrandingComponent implements OnInit {
   options = this.settings.getOptions();
-
-  constructor(private settings: CoreService) { }
+  company: string = '';
+  constructor(private settings: CoreService,private authService: AuthService) { }
+  ngOnInit(): void {
+    const userProfile:any = this.authService.getUserProfile();
+    console.log(userProfile);
+    if (userProfile) {
+      this.company = userProfile.company;
+    }
+  }
+  getCompanyLogo(): string {
+    console.log(this.company);
+    switch (this.company) {
+      case 'maicao':
+        return './assets/images/empresas/maicao.png';
+      case 'cruz_verde':
+        return './assets/images/empresas/cruzverde.png';
+      case 'gruman':
+        return './assets/images/empresas/gruman.png';
+      case 'rotter_krauss':
+        return './assets/images/empresas/rotter_krauss.png';
+      case 'san_camilo':
+        return './assets/images/empresas/san_camilo.png';
+      default:
+        return './assets/images/empresas/default_logo.png';
+    }
+  }
 }

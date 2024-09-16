@@ -9,8 +9,7 @@
   blue_theme: options.activeTheme == 'blue_theme',
   aqua_theme: options.activeTheme == 'aqua_theme',
   purple_theme: options.activeTheme == 'purple_theme',
-  green_theme: options.activeTheme == 'green_theme',
-  cyan_theme: options.activeTheme == 'cyan_theme'
+
 }" [dir]="options.dir!">
   <!-- ============================================================== -->
   <!-- Vertical Sidebar -->
@@ -33,13 +32,13 @@
         <div class="bg-light-primary d-flex align-items-center rounded p-24">
           <img src="/assets/images/profile/user5.jpg" class="rounded-circle" width="45" />
           <div class="m-l-16">
-            <h5 class="f-s-18 m-0 f-w-600 m-b-4">Mike</h5>
-            <span class="f-s-14">Admin</span>
+            <h5 class="f-s-18 m-0 f-w-600 m-b-4">{{ userName }}</h5>
+            <span class="f-s-14">{{ userRole }}</span>
           </div>
           <div class="m-l-auto">
-            <a mat-icon-button [routerLink]="['/authentication/login']" class="d-flex justify-content-center">
+            <button mat-icon-button (click)="logout()" class="d-flex justify-content-center">
               <i-tabler name="power" class="text-primary icon-18 d-flex"></i-tabler>
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -65,8 +64,8 @@
       <div class="bg-light-primary d-flex align-items-center rounded p-16">
         <img src="/assets/images/profile/user-1.jpg" class="rounded-circle" width="40" />
         <div class="m-l-16">
-          <h5 class="mat-subtitle-2 f-w-600">Mathew</h5>
-          <span class="f-s-12">Designer</span>
+          <h5 class="mat-subtitle-2 f-w-600">{{ userName }}</h5>
+          <span class="f-s-12">{{ userRole }}</span>
         </div>
         <div class="m-l-auto">
           <a mat-icon-button [routerLink]="['/authentication/login']" class="d-flex justify-content-center">
@@ -141,11 +140,13 @@
       <div class="branding">
         @if(options.theme === 'light') {
         <a href="/">
-          <img src="./assets/images/logos/dark-logo.svg" class="align-middle m-2" alt="logo" />
+          <img src="./assets/images/empresas/atlantis_logo.jpg" class="align-middle m-2" alt="logo" />
+          <img src="./assets/images/empresas/maicao.png" class="align-middle m-2" alt="logo" />
         </a>
         } @else {
         <a href="/">
-          <img src="./assets/images/logos/light-logo.svg" class="align-middle m-2" alt="logo" />
+          <img src="./assets/images/empresas/atlantis_logo.jpg" class="align-middle m-2" alt="logo" />
+          <img src="./assets/images/empresas/maicao.png" class="align-middle m-2" alt="logo" />
         </a>
         }
       </div>
@@ -189,7 +190,7 @@
       </mat-expansion-panel>
     </mat-accordion>
 
-    <div class="p-x-24">
+   <!--  <div class="p-x-24">
       <a [routerLink]="['/apps/calendar']"
         class="d-flex align-items-center text-decoration-none mat-body-1 p-y-16 gap-8">
         <span class="f-s-15 f-w-500 m-l-8">Calendar</span>
@@ -201,6 +202,6 @@
         class="d-flex align-items-center text-decoration-none mat-body-1 p-y-16 gap-8">
         <span class="f-s-15 f-w-500 m-l-8">Email</span>
       </a>
-    </div>
+    </div> -->
   </div>
 </mat-drawer>

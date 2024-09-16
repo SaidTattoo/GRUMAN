@@ -1,23 +1,25 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
-  Output,
   EventEmitter,
   Input,
-  ViewEncapsulation,
+  OnInit,
+  Output,
+  ViewEncapsulation
 } from '@angular/core';
-import { CoreService } from 'src/app/services/core.service';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { navItems } from '../sidebar/sidebar-data';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { RouterModule } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
-import { MaterialModule } from 'src/app/material.module';
-import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { NgScrollbarModule } from 'ngx-scrollbar';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
-import {MatSidenavModule} from '@angular/material/sidenav';
+import { MaterialModule } from 'src/app/material.module';
+import { AuthService } from 'src/app/services/auth.service';
+import { CoreService } from 'src/app/services/core.service';
+import { navItems } from '../sidebar/sidebar-data';
 
 interface notifications {
   id: number;
@@ -66,7 +68,7 @@ interface quicklinks {
   templateUrl: './header.component.html',
   encapsulation: ViewEncapsulation.None,
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   searchText: string = '';
   navItems = navItems;
 
@@ -114,7 +116,8 @@ export class HeaderComponent {
   constructor(
     private vsidenav: CoreService,
     public dialog: MatDialog,
-    private translate: TranslateService
+    private translate: TranslateService,
+    public authService: AuthService
   ) {
     translate.setDefaultLang('en');
   }
@@ -130,6 +133,17 @@ export class HeaderComponent {
   changeLanguage(lang: any): void {
     this.translate.use(lang.code);
     this.selectedLanguage = lang;
+  }
+  userName: string = '';
+  userRole: string = '';
+  userEmail: string = '';
+  ngOnInit(): void {
+    const userProfile = this.authService.getUserProfile();
+    if (userProfile) {
+      this.userName = userProfile.name;
+      this.userRole = userProfile.profile;
+      this.userEmail = userProfile.email;
+    }
   }
 
   notifications: notifications[] = [
@@ -191,6 +205,7 @@ export class HeaderComponent {
       link: '/',
     },
   ];
+
   apps: apps[] = [
     {
       id: 1,

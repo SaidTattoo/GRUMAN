@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { CoreService } from 'src/app/services/core.service';
-import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
+import { CoreService } from 'src/app/services/core.service';
 import { MaterialModule } from '../../../material.module';
 
 @Component({
@@ -13,11 +14,11 @@ import { MaterialModule } from '../../../material.module';
 export class AppBoxedLoginComponent {
   options = this.settings.getOptions();
 
-  constructor(private settings: CoreService, private router: Router) { }
+  constructor(private settings: CoreService, private router: Router, private authService: AuthService) { }
 
   form = new FormGroup({
-    uname: new FormControl('', [Validators.required, Validators.minLength(6)]),
-    password: new FormControl('', [Validators.required]),
+    email: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    password: new FormControl('contraseñaSegura', [Validators.required]),
   });
 
   get f() {
@@ -25,7 +26,18 @@ export class AppBoxedLoginComponent {
   }
 
   submit() {
-    // console.log(this.form.value);
-    this.router.navigate(['/dashboards/dashboard1']);
+    if (this.form.valid) {
+      const email = this.form.value.email || '';
+      const password = this.form.value.password || '';
+      this.authService.login(email, password).subscribe(
+        (response) => {
+          localStorage.setItem('token', response.token);
+          this.router.navigate(['/dashboards/dashboard1']);
+        },
+        (error) => {
+          console.error('Login failed', error);
+        }
+      );
+    }
   }
 }

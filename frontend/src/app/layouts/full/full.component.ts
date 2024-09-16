@@ -1,25 +1,26 @@
 import { BreakpointObserver, MediaMatcher } from '@angular/cdk/layout';
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
-import { CoreService } from 'src/app/services/core.service';
-import { AppSettings } from 'src/app/config';
-import { filter } from 'rxjs/operators';
-import { NavigationEnd, Router } from '@angular/router';
-import { navItems } from './vertical/sidebar/sidebar-data';
-import { NavService } from '../../services/nav.service';
-import { AppNavItemComponent } from './vertical/sidebar/nav-item/nav-item.component';
-import { RouterModule } from '@angular/router';
-import { MaterialModule } from 'src/app/material.module';
 import { CommonModule } from '@angular/common';
-import { SidebarComponent } from './vertical/sidebar/sidebar.component';
-import { NgScrollbarModule } from 'ngx-scrollbar';
+import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { TablerIconsModule } from 'angular-tabler-icons';
-import { HeaderComponent } from './vertical/header/header.component';
+import { NgScrollbarModule } from 'ngx-scrollbar';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { AppSettings } from 'src/app/config';
+import { MaterialModule } from 'src/app/material.module';
+import { AuthService } from 'src/app/services/auth.service';
+import { CoreService } from 'src/app/services/core.service';
+import Swal from 'sweetalert2';
+import { NavService } from '../../services/nav.service';
 import { AppHorizontalHeaderComponent } from './horizontal/header/header.component';
 import { AppHorizontalSidebarComponent } from './horizontal/sidebar/sidebar.component';
 import { AppBreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
 import { CustomizerComponent } from './shared/customizer/customizer.component';
+import { HeaderComponent } from './vertical/header/header.component';
+import { AppNavItemComponent } from './vertical/sidebar/nav-item/nav-item.component';
+import { navItems } from './vertical/sidebar/sidebar-data';
+import { SidebarComponent } from './vertical/sidebar/sidebar.component';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -193,7 +194,8 @@ export class FullComponent implements OnInit {
     private mediaMatcher: MediaMatcher,
     private router: Router,
     private breakpointObserver: BreakpointObserver,
-    private navService: NavService
+    private navService: NavService,
+    private authService: AuthService
   ) {
     this.htmlElement = document.querySelector('html')!;
     this.layoutChangesSubscription = this.breakpointObserver
@@ -219,8 +221,15 @@ export class FullComponent implements OnInit {
         this.content.scrollTo({ top: 0 });
       });
   }
-
-  ngOnInit(): void {}
+  userName: string;
+  userRole: string;
+  ngOnInit(): void {
+    const userProfile = this.authService.getUserProfile();
+    if (userProfile) {
+      this.userName = userProfile.name;
+      this.userRole = userProfile.profile;
+    }
+  }
 
   ngOnDestroy() {
     this.layoutChangesSubscription.unsubscribe();
@@ -259,5 +268,25 @@ export class FullComponent implements OnInit {
       this.htmlElement.classList.remove('dark-theme');
       this.htmlElement.classList.add('light-theme');
     }
+  }
+
+  logout() {
+    Swal.fire({
+      title: '¿Estás seguro que quieres cerrar sesión?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cerrar sesión'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.authService.logout();
+        Swal.fire(
+          '¡Cerrado!',
+          'Tu sesión ha sido cerrada.',
+          'success'
+        );
+      }
+    });
   }
 }

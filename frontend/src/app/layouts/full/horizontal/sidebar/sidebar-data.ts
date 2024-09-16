@@ -2,6 +2,16 @@ import { NavItem } from '../../vertical/sidebar/nav-item/nav-item';
 
 export const navItems: NavItem[] = [
   {
+    navCap: 'Admin',
+    children: [
+      {
+        displayName: 'Users',
+        iconName: 'users',
+        route: 'admin/users',
+      },
+    ],
+  },
+  {
     navCap: 'Home',
   },
   {
@@ -22,7 +32,7 @@ export const navItems: NavItem[] = [
       },
     ],
   },
-  {
+ /*  {
     displayName: 'Apps',
     iconName: 'apps',
     route: 'apps',
@@ -521,5 +531,5 @@ export const navItems: NavItem[] = [
         route: '/datatable/kichen-sink',
       },
     ],
-  },
+  }, */
 ];

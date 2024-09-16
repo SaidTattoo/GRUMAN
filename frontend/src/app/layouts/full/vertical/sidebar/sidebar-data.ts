@@ -1,6 +1,24 @@
+import { jwtDecode } from 'jwt-decode';
 import { NavItem } from './nav-item/nav-item';
 
+const token = localStorage.getItem('token');
+let userProfile = '';
+
+if (token) {
+  const decodedToken: any = jwtDecode(token);
+  userProfile = decodedToken.profile; // Asumiendo que el rol está en la propiedad 'role'
+}
 export const navItems: NavItem[] = [
+
+  ...(userProfile === 'admin' ? [
+    {
+      navCap: 'Admin'
+    },{
+    displayName: 'Users',
+    iconName: 'home-shield',
+    bgcolor: 'primary',
+    route: 'admin/users',
+  }] : []),
   {
     navCap: 'Home',
   },

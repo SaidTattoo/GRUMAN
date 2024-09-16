@@ -20,12 +20,12 @@
     <!-- --------------------------------------------------------------- -->
     <!--  Links -->
     <!-- --------------------------------------------------------------- -->
-    <button mat-button [matMenuTriggerFor]="appsmenu" aria-label="Notifications">
+    <!-- <button mat-button [matMenuTriggerFor]="appsmenu" aria-label="Notifications">
       <div class="d-flex align-items-center">
         Apps <i-tabler name="chevron-down" class="icon-16 m-l-4"></i-tabler>
       </div>
-    </button>
-    <mat-menu #appsmenu="matMenu" class="apps-dd cardWithShadow">
+    </button> -->
+   <!--  <mat-menu #appsmenu="matMenu" class="apps-dd cardWithShadow">
       <div class="row">
         <div class="col-sm-8 b-r-1 p-r-0">
           <div class="p-32 p-b-0">
@@ -69,37 +69,38 @@
           </div>
         </div>
       </div>
-    </mat-menu>
-    <a mat-button [routerLink]="['/apps/chat']">Chat</a>
+    </mat-menu> -->
+  <!--   <a mat-button [routerLink]="['/apps/chat']">Chat</a>
     <a mat-button [routerLink]="['/apps/calendar']">Calendar</a>
-    <a mat-button [routerLink]="['/apps/email/inbox']">Email</a>
+    <a mat-button [routerLink]="['/apps/email/inbox']">Email</a> -->
   </div>
 
   <span class="flex-1-auto"></span>
 
   <!-- Mobile Menu -->
-  <button
+ <!--  <button
     mat-icon-button
     (click)="toggleMobileFilterNav.emit()"
     class="d-flex d-lg-none justify-content-center"
   >
     <i-tabler name="grid-dots" class="icon-20 d-flex"></i-tabler>
-  </button>
+  </button> -->
 
   <!-- --------------------------------------------------------------- -->
   <!--  Search -->
   <!-- --------------------------------------------------------------- -->
-  <button mat-stroked-button class="d-none d-lg-flex" (click)="openDialog()">
+  <!--
+    <button mat-stroked-button class="d-none d-lg-flex" (click)="openDialog()">
     <div class="d-flex align-items-center">
       <i-tabler name="search" class="icon-20 d-flex m-r-10"></i-tabler> Try to
       Searching...
     </div>
-  </button>
+  </button> -->
 
   <!-- --------------------------------------------------------------- -->
   <!-- langugage Dropdown -->
   <!-- --------------------------------------------------------------- -->
-  <button [matMenuTriggerFor]="flags" mat-icon-button class="m-l-10">
+ <!--  <button [matMenuTriggerFor]="flags" mat-icon-button class="m-l-10">
     <img [src]="selectedLanguage.icon" class="rounded-circle object-cover icon-20" />
   </button>
   <mat-menu #flags="matMenu" class="cardWithShadow">
@@ -111,12 +112,12 @@
       </div>
     </button>
     }
-  </mat-menu>
+  </mat-menu> -->
 
   <!-- --------------------------------------------------------------- -->
   <!-- Messages Dropdown -->
   <!-- --------------------------------------------------------------- -->
-  <button mat-icon-button [matMenuTriggerFor]="msgMenu" aria-label="Messages">
+ <!--  <button mat-icon-button [matMenuTriggerFor]="msgMenu" aria-label="Messages">
     <i-tabler class="d-flex" name="message-2"></i-tabler>
     <div class="pulse">
       <span class="heartbit border-primary"></span>
@@ -151,18 +152,18 @@
       </button>
     </div>
   </mat-menu>
-
+ -->
   <!-- --------------------------------------------------------------- -->
   <!-- Shortcuts Dropdown -->
   <!-- --------------------------------------------------------------- -->
-  <button mat-icon-button [matMenuTriggerFor]="notificationMenu" aria-label="Notifications">
+<!--   <button mat-icon-button [matMenuTriggerFor]="notificationMenu" aria-label="Notifications">
     <i-tabler class="d-flex" name="layout-grid-add"></i-tabler>
     <div class="pulse">
       <span class="heartbit border-success"></span>
       <span class="point bg-success"></span>
     </div>
-  </button>
-  <mat-menu #notificationMenu="matMenu" xPosition="before" class="topbar-dd cardWithShadow">
+  </button> -->
+  <!-- <mat-menu #notificationMenu="matMenu" xPosition="before" class="topbar-dd cardWithShadow">
     <div class="d-flex align-items-center p-x-32 p-y-16">
       <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">Shortcuts</h6>
     </div>
@@ -223,7 +224,7 @@
       </div>
     </div>
   </mat-menu>
-
+ -->
   <!-- --------------------------------------------------------------- -->
   <!-- profile Dropdown -->
   <!-- --------------------------------------------------------------- -->
@@ -233,8 +234,8 @@
 
       <div class="m-l-16 text-left d-none d-lg-flex">
         <div>
-          <h5 class="f-s-16">Mike Nielsen</h5>
-          <span class="f-s-14 mat-body-1">Admin</span>
+          <h5 class="f-s-16">{{ userName }}</h5>
+          <span class="f-s-14 mat-body-1">{{ userRole }}</span>
         </div>
       </div>
     </div>
@@ -242,21 +243,21 @@
   <mat-menu #profileMenu="matMenu" xPosition="before" class="topbar-dd cardWithShadow">
     <ng-scrollbar class="position-relative" style="height: 495px">
       <div class="p-x-32 p-y-16">
-        <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">User Profile</h6>
+        <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">Perfil</h6>
 
         <div class="d-flex align-items-center p-b-24 b-b-1 m-t-16">
           <img src="/assets/images/profile/user5.jpg" class="rounded-circle" width="95" />
           <div class="m-l-16">
-            <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">Mike Nielsen</h6>
-            <span class="f-s-14 mat-body-1 d-block m-b-4">Admin</span>
+            <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">{{ userName }}</h6>
+            <span class="f-s-14 mat-body-1 d-block m-b-4">{{ userRole }}</span>
             <span class="d-flex align-items-center">
               <i-tabler name="mail" class="icon-15 m-r-4"></i-tabler>
-              info&#64;spike.com
+             {{userEmail}}
             </span>
           </div>
         </div>
       </div>
-      <div class="p-x-32">
+    <!--   <div class="p-x-32">
         @for(profile of profiledd; track profile.title) {
         <a class="p-y-16 text-decoration-none d-block text-hover-primary" [routerLink]="[profile.link]">
           <div class="d-flex align-items-center">
@@ -275,7 +276,7 @@
           </div>
         </a>
         }
-      </div>
+      </div> -->
 
       <div class="p-y-12 p-x-32">
         <button [routerLink]="['/authentication/login']" mat-flat-button color="primary" class="w-100">
@@ -285,3 +286,4 @@
     </ng-scrollbar>
   </mat-menu>
 </mat-toolbar>
+

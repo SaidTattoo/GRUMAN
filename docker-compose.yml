@@ -4,10 +4,35 @@ services:
     build:
       context: ./frontend
     ports:
-      - "8080:80"  # Cambiado de "80:80" a "8080:80"
-  
+      - "8080:80"
+    volumes:
+      - ./frontend:/app
+
   backend:
     build:
       context: ./backend
     ports:
       - "3000:3000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - mariadb
+    environment:
+      TYPEORM_CONNECTION: mariadb
+      TYPEORM_HOST: mariadb
+      TYPEORM_PORT: 3306
+      TYPEORM_USERNAME: gruman
+      TYPEORM_PASSWORD: gruman
+      TYPEORM_DATABASE: gruman
+    command: npm run start:dev
+
+  mariadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: gruman
+      MYSQL_DATABASE: gruman
+      MYSQL_USER: gruman
+      MYSQL_PASSWORD: gruman
+    ports:
+      - "3307:3306"  # Cambiado de "3306:3306" a "3307:3306"
+

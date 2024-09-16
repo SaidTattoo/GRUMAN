@@ -1,15 +1,14 @@
+import { NgIf } from '@angular/common';
 import {
   Component,
   EventEmitter,
   Input,
   OnInit,
-  Output,
-  ViewChild,
+  Output
 } from '@angular/core';
-import { BrandingComponent } from './branding.component';
-import { NgIf } from '@angular/common';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { MaterialModule } from 'src/app/material.module';
+import { BrandingComponent } from './branding.component';
 
 @Component({
   selector: 'app-sidebar',
