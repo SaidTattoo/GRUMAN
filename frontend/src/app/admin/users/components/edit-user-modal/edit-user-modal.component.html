@@ -1,0 +1,40 @@
+<h1 mat-dialog-title>Editar Usuario</h1>
+<div mat-dialog-content>
+  <form [formGroup]="editUserForm">
+    <mat-form-field appearance="fill">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="name">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Email</mat-label>
+      <input matInput [disabled]="true" formControlName="email">
+    </mat-form-field>
+    @if (isSuperAdmin) {
+    <mat-form-field appearance="fill">
+      <mat-label>Empresa</mat-label>
+      <mat-select formControlName="company">
+        @for (company of getCompanies(); track company.name) {
+        <mat-option [value]="company.name">
+          {{ company.displayName }}
+        </mat-option>
+      }
+      </mat-select>
+    </mat-form-field>
+  }
+    @if (isSuperAdmin) {
+      <mat-form-field appearance="fill">
+        <mat-label>Perfil</mat-label>
+        <mat-select formControlName="profile">
+          @for (profile of getProfiles(); track profile.name) {
+            <mat-option [value]="profile.name">{{ profile.displayName }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-button (click)="onSave()" [disabled]="!editUserForm.valid">Guardar</button>
+</div>
