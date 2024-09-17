@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class UsersService {
-  private apiUrl = 'http://138.255.103.35/users'; // URL de tu API de usuarios
+  private apiUrl = 'http://138.255.103.35:3000/users'; // URL de tu API de usuarios
 
   constructor(private http: HttpClient) { }
 
