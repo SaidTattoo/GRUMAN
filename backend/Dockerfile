@@ -4,10 +4,14 @@ FROM node:14
 # Crear directorio de la aplicación
 WORKDIR /app
 
-# Instalar las dependencias de la aplicación
+# Copiar el archivo package.json y package-lock.json
 COPY package*.json ./
+
+# Instalar las dependencias de la aplicación
 RUN npm install
-RUN npm install -g nodemon
+
+# Instalar ts-node globalmente
+RUN npm install -g ts-node typescript
 
 # Copiar el resto de la aplicación
 COPY . .
