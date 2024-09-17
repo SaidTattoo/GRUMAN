@@ -1,33 +1,19 @@
 # Etapa de construcción
-FROM node:18-alpine AS build
+FROM node:14
 
-# Establecer el directorio de trabajo
+# Crear directorio de la aplicación
 WORKDIR /app
 
-# Copiar package.json y package-lock.json
+# Instalar las dependencias de la aplicación
 COPY package*.json ./
-
-# Instalar dependencias
 RUN npm install
+RUN npm install -g nodemon
 
-# Copiar el resto del código de la aplicación
+# Copiar el resto de la aplicación
 COPY . .
 
-# Construir la aplicación
-RUN npm run build
-
-# Etapa de producción
-FROM node:18-alpine AS production
-
-# Establecer el directorio de trabajo
-WORKDIR /app
-
-# Copiar las dependencias instaladas y el código compilado desde la etapa de construcción
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
-
-# Exponer el puerto en el que la aplicación se ejecutará
+# Exponer el puerto de la aplicación
 EXPOSE 3000
 
-# Comando para ejecutar la aplicación
-CMD ["node", "dist/main"]
+# Comando para iniciar la aplicación
+CMD ["npm", "run", "start:dev"]
