@@ -10,8 +10,8 @@ COPY package*.json ./
 # Instalar las dependencias de la aplicación
 RUN npm install
 
-# Instalar ts-node globalmente
-RUN npm install -g ts-node typescript
+# Instalar nodemon globalmente
+RUN npm install -g nodemon
 
 # Copiar el resto de la aplicación
 COPY . .
