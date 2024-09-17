@@ -24,6 +24,7 @@ services:
       TYPEORM_USERNAME: gruman
       TYPEORM_PASSWORD: gruman
       TYPEORM_DATABASE: gruman
+      JWT_SECRET: Law8XT1LW5SErt8CfHKifZwKSza6MTXU
     command: npm run start:dev
 
   mariadb:
@@ -35,5 +36,4 @@ services:
       MYSQL_PASSWORD: gruman
     ports:
       - "3306:3306"
-   
 
