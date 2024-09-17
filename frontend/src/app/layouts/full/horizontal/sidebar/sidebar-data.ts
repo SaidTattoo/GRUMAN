@@ -24,15 +24,26 @@ export const navItems: NavItem[] = [
         displayName: 'Dashboard 1',
         iconName: 'point',
         route: 'dashboards/dashboard1',
-      },
+      }
+    ],
+  },  {
+    displayName: 'mantenedores',
+    iconName: 'home-shield',
+    bgcolor: 'primary',
+    route: 'mantenedores',
+    children: [
       {
-        displayName: 'Dashboard 2',
-        iconName: 'point',
-        route: 'dashboards/dashboard2',
-      },
+        displayName: 'Trabajadores',
+        iconName: 'home-shield',
+        route: 'mantenedores/trabajadores',
+      },{
+        displayName: 'Locales',
+        iconName: 'home-shield',
+        route: 'mantenedores/locales',
+      }
     ],
   },
- /*  {
+  /*  {
     displayName: 'Apps',
     iconName: 'apps',
     route: 'apps',

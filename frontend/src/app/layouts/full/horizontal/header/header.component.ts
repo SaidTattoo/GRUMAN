@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { CoreService } from 'src/app/services/core.service';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
@@ -12,6 +12,8 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { navItems } from '../sidebar/sidebar-data';
+import { AuthService } from 'src/app/services/auth.service';
+import { navItemsPro } from 'src/app/layouts/navbar-data/navbar-data';
 
 interface notifications {
   id: number;
@@ -59,7 +61,7 @@ interface quicklinks {
   ],
   templateUrl: './header.component.html',
 })
-export class AppHorizontalHeaderComponent {
+export class AppHorizontalHeaderComponent implements OnInit {
   searchText: string = '';
 
   @Input() showToggle = true;
@@ -68,7 +70,7 @@ export class AppHorizontalHeaderComponent {
   @Output() toggleMobileFilterNav = new EventEmitter<void>();
   @Output() toggleCollapsed = new EventEmitter<void>();
 
-  navItemsData = navItems.filter((navitem) => navitem.displayName);
+  navItemsData = navItemsPro.filter((navitem) => navitem.displayName);
 
   showFiller = false;
 
@@ -106,7 +108,8 @@ export class AppHorizontalHeaderComponent {
   constructor(
     private vsidenav: CoreService,
     public dialog: MatDialog,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private authService: AuthService
   ) {
     translate.setDefaultLang('en');
   }
@@ -122,6 +125,35 @@ export class AppHorizontalHeaderComponent {
     dialogRef.afterClosed().subscribe((result) => {
       console.log(`Dialog result: ${result}`);
     });
+  }
+  userName: string | null = null;
+  userRole: string | null = null;
+  userEmail: string | null = null;
+  userCompanies: any[] = [];
+  selectedCompany: any | null = null;
+  ngOnInit(): void {
+    this.authService.currentUser.subscribe(user => {
+      if (user) {
+        this.userName = user.name;
+        this.userRole = user.profile;
+        this.userEmail = user.email;
+        this.userCompanies = user.companies;
+        this.selectedCompany = this.userCompanies.length === 1 ? this.userCompanies[0] : null;
+      }
+    });
+  }
+
+  getUserInitials(): string {
+    if (this.userName) {
+      const names = this.userName.split(' ');
+      const initials = names.map(name => name.charAt(0)).join('');
+      return initials.toUpperCase();
+    }
+    return '';
+  }
+
+  onCompanySelect(company: any): void {
+    this.selectedCompany = company;
   }
 
   notifications: notifications[] = [
@@ -300,7 +332,7 @@ export class AppHorizontalHeaderComponent {
 })
 export class AppSearchDialogComponent {
   searchText: string = '';
-  navItems = navItems;
+  navItems = navItemsPro;
 
   navItemsData = navItems.filter((navitem) => navitem.displayName);
 

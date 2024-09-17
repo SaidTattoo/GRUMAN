@@ -10,8 +10,11 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findUserByEmail(email: string): Promise<User | undefined> {
-    return this.userRepository.findOne({ where: { email } });
+  async findByEmail(email: string): Promise<User | undefined> {
+    return this.userRepository.findOne({
+      where: { email },
+      relations: ['companies'], // Carga las compañías asociadas
+    });
   }
 
   async createUser(user: Partial<User>): Promise<User> {

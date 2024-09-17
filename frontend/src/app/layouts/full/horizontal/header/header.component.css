@@ -1,0 +1,39 @@
+.profile-initials-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #3f51b5; /* Cambia el color según tu preferencia */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 10px; /* Espacio entre el círculo y el texto */
+}
+
+.profile-initials-circle-large {
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  background-color: #3f51b5; /* Cambia el color según tu preferencia */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.user-initials {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007bff; /* Color de fondo */
+  color: white; /* Color del texto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+}

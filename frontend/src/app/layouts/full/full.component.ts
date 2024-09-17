@@ -21,6 +21,7 @@ import { HeaderComponent } from './vertical/header/header.component';
 import { AppNavItemComponent } from './vertical/sidebar/nav-item/nav-item.component';
 import { navItems } from './vertical/sidebar/sidebar-data';
 import { SidebarComponent } from './vertical/sidebar/sidebar.component';
+import { navItemsPro } from '../navbar-data/navbar-data';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -64,7 +65,7 @@ interface quicklinks {
   encapsulation: ViewEncapsulation.None,
 })
 export class FullComponent implements OnInit {
-  navItems = navItems;
+  navItems = navItemsPro;
 
   @ViewChild('leftsidenav')
   public sidenav: MatSidenav;
@@ -77,6 +78,9 @@ export class FullComponent implements OnInit {
   private isContentWidthFixed = true;
   private isCollapsedWidthFixed = false;
   private htmlElement!: HTMLHtmlElement;
+  currentUser: any;
+  userRole: string | null = null;
+  userName: string | null = null;
 
   get isOver(): boolean {
     return this.isMobileScreen;
@@ -221,14 +225,13 @@ export class FullComponent implements OnInit {
         this.content.scrollTo({ top: 0 });
       });
   }
-  userName: string;
-  userRole: string;
+
   ngOnInit(): void {
-    const userProfile = this.authService.getUserProfile();
-    if (userProfile) {
-      this.userName = userProfile.name;
-      this.userRole = userProfile.profile;
-    }
+    this.authService.currentUser.subscribe(user => {
+      this.currentUser = user;
+      this.userRole = user ? user.profile : null; // Asignar el rol del usuario
+      this.userName = user ? user.name : null; // Asignar el nombre del usuario
+    });
   }
 
   ngOnDestroy() {

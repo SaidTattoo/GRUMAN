@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module'; // Asegúrate de que la ruta sea correcta
+import { CompaniesModule } from './companies/companies.module';
+import { LocalesModule } from './locales/locales.module';
 
 @Module({
   imports: [
@@ -27,7 +29,9 @@ import { UsersModule } from './users/users.module'; // Asegúrate de que la ruta
       inject: [ConfigService],
     }),
     AuthModule,
-    UsersModule, // Asegúrate de que UsersModule esté importado
+    UsersModule,
+    CompaniesModule,
+    LocalesModule, // Asegúrate de que UsersModule esté importado
   ],
   controllers: [AppController],
   providers: [AppService],

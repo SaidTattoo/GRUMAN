@@ -13,21 +13,21 @@ import { CoreService } from 'src/app/services/core.service';
       <a href="/">
         <img
           src="./assets/images/empresas/atlantis_logo.jpg"
-          style="width: 100%"
+          style="width: 100px"
           class="align-middle m-2"
           alt="logo"
         />
-        <img [src]="getCompanyLogo()" class="align-middle m-2" alt="logo" />
+   
       </a>
       } @if(options.theme === 'dark') {
       <a href="/">
         <img
           src="./assets/images/empresas/atlantis_logo.jpg"
-          style="width: 100%"
+          style="width: 100px"
           class="align-middle m-2"
           alt="logo"
         />
-        <img [src]="getCompanyLogo()" class="align-middle m-2" alt="logo" />
+      
       </a>
       }
     </div>

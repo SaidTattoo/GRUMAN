@@ -4,7 +4,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable
 } from 'typeorm';
+import { Company } from '../companies/companies.entity';
 
 @Entity('user')
 export class User {
@@ -20,8 +23,19 @@ export class User {
   @Column()
   password: string;
 
-  @Column()
-  company: string;
+  @ManyToMany(() => Company)
+  @JoinTable({
+    name: 'user_companies', // Nombre de la tabla intermedia
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id'
+    },
+    inverseJoinColumn: {
+      name: 'company_id',
+      referencedColumnName: 'id'
+    }
+  })
+  companies: Company[];
 
   @Column({
     type: 'enum',

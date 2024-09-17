@@ -15,6 +15,20 @@ export const routes: Routes = [
     component: FullComponent,
     children: [
       {
+        path: 'mantenedores/locales',
+        loadChildren: () =>
+          import('./pages/mantenedores/locales/locales/locales.routes').then(
+            (m) => m.LOCALES_ROUTES
+          ),
+      },
+      {
+        path: 'mantenedores/trabajadores',
+        loadChildren: () =>
+          import('./pages/mantenedores/trabajadores/trabajadores.routes').then(
+            (m) => m.TRABAJADORES_ROUTES
+          ),
+      },
+      {
         path: 'starter',
         loadChildren: () =>
           import('./pages/pages.routes').then((m) => m.PagesRoutes),
@@ -99,6 +113,7 @@ export const routes: Routes = [
       },
     ],
   },
+ 
   {
     path: '**',
     redirectTo: 'auth/login', // Redirige a la ruta de login para rutas no encontradas

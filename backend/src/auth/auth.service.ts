@@ -4,16 +4,25 @@ import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
   ) {}
 
+  async validateUser(email: string, password: string): Promise<User | null> {
+    const user = await this.usersService.findByEmail(email);
+    if (user && await bcrypt.compare(password, user.password)) {
+      return user;
+    }
+    return null;
+  }
+
   async login({ email, password }: LoginDto) {
-    const user = await this.usersService.findUserByEmail(email);
+    const user = await this.usersService.findByEmail(email);
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
@@ -26,7 +35,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       profile: user.profile,
-      company: user.company,
+      companies: user.companies,
     };
     return {
       token: this.jwtService.sign(payload),
@@ -34,7 +43,7 @@ export class AuthService {
   }
 
   async register({ name, email, password }: RegisterDto) {
-    const existingUser = await this.usersService.findUserByEmail(email);
+    const existingUser = await this.usersService.findByEmail(email);
     if (existingUser) {
       throw new HttpException('User already exists', HttpStatus.CONFLICT);
     }
@@ -50,10 +59,21 @@ export class AuthService {
       id: newUser.id,
       email: newUser.email,
       profile: newUser.profile,
-      company: newUser.company,
+      companies: newUser.companies,
     };
     return {
       token: this.jwtService.sign(payload),
     };
+  }
+
+  generateJwtToken(user: User): string {
+    const payload = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      profile: user.profile,
+      companies: user.companies, // Incluye las compañías en el token
+    };
+    return this.jwtService.sign(payload);
   }
 }

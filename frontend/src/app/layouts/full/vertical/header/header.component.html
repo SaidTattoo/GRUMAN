@@ -13,7 +13,23 @@
     <i-tabler name="align-left" class="icon-20 d-flex"></i-tabler>
   </button>
   }
-
+  @if(userCompanies.length === 1) {
+    <div>
+      <span class="f-s-14 mat-body-1">{{ userCompanies[0].name }}</span>
+    </div>
+    }
+    @if(userCompanies.length > 1) {
+    <div >
+      <mat-form-field appearance="fill">
+        <mat-label>Seleccionar Compañía</mat-label>
+        <mat-select [(value)]="selectedCompany" (selectionChange)="onCompanySelect($event.value)">
+          <mat-option *ngFor="let company of userCompanies" [value]="company">
+            {{ company.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    }
   <!-- --------------------------------------------------------------- -->
 
   <div class="d-none d-lg-flex">
@@ -69,7 +85,7 @@
           </div>
         </div>
       </div>
-    </mat-menu> -->
+    </mat-menu>
   <!--   <a mat-button [routerLink]="['/apps/chat']">Chat</a>
     <a mat-button [routerLink]="['/apps/calendar']">Calendar</a>
     <a mat-button [routerLink]="['/apps/email/inbox']">Email</a> -->
@@ -230,12 +246,14 @@
   <!-- --------------------------------------------------------------- -->
   <button mat-fab extended color="inherit" [matMenuTriggerFor]="profileMenu" aria-label="Notifications">
     <div class="d-flex align-items-center">
-      <img src="/assets/images/profile/user5.jpg" class="rounded-circle object-cover" width="40" />
-
+      <div class="profile-initials-circle">
+        {{ getUserInitials() }}
+      </div>
       <div class="m-l-16 text-left d-none d-lg-flex">
         <div>
           <h5 class="f-s-16">{{ userName }}</h5>
           <span class="f-s-14 mat-body-1">{{ userRole }}</span>
+         
         </div>
       </div>
     </div>
@@ -246,7 +264,9 @@
         <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">Perfil</h6>
 
         <div class="d-flex align-items-center p-b-24 b-b-1 m-t-16">
-          <img src="/assets/images/profile/user5.jpg" class="rounded-circle" width="95" />
+          <div class="profile-initials-circle">
+            {{ getUserInitials() }}
+          </div>
           <div class="m-l-16">
             <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">{{ userName }}</h6>
             <span class="f-s-14 mat-body-1 d-block m-b-4">{{ userRole }}</span>

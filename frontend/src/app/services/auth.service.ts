@@ -1,52 +1,67 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { tap } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private apiUrl = 'http://localhost:3000/auth'; // URL de tu API de autenticación
-  private authStatusSubject = new BehaviorSubject<boolean>(this.isAuthenticated());
-  public authStatus$ = this.authStatusSubject.asObservable();
+  private currentUserSubject: BehaviorSubject<any | null>;
+  public currentUser: Observable<any | null>;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router) {
+    const storedUser = localStorage.getItem('currentUser');
+    this.currentUserSubject = new BehaviorSubject<any | null>(storedUser ? JSON.parse(storedUser) : null);
+    this.currentUser = this.currentUserSubject.asObservable();
+  }
+
+  public get currentUserValue(): any | null {
+    return this.currentUserSubject.value;
+  }
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, { email, password }).pipe(
-      tap((response: any) => {
-        localStorage.setItem('token', response.token);
-        this.authStatusSubject.next(true);
+    return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
+      tap(response => {
+        const decodedToken: any = jwtDecode(response.token);
+        const user: any = {
+          id: decodedToken.id,
+          name: decodedToken.name,
+          email: decodedToken.email,
+          profile: decodedToken.profile,
+          companies: decodedToken.companies, // Manejar array de compañías
+          token: response.token,
+          exp: decodedToken.exp // Añadir la fecha de expiración del token
+        };
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.currentUserSubject.next(user);
       })
     );
   }
 
-  register(name: string, email: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, { name, email, password });
-  }
-
   logout(): void {
-    localStorage.removeItem('token');
-    this.authStatusSubject.next(false);
-    this.router.navigate(['/auth/login']);
+    localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
+    this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+    const user = this.currentUserValue;
+    if (user && user.token) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      return user.exp > currentTime; // Verificar si el token ha expirado
+    }
+    return false;
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return this.currentUserValue ? this.currentUserValue.token : null;
   }
 
-  getUserProfile(): { name: string, profile: string, company: string, email: string } | null {
-    const token = this.getToken();
-    if (token) {
-      const decoded: any = jwtDecode(token);
-      return { name: decoded.name, profile: decoded.profile, company: decoded.company, email: decoded.email }; // Asegúrate de que el token tenga campos 'name', 'profile', 'company' y 'email'
-    }
-    return null;
+  getUserProfile(): any | null {
+    return this.currentUserValue;
   }
 }

@@ -134,16 +134,36 @@ export class HeaderComponent implements OnInit {
     this.translate.use(lang.code);
     this.selectedLanguage = lang;
   }
-  userName: string = '';
-  userRole: string = '';
-  userEmail: string = '';
+
+  userName: string | null = null;
+  userRole: string | null = null;
+  userEmail: string | null = null;
+  userCompanies: any[] = [];
+  selectedCompany: any | null = null;
+
   ngOnInit(): void {
-    const userProfile = this.authService.getUserProfile();
-    if (userProfile) {
-      this.userName = userProfile.name;
-      this.userRole = userProfile.profile;
-      this.userEmail = userProfile.email;
+    this.authService.currentUser.subscribe(user => {
+      if (user) {
+        this.userName = user.name;
+        this.userRole = user.profile;
+        this.userEmail = user.email;
+        this.userCompanies = user.companies;
+        this.selectedCompany = this.userCompanies.length === 1 ? this.userCompanies[0] : null;
+      }
+    });
+  }
+
+  getUserInitials(): string {
+    if (this.userName) {
+      const names = this.userName.split(' ');
+      const initials = names.map(name => name.charAt(0)).join('');
+      return initials.toUpperCase();
     }
+    return '';
+  }
+
+  onCompanySelect(company: any): void {
+    this.selectedCompany = company;
   }
 
   notifications: notifications[] = [

@@ -34,5 +34,5 @@ services:
       MYSQL_USER: gruman
       MYSQL_PASSWORD: gruman
     ports:
-      - "3307:3306"  # Cambiado de "3306:3306" a "3307:3306"
+      - "3306:3306"  # Cambiado de "3306:3306" a "3307:3306"
 
