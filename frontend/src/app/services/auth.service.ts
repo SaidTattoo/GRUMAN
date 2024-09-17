@@ -9,7 +9,7 @@ import { jwtDecode } from 'jwt-decode';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://138.255.103.35/auth/'; // URL de tu API de autenticación
+  private apiUrl = 'http://138.255.103.35/auth'; // URL de tu API de autenticación
   private currentUserSubject: BehaviorSubject<any | null>;
   public currentUser: Observable<any | null>;
 
