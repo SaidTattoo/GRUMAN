@@ -10,9 +10,9 @@ export class LocalesService {
   constructor( private http: HttpClient ) { }
 
   getLocales(): Observable<any> {
-    return this.http.get<any>('http://localhost:3000/locales');
+    return this.http.get<any>('http://138.255.103.35/auth/login/locales');
   }
   crearLocal(local: any): Observable<any> {
-    return this.http.post<any>('http://localhost:3000/locales', local);
+    return this.http.post<any>('http://138.255.103.35/auth/login/locales', local);
   }
 }
