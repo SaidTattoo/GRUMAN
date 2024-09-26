@@ -19,3 +19,15 @@ jobs:
       - name: Pull latest changes
         run: |
           git pull origin main
+
+      - name: Stop and remove existing containers
+        run: |
+          docker-compose down
+
+      - name: Run Docker Compose
+        run: |
+          docker-compose up -d
+      - name: Run docker ps
+        run: |
+          docker ps
+
