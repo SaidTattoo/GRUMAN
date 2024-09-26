@@ -7,6 +7,9 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module'; // Asegúrate de que la ruta sea correcta
 import { CompaniesModule } from './companies/companies.module';
 import { LocalesModule } from './locales/locales.module';
+import { VehiculosModule } from './vehiculos/vehiculos.module';
+import { TipoActivoModule } from './tipo_activo/tipo_activo.module';
+import { TecnicosModule } from './tecnicos/tecnicos.module';
 
 @Module({
   imports: [
@@ -31,7 +34,10 @@ import { LocalesModule } from './locales/locales.module';
     AuthModule,
     UsersModule,
     CompaniesModule,
-    LocalesModule, // Asegúrate de que UsersModule esté importado
+    LocalesModule,
+    VehiculosModule,
+    TipoActivoModule,
+    TecnicosModule, // Asegúrate de que UsersModule esté importado
   ],
   controllers: [AppController],
   providers: [AppService],

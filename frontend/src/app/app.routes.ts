@@ -29,6 +29,27 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mantenedores/vehiculos',
+        loadChildren: () =>
+          import('./pages/mantenedores/vehiculos/vehiculos.routes').then(
+            (m) => m.VEHICULOS_ROUTES
+          ),
+      },
+      {
+        path: 'mantenedores/tipo-activo',
+        loadChildren: () =>
+          import('./pages/mantenedores/tipo-activo/tipo-activo.routes').then(
+            (m) => m.TIPO_ACTIVO_ROUTES
+          ),
+      },{
+        path: 'mantenedores/tecnicos',
+        loadChildren: () =>
+          import('./pages/mantenedores/tecnicos/tecnicos.routes').then(
+            (m) => m.TECNICOS_ROUTES
+          ),
+      },
+
+      {
         path: 'starter',
         loadChildren: () =>
           import('./pages/pages.routes').then((m) => m.PagesRoutes),
@@ -113,7 +134,7 @@ export const routes: Routes = [
       },
     ],
   },
- 
+
   {
     path: '**',
     redirectTo: 'auth/login', // Redirige a la ruta de login para rutas no encontradas

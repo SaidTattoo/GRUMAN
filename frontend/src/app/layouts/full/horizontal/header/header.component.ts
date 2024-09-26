@@ -1,19 +1,19 @@
-import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
-import { CoreService } from 'src/app/services/core.service';
-import { MatDialog } from '@angular/material/dialog';
-import { TranslateService } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
-import { TablerIconsModule } from 'angular-tabler-icons';
-import { MaterialModule } from 'src/app/material.module';
-import { BrandingComponent } from '../../vertical/sidebar/branding.component';
 import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgScrollbarModule } from 'ngx-scrollbar';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
-import { navItems } from '../sidebar/sidebar-data';
-import { AuthService } from 'src/app/services/auth.service';
+import { MatDialog } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
+import { RouterModule } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { TablerIconsModule } from 'angular-tabler-icons';
+import { NgScrollbarModule } from 'ngx-scrollbar';
 import { navItemsPro } from 'src/app/layouts/navbar-data/navbar-data';
+import { MaterialModule } from 'src/app/material.module';
+import { AuthService } from 'src/app/services/auth.service';
+import { CoreService } from 'src/app/services/core.service';
+import { BrandingComponent } from '../../vertical/sidebar/branding.component';
+import { navItems } from '../sidebar/sidebar-data';
 
 interface notifications {
   id: number;
@@ -60,6 +60,7 @@ interface quicklinks {
     BrandingComponent,
   ],
   templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css'],
 })
 export class AppHorizontalHeaderComponent implements OnInit {
   searchText: string = '';

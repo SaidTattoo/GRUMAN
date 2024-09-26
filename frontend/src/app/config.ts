@@ -23,3 +23,7 @@ export const defaults: AppSettings = {
   language: 'en-us',
   navPos: 'side',
 };
+export const environment = {
+  apiUrl: 'http://localhost:3000/',
+  apiProd: 'http://138.255.103.35:3000/'
+};

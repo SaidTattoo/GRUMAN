@@ -1,7 +1,7 @@
-import { Body, Controller, Post, Res, HttpStatus } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { Response } from 'express';
 import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
@@ -15,9 +15,14 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
     if (!user) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ message: 'Invalid credentials' });
     }
 
     const token = this.authService.generateJwtToken(user);

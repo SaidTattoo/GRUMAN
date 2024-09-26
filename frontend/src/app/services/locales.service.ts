@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../config';
 
 @Injectable({
   providedIn: 'root'
@@ -8,11 +9,12 @@ import { Observable } from 'rxjs';
 export class LocalesService {
 
   constructor( private http: HttpClient ) { }
+  private apiUrl = environment.apiUrl + 'locales';
 
   getLocales(): Observable<any> {
-    return this.http.get<any>('http://138.255.103.35:3000/locales');
+    return this.http.get<any>(this.apiUrl);
   }
   crearLocal(local: any): Observable<any> {
-    return this.http.post<any>('http://138.255.103.35:3000/locales', local);
+    return this.http.post<any>(this.apiUrl, local);
   }
 }

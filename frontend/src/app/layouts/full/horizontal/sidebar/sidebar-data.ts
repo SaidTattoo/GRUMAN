@@ -40,6 +40,20 @@ export const navItems: NavItem[] = [
         displayName: 'Locales',
         iconName: 'home-shield',
         route: 'mantenedores/locales',
+      },{
+        displayName: 'Moviles',
+        iconName: 'home-shield',
+        route: 'mantenedores/vehiculos',
+      },
+      {
+        displayName: 'Tipo Activo',
+        iconName: 'home-shield',
+        route: 'mantenedores/tipo-activo',
+      },
+      {
+        displayName: 'Tecnicos',
+        iconName: 'home-shield',
+        route: 'mantenedores/tecnicos',
       }
     ],
   },
