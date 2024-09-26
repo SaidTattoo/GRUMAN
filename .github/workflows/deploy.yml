@@ -24,13 +24,13 @@ jobs:
 
       - name: Docker compose build
         run: |
-          sudo docker-compose build
+          docker-compose build
 
       - name: Run Docker Compose
         run: |
-          sudo docker-compose docker-compose.yml up
+          docker-compose docker-compose.yml up
 
       - name: Run docker ps
         run: |
-          sudo docker ps
+          docker ps
 
