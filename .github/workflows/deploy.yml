@@ -12,18 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Set up Docker
-        run: |
-          sudo yum update -y
-          sudo yum install -y docker
-          sudo systemctl start docker
-          sudo systemctl enable docker
-          sudo usermod -aG docker $USER
-          newgrp docker
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
+     
+ 
       
 
       - name: List server directories
@@ -36,11 +26,11 @@ jobs:
 
       - name: Docker compose build
         run: |
-          sudo docker-compose build
+          docker-compose build
 
       - name: Run Docker Compose
         run: |
-          sudo docker-compose docker-compose.yml up
+          docker-compose docker-compose.yml up
 
       - name: Run docker ps
         run: |
