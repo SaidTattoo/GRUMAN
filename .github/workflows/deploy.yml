@@ -15,5 +15,5 @@ jobs:
 
       - name: List server directories
         run: |
-          ls -la /home/ubuntu/gruman
+          ls -la 
 
