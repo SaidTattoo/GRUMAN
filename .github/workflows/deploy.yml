@@ -20,17 +20,17 @@ jobs:
         run: |
           git pull origin main
 
-     # - name: Stop and remove existing containers
-     #   run: |
-     #     docker-compose down
+      - name: Stop and remove existing containers
+        run: |
+         sudo docker-compose down
 
       - name: Docker compose build
         run: |
-          docker-compose build
+          sudo docker-compose build
 
       - name: Run Docker Compose
         run: |
-          docker-compose up -d
+          sudo docker-compose docker-compose.yml up
 
       - name: Run docker ps
         run: |
