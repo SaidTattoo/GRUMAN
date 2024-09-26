@@ -1,23 +1,15 @@
-name: Deploy to CentOS Server
+name: Deploy
 
 on:
   push:
     branches:
-      - main  # Se activa en push a la rama principal
+      - main
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Sync files to CentOS server
-        run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ github-runner@ip-del-servidor:/ruta/destino
