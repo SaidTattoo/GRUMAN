@@ -25,7 +25,9 @@
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
             <input matInput placeholder="Ingrese el apellido" formControlName="lastname">
-            <mat-error *ngIf="form.get('lastname')?.invalid">El apellido es requerido</mat-error>
+            @if (form.get('lastname')?.invalid) {
+              <mat-error>El apellido es requerido</mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -36,7 +38,9 @@
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
             <input matInput placeholder="Ingrese el RUT" formControlName="rut">
-            <mat-error *ngIf="form.get('rut')?.invalid">El RUT es requerido</mat-error>
+            @if (form.get('rut')?.invalid) {
+              <mat-error>El RUT es requerido</mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -47,7 +51,9 @@
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
             <input matInput placeholder="Ingrese el email" formControlName="email">
-            <mat-error *ngIf="form.get('email')?.invalid">El email es requerido</mat-error>
+            @if (form.get('email')?.invalid) {
+              <mat-error>El email es requerido</mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -58,7 +64,9 @@
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
             <input matInput type="password" placeholder="Ingrese la contraseña" formControlName="password">
-            <mat-error *ngIf="form.get('password')?.invalid">La contraseña es requerida</mat-error>
+            @if (form.get('password')?.invalid) {
+              <mat-error>La contraseña es requerida</mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
