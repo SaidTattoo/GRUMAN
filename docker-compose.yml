@@ -7,6 +7,8 @@ services:
       - "80:80"
     volumes:
       - ./frontend:/app
+    networks:
+      - gruman_network
 
   backend:
     build:
@@ -26,6 +28,8 @@ services:
       TYPEORM_DATABASE: gruman
       JWT_SECRET: Law8XT1LW5SErt8CfHKifZwKSza6MTXU
     command: npm run start:dev
+    networks:
+      - gruman_network
 
   mariadb:
     image: mariadb:latest
@@ -36,4 +40,14 @@ services:
       MYSQL_PASSWORD: gruman
     ports:
       - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - gruman_network
 
+volumes:
+  mariadb_data:
+
+networks:
+  gruman_network:
+    driver: bridge
