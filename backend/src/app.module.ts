@@ -4,12 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module'; // Asegúrate de que la ruta sea correcta
 import { CompaniesModule } from './companies/companies.module';
 import { LocalesModule } from './locales/locales.module';
-import { VehiculosModule } from './vehiculos/vehiculos.module';
-import { TipoActivoModule } from './tipo_activo/tipo_activo.module';
 import { TecnicosModule } from './tecnicos/tecnicos.module';
+import { TipoActivoModule } from './tipo_activo/tipo_activo.module';
+import { UsersModule } from './users/users.module'; // Asegúrate de que la ruta sea correcta
+import { VehiculosModule } from './vehiculos/vehiculos.module';
 
 @Module({
   imports: [
@@ -28,6 +28,7 @@ import { TecnicosModule } from './tecnicos/tecnicos.module';
         database: configService.get<string>('TYPEORM_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true, // No usar en producción
+        connectTimeout: 30000, // Tiempo de espera en milisegundos
       }),
       inject: [ConfigService],
     }),
