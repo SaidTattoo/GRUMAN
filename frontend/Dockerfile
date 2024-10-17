@@ -19,6 +19,9 @@ RUN npm run build --prod
 # Usa una imagen de Nginx para servir los archivos estáticos
 FROM nginx:alpine
 
+# Copia el archivo de configuración de Nginx personalizado
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Copia los archivos de la build de Angular a la carpeta de Nginx
 COPY --from=build /app/dist/Spike /usr/share/nginx/html
 
