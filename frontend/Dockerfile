@@ -20,7 +20,7 @@ RUN npm run build --prod
 FROM nginx:alpine
 
 # Copia el archivo de configuración de Nginx personalizado
-COPY ./nginx.conf /etc/nginx/nginx.conf
+#COPY ./nginx.conf /etc/nginx/nginx.conf
 
 COPY --from=build /app/dist/Spike /usr/share/nginx/html
 
