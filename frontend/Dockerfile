@@ -22,5 +22,7 @@ FROM nginx:alpine
 # Copia el archivo de configuración de Nginx personalizado
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
+COPY --from=build /app/dist/Spike /usr/share/nginx/html
+
 # Exponer el puerto 80 para servir la aplicación
 EXPOSE 80
