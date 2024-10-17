@@ -15,6 +15,7 @@ export class LocalesService {
     return this.http.get<any>(this.apiUrl);
   }
   crearLocal(local: any): Observable<any> {
+    console.log('****', local);
     return this.http.post<any>(this.apiUrl, local);
   }
 }

@@ -1,39 +1,43 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('locales')
 export class Locales {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    direccion: string;
+  @Column()
+  direccion: string;
 
-    @Column()
-    comuna: string;
+  @Column()
+  comuna: string;
 
-    @Column()
-    region: string;
+  @Column()
+  region: string;
 
-    @Column()
-    zona: string;
+  @Column()
+  zona: string;
 
-    @Column()
-    grupo: string;
+  @Column()
+  grupo: string;
 
-    @Column()
-    referencia: string;
-    
-    @Column()
-    telefono: string;
+  @Column()
+  referencia: string;
 
-    @Column()
-    email_local: string;
+  @Column()
+  telefono: string;
 
-    @Column()
-    email_encargado: string;
+  @Column()
+  email_local: string;
 
-    @Column()
-    nombre_encargado: string;
-    
-    
+  @Column()
+  email_encargado: string;
+
+  @Column()
+  nombre_encargado: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 8 })
+  latitud: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 8 })
+  longitud: number;
 }
