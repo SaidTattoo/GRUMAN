@@ -20,11 +20,7 @@ RUN npm run build --prod
 FROM nginx:alpine
 
 # Copia el archivo de configuración de Nginx personalizado
-COPY ./config/nginx.conf /etc/nginx/conf
-
-
-# Copia los archivos de la build de Angular a la carpeta de Nginx
-COPY --from=build /app/dist/Spike /usr/share/nginx/html
+COPY ./nginx.conf /etc/nginx/nginx.conf
 
 # Exponer el puerto 80 para servir la aplicación
 EXPOSE 80
