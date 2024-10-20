@@ -27,16 +27,12 @@ export const navItems: NavItem[] = [
       }
     ],
   },  {
-    displayName: 'mantenedores',
+    displayName: 'Mantenedores',
     iconName: 'home-shield',
     bgcolor: 'primary',
     route: 'mantenedores',
     children: [
       {
-        displayName: 'Trabajadores',
-        iconName: 'home-shield',
-        route: 'mantenedores/trabajadores',
-      },{
         displayName: 'Locales',
         iconName: 'home-shield',
         route: 'mantenedores/locales',
@@ -54,7 +50,17 @@ export const navItems: NavItem[] = [
         displayName: 'Tecnicos',
         iconName: 'home-shield',
         route: 'mantenedores/tecnicos',
-      }
+      },
+      {
+        displayName: 'Repuestos',
+        iconName: 'home-shield',
+        route: 'mantenedores/repuestos',
+      },
+      {
+        displayName: 'Clientes',
+        iconName: 'home-shield',
+        route: 'mantenedores/clientes',
+      },
     ],
   },
   /*  {

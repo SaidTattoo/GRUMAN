@@ -1,4 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { existsSync, mkdirSync } from 'fs';
+import { diskStorage } from 'multer';
+import { join } from 'path';
 import { AppService } from './app.service';
 
 @Controller()
@@ -8,5 +19,41 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          const path = req.params.path;
+          const uploadPath = join(__dirname, '..', 'uploads', path);
+
+          // Verifica si la ruta existe, si no, la crea
+          if (!existsSync(uploadPath)) {
+            mkdirSync(uploadPath, { recursive: true });
+          }
+
+          cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+          cb(null, `${Date.now()}-${file.originalname}`);
+        },
+      }),
+    }),
+  )
+  @Post('upload/:path')
+  uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('path') path: string,
+  ) {
+    const fileUrl = `${process.env.BASE_URL_LOCAL}/uploads/${path}/${file.filename}`;
+
+    console.log(`Uploading file to path: ${path}`);
+    return {
+      filename: file.filename,
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      url: fileUrl,
+    };
   }
 }

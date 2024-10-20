@@ -47,8 +47,20 @@ export const routes: Routes = [
           import('./pages/mantenedores/tecnicos/tecnicos.routes').then(
             (m) => m.TECNICOS_ROUTES
           ),
+      },{
+        path: 'mantenedores/repuestos',
+        loadChildren: () =>
+          import('./pages/mantenedores/repuestos/repuestos.routes').then(
+            (m) => m.REPUESTOS_ROUTES
+          ),
       },
-
+      {
+        path: 'mantenedores/clientes',
+        loadChildren: () =>
+          import('./pages/mantenedores/clientes/clientes.routes').then(
+            (m) => m.CLIENTES_ROUTES
+          ),
+      },
       {
         path: 'starter',
         loadChildren: () =>

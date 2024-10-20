@@ -10,25 +10,23 @@ import { CoreService } from 'src/app/services/core.service';
   template: `
     <div class="branding">
       @if(options.theme === 'light') {
-      <a href="/">
+
         <img
           src="./assets/images/empresas/atlantis_logo.jpg"
           style="width: 100px"
           class="align-middle m-2"
           alt="logo"
         />
-   
-      </a>
+
+
       } @if(options.theme === 'dark') {
-      <a href="/">
+
         <img
           src="./assets/images/empresas/atlantis_logo.jpg"
           style="width: 100px"
           class="align-middle m-2"
           alt="logo"
         />
-      
-      </a>
       }
     </div>
   `,

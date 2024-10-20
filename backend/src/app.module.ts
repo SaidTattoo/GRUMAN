@@ -1,11 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { ClientesModule } from './clientes/clientes.module';
 import { CompaniesModule } from './companies/companies.module';
 import { LocalesModule } from './locales/locales.module';
+import { RepuestosModule } from './repuestos/repuestos.module';
 import { TecnicosModule } from './tecnicos/tecnicos.module';
 import { TipoActivoModule } from './tipo_activo/tipo_activo.module';
 import { UsersModule } from './users/users.module'; // Asegúrate de que la ruta sea correcta
@@ -38,7 +42,13 @@ import { VehiculosModule } from './vehiculos/vehiculos.module';
     LocalesModule,
     VehiculosModule,
     TipoActivoModule,
-    TecnicosModule, // Asegúrate de que UsersModule esté importado
+    TecnicosModule,
+    RepuestosModule,
+    ClientesModule, // Asegúrate de que UsersModule esté importado
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), // Asegúrate de que esta ruta es correcta
+      serveRoot: '/uploads', // Esto asegura que las rutas comiencen con /uploads
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,100 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content class="p-24">
+    <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-lg-6 col-sm-6">
+          <div class="row">
+            <div class="col-sm-4 d-flex align-items-center justify-content-end">
+              <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Nombre</mat-label>
+            </div>
+            <div class="col-sm-8">
+              <mat-form-field appearance="outline" class="w-100">
+                <input formControlName="nombre" matInput placeholder="John Deo" />
+                @if (clienteForm.get('nombre')?.hasError('required')) {
+                  <mat-error>El nombre es requerido</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 d-flex align-items-center justify-content-end">
+              <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Rut</mat-label>
+            </div>
+            <div class="col-sm-8">
+              <mat-form-field appearance="outline" class="w-100">
+                <input formControlName="rut" matInput placeholder="150 Foot Ring Road" />
+                @if (clienteForm.get('rut')?.hasError('required')) {
+                  <mat-error>El RUT es requerido</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 d-flex align-items-center justify-content-end">
+              <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Razon Social</mat-label>
+            </div>
+            <div class="col-sm-8">
+              <mat-form-field appearance="outline" class="w-100">
+                <input formControlName="razonSocial" matInput placeholder="Jackson" />
+                @if (clienteForm.get('razonSocial')?.hasError('required')) {
+                  <mat-error>La razón social es requerida</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 col-sm-6">
+          <div class="row">
+            <div class="col-sm-4 d-flex align-items-center justify-content-end">
+              <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Sobreprecio</mat-label>
+            </div>
+            <div class="col-sm-8">
+              <mat-form-field appearance="outline" class="w-100">
+                <input formControlName="sobreprecio" matInput placeholder="630012" />
+                @if (clienteForm.get('sobreprecio')?.hasError('required')) {
+                  <mat-error>El sobreprecio es requerido</mat-error>
+                }
+                @if (clienteForm.get('sobreprecio')?.hasError('pattern')) {
+                  <mat-error>Debe ser un número válido</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 d-flex align-items-center justify-content-end">
+              <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Valor por Local</mat-label>
+            </div>
+            <div class="col-sm-8">
+              <mat-form-field appearance="outline" class="w-100">
+                <input formControlName="valorPorLocal" matInput placeholder="Nr. wall street" />
+                @if (clienteForm.get('valorPorLocal')?.hasError('required')) {
+                  <mat-error>El valor por local es requerido</mat-error>
+                }
+                @if (clienteForm.get('valorPorLocal')?.hasError('pattern')) {
+                  <mat-error>Debe ser un número entero</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 d-flex align-items-center justify-content-end">
+              <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Logo</mat-label>
+            </div>
+            <div class="col-sm-8">
+              <button mat-button color="primary" (click)="fileInput.click()">Seleccionar archivo</button>
+              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+              <span>{{ fileName || cliente?.logo?.split('-').pop() }}</span>
+              <img width="100" loading="lazy" [src]="imagePreview || cliente?.logo" alt="Vista previa del logo" class="img-preview" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12 text-right m-t-16">
+          <button mat-flat-button color="primary" [disabled]="clienteForm.invalid" type="submit">Editar Cliente</button>
+          <button mat-button color="warn" (click)="volver()">Volver</button>
+        </div>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
