@@ -46,7 +46,7 @@ export class AppController {
     @UploadedFile() file: Express.Multer.File,
     @Param('path') path: string,
   ) {
-    const fileUrl = `${process.env.BASE_URL_LOCAL}/uploads/${path}/${file.filename}`;
+    const fileUrl = `http://138.255.103.35:3000/uploads/${path}/${file.filename}`;
 
     console.log(`Uploading file to path: ${path}`);
     return {
