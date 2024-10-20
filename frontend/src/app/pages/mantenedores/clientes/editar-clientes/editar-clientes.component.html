@@ -81,7 +81,7 @@
               <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Logo</mat-label>
             </div>
             <div class="col-sm-8">
-              <button mat-button color="primary" (click)="fileInput.click()">Seleccionar archivo</button>
+              <button type="button" mat-button color="primary" (click)="fileInput.click()">Seleccionar archivo</button>
               <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
               <span>{{ fileName || cliente?.logo?.split('-').pop() }}</span>
               <img width="100" loading="lazy" [src]="imagePreview || cliente?.logo" alt="Vista previa del logo" class="img-preview" />
