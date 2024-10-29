@@ -34,7 +34,7 @@
             Rut
           </th>
           <td mat-cell *matCellDef="let element" class="p-l-0">
-            {{ element.rut }}
+            {{ formatRut(element.rut)  }}
           </td>
         </ng-container>
         <ng-container matColumnDef="razonSocial">
@@ -50,7 +50,7 @@
             Sobre Precio
           </th>
           <td mat-cell *matCellDef="let element" class="p-l-0">
-            {{ element.sobreprecio }}
+            {{ element.sobreprecio }} %
           </td>
         </ng-container>
         <ng-container matColumnDef="valorPorLocal">
@@ -58,7 +58,7 @@
             Valor Por Local
           </th>
           <td mat-cell *matCellDef="let element" class="p-l-0">
-            {{ element.valorPorLocal }}
+            {{ element.valorPorLocal }} UF
           </td>
         </ng-container>
         <ng-container matColumnDef="logo">

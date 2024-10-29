@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Locales } from '../locales/locales.entity';
 
 @Entity('clientes')
 export class Cliente {
@@ -28,4 +29,7 @@ export class Cliente {
 
   @Column({ default: true })
   activo: boolean;
+
+  @OneToMany(() => Locales, (local) => local.cliente)
+  locales: Locales[];
 }

@@ -17,7 +17,7 @@ export const routes: Routes = [
       {
         path: 'mantenedores/locales',
         loadChildren: () =>
-          import('./pages/mantenedores/locales/locales/locales.routes').then(
+          import('./pages/mantenedores/locales/locales.routes').then(
             (m) => m.LOCALES_ROUTES
           ),
       },
@@ -71,7 +71,7 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/dashboards/dashboards.routes').then(
             (m) => m.DashboardsRoutes
-          ), canActivate: [AuthGuard],
+          ),
       },
       {
         path: 'ui-components',

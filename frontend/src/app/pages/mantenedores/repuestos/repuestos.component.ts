@@ -1,14 +1,15 @@
 import { JsonPipe } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatCardModule } from '@angular/material/card';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { RepuestosService } from 'src/app/services/repuestos.service';
 
 @Component({
   selector: 'app-repuestos',
   standalone: true,
-  imports: [JsonPipe],
+  imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatCardModule],
   templateUrl: './repuestos.component.html',
   styleUrl: './repuestos.component.scss'
 })
@@ -24,6 +25,7 @@ export class RepuestosComponent {
     this.repuestosService.getRepuestos().subscribe((data) => {
       this.repuestos = data;
       console.log('--->', this.repuestos);
+      this.dataSource = new MatTableDataSource(this.repuestos);
     });
   }
 }

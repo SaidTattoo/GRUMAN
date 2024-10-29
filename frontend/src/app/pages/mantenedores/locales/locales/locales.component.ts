@@ -6,9 +6,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { LocalesService } from 'src/app/services/locales.service';
-import { CrearLocalComponent } from '../crear-local/crear-local.component';
 
 @Component({
   selector: 'app-locales',
@@ -19,10 +19,9 @@ import { CrearLocalComponent } from '../crear-local/crear-local.component';
 })
 export class LocalesComponent implements OnInit, AfterViewInit {
   private map: any;
-  displayedColumns: string[] = ['id', 'direccion', 'comuna', 'region', 'zona', 'grupo', 'referencia', 'telefono', 'email_local', 'email_encargado', 'nombre_encargado', 'latitud', 'longitud'];
+  displayedColumns: string[] = ['numero_local', 'direccion', 'comuna', 'region', 'zona', 'grupo', 'referencia', 'telefono', 'email_local', 'email_encargado', 'nombre_encargado', 'latitud', 'longitud'];
   dataSource = new MatTableDataSource();
-
-  constructor(private localesService: LocalesService, private dialog: MatDialog) {}
+  constructor(private localesService: LocalesService, private dialog: MatDialog, private router: Router) {}
 
   ngOnInit(): void {
     this.localesService.getLocales().subscribe((data) => {
@@ -74,10 +73,6 @@ export class LocalesComponent implements OnInit, AfterViewInit {
   }
 
   modalNuevoLocal() {
-    const dialogRef = this.dialog.open(CrearLocalComponent);
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-      this.ngOnInit();
-    });
+    this.router.navigate(['/mantenedores/locales/crear']);
   }
 }

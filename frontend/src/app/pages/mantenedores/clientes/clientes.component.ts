@@ -16,7 +16,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatInputModule,MatFormFieldModule,MatCard,MatCardContent, MatIcon, MatButton, MatCardHeader],
+  imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatInputModule,MatFormFieldModule,MatCard,MatCardContent, MatIcon, MatButton, MatCardHeader  ],
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.scss'
 })
@@ -46,7 +46,12 @@ export class ClientesComponent implements OnInit {
       this.dataSource.paginator.firstPage();
     }
   }
-
+  formatRut(rut: string): string {
+    // Implementa aquí la lógica para formatear el RUT
+    if (!rut) return '';
+    // Ejemplo simple de formateo: 12345678-9 -> 12.345.678-9
+    return rut.replace(/^(\d{1,2})(\d{3})(\d{3})([\dkK])$/, '$1.$2.$3-$4');
+  }
   openCrearClienteModal() {
     //redireccionar a la ruta de crear cliente
     this.router.navigate(['/mantenedores/clientes/crear']);

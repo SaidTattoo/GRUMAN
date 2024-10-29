@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Cliente } from '../clientes/clientes.entity';
 
 @Entity('locales')
 export class Locales {
@@ -40,4 +41,10 @@ export class Locales {
 
   @Column({ type: 'decimal', precision: 10, scale: 8 })
   longitud: number;
+
+  @ManyToOne(() => Cliente, (cliente) => cliente.locales)
+  cliente: Cliente;
+
+  @Column()
+  numeroLocal: string;
 }

@@ -15,17 +15,11 @@ export const navItems: NavItem[] = [
     navCap: 'Home',
   },
   {
-    displayName: 'Dashboards',
+    displayName: 'Escritorio',
     iconName: 'home',
-    route: 'dashboards',
+    route: 'dashboards/dashboard1',
     bgcolor: 'primary',
-    children: [
-      {
-        displayName: 'Dashboard 1',
-        iconName: 'point',
-        route: 'dashboards/dashboard1',
-      }
-    ],
+
   },  {
     displayName: 'Mantenedores',
     iconName: 'home-shield',
