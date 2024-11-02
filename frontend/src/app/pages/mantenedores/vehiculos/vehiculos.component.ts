@@ -11,6 +11,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { VehiculosService } from 'src/app/services/vehiculos.service';
 import { CrearVehiculoComponent } from './crear-vehiculo/crear-vehiculo.component';
+import { Router } from '@angular/router';
 
 interface Vehiculo {
   id: number;
@@ -73,7 +74,7 @@ export class VehiculosComponent implements OnInit {
   data: Vehiculo[] = [];
  /*  displayedColumns: string[] = ['id', 'direccion', 'comuna', 'region', 'zona', 'grupo', 'referencia', 'telefono', 'email_local', 'email_encargado', 'nombre_encargado']; */
   dataSource = new MatTableDataSource();
-  constructor(private vehiculosService: VehiculosService, private dialog: MatDialog) {}
+  constructor(private vehiculosService: VehiculosService, private dialog: MatDialog , private router: Router) {}
 
   ngOnInit() {
     this.vehiculosService.getVehiculos().subscribe(data => {
@@ -118,5 +119,9 @@ export class VehiculosComponent implements OnInit {
   }
   getDocumentacion(vehiculo: Vehiculo): string {
     return vehiculo.documentacion ? JSON.stringify(vehiculo.documentacion) : 'No documentos';
+  }
+
+  openDocumentacion(id: number){
+    this.router.navigate(['/mantenedores/vehiculos/documentacion', id]);
   }
 }

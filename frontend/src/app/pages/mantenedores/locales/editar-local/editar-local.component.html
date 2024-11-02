@@ -1,0 +1,191 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+      
+      <mat-card-content class="b-t-1">
+        <form [formGroup]="localForm" (ngSubmit)="onSubmit()">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Dirección</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese la dirección" formControlName="direccion" />
+                  </mat-form-field>
+                </div>
+              </div>
+             
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Grupo</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese el grupo" formControlName="grupo" />
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Referencia</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese la referencia" formControlName="referencia" />
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Teléfono</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese el teléfono" formControlName="telefono" />
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Email Local</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese el email del local" type="email" formControlName="email_local" />
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Cliente</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-select (selectionChange)="onClienteChange($event)" placeholder="Seleccione un cliente" formControlName="cliente">
+                      @for (cliente of clientes; track cliente.id) {
+                      <mat-option  [value]="cliente.id">
+                        {{ cliente.nombre }}
+                      </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Región</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-select placeholder="Seleccione una región" formControlName="region" (selectionChange)="onRegionChange($event)">
+                      @if (!regiones.length) {
+                        <mat-option disabled>Cargando regiones...</mat-option>
+                      }
+                      @for (region of regiones; track region.region_id) {
+                        <mat-option [value]="region.region_id">
+                          {{ region.region_nombre }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+              <!-- Provincia -->
+            <div class="row">
+              <div class="col-sm-4 d-flex align-items-center">
+                <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Provincia</mat-label>
+              </div>
+              <div class="col-sm-8">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-select placeholder="Seleccione una provincia" formControlName="provincia" (selectionChange)="onProvinciaChange($event)" [disabled]="!provincias.length">
+                    @for (provincia of provincias; track provincia.provincia_id) {
+                      <mat-option [value]="provincia.provincia_id">
+                        {{ provincia.provincia_nombre }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Comuna</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-select placeholder="Seleccione una comuna" formControlName="comuna" [disabled]="!comunas.length">
+                      @for (comuna of comunas; track comuna.comuna_id) {
+                        <mat-option [value]="comuna.comuna_id">
+                          {{ comuna.comuna_nombre }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Zona</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese la zona" formControlName="zona" />
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Email Encargado</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese el email del encargado" type="email" formControlName="email_encargado" />
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Nombre Encargado</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese el nombre del encargado" formControlName="nombre_encargado" />
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Latitud</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese la latitud" formControlName="latitud" />
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Longitud</mat-label>
+                </div>
+                <div class="col-sm-8">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input matInput placeholder="Ingrese la longitud" formControlName="longitud" />
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row justify-content-end">
+            <div class="col-sm-8">
+              <button mat-button type="button" (click)="onCancel()">Cancelar</button>
+              <button mat-flat-button color="primary" type="submit">Actualizar Local</button>
+            </div>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card-content>
+  </mat-card>
+  

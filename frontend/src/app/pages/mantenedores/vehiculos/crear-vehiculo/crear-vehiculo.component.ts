@@ -27,7 +27,7 @@ export class CrearVehiculoComponent {
       modelo:['',Validators.required],
       anio:['',Validators.required],
       activo:[true],
-      documentacion: ['{\"revision_tecnica\": null, \"gases\": null, \"permiso_circulacion\": null, \"seguro_obligatorio\": null}']
+      documentacion: null
     });
   }
 

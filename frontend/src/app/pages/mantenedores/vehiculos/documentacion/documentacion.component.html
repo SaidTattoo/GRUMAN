@@ -1,0 +1,164 @@
+<mat-list>
+  <div mat-subheader>Documentación del Vehículo</div>
+  
+  <mat-list-item>
+    <mat-icon matListItemIcon>description</mat-icon>
+    <div matListItemTitle>Revisión Técnica</div>
+    <div matListItemLine>
+      {{ documentacion.revision_tecnica?.fecha ? (documentacion.revision_tecnica?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}
+    </div>
+    <div matListItemMeta>
+      @if (documentacion.revision_tecnica) {
+        <button mat-icon-button color="primary" 
+                (click)="descargarDocumento('revision_tecnica')" 
+                matTooltip="Descargar">
+          <mat-icon>download</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" 
+                (click)="actualizarDocumento('revision_tecnica')" 
+                matTooltip="Actualizar">
+          <mat-icon>update</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" 
+                (click)="eliminarDocumento('revision_tecnica')" 
+                matTooltip="Eliminar">
+          <mat-icon>delete</mat-icon>
+        </button>
+      } @else {
+        <button mat-icon-button color="primary" 
+                (click)="subirDocumento('revision_tecnica')" 
+                matTooltip="Subir documento">
+          <mat-icon>upload</mat-icon>
+        </button>
+      }
+    </div>
+  </mat-list-item>
+
+  <mat-list-item>
+    <mat-icon matListItemIcon>eco</mat-icon>
+    <div matListItemTitle>Certificado de Gases</div>
+    <div matListItemLine>
+      {{ documentacion.gases?.fecha ? (documentacion.gases?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}
+    </div>
+    <div matListItemMeta>
+      @if (documentacion['gases']) {
+        <button mat-icon-button color="primary" (click)="descargarDocumento('gases')" matTooltip="Descargar">
+          <mat-icon>download</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" 
+                (click)="actualizarDocumento('gases')" 
+                matTooltip="Actualizar">
+          <mat-icon>update</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="eliminarDocumento('gases')" matTooltip="Eliminar">
+          <mat-icon>delete</mat-icon>
+        </button>
+      } @else {
+        <button mat-icon-button color="primary" (click)="subirDocumento('gases')" matTooltip="Subir documento">
+          <mat-icon>upload</mat-icon>
+        </button>
+      }
+    </div>
+  </mat-list-item>
+
+
+
+  <mat-list-item>
+    <mat-icon matListItemIcon>card_membership</mat-icon>
+    <div matListItemTitle>Permiso de Circulación</div>
+    <div matListItemLine>
+      {{ documentacion.permiso_circulacion?.fecha ? (documentacion.permiso_circulacion?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}
+    </div>
+    <div matListItemMeta>
+      @if (documentacion['permiso_circulacion']) {
+        <button mat-icon-button color="primary" (click)="descargarDocumento('permiso_circulacion')" matTooltip="Descargar">
+          <mat-icon>download</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" 
+                (click)="actualizarDocumento('permiso_circulacion')" 
+                matTooltip="Actualizar">
+          <mat-icon>update</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="eliminarDocumento('permiso_circulacion')" matTooltip="Eliminar">
+          <mat-icon>delete</mat-icon>
+        </button>
+      } @else {
+        <button mat-icon-button color="primary" (click)="subirDocumento('permiso_circulacion')" matTooltip="Subir documento">
+          <mat-icon>upload</mat-icon>
+        </button>
+      }
+    </div>
+  </mat-list-item>
+
+  <mat-list-item>
+    <mat-icon matListItemIcon>security</mat-icon>
+    <div matListItemTitle>Seguro Obligatorio</div>
+    <div matListItemLine>
+      {{ documentacion.seguro_obligatorio?.fecha ? (documentacion.seguro_obligatorio?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}
+    </div>
+    <div matListItemMeta>
+      @if (documentacion['seguro_obligatorio']) {
+        <button mat-icon-button color="primary" (click)="descargarDocumento('seguro_obligatorio')" matTooltip="Descargar">
+          <mat-icon>download</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" 
+                (click)="actualizarDocumento('seguro_obligatorio')" 
+                matTooltip="Actualizar">
+          <mat-icon>update</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="eliminarDocumento('seguro_obligatorio')" matTooltip="Eliminar">
+          <mat-icon>delete</mat-icon>
+        </button>
+      } @else {
+        <button mat-icon-button color="primary" (click)="subirDocumento('seguro_obligatorio')" matTooltip="Subir documento">
+          <mat-icon>upload</mat-icon>
+        </button>
+      }
+    </div>
+  </mat-list-item>
+  <mat-divider></mat-divider>
+  <!-- Otros Documentos -->
+  <mat-list-item>
+    <mat-icon matListItemIcon>folder</mat-icon>
+    <div matListItemTitle>Otros Documentos</div>
+    <div matListItemLine>
+      @if (documentacion && documentacion.otros.length) {
+        {{ documentacion.otros.length }} documento(s)
+      } @else {
+        No hay documentos adicionales
+      }
+    </div>
+    <div matListItemMeta>
+      <button mat-icon-button color="primary" 
+              (click)="subirDocumento('otros')" 
+              matTooltip="Subir nuevos documentos">
+        <mat-icon>upload</mat-icon>
+      </button>
+    </div>
+  </mat-list-item>
+
+  <!-- Lista de otros documentos -->
+  @if (documentacion && documentacion.otros.length) {
+    @for (doc of documentacion.otros; track doc.nombre) {
+      <mat-list-item class="sub-item">
+        <mat-icon matListItemIcon>description</mat-icon>
+        <div matListItemTitle>{{ doc.nombre }}</div>
+        <div matListItemLine>
+          {{ doc.fecha | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+        <div matListItemMeta>
+          <button mat-icon-button color="primary" 
+                  (click)="descargarDocumento('otros', doc.nombre)" 
+                  matTooltip="Descargar">
+            <mat-icon>download</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" 
+                  (click)="eliminarDocumento('otros', doc.nombre)" 
+                  matTooltip="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </mat-list-item>
+    }
+  }
+</mat-list>

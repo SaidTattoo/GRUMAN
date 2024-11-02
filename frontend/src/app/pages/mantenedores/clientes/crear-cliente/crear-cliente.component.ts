@@ -35,25 +35,26 @@ export class CrearClienteComponent {
   }
 
   onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement; // Asegúrate de que event.target es un HTMLInputElement
+    const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
-      this.uploadDataService.uploadFile(input.files[0], 'clientes').subscribe((data: any) => {
+      const formData = new FormData();
+      formData.append('file', input.files[0]);
+
+      this.uploadDataService.uploadFile(formData, 'clientes').subscribe((data: any) => {
         console.log(data);
         this.urlImage = data.url;
       });
 
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
+      const file = input.files[0];
       this.fileName = file.name;
       const reader = new FileReader();
       reader.onload = () => {
         this.imagePreview = reader.result;
-        this.imageBase64 = reader.result as string; // Guarda la imagen en base64
+        this.imageBase64 = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
-  }}
-
+  }
 
   submit() {
     console.log(this.clienteForm.value);

@@ -60,7 +60,10 @@ export class EditarClientesComponent {
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
-      this.uploadDataService.uploadFile(input.files[0], 'clientes').subscribe((data: any) => {
+      const formData = new FormData();
+      formData.append('file', input.files[0]);
+
+      this.uploadDataService.uploadFile(formData, 'clientes').subscribe((data: any) => {
         console.log(data);
         this.urlImage = data.url;
       });

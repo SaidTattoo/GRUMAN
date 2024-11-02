@@ -23,7 +23,7 @@ export const navItems: NavItem[] = [
   },  {
     displayName: 'Mantenedores',
     iconName: 'home-shield',
-    bgcolor: 'primary',
+  
     route: 'mantenedores',
     children: [
       {
@@ -55,8 +55,27 @@ export const navItems: NavItem[] = [
         iconName: 'home-shield',
         route: 'mantenedores/clientes',
       },
+      {
+        displayName: 'Listado de Documentos',
+        iconName: 'home-shield',
+        route: 'mantenedores/documentos',
+        
+      }, {
+        displayName: 'Tipo Documento',
+        iconName: 'home-shield',
+        route: 'mantenedores/documentos/tipo-documento',
+      },{
+        displayName: 'Tipo Servicio',
+        iconName: 'home-shield',
+        route: 'mantenedores/tipo-servicio',
+      }
     ],
-  },
+  },{
+    displayName: 'Generar Programación',
+    iconName: 'home-shield', 
+     bgcolor: 'primary',
+    route: 'reportes/generar-programacion',
+  }
   /*  {
     displayName: 'Apps',
     iconName: 'apps',

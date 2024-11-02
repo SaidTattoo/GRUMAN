@@ -14,6 +14,12 @@ import { TecnicosModule } from './tecnicos/tecnicos.module';
 import { TipoActivoModule } from './tipo_activo/tipo_activo.module';
 import { UsersModule } from './users/users.module'; // Asegúrate de que la ruta sea correcta
 import { VehiculosModule } from './vehiculos/vehiculos.module';
+import { RegionesComunasModule } from './regiones-comunas/regiones-comunas.module';
+import { UploadModule } from './upload/upload.module';
+import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
+import { DocumentosModule } from './documentos/documentos.module';
+import { TipoServicioModule } from './tipo-servicio/tipo-servicio.module';
+import { ProgramacionModule } from './programacion/programacion.module';
 
 @Module({
   imports: [
@@ -48,7 +54,12 @@ import { VehiculosModule } from './vehiculos/vehiculos.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'), // Asegúrate de que esta ruta es correcta
       serveRoot: '/uploads', // Esto asegura que las rutas comiencen con /uploads
-    }),
+    }), RegionesComunasModule,
+    UploadModule,
+    TipoDocumentoModule,
+    DocumentosModule,
+    TipoServicioModule,
+    ProgramacionModule
   ],
   controllers: [AppController],
   providers: [AppService],

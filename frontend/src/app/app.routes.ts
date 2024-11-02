@@ -62,6 +62,26 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mantenedores/documentos',
+        loadChildren: () =>
+          import('./pages/mantenedores/documentos/documentos.routes').then(
+            (m) => m.DOCUMENTOS_ROUTES
+          ),
+      },{
+        path: 'mantenedores/tipo-servicio',
+        loadChildren: () =>
+          import('./pages/mantenedores/tipo-servicio/tipo-servicio.routes').then(
+            (m) => m.TIPO_SERVICIO_ROUTES
+          ),
+      },
+      {
+        path: 'reportes/generar-programacion',
+        loadChildren: () =>
+          import('./pages/transacciones/generar-programacion/generar-programacion.routes').then(
+            (m) => m.GENERAR_PROGRAMACION_ROUTES
+          ),
+      },
+      {
         path: 'starter',
         loadChildren: () =>
           import('./pages/pages.routes').then((m) => m.PagesRoutes),

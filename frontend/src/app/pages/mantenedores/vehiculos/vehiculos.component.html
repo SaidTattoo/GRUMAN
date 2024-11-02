@@ -74,12 +74,9 @@
             Documentación
           </th>
           <td mat-cell *matCellDef="let element">
-            <!-- iterar sobre el json y mostrar cada elemento -->
-            @for (doc of getDocumentacionKeys(element.documentacion); track doc) {
-              <button matTooltip="{{doc | titlecase}}" [ngClass]="{'red-icon': !element.documentacion[doc], 'green-icon': element.documentacion[doc]}">
-                <mat-icon>{{ getIconName(doc) }}</mat-icon>
-              </button>
-            }
+            <button mat-icon-button  (click)="openDocumentacion(element.id)" >
+              <mat-icon>file_present</mat-icon>
+            </button>
           </td>
         </ng-container>
 

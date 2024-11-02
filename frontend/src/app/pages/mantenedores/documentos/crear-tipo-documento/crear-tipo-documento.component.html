@@ -1,0 +1,24 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">  
+        <form [formGroup]="tipoDocumentoForm">  
+            <div class="row">
+                <div class="col-sm-4 d-flex align-items-center justify-content-end">
+                  <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Documento</mat-label>
+                </div>
+                <div class="col-sm-8">
+                    <mat-form-field appearance="outline" class="w-100">    
+                    
+                        <input formControlName="nombre" matInput placeholder="Documento de ejemplo" />
+                        <mat-error *ngIf="tipoDocumentoForm.get('nombre')?.invalid">
+                            El nombre es requerido
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+              </div>
+            <div class="flex justify-end">
+                <button mat-raised-button color="primary" (click)="createTipoDocumento()">Guardar</button>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>
+

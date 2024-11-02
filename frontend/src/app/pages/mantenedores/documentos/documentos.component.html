@@ -1,0 +1,97 @@
+<div class="document-container">
+    <mat-card class="cardWithShadow">
+        <mat-card-content class="p-24">
+            <form [formGroup]="filterForm" class="filter-form">
+                <div class="row">
+                    <div class="col-sm-4 d-flex align-items-center">
+                        <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Buscar por nombre</mat-label>
+                    </div>
+                    <div class="col-sm-8">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <input matInput formControlName="nombre" placeholder="Buscar por nombre">
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-4 d-flex align-items-center">
+                        <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo</mat-label>
+                    </div>
+                    <div class="col-sm-8">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-select formControlName="tipo" placeholder="Seleccione un tipo">
+                                <mat-option *ngFor="let tipo of tipos" [value]="tipo">{{ tipo }}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-4 d-flex align-items-center">
+                        <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo Documento</mat-label>
+                    </div>
+                    <div class="col-sm-8">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-select formControlName="tipoDocumento" placeholder="Seleccione un tipo de documento">
+                                <mat-option *ngFor="let tipoDoc of tiposDocumento" [value]="tipoDoc">{{ tipoDoc }}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <div class="row justify-content-end">
+                  
+                        <button mat-raised-button color="primary" (click)="clearFilters()">Limpiar Filtros</button>
+                    
+                </div>
+            </form>
+
+            <button mat-raised-button color="primary" (click)="subirDocumento()">Subir Documento</button>
+            <mat-table [dataSource]="filteredDataSource">
+                
+                <ng-container matColumnDef="nombre">
+                    <mat-header-cell *matHeaderCellDef> Nombre </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{element.nombre}} </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="tipo">
+                    <mat-header-cell *matHeaderCellDef> Tipo </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{element.tipo}} </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="tipoDocumento">
+                    <mat-header-cell *matHeaderCellDef> Tipo Documento </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{element.tipoDocumento?.nombre || 'Sin tipo'}} </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="fechaCreacion">
+                    <mat-header-cell *matHeaderCellDef> Fecha Creación </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{element.fecha | date:'dd/MM/yyyy HH:mm'}} </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="estado">
+                    <mat-header-cell *matHeaderCellDef> Visualizar documento </mat-header-cell>
+                    <mat-cell *matCellDef="let element">
+                        <button mat-raised-button color="primary" (click)="toggleDocumento(element.path)">
+                            {{ pdfSrc === element.path && isPdfVisible ? 'Ocultar' : 'Ver' }}
+                        </button>
+                    </mat-cell>
+                </ng-container>
+
+                <!-- Agregar las filas de encabezado y de datos -->
+                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+            </mat-table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="isPdfVisible" class="pdf-viewer-card">
+        <mat-card-content>
+            <pdf-viewer 
+        *ngIf="pdfSrc"
+        [src]="pdfSrc"
+              [render-text]="true"
+              [original-size]="false"
+                style="width: 400px; height: 500px"
+            ></pdf-viewer>
+        </mat-card-content>
+    </mat-card>
+</div>   

@@ -1,0 +1,57 @@
+<mat-card>
+    <mat-card-content>
+        <form [formGroup]="documentoForm" class="form-layout">
+            <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Nombre del Documento</mat-label>
+                </div>
+                <div class="col-sm-8">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <input matInput formControlName="nombre" placeholder="Ingrese el nombre del documento">
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo de Documento</mat-label>
+                </div>
+                <div class="col-sm-8">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="tipoDocumento" placeholder="Seleccione un tipo de documento">
+                            <mat-option *ngFor="let tipo of tiposDocumento" [value]="tipo.id">
+                                {{ tipo.nombre }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4 d-flex align-items-center">
+                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Pertenece a</mat-label>
+                </div>
+                <div class="col-sm-8">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="documentoPertenece" placeholder="Seleccione a quién pertenece">
+                            <mat-option *ngFor="let pertenece of documentoPertenece" [value]="pertenece.id">
+                                {{ pertenece.nombre }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;">
+                <button mat-raised-button color="primary" (click)="fileInput.click()">Seleccionar Archivo</button>
+                <span *ngIf="selectedFileName">{{ selectedFileName }}</span>
+            </div>
+
+            <div class="form-group">
+                <button mat-raised-button color="primary" (click)="onSubmit()">
+                    Subir Documento
+                </button>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

@@ -28,7 +28,6 @@ export class AppController {
           const path = req.params.path;
           const uploadPath = join(__dirname, '..', 'uploads', path);
 
-          // Verifica si la ruta existe, si no, la crea
           if (!existsSync(uploadPath)) {
             mkdirSync(uploadPath, { recursive: true });
           }
@@ -42,15 +41,17 @@ export class AppController {
     }),
   )
   @Post('upload/:path')
-  uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-    @Param('path') path: string,
-  ) {
-    const fileUrl = `http://138.255.103.35:3000/uploads/${path}/${file.filename}`;
+  uploadFile(@UploadedFile() file: Express.Multer.File, @Param('path') path: string) {
+    if (!file) {
+      throw new Error('Archivo no encontrado');
+    }
+
+    const filename = file.filename;
+    const fileUrl = `http://138.255.103.35:3000/uploads/${path}/${filename}`;
 
     console.log(`Uploading file to path: ${path}`);
     return {
-      filename: file.filename,
+      filename: filename,
       originalname: file.originalname,
       mimetype: file.mimetype,
       url: fileUrl,

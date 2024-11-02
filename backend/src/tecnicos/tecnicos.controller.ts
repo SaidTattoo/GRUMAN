@@ -32,4 +32,5 @@ export class TecnicosController {
   ): Promise<Tecnico> {
     return this.tecnicosService.update(id, tecnico);
   }
+  
 }

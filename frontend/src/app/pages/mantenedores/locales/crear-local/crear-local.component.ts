@@ -10,7 +10,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { LocalesService } from 'src/app/services/locales.service';
+import { RegionesComunasService } from 'src/app/services/regiones-comunas.service';
 import Swal from 'sweetalert2';
+import { MatSelectChange } from '@angular/material/select';
+import { MatSelect } from '@angular/material/select';
 
 @Component({
   selector: 'app-crear-local',
@@ -22,18 +25,23 @@ import Swal from 'sweetalert2';
 export class CrearLocalComponent implements OnInit {
   localForm: FormGroup;
   clientes: any[] = [];
+  regiones: any[] = [];
+  provincias: any[] = [];
+  comunas: any[] = [];
+  readonly REGION_METROPOLITANA_ID = 13; // ID de la RM
+
   constructor(
     private fb: FormBuilder,
     private localesService: LocalesService,
     private router: Router,
-    private clientesService: ClientesService
-  ) { }
-
-  ngOnInit(): void {
+    private clientesService: ClientesService,
+    private regionesComunasService: RegionesComunasService
+  ) {
     this.localForm = this.fb.group({
       direccion: ['', Validators.required],
-      comuna: ['', Validators.required],
       region: ['', Validators.required],
+      provincia: [{value: '', disabled: true}, Validators.required],
+      comuna: [{value: '', disabled: true}, Validators.required],
       cliente: ['', Validators.required],
       zona: ['', Validators.required],
       grupo: ['', Validators.required],
@@ -47,8 +55,13 @@ export class CrearLocalComponent implements OnInit {
       numeroLocal: ['', Validators.required]
     });
     this.getClientes();
+    this.cargarRegiones();
   }
 
+  ngOnInit(): void {
+    this.getClientes();
+    this.cargarRegiones();
+  }
 
   getClientes() {
     this.clientesService.getClientes().subscribe((data) => {
@@ -56,35 +69,98 @@ export class CrearLocalComponent implements OnInit {
       this.clientes = data;
     });
   }
+
+  cargarRegiones() {
+    this.regionesComunasService.getRegiones().subscribe({
+      next: (data) => {
+        this.regiones = data.sort((a, b) => {
+          if (a.region_nombre.includes('Metropolitana')) return -1;
+          if (b.region_nombre.includes('Metropolitana')) return 1;
+          return a.region_nombre.localeCompare(b.region_nombre);
+        });
+
+        if (this.regiones.length > 0) {
+          const regionMetropolitana = this.regiones.find(r => 
+            r.region_nombre.includes('Metropolitana')
+          );
+          
+          if (regionMetropolitana) {
+            this.localForm.patchValue({ region: regionMetropolitana.region_id });
+            this.regionesComunasService.getProvinciasByRegion(regionMetropolitana.region_id).subscribe({
+              next: (provincias) => {
+                this.provincias = provincias;
+              },
+              error: (error) => {
+                console.error('Error al cargar provincias:', error);
+              }
+            });
+          }
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar regiones:', error);
+      }
+    });
+  }
+
+  onRegionChange(event: MatSelectChange) {
+    const regionId = event.value;
+    this.localForm.patchValue({ provincia: '', comuna: '' });
+    this.provincias = [];
+    this.comunas = [];
+
+    if (regionId) {
+      this.localForm.get('provincia')?.enable();
+      this.regionesComunasService.getProvinciasByRegion(regionId).subscribe({
+        next: (data) => {
+          this.provincias = data;
+        },
+        error: (error) => {
+          console.error('Error al cargar provincias:', error);
+        }
+      });
+    } else {
+      this.localForm.get('provincia')?.disable();
+      this.localForm.get('comuna')?.disable();
+    }
+  }
+
+  onProvinciaChange(event: MatSelectChange) {
+    const provinciaId = event.value;
+    this.localForm.patchValue({ comuna: '' });
+    this.comunas = [];
+
+    if (provinciaId) {
+      this.localForm.get('comuna')?.enable();
+      this.regionesComunasService.getComunasByProvincia(provinciaId).subscribe({
+        next: (data) => {
+          this.comunas = data;
+        },
+        error: (error) => {
+          console.error('Error al cargar comunas:', error);
+        }
+      });
+    } else {
+      this.localForm.get('comuna')?.disable();
+    }
+  }
+
   onSubmit() {
-    //generar numero de local DOS primeras letras del cliente - 4 digitos finales del timestamp
-    //obtener nombre del cliente seleccionado
+    // Habilitar los controles antes de enviar
+    this.localForm.get('provincia')?.enable();
+    this.localForm.get('comuna')?.enable();
+
+    console.log('****', this.localForm.value);
     let nombreCliente = this.clientes.find(cliente => cliente.id === this.localForm.get('cliente')?.value)?.nombre;
     const palabrasExcluidas = ['y', 'de', 'la', 'el', 'los', 'las', 'del', 'al', 'en', 'por', 'con', 'para'];
 
-
-    //en caso que sea ejemplo Rotter y Kraus el nombre del cliente debe ser RK
-    // puede ser cualquier nombre ejemplo: Rotter y Kraus, se debe obtener el nombre del cliente y quedarse con las dos primeras letras Ro&Kr esto no, deberia ser RK
-    //ejemplo 2: Rotter y Asociados, se debe obtener el nombre del cliente y quedarse con las dos primeras letras Ro&As esto no, deberia ser RA
-    //ejemplo 3: Rotter y Cia, se debe obtener el nombre del cliente y quedarse con las dos primeras letras Ro&Ci esto no, deberia ser RC
-    //ejemplo 4: Rotter y Cia Ltda, se debe obtener el nombre del cliente y quedarse con las dos primeras letras Ro&Ci esto no, deberia ser RC
     if (nombreCliente) {
-      // Divide el nombre en palabras y filtra las palabras excluidas
       const palabras = nombreCliente.split(' ').filter((palabra: string) => !palabrasExcluidas.includes(palabra.toLowerCase()));
-
-      // Toma las iniciales de las palabras restantes
       nombreCliente = palabras.map((palabra: string) => palabra.charAt(0).toUpperCase()).join('');
     }
 
-
-
     const timestamp = Date.now().toString();
-    console.log('****', nombreCliente + '-' + timestamp);
     const numeroLocal = `${nombreCliente}-${timestamp}`;
-   // const numeroLocal = `${this.localForm.get('cliente')?.value.slice(0, 2)}-${timestamp}`;
-    this.localForm.get('numeroLocal')?.setValue(numeroLocal);
-    console.log('****', this.localForm.value);
-    //agregar el numero de local al formulario
     this.localForm.get('numeroLocal')?.setValue(numeroLocal);
 
     if (this.localForm.valid) {
@@ -98,17 +174,15 @@ export class CrearLocalComponent implements OnInit {
         reverseButtons: true
       }).then((result) => {
         if (result.isConfirmed) {
-          console.log(this.localForm.value);
           this.localesService.crearLocal(this.localForm.value).subscribe((data) => {
             console.log('****', data);
-            //cerrar modal
             this.router.navigate(['/mantenedores/locales']);
           });
         }
       });
     }
-
   }
+
   onClienteChange(event: any) {
     const clienteId = event.value;
     console.log('Cliente seleccionado:', clienteId);

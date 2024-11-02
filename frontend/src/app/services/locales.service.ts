@@ -18,4 +18,13 @@ export class LocalesService {
     console.log('****', local);
     return this.http.post<any>(this.apiUrl, local);
   }
+  getLocalById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${id}`);
+  }
+  updateLocal(id: number, local: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, local);
+  }
+  deleteLocal(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

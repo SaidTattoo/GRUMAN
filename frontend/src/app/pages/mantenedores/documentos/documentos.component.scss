@@ -1,0 +1,21 @@
+.document-container {
+    display: flex;
+    gap: 16px;
+    height: 100vh; /* Asegúrate de que el contenedor tenga suficiente altura */
+  }
+.cardWithShadow {
+  flex: 1;
+}
+
+.pdf-viewer-card {
+  position: sticky;
+  top: 0;
+  height: 600px;
+  overflow: auto;
+  margin-left: 16px;
+}
+.filter-form {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }

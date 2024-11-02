@@ -16,6 +16,9 @@ export class Locales {
   region: string;
 
   @Column()
+  provincia: string;
+
+  @Column()
   zona: string;
 
   @Column()
@@ -47,4 +50,7 @@ export class Locales {
 
   @Column()
   numeroLocal: string;
+
+  @Column({ default: false })
+  deleted: boolean;
 }

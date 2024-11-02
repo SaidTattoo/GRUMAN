@@ -1,18 +1,15 @@
-import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  const corsOptions: CorsOptions = {
-    origin: '*', // Permitir todas las solicitudes de origen
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  };
-
-  app.enableCors(corsOptions);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  
+  app.enableCors();
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   await app.listen(3000);
 }
