@@ -10,6 +10,7 @@ import { TecnicosService } from 'src/app/services/tecnicos.service';
 import Swal from 'sweetalert2';
 import { CrearTecnicoComponent } from './crear-tecnico/crear-tecnico.component';
 import { EditarTecnicoComponent } from './editar-tecnico/editar-tecnico.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tecnicos',
@@ -26,7 +27,7 @@ export class TecnicosComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private tecnicosService: TecnicosService, public dialog: MatDialog) {}
+  constructor(private tecnicosService: TecnicosService, public dialog: MatDialog, private router: Router) {}
 
   ngOnInit(): void {
     this.loadTecnicos();
@@ -87,5 +88,16 @@ export class TecnicosComponent implements OnInit {
         this.loadTecnicos();
       }
     });
+  }
+
+  agregarDocumento(tecnico: any) {
+    console.log(tecnico);
+    this.router.navigate(['/mantenedores/documentos/subir-documento', {
+      tipo: 3,//tecnico 
+      tecnico: tecnico.id,
+      cliente: null,
+      repuesto: null,
+      vehiculo: null
+    }]);
   }
 }

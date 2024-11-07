@@ -23,6 +23,18 @@ export class Documentos {
   @Column()
   tipo: string;
 
+  @Column({default: null})
+  clienteId: number;
+
+  @Column({default: null})
+  tecnicoId: number;
+
+  @Column({default: null})
+  repuestoId: number;
+
+  @Column({default: null})
+  vehiculoId: number;
+
   @Column({ default: true })
   activo: boolean;
 }

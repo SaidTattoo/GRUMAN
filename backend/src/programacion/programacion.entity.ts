@@ -27,6 +27,8 @@ export class Programacion {
     @Column()
     vehiculo: number;
 
-  /*   @Column()
+    @Column()
+    clienteId: number;
+    /*   @Column()
     estado: string; */
 }

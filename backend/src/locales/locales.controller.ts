@@ -30,4 +30,8 @@ export class LocalesController {
   delete(@Param('id') id: number): Promise<void> {
     return this.localesService.delete(id);
   }
+  @Get('cliente/:id')
+  getLocalesByCliente(@Param('id') id: number): Promise<Locales[]> {
+    return this.localesService.getLocalesByCliente(id);
+  }
 }

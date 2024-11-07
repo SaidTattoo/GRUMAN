@@ -37,4 +37,11 @@ export class LocalesService {
   async delete(id: number): Promise<void> {
     await this.localesRepository.update(id, { deleted: true });
   }
+  getLocalesByCliente(clienteId: number): Promise<Locales[]> {
+    return this.localesRepository.find({ 
+      where: { cliente: { id: clienteId }, deleted: false },
+      order: { id: 'DESC' },
+      relations: ['cliente']
+    });
+  }
 }

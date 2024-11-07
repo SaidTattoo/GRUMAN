@@ -27,4 +27,7 @@ export class LocalesService {
   deleteLocal(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+  getLocalesByCliente(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/cliente/${id}`);
+  }
 }

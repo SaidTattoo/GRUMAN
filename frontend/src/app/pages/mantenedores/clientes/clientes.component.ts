@@ -23,7 +23,6 @@ import Swal from 'sweetalert2';
 export class ClientesComponent implements OnInit {
   displayedColumns: string[] = [ 'nombre', 'rut', 'razonSocial', 'logo', 'sobrePrecio', 'valorPorLocal', 'acciones'];
   dataSource = new MatTableDataSource<any>();
-
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -76,5 +75,15 @@ export class ClientesComponent implements OnInit {
         });
       }
     });
+  } 
+  agregarDocumento(cliente: any) {
+    console.log(cliente);
+    this.router.navigate(['/mantenedores/documentos/subir-documento', {
+      tipo: 2,//cliente 
+      tecnico: null,
+      cliente: cliente.id,
+      repuesto: null,
+      vehiculo: null
+    }]);
   }
 }

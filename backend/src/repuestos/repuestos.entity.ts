@@ -15,5 +15,7 @@ export class Repuesto {
   marca: string;
 
   @Column()
+  codigoBarra: string;
+  @Column()
   precio: number;
 }

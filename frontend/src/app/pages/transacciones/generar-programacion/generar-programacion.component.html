@@ -1,115 +1,134 @@
 <mat-card class="cardWithShadow">
-    <mat-card-content class="p-24">
-      <form [formGroup]="programacionForm" (ngSubmit)="onSubmit()">
-        <div class="row">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Local</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-select formControlName="local" placeholder="Seleccionar Local">
-                <mat-option *ngFor="let local of locales" [value]="local.id">
-                  {{ local.numeroLocal }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+  <mat-card-content class="p-24">
+    <form [formGroup]="programacionForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Cliente *</mat-label>
         </div>
-  
-        <div class="row">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo de Servicio</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-select formControlName="tipoServicio" placeholder="Seleccionar Tipo de Servicio">
-                <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
-                  {{ tipo.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-select formControlName="clienteId" placeholder="Seleccionar Cliente">
+              <mat-option *ngFor="let cliente of clientes" [value]="cliente.id">
+                {{ cliente.nombre }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="programacionForm.get('clienteId')?.touched && programacionForm.get('clienteId')?.invalid">
+              {{ getErrorMessage('clienteId') }}
+            </mat-error>
+          </mat-form-field>
         </div>
-  
-        <div class="row">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Sector del trabajo</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-select formControlName="sectorTrabajo" placeholder="Seleccionar Sector">
-                <mat-option *ngFor="let sector of sectores" [value]="sector.id">
-                  {{ sector.nombre }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Local *</mat-label>
         </div>
-  
-        <div class="row">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Seleccionar día</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field appearance="outline" class="w-100">
-              <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Seleccionar día">
-              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
-            </mat-form-field>
-          </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-select formControlName="local" placeholder="Seleccionar Local">
+              <mat-option *ngFor="let local of locales" [value]="local.id">
+                {{ local.direccion }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="programacionForm.get('local')?.touched && programacionForm.get('local')?.invalid">
+              {{ getErrorMessage('local') }}
+            </mat-error>
+          </mat-form-field>
         </div>
-  
-        <div class="row">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Vehículo</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-select formControlName="vehiculo" placeholder="Seleccionar Vehículo">
-                <mat-option *ngFor="let vehiculo of vehiculos" [value]="vehiculo.id">
-                  {{ vehiculo.movil }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo de Servicio *</mat-label>
         </div>
-  
-        <div class="row">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Patente</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field appearance="outline" class="w-100">
-              <input matInput formControlName="patente" placeholder="Ingrese la patente">
-            </mat-form-field>
-          </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-select formControlName="tipoServicio" placeholder="Seleccionar Tipo de Servicio">
+              <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
+                {{ tipo.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="programacionForm.get('tipoServicio')?.touched && programacionForm.get('tipoServicio')?.invalid">
+              {{ getErrorMessage('tipoServicio') }}
+            </mat-error>
+          </mat-form-field>
         </div>
-  
-        <div class="row">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Observaciones</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field appearance="outline" class="w-100">
-              <textarea matInput formControlName="observaciones" placeholder="Ingrese observaciones"></textarea>
-            </mat-form-field>
-          </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Sector del trabajo *</mat-label>
         </div>
-  
-       <!--  <div class="row">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Subir Imágenes</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <input type="file" (change)="onFileSelected($event)" accept="image/png, image/jpeg">
-          </div>
-        </div> -->
-  
-        <div class="row justify-content-end">
-          <div class="col-sm-8">
-            <button mat-raised-button color="primary" type="submit">Enviar</button>
-          </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-select formControlName="sectorTrabajo" placeholder="Seleccionar Sector">
+              <mat-option *ngFor="let sector of sectores" [value]="sector.id">
+                {{ sector.nombre }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="programacionForm.get('sectorTrabajo')?.touched && programacionForm.get('sectorTrabajo')?.invalid">
+              {{ getErrorMessage('sectorTrabajo') }}
+            </mat-error>
+          </mat-form-field>
         </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Seleccionar día *</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Seleccionar día">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="programacionForm.get('fecha')?.touched && programacionForm.get('fecha')?.invalid">
+              {{ getErrorMessage('fecha') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Vehículo *</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-select formControlName="vehiculo" placeholder="Seleccionar Vehículo">
+              <mat-option *ngFor="let vehiculo of vehiculos" [value]="vehiculo.id">
+                {{ vehiculo.movil }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="programacionForm.get('vehiculo')?.touched && programacionForm.get('vehiculo')?.invalid">
+              {{ getErrorMessage('vehiculo') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Observaciones</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <textarea matInput formControlName="observaciones" placeholder="Ingrese observaciones" rows="4"></textarea>
+            <mat-error *ngIf="programacionForm.get('observaciones')?.touched && programacionForm.get('observaciones')?.invalid">
+              {{ getErrorMessage('observaciones') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row justify-content-end">
+        <div class="col-sm-8">
+          <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+           
+            {{ loading ? 'Enviando...' : 'Enviar' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

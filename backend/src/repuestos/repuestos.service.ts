@@ -17,4 +17,10 @@ export class RepuestosService {
   async findOne(id: number): Promise<Repuesto | null> {
     return this.repuestosRepository.findOneBy({ id });
   }
+  async create(repuesto: Repuesto): Promise<Repuesto> {
+    return this.repuestosRepository.save(repuesto);
+  }
+  async delete(id: number): Promise<void> {
+    await this.repuestosRepository.delete(id);
+  }
 }

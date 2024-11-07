@@ -1,5 +1,16 @@
 <mat-card class="cardWithShadow">
   <mat-card-content class="p-24">
+    <div class="row justify-content-between m-b-8">
+      <div class="col-sm-4 col-lg-3">
+        <button mat-flat-button color="primary" (click)="openCrearRepuesto()">  Nuevo Repuesto</button>
+      </div>
+      <div class="col-sm-4 col-lg-3">
+        <mat-form-field appearance="outline" class="w-100 hide-hint">
+          <input matInput (keyup)="applyFilter($event)" placeholder="Buscar" #input />
+        </mat-form-field>
+      </div>
+    </div>
+
     <div class="table-responsive m-t-30">
       <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
         <!-- ID Column -->
@@ -25,12 +36,26 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Marca </th>
           <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.marca}} </td>
         </ng-container>
-
+        <!-- Codigo de barra Column -->
+        <ng-container matColumnDef="codigoBarra">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Codigo de Barra </th>
+          <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.codigoBarra}} </td>
+        </ng-container>
         <!-- Precio Column -->
         <ng-container matColumnDef="precio">
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Precio </th>
           <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.precio}} </td>
         </ng-container>
+        <!-- Acciones -->
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Acciones </th>
+          <td mat-cell *matCellDef="let element" class="p-l-0">
+<!--             <button mat-flat-button color="primary" (click)="openEditarRepuestoModal(element)">Editar</button>
+ -->            <button mat-flat-button color="warn" (click)="openEliminarRepuestoModal(element)">Eliminar</button>
+            <button mat-flat-button color="primary" (click)="agregarDocumento(element)">Agregar Documento</button>
+          </td>
+        </ng-container>
+
 
         <!-- Header and Row Definitions -->
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
