@@ -13,6 +13,11 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+  @Post('change-password')
+  async changePassword(@Body() changePasswordDto: any) {
+    return this.authService.changePassword(changePasswordDto.id, changePasswordDto.password);
+  }
+
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     console.log('loginDto', loginDto);

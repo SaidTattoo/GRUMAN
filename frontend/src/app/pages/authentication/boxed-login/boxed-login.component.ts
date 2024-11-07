@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { CoreService } from 'src/app/services/core.service';
 import { MaterialModule } from '../../../material.module';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-boxed-login',
@@ -35,7 +36,11 @@ export class AppBoxedLoginComponent {
           this.router.navigate(['/dashboards/dashboard1']);
         },
         (error) => {
-          console.error('Login failed', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Credenciales incorrectas!'
+          });
         }
       );
     }

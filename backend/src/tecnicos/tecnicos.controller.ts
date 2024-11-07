@@ -7,14 +7,14 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { Tecnico } from './tecnico.entity';
+import { User } from './tecnico.entity';
 import { TecnicosService } from './tecnicos.service';
 
 @Controller('tecnicos')
 export class TecnicosController {
   constructor(private readonly tecnicosService: TecnicosService) {}
   @Get()
-  async findAll(): Promise<Tecnico[]> {
+  async findAll(): Promise<User[]> {
     return this.tecnicosService.findAll();
   }
   @Delete(':id')
@@ -22,14 +22,14 @@ export class TecnicosController {
     return this.tecnicosService.delete(id);
   }
   @Post()
-  async create(@Body() tecnico: Tecnico): Promise<Tecnico> {
+  async create(@Body() tecnico: User): Promise<User> {
     return this.tecnicosService.create(tecnico);
   }
   @Put(':id')
   async update(
     @Param('id') id: number,
-    @Body() tecnico: Tecnico,
-  ): Promise<Tecnico> {
+    @Body() tecnico: User,
+  ): Promise<User> {
     return this.tecnicosService.update(id, tecnico);
   }
   

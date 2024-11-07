@@ -1,25 +1,25 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { UsersModule } from '../users/users.module'; // Asegúrate de que la ruta sea correcta
-import { AuthController } from './auth.controller'; // Importa el controlador
+import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { TecnicosModule } from '../tecnicos/tecnicos.module';
 
 @Module({
   imports: [
-    UsersModule,
+    TecnicosModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'), // Obtener la clave secreta desde .env
+        secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '3600s'), // Tiempo de expiración
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '3600s'),
         },
       }),
     }),
   ],
   providers: [AuthService],
-  controllers: [AuthController], // Asegúrate de que el controlador esté registrado aquí
+  controllers: [AuthController],
 })
 export class AuthModule {}

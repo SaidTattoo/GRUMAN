@@ -5,16 +5,16 @@ import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-
+import { TecnicosService } from '../tecnicos/tecnicos.service';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
+    private readonly usersService: TecnicosService,
     private readonly jwtService: JwtService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmail(email.toLowerCase());
     if (user && (await bcrypt.compare(password, user.password))) {
       return user;
     }
@@ -40,6 +40,11 @@ export class AuthService {
     return {
       token: this.jwtService.sign(payload),
     };
+  }
+
+  async changePassword(id: number, password: string) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    return this.usersService.updateUser(id, { password: hashedPassword });
   }
 
   async register({ name, email, password }: RegisterDto) {

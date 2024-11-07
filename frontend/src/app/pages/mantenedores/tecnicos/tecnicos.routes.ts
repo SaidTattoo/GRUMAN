@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { TecnicosComponent } from './tecnicos.component';
+import { CambiarPasswordComponent } from './cambiar-password/cambiar-password.component';
 
 export const TECNICOS_ROUTES: Routes = [
   {
@@ -7,6 +8,13 @@ export const TECNICOS_ROUTES: Routes = [
     component: TecnicosComponent,
     data: {
       title: 'Tecnicos',
+    },
+  },
+  {
+    path: 'cambiar-password',
+    component: CambiarPasswordComponent,
+    data: {
+      title: 'Cambiar Password',
     },
   },
 ];

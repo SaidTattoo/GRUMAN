@@ -17,10 +17,7 @@ export class UsersService {
     });
   }
 
-  async createUser(user: Partial<User>): Promise<User> {
-    const newUser = this.userRepository.create(user);
-    return this.userRepository.save(newUser);
-  }
+  
   //filtrar por empresa opcional
   async getUsers(company?: string): Promise<User[]> {
     const query = this.userRepository.createQueryBuilder('user');

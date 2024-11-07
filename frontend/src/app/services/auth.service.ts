@@ -65,4 +65,8 @@ export class AuthService {
   getUserProfile(): any | null {
     return this.currentUserValue;
   }
+
+  changePassword(id: number, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/change-password`, { id, password });
+  }
 }

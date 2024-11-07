@@ -11,6 +11,7 @@ import Swal from 'sweetalert2';
 import { CrearTecnicoComponent } from './crear-tecnico/crear-tecnico.component';
 import { EditarTecnicoComponent } from './editar-tecnico/editar-tecnico.component';
 import { Router } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-tecnicos',
@@ -27,7 +28,7 @@ export class TecnicosComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private tecnicosService: TecnicosService, public dialog: MatDialog, private router: Router) {}
+  constructor(private tecnicosService: TecnicosService, private authService: AuthService, public dialog: MatDialog, private router: Router) {}
 
   ngOnInit(): void {
     this.loadTecnicos();
@@ -99,5 +100,9 @@ export class TecnicosComponent implements OnInit {
       repuesto: null,
       vehiculo: null
     }]);
+  }
+  cambiarPassword(tecnico: any) {
+    console.log(tecnico);
+    this.router.navigate(['/mantenedores/tecnicos/cambiar-password', { tecnico: tecnico.id }]);
   }
 }
