@@ -82,16 +82,18 @@
             <mat-paginator [pageSizeOptions]="[5, 10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
         </mat-card-content>
     </mat-card>
-
+    @if (isPdfVisible) {    
     <mat-card *ngIf="isPdfVisible" class="pdf-viewer-card">
         <mat-card-content>
+            @if (pdfSrc) {
             <pdf-viewer 
-        *ngIf="pdfSrc"
-        [src]="pdfSrc"
-              [render-text]="true"
-              [original-size]="false"
+                [src]="pdfSrc"
+                [render-text]="true"
+                [original-size]="false"
                 style="width: 400px; height: 500px"
             ></pdf-viewer>
+            }
         </mat-card-content>
     </mat-card>
+    }
 </div>   

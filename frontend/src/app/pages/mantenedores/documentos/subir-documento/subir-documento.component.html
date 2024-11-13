@@ -44,7 +44,9 @@
             <div class="form-group">
                 <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;">
                 <button mat-raised-button color="primary" (click)="fileInput.click()">Seleccionar Archivo</button>
-                <span *ngIf="selectedFileName">{{ selectedFileName }}</span>
+                @if (selectedFileName) {
+                <span>{{ selectedFileName }}</span>
+                }
             </div>
 
             <div class="form-group">

@@ -11,7 +11,9 @@ export class ProgramacionService {
     ) {}
 
     findAll(): Promise<Programacion[]> {
-        return this.programacionRepository.find();
+        return this.programacionRepository.find({
+            relations: ['cliente' , 'vehiculo' , 'local'  ]
+        });
     }
 
     create(programacion: Programacion): Promise<Programacion> {

@@ -30,4 +30,7 @@ export class LocalesService {
   getLocalesByCliente(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/cliente/${id}`);
   }
+  addSectorToLocal(localId: number, sectorData: Partial<any>): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${localId}/sectores`, sectorData);
+  }
 }

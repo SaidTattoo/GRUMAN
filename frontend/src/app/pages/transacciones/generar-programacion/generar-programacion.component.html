@@ -12,9 +12,11 @@
                 {{ cliente.nombre }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="programacionForm.get('clienteId')?.touched && programacionForm.get('clienteId')?.invalid">
+            @if (programacionForm.get('clienteId')?.touched && programacionForm.get('clienteId')?.invalid) {
+            <mat-error>
               {{ getErrorMessage('clienteId') }}
             </mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -30,9 +32,11 @@
                 {{ local.direccion }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="programacionForm.get('local')?.touched && programacionForm.get('local')?.invalid">
+              @if (programacionForm.get('local')?.touched && programacionForm.get('local')?.invalid) {
+            <mat-error>
               {{ getErrorMessage('local') }}
             </mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -48,9 +52,11 @@
                 {{ tipo.name }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="programacionForm.get('tipoServicio')?.touched && programacionForm.get('tipoServicio')?.invalid">
+            @if (programacionForm.get('tipoServicio')?.touched && programacionForm.get('tipoServicio')?.invalid) {
+            <mat-error>
               {{ getErrorMessage('tipoServicio') }}
             </mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -66,9 +72,11 @@
                 {{ sector.nombre }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="programacionForm.get('sectorTrabajo')?.touched && programacionForm.get('sectorTrabajo')?.invalid">
+            @if (programacionForm.get('sectorTrabajo')?.touched && programacionForm.get('sectorTrabajo')?.invalid) {
+            <mat-error>
               {{ getErrorMessage('sectorTrabajo') }}
             </mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -82,9 +90,11 @@
             <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Seleccionar día">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
-            <mat-error *ngIf="programacionForm.get('fecha')?.touched && programacionForm.get('fecha')?.invalid">
+              @if (programacionForm.get('fecha')?.touched && programacionForm.get('fecha')?.invalid) {
+            <mat-error>
               {{ getErrorMessage('fecha') }}
             </mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -100,9 +110,11 @@
                 {{ vehiculo.movil }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="programacionForm.get('vehiculo')?.touched && programacionForm.get('vehiculo')?.invalid">
+            @if (programacionForm.get('vehiculo')?.touched && programacionForm.get('vehiculo')?.invalid) {
+            <mat-error>
               {{ getErrorMessage('vehiculo') }}
             </mat-error>
+            }
           </mat-form-field>
         </div>
       </div>
@@ -114,9 +126,11 @@
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
             <textarea matInput formControlName="observaciones" placeholder="Ingrese observaciones" rows="4"></textarea>
-            <mat-error *ngIf="programacionForm.get('observaciones')?.touched && programacionForm.get('observaciones')?.invalid">
+            @if (programacionForm.get('observaciones')?.touched && programacionForm.get('observaciones')?.invalid) {
+            <mat-error>
               {{ getErrorMessage('observaciones') }}
             </mat-error>
+            }
           </mat-form-field>
         </div>
       </div>

@@ -73,12 +73,25 @@ export const routes: Routes = [
           import('./pages/mantenedores/tipo-servicio/tipo-servicio.routes').then(
             (m) => m.TIPO_SERVICIO_ROUTES
           ),
+      },{
+        path: 'mantenedores/sectores-trabajo',
+        loadChildren: () =>
+          import('./pages/mantenedores/sectores-trabajo/sectores-trabajo.routes').then(
+            (m) => m.SECTORES_TRABAJO_ROUTES
+          ),
       },
       {
         path: 'reportes/generar-programacion',
         loadChildren: () =>
           import('./pages/transacciones/generar-programacion/generar-programacion.routes').then(
             (m) => m.GENERAR_PROGRAMACION_ROUTES
+          ),
+      },
+      {
+        path: 'transacciones/listado-programacion',
+        loadChildren: () =>
+          import('./pages/transacciones/listado-programacion/listado-programacion.routes').then(
+            (m) => m.LISTADO_PROGRAMACION_ROUTES
           ),
       },
       {

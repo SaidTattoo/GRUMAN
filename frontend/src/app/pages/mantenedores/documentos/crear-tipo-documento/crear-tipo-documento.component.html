@@ -9,9 +9,11 @@
                     <mat-form-field appearance="outline" class="w-100">    
                     
                         <input formControlName="nombre" matInput placeholder="Documento de ejemplo" />
-                        <mat-error *ngIf="tipoDocumentoForm.get('nombre')?.invalid">
+                        @if (tipoDocumentoForm.get('nombre')?.invalid) {
+                        <mat-error>
                             El nombre es requerido
                         </mat-error>
+                        }
                     </mat-form-field>
                 </div>
               </div>

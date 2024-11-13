@@ -68,6 +68,10 @@ export const navItems: NavItem[] = [
         displayName: 'Tipo Servicio',
         iconName: 'home-shield',
         route: 'mantenedores/tipo-servicio',
+      },{
+        displayName: 'Sectores de Trabajo',
+        iconName: 'home-shield',
+        route: 'mantenedores/sectores-trabajo',
       }
     ],
   },{
@@ -75,6 +79,11 @@ export const navItems: NavItem[] = [
     iconName: 'home-shield', 
      bgcolor: 'primary',
     route: 'reportes/generar-programacion',
+  },{
+    displayName: 'Listado de Programación',
+    iconName: 'home-shield', 
+     bgcolor: 'primary',
+    route: 'transacciones/listado-programacion',
   }
   /*  {
     displayName: 'Apps',

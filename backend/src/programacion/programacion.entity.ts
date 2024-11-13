@@ -1,13 +1,15 @@
 
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Vehiculo } from '../vehiculos/vehiculos.entity';
+import { Cliente } from '../clientes/clientes.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Locales } from '../locales/locales.entity';
 
 @Entity('programacion')
 export class Programacion {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    local: number;
+    
 
     @Column()
     sectorTrabajo: number;
@@ -20,15 +22,17 @@ export class Programacion {
 
     @Column()
     observaciones: string;
-/* 
-    @Column()
-    imagen: string; */
 
-    @Column()
-    vehiculo: number;
 
     @Column()
     clienteId: number;
-    /*   @Column()
-    estado: string; */
+
+    @ManyToOne(() => Cliente, cliente => cliente.programaciones)
+    cliente: Cliente;
+
+    @ManyToOne(() => Vehiculo, vehiculo => vehiculo.programaciones)
+    vehiculo: Vehiculo;
+
+    @ManyToOne(() => Locales, local => local.programaciones)
+    local: Locales;
 }

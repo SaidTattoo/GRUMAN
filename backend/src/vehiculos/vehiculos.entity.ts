@@ -1,8 +1,10 @@
+import { Programacion } from '../programacion/programacion.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
   Column,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -52,4 +54,7 @@ export class Vehiculo {
 
   @Column()
   anio: number;
+
+  @OneToMany(() => Programacion, programacion => programacion.vehiculo)
+  programaciones: Programacion[];
 }

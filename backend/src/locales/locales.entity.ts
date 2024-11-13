@@ -1,5 +1,8 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Cliente } from '../clientes/clientes.entity';
+import { SectorTrabajo } from '../sectores-trabajo/sectores-trabajo.entity';
+import { Programacion } from '../programacion/programacion.entity';
+import { Comuna } from '../regiones-comunas/entities/comuna.entity';
 
 @Entity('locales')
 export class Locales {
@@ -9,8 +12,8 @@ export class Locales {
   @Column()
   direccion: string;
 
-  @Column()
-  comuna: string;
+  @ManyToOne(() => Comuna, comuna => comuna.locales)
+  comuna: Comuna;
 
   @Column()
   region: string;
@@ -50,7 +53,11 @@ export class Locales {
 
   @Column()
   numeroLocal: string;
+  @OneToMany(() => SectorTrabajo, sectorTrabajo => sectorTrabajo.local)
+  sectoresTrabajo: SectorTrabajo[];
 
+  @OneToMany(() => Programacion, programacion => programacion.local)
+  programaciones: Programacion[];
   @Column({ default: false })
   deleted: boolean;
 }

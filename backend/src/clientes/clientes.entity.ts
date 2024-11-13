@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Locales } from '../locales/locales.entity';
+import { Programacion } from '../programacion/programacion.entity';
 
 @Entity('clientes')
 export class Cliente {
@@ -32,4 +33,7 @@ export class Cliente {
 
   @OneToMany(() => Locales, (local) => local.cliente)
   locales: Locales[];
+  
+  @OneToMany(() => Programacion, programacion => programacion.cliente)
+  programaciones: Programacion[];
 }

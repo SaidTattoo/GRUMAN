@@ -20,6 +20,8 @@ import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 import { DocumentosModule } from './documentos/documentos.module';
 import { TipoServicioModule } from './tipo-servicio/tipo-servicio.module';
 import { ProgramacionModule } from './programacion/programacion.module';
+import { SectoresTrabajoModule } from './sectores-trabajo/sectores-trabajo.module';
+import { SectoresTrabajoDefaultModule } from './sectores-trabajo-default/sectores-trabajo-default.module';
 
 @Module({
   imports: [
@@ -59,7 +61,9 @@ import { ProgramacionModule } from './programacion/programacion.module';
     TipoDocumentoModule,
     DocumentosModule,
     TipoServicioModule,
-    ProgramacionModule
+    ProgramacionModule,
+    SectoresTrabajoModule,
+    SectoresTrabajoDefaultModule
   ],
   controllers: [AppController],
   providers: [AppService],

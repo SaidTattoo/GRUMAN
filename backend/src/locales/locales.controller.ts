@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { Locales } from './locales.entity';
 import { LocalesService } from './locales.service';
+import { SectorTrabajo } from '../sectores-trabajo/sectores-trabajo.entity';
 
 @Controller('locales')
 export class LocalesController {
@@ -33,5 +34,9 @@ export class LocalesController {
   @Get('cliente/:id')
   getLocalesByCliente(@Param('id') id: number): Promise<Locales[]> {
     return this.localesService.getLocalesByCliente(id);
+  }
+  @Post(':localId/sectores')
+  addSectorToLocal(@Param('localId') localId: number, @Body() sectorData: Partial<SectorTrabajo>): Promise<Locales> {
+    return this.localesService.addSectorToLocal(localId, sectorData);
   }
 }

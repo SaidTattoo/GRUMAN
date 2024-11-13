@@ -8,7 +8,9 @@
           <div class="col-sm-8">
             <mat-form-field appearance="outline" class="w-100">
               <input matInput placeholder="Ingrese la familia" formControlName="familia">
-              <mat-error *ngIf="form.get('familia')?.invalid">La familia es requerida</mat-error>
+              @if (form.get('familia')?.invalid) {  
+              <mat-error>La familia es requerida</mat-error>
+              }
             </mat-form-field>
           </div>
         </div>
@@ -20,7 +22,9 @@
           <div class="col-sm-8">
             <mat-form-field appearance="outline" class="w-100">
               <input matInput placeholder="Ingrese el artículo" formControlName="articulo">
-              <mat-error *ngIf="form.get('articulo')?.invalid">El artículo es requerido</mat-error>
+              @if (form.get('articulo')?.invalid) {  
+              <mat-error>El artículo es requerido</mat-error>
+              }
             </mat-form-field>
           </div>
         </div>
@@ -32,7 +36,9 @@
           <div class="col-sm-8">
             <mat-form-field appearance="outline" class="w-100">
               <input matInput placeholder="Ingrese la marca" formControlName="marca">
-              <mat-error *ngIf="form.get('marca')?.invalid">La marca es requerida</mat-error>
+              @if (form.get('marca')?.invalid) {  
+              <mat-error>La marca es requerida</mat-error>
+              }
             </mat-form-field>
           </div>
         </div>
@@ -44,7 +50,9 @@
           <div class="col-sm-8">
             <mat-form-field appearance="outline" class="w-100">
               <input matInput placeholder="Ingrese el código de barra" formControlName="codigoBarra">
-              <mat-error *ngIf="form.get('codigoBarra')?.invalid">El código de barra es requerido</mat-error>
+              @if (form.get('codigoBarra')?.invalid) {  
+              <mat-error>El código de barra es requerido</mat-error>
+              }
             </mat-form-field>
           </div>
         </div>
@@ -56,7 +64,9 @@
           <div class="col-sm-8">
             <mat-form-field appearance="outline" class="w-100">
               <input matInput type="number" placeholder="Ingrese el precio" formControlName="precio">
-              <mat-error *ngIf="form.get('precio')?.invalid">El precio es requerido y debe ser positivo</mat-error>
+              @if (form.get('precio')?.invalid) {  
+              <mat-error>El precio es requerido y debe ser positivo</mat-error>
+              }
             </mat-form-field>
           </div>
         </div>

@@ -1,0 +1,32 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+        <button mat-raised-button color="primary" routerLink="/mantenedores/sectores-trabajo/crear-sector">Crear Sector por local</button>
+        <button mat-raised-button color="primary" routerLink="/mantenedores/sectores-trabajo/crear-sector-default">Crear Sector por defecto</button>
+        <div class="table-responsive m-t-30">
+           <div class="info">
+            <mat-icon>info</mat-icon>
+            <span>Estos son sectores por default que se asignan al crear un nuevo local</span>
+           </div>
+        <mat-table [dataSource]="dataSource" class="w-100 mat-elevation-z8">
+            <!-- Definición de la columna 'nombre' -->
+            <ng-container matColumnDef="nombre">
+                <mat-header-cell *matHeaderCellDef> Nombre </mat-header-cell>
+                <mat-cell *matCellDef="let element"> {{element.nombre}} </mat-cell>
+            </ng-container>
+            <!-- Definición de la columna 'acciones' -->
+            <ng-container matColumnDef="acciones">
+                <mat-header-cell *matHeaderCellDef> Acciones </mat-header-cell>
+                <mat-cell *matCellDef="let element"> 
+                    <button mat-icon-button color="primary" (click)="editarSector(element.id)">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                </mat-cell>
+            </ng-container>
+            <!-- Fila de encabezado -->
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <!-- Fila de datos -->
+            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        </mat-table>
+        </div>
+    </mat-card-content>
+</mat-card>
