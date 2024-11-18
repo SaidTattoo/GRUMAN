@@ -90,11 +90,9 @@
             <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Seleccionar día">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
-              @if (programacionForm.get('fecha')?.touched && programacionForm.get('fecha')?.invalid) {
-            <mat-error>
+            <mat-error *ngIf="programacionForm.get('fecha')?.touched && programacionForm.get('fecha')?.invalid">
               {{ getErrorMessage('fecha') }}
             </mat-error>
-            }
           </mat-form-field>
         </div>
       </div>

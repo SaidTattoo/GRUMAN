@@ -18,7 +18,7 @@ import { ProgramacionService } from 'src/app/services/programacion.service';
 })
 export class ListadoProgramacionComponent implements OnInit {
   constructor(private programacionService: ProgramacionService, private router: Router, private clienteService: ClientesService) { }
-  displayedColumns: string[] = ['id', 'local', 'sectorTrabajo', 'tipoServicio', 'fecha', 'observaciones', 'vehiculo', 'clienteId', 'acciones'];
+  displayedColumns: string[] = ['clienteId', 'local', 'sectorTrabajo', 'tipoServicio', 'fecha', 'observaciones', 'vehiculo', 'acciones'];
 
   dataSource: any;
 

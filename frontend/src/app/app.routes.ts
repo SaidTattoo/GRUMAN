@@ -28,6 +28,7 @@ export const routes: Routes = [
             (m) => m.TRABAJADORES_ROUTES
           ),
       },
+
       {
         path: 'mantenedores/vehiculos',
         loadChildren: () =>
@@ -81,6 +82,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mantenedores/servicios',
+        loadChildren: () =>
+          import('./pages/mantenedores/servicios/servicios.routes').then(
+            (m) => m.SERVICIOS_ROUTES
+          ),
+      },
+      {
         path: 'reportes/generar-programacion',
         loadChildren: () =>
           import('./pages/transacciones/generar-programacion/generar-programacion.routes').then(
@@ -92,6 +100,27 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/transacciones/listado-programacion/listado-programacion.routes').then(
             (m) => m.LISTADO_PROGRAMACION_ROUTES
+          ),
+      },
+      {
+        path: 'transacciones/solicitud-aprobacion-correctiva',
+        loadChildren: () =>
+          import('./pages/transacciones/solicitud-aprovacion-correctiva/solicitud-aprobacion-correctiva.routes').then(
+            (m) => m.solicitudAprobacionCorrectivaRoutes
+          ),
+      },
+      {
+        path: 'transacciones/listado-solicitud-aprobacion-correctiva',
+        loadChildren: () =>
+          import('./pages/transacciones/listado-solicitud-aprobacion-correctiva/listado-solicitud-aprobacion-correctiva.routes').then(
+            (m) => m.LISTADO_SOLICITUD_APROBACION_CORRECTIVA_ROUTES
+          ),
+      },
+      {
+        path: 'transacciones/servicios-realizados',
+        loadChildren: () =>
+          import('./pages/transacciones/servicios-realizados/servicios-realizados.routes').then(
+            (m) => m.SERVICIOS_REALIZADOS_ROUTES
           ),
       },
       {

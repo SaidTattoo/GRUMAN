@@ -20,10 +20,43 @@ export const navItems: NavItem[] = [
     route: 'dashboards/dashboard1',
     bgcolor: 'primary',
 
-  },  {
+  },{
+    displayName: 'Programación',
+    iconName: 'calendar',
+    children: [
+      {
+        displayName: 'Generar Programación',
+        iconName: 'home-shield',
+        bgcolor: 'primary',
+        route: 'reportes/generar-programacion',
+      },
+      {
+        displayName: 'Listado de Programación',
+        iconName: 'home-shield',
+        bgcolor: 'primary',
+        route: 'transacciones/listado-programacion',
+      },
+      {
+        displayName: 'Solicitud de aprobación de correctiva',
+        iconName: 'home-shield',
+        bgcolor: 'primary',
+        route: 'transacciones/solicitud-aprobacion-correctiva',
+      },
+      {
+        displayName: 'Listado de solicitudes de aprobación de correctiva',
+        iconName: 'home-shield',
+        bgcolor: 'primary',
+        route: 'transacciones/listado-solicitud-aprobacion-correctiva',
+      },
+    ]
+  },{
+    displayName: 'Servicios realizados',
+    iconName: 'home-shield',
+    bgcolor: 'primary',
+    route: 'transacciones/servicios-realizados',
+  },{
     displayName: 'Mantenedores',
     iconName: 'home-shield',
-  
     route: 'mantenedores',
     children: [
       {
@@ -72,18 +105,12 @@ export const navItems: NavItem[] = [
         displayName: 'Sectores de Trabajo',
         iconName: 'home-shield',
         route: 'mantenedores/sectores-trabajo',
+      },{
+        displayName: 'Servicios',
+        iconName: 'home-shield',
+        route: 'mantenedores/servicios',
       }
     ],
-  },{
-    displayName: 'Generar Programación',
-    iconName: 'home-shield', 
-     bgcolor: 'primary',
-    route: 'reportes/generar-programacion',
-  },{
-    displayName: 'Listado de Programación',
-    iconName: 'home-shield', 
-     bgcolor: 'primary',
-    route: 'transacciones/listado-programacion',
   }
   /*  {
     displayName: 'Apps',

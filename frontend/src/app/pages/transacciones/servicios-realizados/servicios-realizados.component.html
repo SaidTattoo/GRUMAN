@@ -1,0 +1,108 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+      <form [formGroup]="programacionForm" (ngSubmit)="onSubmit()">
+
+        <!-- Tipo de Servicio -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo de Servicio</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="tipoServicio" placeholder="Seleccionar Tipo de Servicio">
+                <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
+                  {{ tipo.nombre }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Tipo de Solicitud -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo de Solicitud</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="tipoSolicitud" placeholder="Seleccionar Tipo de Solicitud">
+                <mat-option *ngFor="let tipo of tiposSolicitud" [value]="tipo.id">
+                  {{ tipo.nombre }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Seleccionar Día Inicio -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Día Inicio</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput [matDatepicker]="pickerInicio" formControlName="diaSeleccionadoInicio" placeholder="Seleccionar Día Inicio">
+              <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+              <mat-datepicker #pickerInicio></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Mostrar Fecha Formateada -->
+        <div *ngIf="programacionForm.get('diaSeleccionadoInicio')?.value">
+          Fecha seleccionada: {{ programacionForm.get('diaSeleccionadoInicio')?.value | date: 'dd/MM/yyyy' }}
+        </div>
+
+        <!-- Seleccionar Día Término -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Día Término</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput [matDatepicker]="pickerTermino" formControlName="diaSeleccionadoTermino" placeholder="Seleccionar Día Término">
+              <mat-datepicker-toggle matSuffix [for]="pickerTermino"></mat-datepicker-toggle>
+              <mat-datepicker #pickerTermino></mat-datepicker>
+              <mat-error *ngIf="programacionForm.hasError('fechaTerminoMayorQueInicio')">
+                La fecha de término no puede ser menor que la de inicio.
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Mes de Facturación -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Mes de Facturación</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="mesFacturacion" placeholder="Seleccionar Mes de Facturación">
+                <mat-option *ngFor="let mes of meses" [value]="mes.id">
+                  {{ mes.nombre }} 
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Tipo de Búsqueda -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo de Búsqueda</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-radio-group formControlName="tipoBusqueda">
+              <mat-radio-button value="rangoFechas">Rango de Fechas</mat-radio-button>
+              <mat-radio-button value="mesFacturacion">Mes de Facturación</mat-radio-button>
+            </mat-radio-group>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12 d-flex justify-content-end">
+            <button mat-flat-button color="primary" type="submit">Enviar</button>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+</mat-card>

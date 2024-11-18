@@ -1,0 +1,68 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+      <div class="row justify-content-between m-b-8">
+        <div class="col-sm-4 col-lg-3">
+         <button mat-flat-button color="primary" (click)="crearSolicitud()">Nuevo Tipo de Activo</button> 
+        </div>
+        <div class="col-sm-4 col-lg-3">
+          <mat-form-field appearance="outline" class="w-100 hide-hint">
+            <input matInput (keyup)="applyFilter($event)" placeholder="Buscar" #input />
+          </mat-form-field>
+        </div>
+      </div>
+  
+      <div class="table-responsive m-t-30">
+        <table mat-table [dataSource]="dataSource" class="w-100 mat-elevation-z8">
+          <!-- ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">
+              ID
+            </th>
+            <td mat-cell *matCellDef="let element" class="p-l-0">
+              {{ element.id }}
+            </td>
+          </ng-container>
+  
+          <!-- Nombre Column -->
+          <ng-container matColumnDef="inspectorId">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">
+              Inspector
+            </th>
+            <td mat-cell *matCellDef="let element" class="p-l-0">
+              {{ element.inspectorId.name }} {{ element.inspectorId.lastname }}
+            </td>
+          </ng-container>
+
+          
+          <!-- Nombre Column -->
+          <ng-container matColumnDef="numeroLocal">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">
+              Número Local
+            </th>
+            <td mat-cell *matCellDef="let element" class="p-l-0">
+              {{ element.numeroLocal }}
+            </td>
+          </ng-container>
+  
+          <!-- Acciones Column -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">
+              Acciones
+            </th>
+            <td mat-cell *matCellDef="let element" class="p-l-0">
+              <button mat-icon-button color="primary" disabled="true" (click)="editar(element)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="eliminar(element)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+  
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  

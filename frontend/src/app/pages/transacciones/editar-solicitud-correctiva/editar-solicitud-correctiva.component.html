@@ -1,0 +1,148 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+      <form [formGroup]="programacionForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Nombre Inspector -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Nombre Inspector</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="inspectorId" placeholder="Seleccionar Inspector">
+                <mat-option *ngFor="let inspector of inspectores" [value]="inspector.id">
+                  {{ inspector.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Número Local -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Número Local</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="numeroLocal" placeholder="Seleccionar Número Local">
+                <mat-option *ngFor="let local of locales" [value]="local.id">
+                  {{ local.numeroLocal }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Especialidad -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Especialidad</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="especialidad" placeholder="Seleccionar Especialidad">
+                <mat-option *ngFor="let especialidad of especialidades" [value]="especialidad.id">
+                  {{ especialidad.nombre }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Criticidad -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Criticidad</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="criticidad" placeholder="Seleccionar Criticidad">
+                <mat-option *ngFor="let criticidad of criticidades" [value]="criticidad.id">
+                  {{ criticidad.nombre }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Afecta a -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Afecta a</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="afecta" placeholder="Seleccionar Afecta a">
+                <mat-option *ngFor="let afecta of afectas" [value]="afecta.id">
+                  {{ afecta.nombre }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Costo Estimado -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Costo Estimado</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput formControlName="costoEstimado" placeholder="Ingrese Costo Estimado" (blur)="formatCurrency()">
+              <mat-error *ngIf="programacionForm.get('costoEstimado')?.hasError('pattern')">
+                Solo se permiten números.
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <!-- Tiempo Estimado -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tiempo Estimado</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="tiempoEstimado" placeholder="Seleccionar Tiempo Estimado">
+                <mat-option *ngFor="let tiempo of tiempos" [value]="tiempo">
+                  {{ tiempo }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Observaciones -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Observaciones</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <textarea matInput formControlName="observaciones" placeholder="Ingrese observaciones" rows="4"></textarea>
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Subir Imágenes -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Subir Imágenes</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <input type="file" accept=".png, .jpg, .jpeg" (change)="onFileSelected($event)">
+            <small>Formato de imágenes admitido png, jpg, jpeg</small>
+          </div>
+        </div>
+  
+        <!-- Botón Enviar -->
+        <div class="row justify-content-end">
+          <div class="col-sm-8">
+            <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+              {{ loading ? 'Enviando...' : 'Enviar' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>

@@ -1,28 +1,45 @@
-import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule, registerLocaleData } from '@angular/common';
+import { Component, HostListener, OnDestroy, OnInit,LOCALE_ID ,   } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MAT_DATE_FORMATS, MatNativeDateModule, MAT_DATE_LOCALE ,DateAdapter} from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+
 import { Subject, takeUntil } from 'rxjs';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { LocalesService } from 'src/app/services/locales.service';
 import { ProgramacionService } from 'src/app/services/programacion.service';
 import { TipoServicioService } from 'src/app/services/tipo-servicio.service';
 import { VehiculosService } from 'src/app/services/vehiculos.service';
+import localeEnGb from '@angular/common/locales/en-GB';
 import Swal from 'sweetalert2';
-
+const MY_DATE_FORMAT = {
+  parse: {
+    dateInput: 'DD/MM/YYYY', // this is how your date will be parsed from Input
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY', // this is how your date will get displayed on the Input
+    monthYearLabel: 'MMMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY'
+  }
+};
 @Component({
   selector: 'app-generar-programacion',
   standalone: true,
   imports: [CommonModule,MatInputModule, FormsModule, ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatIconModule ,MatDatepickerModule,MatNativeDateModule],
   templateUrl: './generar-programacion.component.html',
-  styleUrl: './generar-programacion.component.scss'
+  styleUrl: './generar-programacion.component.scss',
+  providers: [
+    { provide: LOCALE_ID, useValue: 'en-GB' },
+    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, // Configura el idioma para el picker
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMAT } // Configura los formatos personalizados
+  ]
 })
 export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   programacionForm: FormGroup;
@@ -39,9 +56,14 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     private tipoServicioService: TipoServicioService,
     private vehiculosService: VehiculosService,
     private programacionService: ProgramacionService,
-    private clientesService: ClientesService
+    private clientesService: ClientesService,
+    private dateAdapter: DateAdapter <Date>
   ) {
     this.initForm();
+    registerLocaleData(localeEnGb); 
+    this.dateAdapter.setLocale('en-GB'); // Establece el idioma como 'en-GB' para formato dd/MM/yyyy
+
+
   }
 
   private initForm(): void {
@@ -88,9 +110,11 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       });
   }
 
-  fechaValidator(control: FormControl): {[key: string]: any} | null {
+  fechaValidator(control: FormControl): { [key: string]: any } | null {
     const fecha = new Date(control.value);
     const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
     if (fecha < hoy) {
       return { 'fechaPasada': true };
     }
