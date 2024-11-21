@@ -86,4 +86,7 @@ export class ClientesComponent implements OnInit {
       vehiculo: null
     }]);
   }
+  agregarUsuarioACliente(cliente: any) {
+    this.router.navigate(['/mantenedores/cliente-usuarios', cliente.id]);
+  }
 }

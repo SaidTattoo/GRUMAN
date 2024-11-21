@@ -89,6 +89,11 @@ export const navItems: NavItem[] = [
         route: 'mantenedores/clientes',
       },
       {
+        displayName: 'Cliente Usuarios',
+        iconName: 'home-shield',
+        route: 'mantenedores/cliente-usuarios',
+      },
+      {
         displayName: 'Listado de Documentos',
         iconName: 'home-shield',
         route: 'mantenedores/documentos',

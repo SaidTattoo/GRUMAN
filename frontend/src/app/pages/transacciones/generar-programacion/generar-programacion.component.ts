@@ -68,7 +68,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
 
   private initForm(): void {
     this.programacionForm = new FormGroup({
-      clienteId: new FormControl('', [Validators.required]),
+      clientId: new FormControl('', [Validators.required]),
       local: new FormControl({ value: '', disabled: true }, [Validators.required]),
       tipoServicio: new FormControl('', [Validators.required]),
       sectorTrabajo: new FormControl('', [Validators.required]),
@@ -96,7 +96,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   }
 
   private setupFormSubscriptions(): void {
-    this.programacionForm.get('clienteId')?.valueChanges
+    this.programacionForm.get('clientId')?.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((clienteId) => {
         if (clienteId) {
@@ -136,7 +136,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   }
 
   getLocales(): void {
-    const clienteId = this.programacionForm.get('clienteId')?.value;
+    const clienteId = this.programacionForm.get('clientId')?.value;
     if (clienteId) {
       this.loading = true;
       this.localesService.getLocalesByCliente(clienteId)
@@ -161,6 +161,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data: any) => {
           this.clientes = data;
+          this.getLocales()
         },
         error: (error) => {
           this.showErrorMessage('Error al cargar los clientes');

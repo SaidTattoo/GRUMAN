@@ -20,7 +20,7 @@ export class LocalesService {
     return this.localesRepository.find({ 
       where: { deleted: false },
       order: { id: 'DESC' },
-      relations: ['cliente', 'sectoresTrabajo','comuna', 'comuna.provincia', 'comuna.provincia.region']
+      relations: ['client', 'sectoresTrabajo','comuna', 'comuna.provincia', 'comuna.provincia.region']
     });
   }
   
@@ -82,11 +82,11 @@ export class LocalesService {
   async delete(id: number): Promise<void> {
     await this.localesRepository.update(id, { deleted: true });
   }
-  getLocalesByCliente(clienteId: number): Promise<Locales[]> {
+  getLocalesByCliente(clientId: number): Promise<Locales[]> {
     return this.localesRepository.find({ 
-      where: { cliente: { id: clienteId }, deleted: false },
+      where: { client: { id: clientId }, deleted: false },
       order: { id: 'DESC' },
-      relations: ['cliente', 'sectoresTrabajo']
+      relations: ['client', 'sectoresTrabajo']
     });
   }
 }

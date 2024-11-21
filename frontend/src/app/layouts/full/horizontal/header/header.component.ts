@@ -134,11 +134,12 @@ export class AppHorizontalHeaderComponent implements OnInit {
   selectedCompany: any | null = null;
   ngOnInit(): void {
     this.authService.currentUser.subscribe(user => {
+      console.log(user);
       if (user) {
         this.userName = user.name;
         this.userRole = user.profile;
         this.userEmail = user.email;
-        this.userCompanies = user.companies;
+        this.userCompanies = user.clients || [];
         this.selectedCompany = this.userCompanies.length === 1 ? this.userCompanies[0] : null;
       }
     });

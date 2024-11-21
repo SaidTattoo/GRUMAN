@@ -82,13 +82,14 @@ export class TecnicosComponent implements OnInit {
   }
 
   openCrearTecnicoModal() {
-    const dialogRef = this.dialog.open(CrearTecnicoComponent);
+    this.router.navigate(['/mantenedores/cliente-usuarios']);
+   /*  const dialogRef = this.dialog.open(CrearTecnicoComponent);
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadTecnicos();
       }
-    });
+    }); */
   }
 
   agregarDocumento(tecnico: any) {

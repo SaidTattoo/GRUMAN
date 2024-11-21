@@ -24,7 +24,7 @@ export class Documentos {
   tipo: string;
 
   @Column({default: null})
-  clienteId: number;
+  clientId: number;
 
   @Column({default: null})
   tecnicoId: number;

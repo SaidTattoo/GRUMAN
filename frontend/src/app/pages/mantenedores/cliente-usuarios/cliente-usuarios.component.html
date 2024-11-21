@@ -1,0 +1,120 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+      <form [formGroup]="clienteUsuarioForm" (ngSubmit)="onSubmit()">
+  
+        <!-- Seleccionar Cliente -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Cliente</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="clientId" placeholder="Seleccionar Cliente">
+                @for (cliente of clientes; track cliente.id) {
+                <mat-option [value]="cliente.id">
+                  {{ cliente.nombre }}
+                </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Seleccionar Perfil -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Perfil</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="perfil" placeholder="Seleccionar Perfil">
+                @for (perfil of perfiles; track perfil) {
+                <mat-option [value]="perfil">
+                  {{ perfil }}
+                </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Nombre de Usuario -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Nombre de Usuario</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput formControlName="name" placeholder="Ingrese Nombre de Usuario">
+            </mat-form-field>
+          </div>
+        </div>
+  <!-- Apellido -->
+  <div class="row">
+    <div class="col-sm-4 d-flex align-items-center">
+      <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Apellido</mat-label>
+    </div>
+    <div class="col-sm-8">
+      <mat-form-field appearance="outline" class="w-100">
+        <input matInput formControlName="lastname" placeholder="Ingrese Apellido">
+      </mat-form-field>
+    </div>
+  </div>
+        <!-- Email -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Email</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput formControlName="email" placeholder="Ingrese Email">
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- RUT -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">RUT</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput formControlName="rut" placeholder="Ingrese RUT">
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Contraseña -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Contraseña</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput type="password" formControlName="password" placeholder="Ingrese Contraseña">
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Repetir Contraseña -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Repetir Contraseña</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput type="password" formControlName="repetirContrasena" placeholder="Repetir Contraseña">
+            </mat-form-field>
+          </div>
+        </div>
+  
+        <!-- Botón de Enviar -->
+        <div class="row">
+          <div class="col-sm-12 text-right m-t-16">
+            <button mat-flat-button color="primary" [disabled]="clienteUsuarioForm.invalid" type="submit">Crear Usuario</button>
+          </div>
+        </div>
+  
+      </form>
+    </mat-card-content>
+  </mat-card>

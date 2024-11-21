@@ -4,10 +4,10 @@ import { SectoresTrabajoController } from './sectores-trabajo.controller';
 import { SectorTrabajo } from './sectores-trabajo.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Locales } from '../locales/locales.entity';
-import { Cliente } from '../clientes/clientes.entity';
+import { Client } from '../client/client.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SectorTrabajo, Locales, Cliente])],
+  imports: [TypeOrmModule.forFeature([SectorTrabajo, Locales, Client])],
   providers: [SectoresTrabajoService],
   controllers: [SectoresTrabajoController]
 })
