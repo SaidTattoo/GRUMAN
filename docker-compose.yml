@@ -20,18 +20,11 @@ services:
       - /app/node_modules
     depends_on:
       - mariadb
-    environment:
-      TYPEORM_CONNECTION: mariadb
-      #TYPEORM_HOST: 138.255.103.35
-      TYPEORM_HOST: 127.0.0.1
-      TYPEORM_PORT: 3306
-      TYPEORM_USERNAME: gruman
-      TYPEORM_PASSWORD: gruman
-      TYPEORM_DATABASE: gruman
-      JWT_SECRET: Law8XT1LW5SErt8CfHKifZwKSza6MTXU
+    env_file:
+      - ./backend/.env
     command: npm run start:dev
     networks:
-      - gruman_network
+      - gruman_network  
 
   mariadb:
     image: mariadb:latest
