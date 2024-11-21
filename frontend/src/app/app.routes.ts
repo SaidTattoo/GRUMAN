@@ -96,6 +96,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mantenedores/cliente-usuarios',
+        loadChildren: () =>
+          import('./pages/mantenedores/cliente-usuarios/cliente-usuarios.routes').then(
+            (m) => m.CLIENTE_USUARIOS_ROUTES
+          ),
+      },
+      {
         path: 'transacciones/listado-programacion',
         loadChildren: () =>
           import('./pages/transacciones/listado-programacion/listado-programacion.routes').then(

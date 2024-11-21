@@ -10,7 +10,8 @@ import { environment } from '../config';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl + 'auth'; // URL de tu API de autenticación
+  private apiUrl = environment.apiUrl + 'auth';
+  private apiUrlPass = environment.apiUrl ; // URL de tu API de autenticación
   private currentUserSubject: BehaviorSubject<any | null>;
   public currentUser: Observable<any | null>;
 
@@ -33,7 +34,7 @@ export class AuthService {
           name: decodedToken.name,
           email: decodedToken.email,
           profile: decodedToken.profile,
-          companies: decodedToken.companies, // Manejar array de compañías
+          companies: decodedToken.clients, // Manejar array de compañías
           token: response.token,
           exp: decodedToken.exp // Añadir la fecha de expiración del token
         };
@@ -65,8 +66,8 @@ export class AuthService {
   getUserProfile(): any | null {
     return this.currentUserValue;
   }
-
+  /* @Patch(':id/password') */
   changePassword(id: number, password: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/change-password`, { id, password });
+    return this.http.patch<any>(`${this.apiUrlPass}users/${id}/password`, { password });
   }
 }

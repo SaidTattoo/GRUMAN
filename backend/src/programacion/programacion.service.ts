@@ -12,11 +12,12 @@ export class ProgramacionService {
 
     findAll(): Promise<Programacion[]> {
         return this.programacionRepository.find({
-            relations: ['cliente' , 'vehiculo' , 'local'  ]
+            relations: ['client' , 'vehiculo' , 'local'  ]
         });
     }
 
     create(programacion: Programacion): Promise<Programacion> {
+        console.log(programacion);
         return this.programacionRepository.save(programacion);
     }
 }

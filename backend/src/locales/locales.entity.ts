@@ -1,8 +1,8 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Cliente } from '../clientes/clientes.entity';
 import { SectorTrabajo } from '../sectores-trabajo/sectores-trabajo.entity';
 import { Programacion } from '../programacion/programacion.entity';
 import { Comuna } from '../regiones-comunas/entities/comuna.entity';
+import { Client } from '../client/client.entity';
 
 @Entity('locales')
 export class Locales {
@@ -48,8 +48,8 @@ export class Locales {
   @Column({ type: 'decimal', precision: 10, scale: 8 })
   longitud: number;
 
-  @ManyToOne(() => Cliente, (cliente) => cliente.locales)
-  cliente: Cliente;
+  @ManyToOne(() => Client, (client) => client.locales)
+  client: Client;
 
   @Column()
   numeroLocal: string;

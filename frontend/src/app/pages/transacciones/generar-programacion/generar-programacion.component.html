@@ -7,14 +7,14 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="clienteId" placeholder="Seleccionar Cliente">
+            <mat-select formControlName="clientId" placeholder="Seleccionar Cliente">
               <mat-option *ngFor="let cliente of clientes" [value]="cliente.id">
                 {{ cliente.nombre }}
               </mat-option>
             </mat-select>
-            @if (programacionForm.get('clienteId')?.touched && programacionForm.get('clienteId')?.invalid) {
+            @if (programacionForm.get('clientId')?.touched && programacionForm.get('clienteId')?.invalid) {
             <mat-error>
-              {{ getErrorMessage('clienteId') }}
+              {{ getErrorMessage('clientId') }}
             </mat-error>
             }
           </mat-form-field>

@@ -9,18 +9,18 @@ export class TecnicosService {
   constructor(private http: HttpClient) {}
   private apiUrl = environment.apiUrl;
   getTecnicos() {
-    return this.http.get(`${this.apiUrl}tecnicos`);
+    return this.http.get(`${this.apiUrl}users`);
   }
   getTecnico(id: number) {
-    return this.http.get(`${this.apiUrl}tecnicos/${id}`);
+    return this.http.get(`${this.apiUrl}users/${id}`);
   }
   createTecnico(tecnico: any) {
-    return this.http.post(`${this.apiUrl}tecnicos`, tecnico);
+    return this.http.post(`${this.apiUrl}users`, tecnico);
   }
   updateTecnico(id: number, tecnico: any) {
-    return this.http.put(`${this.apiUrl}tecnicos/${id}`, tecnico);
+    return this.http.put(`${this.apiUrl}users/${id}`, tecnico);
   }
   deleteTecnico(id: number) {
-    return this.http.delete(`${this.apiUrl}tecnicos/${id}`);
+    return this.http.delete(`${this.apiUrl}users/${id}`);
   }
 }

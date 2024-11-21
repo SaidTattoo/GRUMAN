@@ -1,4 +1,5 @@
-import { Programacion } from '../programacion/programacion.entity';
+/* import { Programacion } from '../programacion/programacion.entity'; */
+import { Programacion } from 'src/programacion/programacion.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -56,5 +57,5 @@ export class Vehiculo {
   anio: number;
 
   @OneToMany(() => Programacion, programacion => programacion.vehiculo)
-  programaciones: Programacion[];
+  programaciones: Programacion[]; 
 }
