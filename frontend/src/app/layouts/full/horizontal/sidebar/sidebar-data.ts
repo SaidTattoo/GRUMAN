@@ -21,7 +21,7 @@ const hasGrumanCompany = (user: any): boolean => {
     return false;
   }
   return user.companies.some((company: any) =>
-    company.nombre === 'GRUMAN'
+    company.nombre.toLowerCase() === 'gruman'.toLowerCase()
   );
 };
 
