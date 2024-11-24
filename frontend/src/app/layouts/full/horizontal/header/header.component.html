@@ -245,13 +245,13 @@
         <div class="m-l-16 text-left d-none d-lg-flex">
           <div>
             <h5 class="f-s-16">{{ userName }}</h5>
-            <span class="f-s-14 mat-body-1">{{ userRole }}</span>
+            <span class="f-s-14 mat-body-1">{{ userRole==='user' ? 'Usuario' : 'Administrador' }}</span>
             
           </div>
         </div>
       </div>
     </button>
-    <!-- aca se modifica lo de menu de login y profile -->
+    <!-- aca se modifica lo de menu de login y prof -->
     <mat-menu #profileMenu="matMenu" xPosition="before" class="topbar-dd cardWithShadow">
       <ng-scrollbar class="position-relative" style="height:290px">
         <div class="p-x-32 p-y-16">
@@ -262,12 +262,7 @@
               {{ getUserInitials() }}
             </div>
             <div class="m-l-16">
-              @if(userRole === 'ADMINISTRADOR') {
               <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">{{ userName }}</h6>
-              }
-              @if(userRole === 'USER') {
-              <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">{{ userName }}</h6>
-              }
               <span class="f-s-14 mat-body-1 d-block m-b-4">{{ userRole }}</span>
               <span class="d-flex align-items-center">
                 <i-tabler name="mail" class="icon-15 m-r-4"></i-tabler>
