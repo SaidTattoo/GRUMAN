@@ -11,7 +11,7 @@
               </div>
               <div class="col-sm-8">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-select (selectionChange)="onClienteChange($event)" placeholder="Seleccione un cliente" formControlName="cliente">
+                  <mat-select (selectionChange)="onClienteChange($event)" placeholder="Seleccione un cliente" formControlName="clientId">
                     @for (cliente of clientes; track cliente.id) {
                     <mat-option  [value]="cliente.id">
                       {{ cliente.nombre }}

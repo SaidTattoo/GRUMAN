@@ -42,7 +42,7 @@ export class CrearLocalComponent implements OnInit {
       region: ['', Validators.required],
       provincia: [{value: '', disabled: true}, Validators.required],
       comuna: [{value: '', disabled: true}, Validators.required],
-      cliente: ['', Validators.required],
+      clientId: ['', Validators.required],
       zona: ['', Validators.required],
       grupo: ['', Validators.required],
       referencia: ['', Validators.required],
@@ -151,12 +151,16 @@ export class CrearLocalComponent implements OnInit {
     this.localForm.get('comuna')?.enable();
 
     console.log('****', this.localForm.value);
-    let nombreCliente = this.clientes.find(cliente => cliente.id === this.localForm.get('cliente')?.value)?.nombre;
+    const clienteId = this.localForm.get('clientId')?.value;
+    let nombreCliente = this.clientes.find(cliente => cliente.id === clienteId)?.nombre;
     const palabrasExcluidas = ['y', 'de', 'la', 'el', 'los', 'las', 'del', 'al', 'en', 'por', 'con', 'para'];
 
     if (nombreCliente) {
       const palabras = nombreCliente.split(' ').filter((palabra: string) => !palabrasExcluidas.includes(palabra.toLowerCase()));
       nombreCliente = palabras.map((palabra: string) => palabra.charAt(0).toUpperCase()).join('');
+    } else {
+      console.error('Nombre del cliente no encontrado');
+      return;
     }
 
     const timestamp = Date.now().toString();
@@ -185,19 +189,17 @@ export class CrearLocalComponent implements OnInit {
 
   onClienteChange(event: any) {
     const clienteId = event.value;
-    console.log('Cliente seleccionado:', clienteId);
-    let nombreCliente = this.clientes.find(cliente => cliente.id === this.localForm.get('cliente')?.value)?.nombre;
+    console.log('Cliente seleccionado:', this.clientes);
+    let nombreCliente = this.clientes.find(cliente => cliente.id === clienteId)?.nombre;
     const palabrasExcluidas = ['y', 'de', 'la', 'el', 'los', 'las', 'del', 'al', 'en', 'por', 'con', 'para'];
     if (nombreCliente) {
       // Divide el nombre en palabras y filtra las palabras excluidas
       const palabras = nombreCliente.split(' ').filter((palabra: string) => !palabrasExcluidas.includes(palabra.toLowerCase()));
-
       // Toma las iniciales de las palabras restantes
       nombreCliente = palabras.map((palabra: string) => palabra.charAt(0).toUpperCase()).join('');
     }
-
-
     console.log('****', nombreCliente );
     // Aquí puedes realizar acciones adicionales, como actualizar otros campos del formulario
+    
   }
 }

@@ -59,17 +59,32 @@
   
         <div class="row">
           <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Precio</mat-label>
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Precio Neto de Compra</mat-label>
           </div>
           <div class="col-sm-8">
             <mat-form-field appearance="outline" class="w-100">
-              <input matInput type="number" placeholder="Ingrese el precio" formControlName="precio">
-              @if (form.get('precio')?.invalid) {  
-              <mat-error>El precio es requerido y debe ser positivo</mat-error>
+              <input matInput type="number" placeholder="Ingrese el precio neto de compra" formControlName="precioNetoCompra">
+              @if (form.get('precioNetoCompra')?.invalid) {  
+              <mat-error>El precio neto de compra es requerido y debe ser positivo</mat-error>
               }
             </mat-form-field>
           </div>
         </div>
+
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Sobreprecio</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput type="number" placeholder="Ingrese el sobreprecio" formControlName="sobreprecio">
+              @if (form.get('sobreprecio')?.invalid) {  
+              <mat-error>El sobreprecio es requerido y debe ser positivo</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+
   
         <div class="row justify-content-end">
           <div class="col-sm-8">

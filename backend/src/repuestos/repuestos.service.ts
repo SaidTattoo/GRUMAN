@@ -18,6 +18,15 @@ export class RepuestosService {
     return this.repuestosRepository.findOneBy({ id });
   }
   async create(repuesto: Repuesto): Promise<Repuesto> {
+    if (!repuesto.precioNetoCompra || !repuesto.sobreprecio) {
+      throw new Error('Los valores de precioNetoCompra y sobreprecio son obligatorios.');
+    }
+    // Cálculo de los precios relacionados
+    repuesto.precioIva = repuesto.precioNetoCompra * 0.19; // Ejemplo: 19% de IVA
+    repuesto.precioBruto = repuesto.precioNetoCompra + repuesto.precioIva;
+    repuesto.precio = repuesto.precioBruto + repuesto.sobreprecio;
+
+
     return this.repuestosRepository.save(repuesto);
   }
   async delete(id: number): Promise<void> {

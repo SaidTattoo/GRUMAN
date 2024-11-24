@@ -24,7 +24,8 @@ export class CrearRepuestosComponent {
       articulo: ['', Validators.required],
       marca: ['', Validators.required],
       codigoBarra: ['', Validators.required],
-      precio: ['', [Validators.required, Validators.min(0)]]
+      precioNetoCompra: ['', [Validators.required, Validators.min(0)]],
+      sobreprecio: ['', [Validators.required, Validators.min(0)]],
     });
   }
 

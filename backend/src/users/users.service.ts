@@ -11,6 +11,8 @@ export class UsersService {
     constructor(
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        @InjectRepository(Client)
+        private clientRepository: Repository<Client>,
     ) {}
 
     /** findAllUsers */
@@ -33,8 +35,9 @@ export class UsersService {
     /** CREATEUSER  and asign client */
     /**encode password */
     async createUser(createUserDto: CreateUserDto): Promise<User> {
-        const {name,  rut, email, password, profile, clientId } = createUserDto;
-    
+        const { name, rut, email, password, profile, clientId } = createUserDto;
+        console.log('------------->', createUserDto);
+       
         const existingUser = await this.userRepository.findOne({
           where: [{ rut }, { email }],
         });
@@ -44,18 +47,24 @@ export class UsersService {
         }
     
         const hashedPassword = await bcrypt.hash(password, 10);
-    
+
+        // Manejar múltiples clientId
+        const clients = await this.clientRepository.findByIds(Array.isArray(clientId) ? clientId : [clientId]);
+        if (clients.length === 0) {
+            throw new NotFoundException('Clientes no encontrados');
+        }
+
         const user = this.userRepository.create({
           rut,
           name,
           email,
           profile,
           password: hashedPassword,
-          clients: [{ id: clientId }],
+          clients,
         });
-    
+        console.log('------------->', user);
         return this.userRepository.save(user);
-      }
+    }
 
     /** CHANGEPASSWORD */
     async changePassword(id: number, newPassword: any): Promise<User> {
@@ -69,5 +78,44 @@ export class UsersService {
 
     async getAllUsersByClient(clientId: number): Promise<User[]> {
         return this.userRepository.find({ where: { clients: { id: clientId } }, relations: ['clients'] });
+    }
+
+    async createUsers(createUsersDto: CreateUserDto[]): Promise<User[]> {
+        const users: User[] = [];
+
+        for (const createUserDto of createUsersDto) {
+            const { name, rut, email, password, profile, clientId } = createUserDto;
+            console.log('------------->',createUserDto);
+
+            const existingUser = await this.userRepository.findOne({
+                where: [{ rut }, { email }],
+            });
+            console.log('------------->',existingUser);
+            if (existingUser) {
+                throw new ConflictException(`El rut o el email ya están en uso para el usuario: ${email}`);
+            }
+            
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Manejar múltiples clientId
+            const clients = await this.clientRepository.findByIds([clientId]);
+            if (clients.length === 0) {
+                throw new NotFoundException(`Clientes no encontrados para el usuario: ${email}`);
+            }
+            console.log('------------->',clients);
+            const user = this.userRepository.create({
+                rut,
+                name,
+                email,
+                profile,
+                password: hashedPassword,
+                clients,
+            });
+            console.log('------------->',user);
+            const savedUser = await this.userRepository.save(user);
+            users.push(savedUser);
+        }
+
+        return users;
     }
 }

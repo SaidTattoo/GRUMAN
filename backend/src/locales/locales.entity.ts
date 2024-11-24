@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { SectorTrabajo } from '../sectores-trabajo/sectores-trabajo.entity';
 import { Programacion } from '../programacion/programacion.entity';
 import { Comuna } from '../regiones-comunas/entities/comuna.entity';
@@ -48,8 +48,9 @@ export class Locales {
   @Column({ type: 'decimal', precision: 10, scale: 8 })
   longitud: number;
 
-  @ManyToOne(() => Client, (client) => client.locales)
-  client: Client;
+  @ManyToOne(() => Client, (client) => client.locales, { eager: false })
+  @JoinColumn({ name: 'clientId' }) // Asegúrate de que la columna en la base de datos sea 'clientId'
+  client: Client; // Cambia el nombre de la relación para que sea 'client'
 
   @Column()
   numeroLocal: string;

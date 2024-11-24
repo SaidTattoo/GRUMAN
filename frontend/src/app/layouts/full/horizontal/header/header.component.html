@@ -251,8 +251,9 @@
         </div>
       </div>
     </button>
+    <!-- aca se modifica lo de menu de login y profile -->
     <mat-menu #profileMenu="matMenu" xPosition="before" class="topbar-dd cardWithShadow">
-      <ng-scrollbar class="position-relative" style="height: 490px">
+      <ng-scrollbar class="position-relative" style="height:290px">
         <div class="p-x-32 p-y-16">
           <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">User Profile</h6>
 
@@ -261,7 +262,12 @@
               {{ getUserInitials() }}
             </div>
             <div class="m-l-16">
+              @if(userRole === 'ADMINISTRADOR') {
               <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">{{ userName }}</h6>
+              }
+              @if(userRole === 'USER') {
+              <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">{{ userName }}</h6>
+              }
               <span class="f-s-14 mat-body-1 d-block m-b-4">{{ userRole }}</span>
               <span class="d-flex align-items-center">
                 <i-tabler name="mail" class="icon-15 m-r-4"></i-tabler>
@@ -270,7 +276,7 @@
             </div>
           </div>
         </div>
-        <div class="p-x-32">
+    <!--     <div class="p-x-32">
           @for(profile of profiledd; track profile) {
           <a class="p-y-16 text-decoration-none d-block text-hover-primary" [routerLink]="[profile.link]">
             <div class="d-flex align-items-center">
@@ -289,8 +295,8 @@
             </div>
           </a>
           }
-        </div>
-
+        </div> -->
+     
         <div class="p-y-12 p-x-32">
           <button [routerLink]="['/authentication/login']" mat-flat-button color="primary" class="w-100">
             Logout

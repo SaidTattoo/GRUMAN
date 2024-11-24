@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import {  Locales } from './locales.entity';
 import { SectorTrabajo } from '../sectores-trabajo/sectores-trabajo.entity';
 import { SectorTrabajoDefault } from '../sectores-trabajo-default/sectores-trabajo-default.entity';
+import { Client } from '../client/client.entity';
 
 @Injectable()
 export class LocalesService {
@@ -14,6 +15,8 @@ export class LocalesService {
     private readonly sectorTrabajoRepository: Repository<SectorTrabajo>,
     @InjectRepository(SectorTrabajoDefault)
     private readonly sectorTrabajoDefaultRepository: Repository<SectorTrabajoDefault>,
+    @InjectRepository(Client)
+    private readonly clienteRepository: Repository<Client>,
   ) {}
 
   async findAll(): Promise<Locales[]> {
@@ -27,36 +30,50 @@ export class LocalesService {
   async findOne(id: number): Promise<Locales | undefined> {
     return this.localesRepository.findOne({ 
       where: { id },
-      relations: ['cliente', 'sectoresTrabajo']
+      relations: ['client', 'sectoresTrabajo']
+    });
+  }
+  async create(localData: any): Promise<Locales> {
+    // Buscar el cliente por ID
+    const cliente = await this.clienteRepository.findOne({ where: { id: localData.clientId } });
+    if (!cliente) {
+      throw new Error('Cliente no encontrado');
+    }
+  
+    // Crear el objeto Locales
+    const local = this.localesRepository.create({
+      ...localData,
+      client: cliente, // Usa 'client' en lugar de 'clientId'
+    });
+  
+    // Guardar el local
+    const savedLocal: any = await this.localesRepository.save(local);
+  
+    // Verificar que el local se haya guardado correctamente
+    if (!savedLocal || !savedLocal.id) {
+      throw new Error('No se pudo guardar el local o no tiene ID');
+    }
+  
+    // Crear sectores de trabajo por defecto
+    const sectoresPorDefecto = await this.sectorTrabajoDefaultRepository.find();
+    const sectoresParaGuardar = sectoresPorDefecto.map((defaultSector) => {
+      return this.sectorTrabajoRepository.create({
+        nombre: defaultSector.nombre,
+        local: savedLocal, // Asigna la instancia única de Locales
+      });
+    });
+  
+    // Guardar los sectores
+    await this.sectorTrabajoRepository.save(sectoresParaGuardar);
+  
+    // Retornar el local con las relaciones cargadas
+    return this.localesRepository.findOne({
+      where: { id: savedLocal.id },
+      relations: ['sectoresTrabajo', 'client'], // Usa 'client' como nombre de la relación
     });
   }
   
-  async create(local: Locales): Promise<Locales> {
-    // Crear el local
-    const newLocal = this.localesRepository.create(local);
-    const savedLocal = await this.localesRepository.save(newLocal);
-
-    // Buscar sectores de trabajo por defecto
-    const sectoresPorDefecto = await this.sectorTrabajoDefaultRepository.find();
-
-    // Crear nuevos sectores basados en los sectores por defecto
-    const sectoresParaGuardar = sectoresPorDefecto.map(defaultSector => {
-      const sector = new SectorTrabajo();
-      sector.nombre = defaultSector.nombre;
-      sector.local = savedLocal;
-      return sector;
-    });
-
-    // Guardar los nuevos sectores
-    await this.sectorTrabajoRepository.save(sectoresParaGuardar);
-
-    // Retornar el local con los sectores asociados
-    return this.localesRepository.findOne({
-      where: { id: savedLocal.id },
-      relations: ['sectoresTrabajo'],
-    });
-  }
-
+  
   async addSectorToLocal(localId: number, sectorData: Partial<SectorTrabajo>): Promise<Locales> {
     const local = await this.localesRepository.findOne({ where: { id: localId }, relations: ['sectoresTrabajo'] });
     if (!local) {
@@ -83,10 +100,13 @@ export class LocalesService {
     await this.localesRepository.update(id, { deleted: true });
   }
   getLocalesByCliente(clientId: number): Promise<Locales[]> {
-    return this.localesRepository.find({ 
-      where: { client: { id: clientId }, deleted: false },
+    return this.localesRepository.find({
+      where: {
+        client: { id: clientId }, // Filtra por la propiedad id del cliente
+        deleted: false,
+      },
       order: { id: 'DESC' },
-      relations: ['client', 'sectoresTrabajo']
+      relations: ['client', 'sectoresTrabajo'],
     });
   }
 }

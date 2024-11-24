@@ -7,11 +7,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
-
+import Swal from 'sweetalert2';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-cliente-usuarios',
   standalone: true,
-  imports: [MatCardModule,ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule],
+  imports: [MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, ReactiveFormsModule],
   templateUrl: './cliente-usuarios.component.html',
   styleUrl: './cliente-usuarios.component.scss'
 })
@@ -19,8 +20,9 @@ export class ClienteUsuariosComponent implements OnInit {
   clienteUsuarioForm: FormGroup;
   clientes: any[] = [];
   perfiles = ['user', 'reporter', 'admin', 'superadmin'];
+  selectedClientIds: number[] = [];
   
-  constructor(private fb: FormBuilder, private clientesService: ClientesService, private tecnicosService: TecnicosService) {
+  constructor(private fb: FormBuilder, private clientesService: ClientesService, private tecnicosService: TecnicosService, private router: Router) {
 
   }
   ngOnInit(): void {
@@ -30,7 +32,6 @@ export class ClienteUsuariosComponent implements OnInit {
     });
 
     this.clienteUsuarioForm = this.fb.group({
-      clientId: ['', Validators.required],
       perfil: ['', Validators.required],
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -38,17 +39,40 @@ export class ClienteUsuariosComponent implements OnInit {
       password: ['', Validators.required],
       lastname: ['', Validators.required],
       repetirContrasena: ['', Validators.required],
-    });
+    }, { validators: this.passwordMatchValidator });
     console.log(this.clienteUsuarioForm.value);
+  }
+  toggleClientSelection(clienteId: number): void {
+    const index = this.selectedClientIds.indexOf(clienteId);
+    if (index === -1) {
+      this.selectedClientIds.push(clienteId);
+    } else {
+      this.selectedClientIds.splice(index, 1);
+    }
+    console.log(this.selectedClientIds);
+  }
+  trackByClienteId(index: number, cliente: any): number {
+    return cliente.id;
   }
   passwordMatchValidator(form: FormGroup) {
     return form.get('password')?.value === form.get('repetirContrasena')?.value
       ? null : { mismatch: true };
   }
   onSubmit() {
+    if (!this.isFormValid()) {
+      console.error('Formulario inválido o sin clientes seleccionados');
+      return;
+    }
+
+    // Desactivar el botón de envío para evitar múltiples clics
+    const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+
     const formValues = this.clienteUsuarioForm.value;
     const tecnicoData = {
-      clientId: formValues.clientId,
+      clientId: this.selectedClientIds,
       perfil: formValues.perfil,
       name: formValues.name,
       email: formValues.email,
@@ -57,9 +81,40 @@ export class ClienteUsuariosComponent implements OnInit {
       repetirContrasena: formValues.repetirContrasena,
       lastname: formValues.lastname,
     };
+
     this.tecnicosService.createTecnico(tecnicoData).subscribe({
-      next: (res) => console.log('Usuario creado', res),
-      error: (err) => console.error('Error al crear usuario', err),
+      next: (res) => {
+        console.log('Usuario creado', res);
+        Swal.fire({
+          icon: 'success',
+          title: 'Usuario creado',
+          text: 'El usuario ha sido creado exitosamente.',
+        });
+        this.router.navigate(['/mantenedores/tecnicos']);
+      },
+      error: (err) => {
+        console.error('Error al crear usuario', err);
+        if (err.statusCode === 409) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'El rut o el email ya están en uso.',
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: err.error.message,
+          });
+        }
+        // Reactivar el botón en caso de error
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+      },
     });
+  }
+  isFormValid(): boolean {
+    return this.clienteUsuarioForm.valid && this.selectedClientIds.length > 0;
   }
 }

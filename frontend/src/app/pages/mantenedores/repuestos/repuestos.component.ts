@@ -1,5 +1,5 @@
 import { CommonModule, JsonPipe } from '@angular/common';
-import { Component, ViewChild } from '@angular/core';
+import { Component, LOCALE_ID, ViewChild } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -10,16 +10,19 @@ import { Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import Swal from 'sweetalert2';
-
+import { registerLocaleData } from '@angular/common';
+import localeEsCl from '@angular/common/locales/es-CL';
+registerLocaleData(localeEsCl, 'es-CL');
 @Component({
   selector: 'app-repuestos',
   standalone: true,
   imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatCardModule, MatButtonModule, CommonModule, MatFormFieldModule, MatInputModule],
   templateUrl: './repuestos.component.html',
-  styleUrl: './repuestos.component.scss'
+  styleUrl: './repuestos.component.scss',
+  providers: [{ provide: LOCALE_ID, useValue: 'es-CL' }]
 })
 export class RepuestosComponent {
-  displayedColumns: string[] = ['id', 'familia', 'articulo', 'marca', 'codigoBarra', 'precio', 'acciones' ];
+  displayedColumns: string[] = ['id', 'familia', 'articulo', 'marca', 'codigoBarra', 'precio','precioIva','precioBruto','sobreprecio', 'acciones' ];
   dataSource = new MatTableDataSource<any>();
   repuestos:any = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;

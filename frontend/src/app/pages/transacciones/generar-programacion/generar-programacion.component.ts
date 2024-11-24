@@ -89,7 +89,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       this.getTiposServicio(),
       this.getSectores(),
       this.getVehiculos(),
-      this.getClientes()
+      /* this.getClientes(), */
+      this.getClientesFromLocalStorage()
     ]).finally(() => {
       this.loading = false;
     });
@@ -155,7 +156,25 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     }
   }
 
-  getClientes(): void {
+  /* obtener los clientes del localstorage  SI SOLO TIENE UN CLIENTE  DEJARLO SELECCIONADO Y DISABLED EL INPUT */
+  getClientesFromLocalStorage(): void {
+    const currentUserString = localStorage.getItem('currentUser');
+    let currentUser: any = null;
+    if (currentUserString) {
+      currentUser = JSON.parse(currentUserString);
+      console.log('------------->', currentUser.companies);
+      this.clientes = currentUser.companies;
+
+      if (this.clientes.length === 1) {
+        const singleClient = this.clientes[0];
+        this.programacionForm.get('clientId')?.setValue(singleClient.id);
+        this.programacionForm.get('clientId')?.disable();
+      }
+    }
+  }
+
+
+ /*  getClientes(): void {
     this.clientesService.getClientes()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -167,7 +186,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
           this.showErrorMessage('Error al cargar los clientes');
         }
       });
-  }
+  } */
 
   getTiposServicio(): void {
     this.tipoServicioService.findAll()

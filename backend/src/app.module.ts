@@ -22,6 +22,7 @@ import { SectoresTrabajoDefaultModule } from './sectores-trabajo-default/sectore
 import { TipoServicioModule } from './tipo-servicio/tipo-servicio.module';
 import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 import { DocumentosModule } from './documentos/documentos.module';
+import { ServiciosModule } from './servicios/servicios.module';
 @Module({
   imports: [
     DatabaseModule, 
@@ -30,6 +31,7 @@ import { DocumentosModule } from './documentos/documentos.module';
     TipoActivoModule,
     RegionesComunasModule,
     ClientModule,
+    ServiciosModule,
     UploadModule,
     RepuestosModule,
     VehiculosModule,

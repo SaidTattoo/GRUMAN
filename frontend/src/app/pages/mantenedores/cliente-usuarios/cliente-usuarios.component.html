@@ -3,7 +3,7 @@
       <form [formGroup]="clienteUsuarioForm" (ngSubmit)="onSubmit()">
   
         <!-- Seleccionar Cliente -->
-        <div class="row">
+      <!--   <div class="row">
           <div class="col-sm-4 d-flex align-items-center">
             <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Cliente</mat-label>
           </div>
@@ -18,7 +18,7 @@
               </mat-select>
             </mat-form-field>
           </div>
-        </div>
+        </div> -->
   
         <!-- Seleccionar Perfil -->
         <div class="row">
@@ -108,10 +108,30 @@
           </div>
         </div>
   
+        <!-- QUIERO UNA GRILLA DE 4 COLUMNAS CON LAS FOTOS DE LOS CLIENTES  -->
+        <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Seleccionar cliente/s </mat-label>
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            @for (cliente of clientes; track cliente.id) {
+            <div  (click)="toggleClientSelection(cliente.id)" 
+            [class.selected]="selectedClientIds.includes(cliente.id)">
+              <img [src]="cliente.logo" alt="Foto del Cliente" class="img-fluid rounded-circle" 
+                   style="width: 100px; height: 100px; cursor: pointer;">
+            </div>
+            }
+          </div>
+        </div>  
+
+
+
         <!-- Botón de Enviar -->
         <div class="row">
           <div class="col-sm-12 text-right m-t-16">
-            <button mat-flat-button color="primary" [disabled]="clienteUsuarioForm.invalid" type="submit">Crear Usuario</button>
+            <button mat-raised-button color="primary" 
+                    [disabled]="!isFormValid()"
+                    >
+              Enviar
+            </button>
           </div>
         </div>
   

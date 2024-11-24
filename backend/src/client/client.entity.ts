@@ -1,6 +1,6 @@
 import { Programacion } from 'src/programacion/programacion.entity';
 import { User } from '../users/users.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Locales } from 'src/locales/locales.entity';
 
 
@@ -37,7 +37,8 @@ export class Client {
   @ManyToMany(() => User, user => user.clients)
   users: User[];
 
-  @OneToMany(() => Locales, (local) => local.client)
+    @ManyToOne(() => Locales, (local) => local.sectoresTrabajo)
+  @JoinColumn({ name: 'localId' })
   locales: Locales[];
 
    @OneToMany(() => Programacion, programacion => programacion.client)
