@@ -5,6 +5,8 @@ import { jwtDecode } from 'jwt-decode';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../config';
+import { MenuService } from './menu.service';
+import { NavItem } from '../layouts/full/vertical/sidebar/nav-item/nav-item';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +17,7 @@ export class AuthService {
   private currentUserSubject: BehaviorSubject<any | null>;
   public currentUser: Observable<any | null>;
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private http: HttpClient, private router: Router, private menuService: MenuService) {
     const storedUser = localStorage.getItem('currentUser');
     this.currentUserSubject = new BehaviorSubject<any | null>(storedUser ? JSON.parse(storedUser) : null);
     this.currentUser = this.currentUserSubject.asObservable();
@@ -40,16 +42,25 @@ export class AuthService {
         };
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.currentUserSubject.next(user);
+        const newMenuItems = this.getMenuItemsForUser(user);
+        this.menuService.updateMenuItems(newMenuItems);
       })
     );
   }
-
+  private getMenuItemsForUser(user: any): any[] {
+    // Lógica para determinar los elementos del menú según el usuario
+    if (user.profile === 'admin') {
+      return this.adminNavItems; // Define adminNavItems según tus necesidades
+    } else {
+      return this.userNavItems; // Define userNavItems según tus necesidades
+    }
+  }
   logout(): void {
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
+    // Notificar al servicio de menú para que restablezca los elementos
+    this.menuService.updateMenuItems([]);
   }
-
   isAuthenticated(): boolean {
     const user = this.currentUserValue;
     if (user && user.token) {
@@ -70,4 +81,37 @@ export class AuthService {
   changePassword(id: number, password: string): Observable<any> {
     return this.http.patch<any>(`${this.apiUrlPass}users/${id}/password`, { password });
   }
+
+
+
+
+
+
+  private adminNavItems: NavItem[] = [
+    {
+      displayName: 'Dashboard',
+      iconName: 'dashboard',
+      route: '/admin/dashboard',
+    },
+    {
+      displayName: 'User Management',
+      iconName: 'people',
+      route: '/admin/users',
+    },
+    // Otros elementos específicos para administradores
+  ];
+
+  private userNavItems: NavItem[] = [
+    {
+      displayName: 'Home',
+      iconName: 'home',
+      route: '/home',
+    },
+    {
+      displayName: 'Profile',
+      iconName: 'person',
+      route: '/profile',
+    },
+    // Otros elementos específicos para usuarios regulares
+  ];
 }

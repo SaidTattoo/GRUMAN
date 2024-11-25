@@ -1,4 +1,4 @@
-import { User } from "../tecnicos/tecnico.entity";
+import { User } from "src/users/users.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('solicitudes_aprobacion_correctiva')

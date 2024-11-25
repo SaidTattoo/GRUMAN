@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
@@ -12,7 +12,7 @@ import Swal from 'sweetalert2';
   imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule],
   templateUrl: './boxed-login.component.html',
 })
-export class AppBoxedLoginComponent {
+export class AppBoxedLoginComponent implements OnInit {
   options = this.settings.getOptions();
 
   constructor(private settings: CoreService, private router: Router, private authService: AuthService) { }
@@ -26,7 +26,12 @@ export class AppBoxedLoginComponent {
     return this.form.controls;
   }
 
+  ngOnInit(): void { 
+    
+  }  
+
   submit() {
+  
     if (this.form.valid) {
       const email = this.form.value.email || '';
       const password = this.form.value.password || '';
@@ -43,6 +48,6 @@ export class AppBoxedLoginComponent {
           });
         }
       );
-    }
+    } 
   }
 }

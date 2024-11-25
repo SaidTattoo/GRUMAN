@@ -20,9 +20,11 @@ const hasGrumanCompany = (user: any): boolean => {
   if (!user || !user.companies) {
     return false;
   }
+  
   return user.companies.some((company: any) =>
     company.nombre.toLowerCase() === 'gruman'.toLowerCase()
   );
+
 };
 
 // Condición para mostrar "Mantenedores"

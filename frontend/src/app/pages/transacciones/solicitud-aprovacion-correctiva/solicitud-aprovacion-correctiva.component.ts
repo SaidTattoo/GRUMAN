@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { Router } from '@angular/router';
 import { ListadoSolicitudAprobacionCorrectivaService } from 'src/app/services/listado-solicitud-aprobacion-correctiva.service';
 import { LocalesService } from 'src/app/services/locales.service';
 import { ServiciosService } from 'src/app/services/servicios.service';
@@ -28,7 +29,8 @@ export class SolicitudAprobacionCorrectivaComponent {
      private localesService: LocalesService, 
      private usersService: UsersService, 
      private uploadDataService: UploadDataService,
-     private listadoSolicitudAprobacionCorrectivaService: ListadoSolicitudAprobacionCorrectivaService
+     private listadoSolicitudAprobacionCorrectivaService: ListadoSolicitudAprobacionCorrectivaService,
+     private router: Router
     ) {
     this.tiempos = Array.from({ length: 720 }, (_, i) => i + 1);
   }
@@ -113,6 +115,7 @@ export class SolicitudAprobacionCorrectivaComponent {
 
       this.listadoSolicitudAprobacionCorrectivaService.createSolicitudAprobacionCorrectiva(formValue).subscribe(data => {
         console.log('solicitud creada', data);
+        this.router.navigate(['/transacciones/listado-solicitud-aprobacion-correctiva']);
       });
     });
   }

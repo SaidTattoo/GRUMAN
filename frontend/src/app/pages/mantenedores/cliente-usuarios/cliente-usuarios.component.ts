@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,10 +9,13 @@ import { ClientesService } from 'src/app/services/clientes.service';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 @Component({
   selector: 'app-cliente-usuarios',
   standalone: true,
-  imports: [MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, ReactiveFormsModule],
+  imports: [CommonModule, MatProgressBarModule, MatCardModule,   MatListModule, MatFormFieldModule, FormsModule, MatInputModule, MatSelectModule, MatButtonModule, ReactiveFormsModule],
   templateUrl: './cliente-usuarios.component.html',
   styleUrl: './cliente-usuarios.component.scss'
 })
@@ -22,11 +25,21 @@ export class ClienteUsuariosComponent implements OnInit {
   perfiles = ['user', 'reporter', 'admin', 'superadmin'];
   selectedClientIds: number[] = [];
   
+  hasMinLength = false;
+  hasNumber = false;
+  hasSpecialChar = false;
+  hasUpperCase = false;
+  hasLowerCase = false;
+
+  
+
   constructor(private fb: FormBuilder, private clientesService: ClientesService, private tecnicosService: TecnicosService, private router: Router) {
 
   }
   ngOnInit(): void {
     
+
+
     this.clientesService.getClientes().subscribe((data:any) => {
       this.clientes = data;
     });
@@ -42,6 +55,9 @@ export class ClienteUsuariosComponent implements OnInit {
     }, { validators: this.passwordMatchValidator });
     console.log(this.clienteUsuarioForm.value);
   }
+
+
+  
   toggleClientSelection(clienteId: number): void {
     const index = this.selectedClientIds.indexOf(clienteId);
     if (index === -1) {
@@ -117,4 +133,12 @@ export class ClienteUsuariosComponent implements OnInit {
   isFormValid(): boolean {
     return this.clienteUsuarioForm.valid && this.selectedClientIds.length > 0;
   }
+
+
+
+
+
+
+
+
 }

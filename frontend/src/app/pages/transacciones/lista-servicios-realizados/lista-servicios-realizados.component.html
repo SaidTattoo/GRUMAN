@@ -1,0 +1,57 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+        <div class="table-responsive m-t-30">
+            <table mat-table [dataSource]="dataSource" class="w-100 mat-elevation-z8">
+                <!-- ID Column -->
+                <ng-container matColumnDef="id">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">ID</th>
+                    <td mat-cell *matCellDef="let element" class="p-l-0">{{ element.id }}</td>
+                </ng-container>
+
+                <!-- Tipo Servicio Column -->
+                <ng-container matColumnDef="tipoServicio">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">Tipo Servicio</th>
+                    <td mat-cell *matCellDef="let element" class="p-l-0">{{ element.tipoServicio }}</td>
+                </ng-container>
+
+                <!-- Tipo Solicitud Column -->
+                <ng-container matColumnDef="tipoSolicitud">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">Tipo Solicitud</th>
+                    <td mat-cell *matCellDef="let element" class="p-l-0">{{ element.tipoSolicitud }}</td>
+                </ng-container>
+
+                <!-- Dia Seleccionado Inicio Column -->
+                <ng-container matColumnDef="diaSeleccionadoInicio">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">Dia Seleccionado Inicio</th>
+                    <td mat-cell *matCellDef="let element" class="p-l-0">{{ element.diaSeleccionadoInicio }}</td>
+                </ng-container>
+
+                <!-- Dia Seleccionado Termino Column -->
+                <ng-container matColumnDef="diaSeleccionadoTermino">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">Dia Seleccionado Termino</th>
+                    <td mat-cell *matCellDef="let element" class="p-l-0">{{ element.diaSeleccionadoTermino }}</td>
+                </ng-container>
+
+                <!-- Mes Facturacion Column -->
+                <ng-container matColumnDef="mesFacturacion">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">Mes Facturacion</th>
+                    <td mat-cell *matCellDef="let element" class="p-l-0">{{ element.mesFacturacion }}</td>
+                </ng-container>
+
+                <!-- Tipo Busqueda Column -->
+                <ng-container matColumnDef="tipoBusqueda">
+                    <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">Tipo Busqueda</th>
+                    <td mat-cell *matCellDef="let element" class="p-l-0">{{ element.tipoBusqueda }}</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                <!-- Row shown when there is no matching data. -->
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="7">No se encontraron datos</td>
+                </tr>
+            </table>
+        </div>
+    </mat-card-content>
+</mat-card>

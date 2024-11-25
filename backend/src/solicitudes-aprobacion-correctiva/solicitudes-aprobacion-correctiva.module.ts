@@ -3,7 +3,7 @@ import { SolicitudesAprobacionCorrectivaController } from './solicitudes-aprobac
 import { SolicitudesAprobacionCorrectivaService } from './solicitudes-aprobacion-correctiva.service';
 import { SolicitudesAprobacionCorrectiva } from './solicitudes-aprobacion-correctiva.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../tecnicos/tecnico.entity';
+import { User } from '../users/users.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([SolicitudesAprobacionCorrectiva, User])],

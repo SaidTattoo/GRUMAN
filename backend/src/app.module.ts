@@ -23,6 +23,8 @@ import { TipoServicioModule } from './tipo-servicio/tipo-servicio.module';
 import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 import { DocumentosModule } from './documentos/documentos.module';
 import { ServiciosModule } from './servicios/servicios.module';
+import { SolicitudesAprobacionCorrectivaModule } from './solicitudes-aprobacion-correctiva/solicitudes-aprobacion-correctiva.module';
+import { ServiciosRealizadosModule } from './servicios_realizados/servicios_realizados.module';
 @Module({
   imports: [
     DatabaseModule, 
@@ -42,10 +44,12 @@ import { ServiciosModule } from './servicios/servicios.module';
     SectoresTrabajoModule,
     SectoresTrabajoDefaultModule,
     TipoServicioModule,
+    SolicitudesAprobacionCorrectivaModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'), // Asegúrate de que esta ruta es correcta
       serveRoot: '/uploads', // Esto asegura que las rutas comiencen con /uploads
     }),
+    ServiciosRealizadosModule,
 /*     LocalesModule,
     SectoresTrabajoModule,
     ProgramacionModule */

@@ -10,6 +10,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
+import { Router } from '@angular/router';
+import { ServiciosRealizadosService } from 'src/app/services/servicios-realizados.service';
 import { ServiciosService } from 'src/app/services/servicios.service';
 
 @Component({
@@ -24,9 +26,15 @@ import { ServiciosService } from 'src/app/services/servicios.service';
 export class ServiciosRealizadosComponent implements OnInit {
   programacionForm: FormGroup;
   tiposServicio: any[] = [];
-  tiposSolicitud: any[] = [];
+  tiposSolicitud: any[] = [
+    {id: 1, nombre: 'Todos'},
+    {id: 2, nombre: 'Normal'},
+    {id: 3, nombre: 'Urgente'},
+    {id: 4, nombre: 'Critico'},
+    {id: 5, nombre: 'Programación'},
+  ];
   meses: any[] = [];
-  constructor(private fb: FormBuilder, private serviciosService: ServiciosService) {
+  constructor(private fb: FormBuilder, private serviciosService: ServiciosService, private serviciosRealizadosService: ServiciosRealizadosService, private router: Router) {
     this.programacionForm = this.fb.group({
       tipoServicio: [null, Validators.required],
       tipoSolicitud: [null, Validators.required],
@@ -59,7 +67,12 @@ export class ServiciosRealizadosComponent implements OnInit {
       console.log('Formulario inválido');
       return;
     }
-    console.log(this.programacionForm.value);
+    const formData = this.programacionForm.value;
+    formData.diaSeleccionadoInicio = new Date(formData.diaSeleccionadoInicio).toISOString().split('T')[0];
+    formData.diaSeleccionadoTermino = new Date(formData.diaSeleccionadoTermino).toISOString().split('T')[0];
+    this.serviciosRealizadosService.create(formData).subscribe((data: any) => {
+      this.router.navigate(['/transacciones/lista-servicios-realizados']);
+    });
   }
   getMeses(){
     /* los meses deben ser rango de el mes actual hasta 10 años atras quiero visualizar mes y año */

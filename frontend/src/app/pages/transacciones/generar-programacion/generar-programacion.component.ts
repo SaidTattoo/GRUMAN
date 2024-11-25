@@ -18,6 +18,7 @@ import { TipoServicioService } from 'src/app/services/tipo-servicio.service';
 import { VehiculosService } from 'src/app/services/vehiculos.service';
 import localeEnGb from '@angular/common/locales/en-GB';
 import Swal from 'sweetalert2';
+import { Router } from '@angular/router';
 const MY_DATE_FORMAT = {
   parse: {
     dateInput: 'DD/MM/YYYY', // this is how your date will be parsed from Input
@@ -57,7 +58,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     private vehiculosService: VehiculosService,
     private programacionService: ProgramacionService,
     private clientesService: ClientesService,
-    private dateAdapter: DateAdapter <Date>
+    private dateAdapter: DateAdapter <Date>,
+    private router: Router
   ) {
     this.initForm();
     registerLocaleData(localeEnGb); 
@@ -90,7 +92,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       this.getSectores(),
       this.getVehiculos(),
       /* this.getClientes(), */
-      this.getClientesFromLocalStorage()
+      this.getClientesFromLocalStorage(),
+      this.getLocales()
     ]).finally(() => {
       this.loading = false;
     });
@@ -145,6 +148,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (res: any) => {
             this.locales = res;
+            console.log('Locales cargados:', this.locales);
+            this.programacionForm.get('local')?.enable(); // Asegúrate de habilitar el campo
           },
           error: (error) => {
             this.showErrorMessage('Error al cargar los locales');
@@ -164,11 +169,12 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       currentUser = JSON.parse(currentUserString);
       console.log('------------->', currentUser.companies);
       this.clientes = currentUser.companies;
-
+      this.getLocales();
       if (this.clientes.length === 1) {
         const singleClient = this.clientes[0];
         this.programacionForm.get('clientId')?.setValue(singleClient.id);
         this.programacionForm.get('clientId')?.disable();
+        this.getLocales();
       }
     }
   }
@@ -251,6 +257,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
             next: (res: any) => {
               this.showSuccessMessage('Programación creada exitosamente');
               this.programacionForm.reset();
+              this.router.navigate(['/transacciones/listado-programacion']);
             },
             error: (error) => {
               this.showErrorMessage('Error al crear la programación');

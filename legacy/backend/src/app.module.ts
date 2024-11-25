@@ -22,8 +22,8 @@ import { TipoServicioModule } from './tipo-servicio/tipo-servicio.module';
 import { ProgramacionModule } from './programacion/programacion.module';
 import { SectoresTrabajoModule } from './sectores-trabajo/sectores-trabajo.module';
 import { SectoresTrabajoDefaultModule } from './sectores-trabajo-default/sectores-trabajo-default.module';
-import { ServiciosModule } from './servicios/servicios.module';
-import { SolicitudesAprobacionCorrectivaModule } from './solicitudes-aprobacion-correctiva/solicitudes-aprobacion-correctiva.module';
+import { ServiciosModule } from '../../../backend/src/servicios/servicios.module';
+import { SolicitudesAprobacionCorrectivaModule } from '../../../backend/src/solicitudes-aprobacion-correctiva/solicitudes-aprobacion-correctiva.module';
 
 @Module({
   imports: [

@@ -96,6 +96,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'transacciones/lista-servicios-realizados',
+        loadChildren: () =>
+          import('./pages/transacciones/lista-servicios-realizados/lista-servicios-realizados.routes').then(
+            (m) => m.LISTA_SERVICIOS_REALIZADOS_ROUTES
+          ),
+      },
+      {
         path: 'mantenedores/cliente-usuarios',
         loadChildren: () =>
           import('./pages/mantenedores/cliente-usuarios/cliente-usuarios.routes').then(

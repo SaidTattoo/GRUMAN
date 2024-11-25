@@ -46,7 +46,7 @@ export class AppController {
       throw new Error('Archivo no encontrado');
     }
 
-    const filename = file.filename;
+     const filename = file.filename;
      const fileUrl = `http://138.255.103.35:3000/uploads/${path}/${filename}`;
    // const fileUrl = `http://localhost:3000/uploads/${path}/${filename}`;
 
