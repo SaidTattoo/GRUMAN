@@ -75,12 +75,23 @@
               <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Logo</mat-label>
             </div>
             <div class="col-sm-8">
-              <button mat-button color="primary" (click)="fileInput.click()">Seleccionar archivo</button>
+              @if (imagePreview) {
+                <div class="image-box">
+                  <img loading="lazy" [src]="imagePreview" alt="Vista previa del logo" class="img-preview" />
+                </div>
+              }@else{
+              <div class="drop-area" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+                <p>Haz clic para seleccionar</p>
+                <p>La imagen debe ser de 180 x 180 pixeles </p>
+              </div>
+              }
               <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
               <span>{{ fileName }}</span>
-              @if (imagePreview) {
-                <img width="100" loading="lazy" [src]="imagePreview" alt="Vista previa del logo" class="img-preview" />
-              }
+             <!--  @if (imagePreview) {
+                <div class="image-box">
+                  <img loading="lazy" [src]="imagePreview" alt="Vista previa del logo" class="img-preview" />
+                </div>
+              } -->
             </div>
           </div>
         </div>

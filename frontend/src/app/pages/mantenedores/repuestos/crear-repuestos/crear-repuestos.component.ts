@@ -31,24 +31,43 @@ export class CrearRepuestosComponent {
 
   onSubmit() {
     if (this.form.valid) {
-      console.log('Formulario válido:', this.form.value);
-      // Aquí puedes agregar la lógica para enviar el formulario
-      this.repuestosService.crearRepuesto(this.form.value).subscribe(() => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Repuesto creado correctamente',
-        });
-        this.form.reset();
-        this.router.navigate(['/mantenedores/repuestos']);
-      });
+      const formValues = this.form.value;
+  
+      // Convertir precios a números (asegurando que sean tipo número)
+      const repuesto = {
+        ...formValues,
+        precioNetoCompra: parseFloat(formValues.precioNetoCompra),
+        sobreprecio: parseFloat(formValues.sobreprecio),
+      };
+  
+      console.log('Datos procesados para enviar:', repuesto);
+  
+      // Enviar datos al servicio
+      this.repuestosService.crearRepuesto(repuesto).subscribe(
+        (response) => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Repuesto creado correctamente',
+          });
+          this.form.reset();
+          this.router.navigate(['/mantenedores/repuestos']);
+        },
+        (error) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Algo salió mal al crear el repuesto.',
+          });
+          console.error('Error al crear el repuesto:', error);
+        }
+      );
     } else {
       Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: 'Algo salió mal!',
+        text: 'Por favor, completa todos los campos obligatorios.',
       });
       console.log('Formulario inválido');
-
     }
   }
 }

@@ -15,12 +15,22 @@
       <div class="table-responsive m-t-30">
         <table mat-table [dataSource]="dataSource" class="w-100">
           <!-- ID Column -->
-         <ng-container matColumnDef="numero_local">
+        <ng-container matColumnDef="cliente">
             <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">
               ID
             </th>
             <td mat-cell *matCellDef="let element" class="p-l-0">
-              {{ element.numeroLocal }}
+              {{ element.client.nombre }}
+            </td>
+          </ng-container>
+
+          <!-- Nombre Local Column -->
+          <ng-container matColumnDef="nombre_local">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+              Nombre Local
+            </th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.nombre_local }}
             </td>
           </ng-container>
 
@@ -40,7 +50,7 @@
               Comuna
             </th>
             <td mat-cell *matCellDef="let element">
-              {{ element.comuna }}
+              {{ element.comuna.comuna_nombre }}
             </td>
           </ng-container>
 
@@ -50,7 +60,7 @@
               Región
             </th>
             <td mat-cell *matCellDef="let element">
-              {{ element.region }}
+              {{ element.region.region_nombre || '-' }}
             </td>
           </ng-container>
 

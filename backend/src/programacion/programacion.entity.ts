@@ -32,4 +32,7 @@ export class Programacion {
 
     @ManyToOne(() => Locales, local => local.programaciones)
     local: Locales;
+
+    @Column({ default: false })
+    deleted: boolean;
 }

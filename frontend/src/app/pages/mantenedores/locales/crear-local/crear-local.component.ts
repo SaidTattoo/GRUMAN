@@ -40,6 +40,7 @@ export class CrearLocalComponent implements OnInit {
     this.localForm = this.fb.group({
       direccion: ['', Validators.required],
       region: ['', Validators.required],
+      nombre_local: ['', Validators.required],
       provincia: [{value: '', disabled: true}, Validators.required],
       comuna: [{value: '', disabled: true}, Validators.required],
       clientId: ['', Validators.required],
@@ -66,7 +67,8 @@ export class CrearLocalComponent implements OnInit {
   getClientes() {
     this.clientesService.getClientes().subscribe((data) => {
       console.log('****', data);
-      this.clientes = data;
+      //omitir el ciente llamado GRUMAN 
+      this.clientes = data.filter(cliente => cliente.nombre !== 'GRUMAN');
     });
   }
 

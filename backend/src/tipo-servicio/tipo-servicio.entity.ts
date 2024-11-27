@@ -6,5 +6,5 @@ export class TipoServicio {
   id: number;
 
   @Column()
-  name: string;
+  nombre: string;
 }

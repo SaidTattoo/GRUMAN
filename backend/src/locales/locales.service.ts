@@ -23,14 +23,30 @@ export class LocalesService {
     return this.localesRepository.find({ 
       where: { deleted: false },
       order: { id: 'DESC' },
-      relations: ['client', 'sectoresTrabajo','comuna', 'comuna.provincia', 'comuna.provincia.region']
+      relations: [
+        'client', 
+        'sectoresTrabajo',
+        'comuna', 
+        'provincia',
+        'region',
+        'comuna.provincia', 
+        'comuna.provincia.region'
+      ]
     });
   }
   
   async findOne(id: number): Promise<Locales | undefined> {
     return this.localesRepository.findOne({ 
       where: { id },
-      relations: ['client', 'sectoresTrabajo']
+      relations: [
+        'client', 
+        'sectoresTrabajo',
+        'comuna',
+        'provincia',
+        'region',
+        'comuna.provincia',
+        'comuna.provincia.region'
+      ]
     });
   }
   async create(localData: any): Promise<Locales> {
@@ -69,7 +85,15 @@ export class LocalesService {
     // Retornar el local con las relaciones cargadas
     return this.localesRepository.findOne({
       where: { id: savedLocal.id },
-      relations: ['sectoresTrabajo', 'client'], // Usa 'client' como nombre de la relación
+      relations: [
+        'sectoresTrabajo', 
+        'client',
+        'comuna',
+        'provincia',
+        'region',
+        'comuna.provincia',
+        'comuna.provincia.region'
+      ]
     });
   }
   

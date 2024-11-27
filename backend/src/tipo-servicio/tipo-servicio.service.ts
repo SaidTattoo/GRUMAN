@@ -17,4 +17,8 @@ export class TipoServicioService {
           },
         });
       }
+
+      async createTipoServicio(tipoServicio: TipoServicio): Promise<TipoServicio> {
+        return this.tipoServicioRepository.save(tipoServicio);
+      }
 }

@@ -65,6 +65,17 @@ export class CrearClienteComponent {
         this.router.navigate(['/mantenedores/clientes']);
       });
   }
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+  
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.onFileSelected({ target: { files: files } } as unknown as Event);
+    }
+  }
   volver(){
     this.router.navigate(['/mantenedores/clientes']);
   }

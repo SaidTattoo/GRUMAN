@@ -4,7 +4,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { Router } from '@angular/router';
 import { SectoresService } from 'src/app/services/sectores.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-crear-sector-default',
@@ -22,7 +24,7 @@ import { SectoresService } from 'src/app/services/sectores.service';
 })
 export class CrearSectorDefaultComponent {
   sectorForm: FormGroup;
-  constructor(private fb: FormBuilder, private sectoresService: SectoresService){
+  constructor(private fb: FormBuilder, private sectoresService: SectoresService, private router: Router){
     this.sectorForm = this.fb.group({
       nombre: ['', Validators.required]
     });
@@ -32,6 +34,12 @@ export class CrearSectorDefaultComponent {
     console.log(this.sectorForm.value);
     this.sectoresService.createSectorDefault(this.sectorForm.value).subscribe(res => {
       console.log(res);
+      Swal.fire({
+        title: 'Éxito',
+        text: 'Sector creado correctamente',
+        icon: 'success'
+      });
+      this.router.navigate(['/mantenedores/sectores-trabajo']);
     });
   }
 }

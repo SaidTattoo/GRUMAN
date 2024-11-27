@@ -3,6 +3,8 @@ import { SectorTrabajo } from '../sectores-trabajo/sectores-trabajo.entity';
 import { Programacion } from '../programacion/programacion.entity';
 import { Comuna } from '../regiones-comunas/entities/comuna.entity';
 import { Client } from '../client/client.entity';
+import { Region } from 'src/regiones-comunas/entities/region.entity';
+import { Provincia } from 'src/regiones-comunas/entities/provincia.entity';
 
 @Entity('locales')
 export class Locales {
@@ -12,14 +14,20 @@ export class Locales {
   @Column()
   direccion: string;
 
+  @Column()
+  nombre_local: string;
+
   @ManyToOne(() => Comuna, comuna => comuna.locales)
   comuna: Comuna;
 
-  @Column()
-  region: string;
+ 
+  @ManyToOne(() => Region, region => region.locales)
+  @JoinColumn({ name: 'regionId' })
+  region: Region;
 
-  @Column()
-  provincia: string;
+  @ManyToOne(() => Provincia, provincia => provincia.locales)
+  @JoinColumn({ name: 'provinciaId' })
+  provincia: Provincia;
 
   @Column()
   zona: string;

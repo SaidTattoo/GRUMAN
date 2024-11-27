@@ -64,7 +64,7 @@ interface quicklinks {
 })
 export class AppHorizontalHeaderComponent implements OnInit {
   searchText: string = '';
-
+  userProfile:any;
   @Input() showToggle = true;
   @Input() toggleChecked = false;
   @Output() toggleMobileNav = new EventEmitter<void>();
@@ -133,6 +133,7 @@ export class AppHorizontalHeaderComponent implements OnInit {
   userCompanies: any[] = [];
   selectedCompany: any | null = null;
   ngOnInit(): void {
+    this.userProfile = this.authService.getUserProfile();
     this.authService.currentUser.subscribe(user => {
       console.log(user);
       if (user) {

@@ -12,17 +12,18 @@ import { MatInputModule } from '@angular/material/input';
 import Swal from 'sweetalert2';
 import { registerLocaleData } from '@angular/common';
 import localeEsCl from '@angular/common/locales/es-CL';
+import { MatIconModule } from '@angular/material/icon';
 registerLocaleData(localeEsCl, 'es-CL');
 @Component({
   selector: 'app-repuestos',
   standalone: true,
-  imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatCardModule, MatButtonModule, CommonModule, MatFormFieldModule, MatInputModule],
+  imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatCardModule, MatButtonModule, CommonModule, MatFormFieldModule, MatInputModule,MatIconModule],
   templateUrl: './repuestos.component.html',
   styleUrl: './repuestos.component.scss',
   providers: [{ provide: LOCALE_ID, useValue: 'es-CL' }]
 })
 export class RepuestosComponent {
-  displayedColumns: string[] = ['id', 'familia', 'articulo', 'marca', 'codigoBarra', 'precio','precioIva','precioBruto','sobreprecio', 'acciones' ];
+  displayedColumns: string[] = [ 'familia', 'articulo', 'marca', 'codigoBarra', 'precio','precioIva','precioBruto', 'precioNetoCompra','sobreprecio', 'acciones' ];
   dataSource = new MatTableDataSource<any>();
   repuestos:any = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;

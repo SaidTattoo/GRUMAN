@@ -15,4 +15,13 @@ export class ProgramacionService {
   createProgramacion(programacion: any) {
     return this.http.post<any>(`${environment.apiUrl}programacion`, programacion);
   }
+  deleteProgramacion(id: number) {
+    return this.http.delete<any>(`${environment.apiUrl}programacion/${id}`);
+  }
+  getProgramacionById(id: number) {
+    return this.http.get<any>(`${environment.apiUrl}programacion/${id}`);
+  }
+  updateProgramacion(id: number, programacion: any) {
+    return this.http.put<any>(`${environment.apiUrl}programacion/${id}`, programacion);
+  }
 }

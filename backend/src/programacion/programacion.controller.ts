@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ProgramacionService } from './programacion.service';
 import { Programacion } from './programacion.entity';
+import { UpdateResult } from 'typeorm';
 
 @Controller('programacion')
 export class ProgramacionController {
@@ -14,5 +15,20 @@ export class ProgramacionController {
     @Post()
     create(@Body() programacion: Programacion): Promise<Programacion> {
         return this.programacionService.create(programacion);
+    }
+
+    @Delete(':id')
+    delete(@Param('id') id: number): Promise<UpdateResult> {
+        return this.programacionService.delete(id);
+    }
+
+    @Get(':id')
+    findById(@Param('id') id: number): Promise<Programacion> {
+        return this.programacionService.findById(id);
+    }
+
+    @Put(':id')
+    update(@Param('id') id: number, @Body() programacion: Programacion): Promise<UpdateResult> {
+        return this.programacionService.update(id, programacion);
     }
 }

@@ -13,4 +13,8 @@ export class TipoServicioService {
   findAll(): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}tipo-servicio`);
   }
+
+  createTipoServicio(tipoServicio: any): Observable<any> {
+    return this.http.post(`${environment.apiUrl}tipo-servicio`, tipoServicio);
+  }
 }

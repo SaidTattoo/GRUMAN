@@ -14,10 +14,10 @@
     <div class="table-responsive m-t-30">
       <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
         <!-- ID Column -->
-        <ng-container matColumnDef="id">
+     <!--    <ng-container matColumnDef="id">
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> ID </th>
           <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.id}} </td>
-        </ng-container>
+        </ng-container> -->
 
         <!-- Familia Column -->
         <ng-container matColumnDef="familia">
@@ -43,7 +43,7 @@
         </ng-container>
         <!-- Precio Column -->
         <ng-container matColumnDef="precio">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Precio </th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Precio Venta </th>
           <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.precio| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
         </ng-container>
         <!-- Sobreprecio Column -->
@@ -51,7 +51,14 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Sobreprecio </th>
           <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.sobreprecio| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
         </ng-container>
+        
+        <!-- Precio Neto Compra Column -->
+        <ng-container matColumnDef="precioNetoCompra">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Precio Neto Compra </th>
+          <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.precioNetoCompra| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
+        </ng-container>
 
+        <!-- IVA Column -->
         <ng-container matColumnDef="precioIva">
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> IVA </th>
           <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.precioIva| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
@@ -64,10 +71,10 @@
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Acciones </th>
           <td mat-cell *matCellDef="let element" class="p-l-0">
-<!--             <button mat-flat-button color="primary" (click)="openEditarRepuestoModal(element)">Editar</button>
- -->            <button mat-flat-button color="warn" (click)="openEliminarRepuestoModal(element)">Eliminar</button>
-            <button mat-flat-button color="primary" (click)="agregarDocumento(element)">Agregar Documento</button>
-          </td>
+            <button mat-icon-button color="primary" (click)="openEditarRepuestoModal(element)"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button color="warn" (click)="openEliminarRepuestoModal(element)"><mat-icon>delete</mat-icon></button>
+<!--             <button mat-flat-button color="primary" (click)="agregarDocumento(element)">Agregar Documento</button>
+ -->          </td>
         </ng-container>
 
 
