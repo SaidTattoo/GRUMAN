@@ -5,6 +5,7 @@ import { Comuna } from '../regiones-comunas/entities/comuna.entity';
 import { Client } from '../client/client.entity';
 import { Region } from 'src/regiones-comunas/entities/region.entity';
 import { Provincia } from 'src/regiones-comunas/entities/provincia.entity';
+import { ActivoFijoLocal } from 'src/activo-fijo-local/activo-fijo-local.entity';
 
 @Entity('locales')
 export class Locales {
@@ -69,4 +70,7 @@ export class Locales {
   programaciones: Programacion[];
   @Column({ default: false })
   deleted: boolean;
+
+  @OneToMany(() => ActivoFijoLocal, activoFijoLocal => activoFijoLocal.locales)
+  activoFijoLocales: ActivoFijoLocal[];
 }

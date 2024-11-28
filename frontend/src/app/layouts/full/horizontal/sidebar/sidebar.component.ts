@@ -190,6 +190,11 @@ export class AppHorizontalSidebarComponent implements OnInit {
                   iconName: 'home-shield',
                   route: 'mantenedores/servicios',
                 },
+                {
+                  displayName: 'Activo Fijo Local',
+                  iconName: 'home-shield',
+                  route: 'mantenedores/activo-fijo-local',
+                },
               ],
             },
           ]

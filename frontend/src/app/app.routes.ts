@@ -110,6 +110,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mantenedores/activo-fijo-local',
+        loadChildren: () =>
+          import('./pages/mantenedores/activo-fijo-local/activo-fijo-local.routes').then(
+            (m) => m.ACTIVO_FIJO_LOCAL_ROUTES
+          ),
+      },
+      {
         path: 'transacciones/listado-programacion',
         loadChildren: () =>
           import('./pages/transacciones/listado-programacion/listado-programacion.routes').then(

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ActivoFijoLocal } from 'src/activo-fijo-local/activo-fijo-local.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('tipo_activo')
 export class TipoActivo {
@@ -7,4 +8,7 @@ export class TipoActivo {
 
   @Column()
   name: string;
+
+  @OneToMany(() => ActivoFijoLocal, activoFijoLocal => activoFijoLocal.tipoActivo)
+  activoFijoLocales: ActivoFijoLocal[];
 }

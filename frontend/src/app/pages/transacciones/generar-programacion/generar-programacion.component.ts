@@ -168,7 +168,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     if (currentUserString) {
       currentUser = JSON.parse(currentUserString);
       console.log('------------->', currentUser.companies);
-      this.clientes = currentUser.companies;
+      this.clientes = currentUser.companies.filter((cliente: any) => cliente.id !== 5 && cliente.nombre !== 'GRUMAN');
       this.getLocales();
       if (this.clientes.length === 1) {
         const singleClient = this.clientes[0];

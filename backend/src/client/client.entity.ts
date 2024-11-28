@@ -1,7 +1,8 @@
-import { Programacion } from 'src/programacion/programacion.entity';
+import { Programacion } from '../programacion/programacion.entity';
 import { User } from '../users/users.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { Locales } from 'src/locales/locales.entity';
+import { Locales } from '../locales/locales.entity';
+import { ActivoFijoLocal } from '../activo-fijo-local/activo-fijo-local.entity';
 
 
 
@@ -43,4 +44,7 @@ export class Client {
 
    @OneToMany(() => Programacion, programacion => programacion.client)
   programaciones: Programacion[];  
+
+  @OneToMany(() => ActivoFijoLocal, activoFijoLocal => activoFijoLocal.client)
+  activoFijoLocales: ActivoFijoLocal[];
 }
