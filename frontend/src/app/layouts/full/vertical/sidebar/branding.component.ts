@@ -37,13 +37,13 @@ export class BrandingComponent implements OnInit {
   constructor(private settings: CoreService,private authService: AuthService) { }
   ngOnInit(): void {
     const userProfile:any = this.authService.getUserProfile();
-    console.log(userProfile);
+    //console.log(userProfile);
     if (userProfile) {
       this.company = userProfile.company;
     }
   }
   getCompanyLogo(): string {
-    console.log(this.company);
+    //console.log(this.company);
     switch (this.company) {
       case 'maicao':
         return './assets/images/empresas/maicao.png';

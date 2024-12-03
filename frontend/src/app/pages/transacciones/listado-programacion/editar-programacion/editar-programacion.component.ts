@@ -87,7 +87,7 @@ export class EditarProgramacionComponent {
   ngOnInit(): void {
     this.programacionId = this.route.snapshot.params['id'];
     this.programacionService.getProgramacionById(this.programacionId).subscribe((res: any) => {
-      console.log(res);
+      //console.log(res);
       this.programacionForm = new FormGroup({
         clientId: new FormControl(res.client.id, [Validators.required]),
         local: new FormControl(res.local.id, [Validators.required]),
@@ -166,7 +166,7 @@ export class EditarProgramacionComponent {
         .subscribe({
           next: (res: any) => {
             this.locales = res;
-            console.log('Locales cargados:', this.locales);
+            //console.log('Locales cargados:', this.locales);
             this.programacionForm.get('local')?.enable(); // Asegúrate de habilitar el campo
           },
           error: (error) => {
@@ -185,7 +185,7 @@ export class EditarProgramacionComponent {
     let currentUser: any = null;
     if (currentUserString) {
       currentUser = JSON.parse(currentUserString);
-      console.log('------------->', currentUser.companies);
+      //console.log('------------->', currentUser.companies);
       this.clientes = currentUser.companies;
       this.getLocales();
       if (this.clientes.length === 1) {

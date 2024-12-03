@@ -18,7 +18,7 @@ export class LocalesController {
   }
   @Post()
   create(@Body() local: Locales): Promise<Locales> {
-    console.log('local', local);
+    //console.log('local', local);
     return this.localesService.create(local);
   }
 

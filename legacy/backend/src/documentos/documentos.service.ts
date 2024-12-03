@@ -14,7 +14,7 @@ export class DocumentosService {
         return this.documentosRepository.find({ order: { id: 'DESC' }, relations: ['tipoDocumento'] });
     }
     async create(documento: Documentos): Promise<Documentos> {
-        console.log(documento);
+        //console.log(documento);
         return this.documentosRepository.save(documento);
     }
 }

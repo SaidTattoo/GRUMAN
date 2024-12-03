@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { Client } from './client.entity';
 import { ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
@@ -68,5 +68,11 @@ export class ClientController {
     })
     updateClient(@Param('id') id: number, @Body() client: Client): Promise<Client> {
         return this.clientService.updateClient(id, client);
+    }
+
+   
+    @Delete(':id')
+    async deleteClient(@Param('id') id: number): Promise<void> {
+        await this.clientService.deleteClient(id);
     }
 }

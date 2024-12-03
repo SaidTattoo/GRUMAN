@@ -62,21 +62,21 @@ export class EditarSolicitudCorrectivaComponent {
  getUsers() {
    this.usersService.getUsers().subscribe((data) => {
      this.inspectores = data;
-     console.log('inspectore s', this.inspectores);
+     //console.log('inspectore s', this.inspectores);
    });
  }
 
  getLocales() {
    this.localesService.getLocales().subscribe((data) => {
      this.locales = data;
-     console.log('locales', this.locales);
+     //console.log('locales', this.locales);
    });
  }
 
  servicios() {
    this.serviciosService.getAllServicios().subscribe((data) => {
      this.especialidades = data;
-     console.log('servicios', this.especialidades);
+     //console.log('servicios', this.especialidades);
      
    });
  }
@@ -99,9 +99,9 @@ export class EditarSolicitudCorrectivaComponent {
    formData.append('nombre', this.programacionForm.value.nombre);
    formData.append('tipoDocumento', this.programacionForm.value.tipoDocumento);
    formData.append('file', file);
-   console.log( this.programacionForm.value);
+   //console.log( this.programacionForm.value);
    this.uploadDataService.uploadFile(formData, 'solicitud-aprobacion-correctiva').subscribe(data => {
-     console.log('subido', data);
+     //console.log('subido', data);
      const urlDocumento = data.url;
      const formValue = { ...this.programacionForm.value };
 
@@ -112,7 +112,7 @@ export class EditarSolicitudCorrectivaComponent {
      formValue.file = urlDocumento;
 
      this.listadoSolicitudAprobacionCorrectivaService.createSolicitudAprobacionCorrectiva(formValue).subscribe(data => {
-       console.log('solicitud creada', data);
+       //console.log('solicitud creada', data);
      });
    });
  }
@@ -140,12 +140,12 @@ export class EditarSolicitudCorrectivaComponent {
 
  onFileSelected(event: any) {
    const file = event.target.files[0];
-   console.log(this.programacionForm.value);
-   console.log(file);
+   //console.log(this.programacionForm.value);
+   //console.log(file);
    if (file) {
      this.programacionForm.patchValue({ file: file });
      this.programacionForm.get('file')?.updateValueAndValidity();
-     console.log('Archivo seleccionado:', file);
+     //console.log('Archivo seleccionado:', file);
    }
  }
 }

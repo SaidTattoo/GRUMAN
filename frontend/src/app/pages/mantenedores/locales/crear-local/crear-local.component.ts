@@ -66,7 +66,7 @@ export class CrearLocalComponent implements OnInit {
 
   getClientes() {
     this.clientesService.getClientes().subscribe((data) => {
-      console.log('****', data);
+      //console.log('****', data);
       //omitir el ciente llamado GRUMAN 
       this.clientes = data.filter(cliente => cliente.nombre !== 'GRUMAN');
     });
@@ -152,7 +152,7 @@ export class CrearLocalComponent implements OnInit {
     this.localForm.get('provincia')?.enable();
     this.localForm.get('comuna')?.enable();
 
-    console.log('****', this.localForm.value);
+    //console.log('****', this.localForm.value);
     const clienteId = this.localForm.get('clientId')?.value;
     let nombreCliente = this.clientes.find(cliente => cliente.id === clienteId)?.nombre;
     const palabrasExcluidas = ['y', 'de', 'la', 'el', 'los', 'las', 'del', 'al', 'en', 'por', 'con', 'para'];
@@ -181,7 +181,7 @@ export class CrearLocalComponent implements OnInit {
       }).then((result) => {
         if (result.isConfirmed) {
           this.localesService.crearLocal(this.localForm.value).subscribe((data) => {
-            console.log('****', data);
+            //console.log('****', data);
             this.router.navigate(['/mantenedores/locales']);
           });
         }
@@ -191,7 +191,7 @@ export class CrearLocalComponent implements OnInit {
 
   onClienteChange(event: any) {
     const clienteId = event.value;
-    console.log('Cliente seleccionado:', this.clientes);
+    //console.log('Cliente seleccionado:', this.clientes);
     let nombreCliente = this.clientes.find(cliente => cliente.id === clienteId)?.nombre;
     const palabrasExcluidas = ['y', 'de', 'la', 'el', 'los', 'las', 'del', 'al', 'en', 'por', 'con', 'para'];
     if (nombreCliente) {
@@ -200,7 +200,7 @@ export class CrearLocalComponent implements OnInit {
       // Toma las iniciales de las palabras restantes
       nombreCliente = palabras.map((palabra: string) => palabra.charAt(0).toUpperCase()).join('');
     }
-    console.log('****', nombreCliente );
+    //console.log('****', nombreCliente );
     // Aquí puedes realizar acciones adicionales, como actualizar otros campos del formulario
     
   }

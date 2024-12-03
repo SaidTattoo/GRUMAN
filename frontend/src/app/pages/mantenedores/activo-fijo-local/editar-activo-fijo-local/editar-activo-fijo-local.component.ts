@@ -67,7 +67,7 @@ export class EditarActivoFijoLocalComponent {
   }
 
   onSubmit() {
-    console.log(this.form.value);
+    //console.log(this.form.value);
     this.activoFijoLocalService.crear(this.form.value).subscribe(data => {
       Swal.fire({
         title: 'Activo fijo local creado',
@@ -94,7 +94,7 @@ export class EditarActivoFijoLocalComponent {
     this.localesService.getLocalesByCliente(clientId).subscribe({
       next: (data: any) => {
         this.locales = data;
-        console.log('Locales:', this.locales); // Verifica que los locales se cargan correctamente
+        //console.log('Locales:', this.locales); // Verifica que los locales se cargan correctamente
       },
       error: () => {
         Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los locales' });

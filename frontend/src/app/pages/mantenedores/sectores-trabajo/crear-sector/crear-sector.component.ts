@@ -43,7 +43,7 @@ export class CrearSectorComponent implements OnInit {
 
   loadClientes(): void {
     this.clientesService.getClientes().subscribe((data) => {
-      console.log('clientes',data);
+      //console.log('clientes',data);
       this.clientes = data;
     });
   }

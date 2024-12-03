@@ -20,7 +20,7 @@ import { CrearTipoActivoComponent } from './crear-tipo-activo/crear-tipo-activo.
 })
 export class TipoActivoComponent implements OnInit {
 
-  displayedColumns: string[] = ['id', 'nombre','acciones'];
+  displayedColumns: string[] = ['nombre','acciones'];
   dataSource = new MatTableDataSource<any>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -46,7 +46,7 @@ export class TipoActivoComponent implements OnInit {
   }
   editar(element: any) {
     // Lógica para editar el elemento
-    console.log('Editar', element);
+    //console.log('Editar', element);
     // Aquí puedes abrir un modal o navegar a una página de edición
   }
 
@@ -62,7 +62,7 @@ export class TipoActivoComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
         // Lógica para eliminar el elemento
-        console.log('Eliminar', element);
+        //console.log('Eliminar', element);
         // Aquí puedes llamar a un servicio para eliminar el elemento del backend
         this.tiposActivoService.eliminarTipoActivo(element.id).subscribe(() => {
           this.dataSource.data = this.dataSource.data.filter((item: any) => item.id !== element.id);

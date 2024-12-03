@@ -17,7 +17,7 @@ export class DocumentosService {
     return this.http.post<any>(`${environment.apiUrl}documentos`, documento);
   }
   getTipoDocumentos(): Observable<any[]> {
-    console.log('getTipoDocumentos');
+    //console.log('getTipoDocumentos');
     return this.http.get<any[]>(`${environment.apiUrl}tipo-documento`);
   }
 

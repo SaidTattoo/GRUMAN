@@ -36,7 +36,7 @@ export class UsersService {
     /**encode password */
     async createUser(createUserDto: CreateUserDto): Promise<User> {
         const { name, rut, email, password, profile, clientId } = createUserDto;
-        console.log('------------->', createUserDto);
+        //console.log('------------->', createUserDto);
        
         const existingUser = await this.userRepository.findOne({
           where: [{ rut }, { email }],
@@ -62,7 +62,7 @@ export class UsersService {
           password: hashedPassword,
           clients,
         });
-        console.log('------------->', user);
+        //console.log('------------->', user);
         return this.userRepository.save(user);
     }
 
@@ -85,12 +85,12 @@ export class UsersService {
 
         for (const createUserDto of createUsersDto) {
             const { name, rut, email, password, profile, clientId } = createUserDto;
-            console.log('------------->',createUserDto);
+            //console.log('------------->',createUserDto);
 
             const existingUser = await this.userRepository.findOne({
                 where: [{ rut }, { email }],
             });
-            console.log('------------->',existingUser);
+            //console.log('------------->',existingUser);
             if (existingUser) {
                 throw new ConflictException(`El rut o el email ya están en uso para el usuario: ${email}`);
             }
@@ -102,7 +102,7 @@ export class UsersService {
             if (clients.length === 0) {
                 throw new NotFoundException(`Clientes no encontrados para el usuario: ${email}`);
             }
-            console.log('------------->',clients);
+            //console.log('------------->',clients);
             const user = this.userRepository.create({
                 rut,
                 name,
@@ -111,7 +111,7 @@ export class UsersService {
                 password: hashedPassword,
                 clients,
             });
-            console.log('------------->',user);
+            //console.log('------------->',user);
             const savedUser = await this.userRepository.save(user);
             users.push(savedUser);
         }

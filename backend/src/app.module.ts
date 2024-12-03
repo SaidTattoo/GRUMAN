@@ -26,6 +26,7 @@ import { ServiciosModule } from './servicios/servicios.module';
 import { SolicitudesAprobacionCorrectivaModule } from './solicitudes-aprobacion-correctiva/solicitudes-aprobacion-correctiva.module';
 import { ServiciosRealizadosModule } from './servicios_realizados/servicios_realizados.module';
 import { ActivoFijoLocalModule } from './activo-fijo-local/activo-fijo-local.module';
+import { UploadV2Module } from './upload-v2/upload-v2.module';
 @Module({
   imports: [
     DatabaseModule, 
@@ -52,6 +53,7 @@ import { ActivoFijoLocalModule } from './activo-fijo-local/activo-fijo-local.mod
     }),
     ServiciosRealizadosModule,
     ActivoFijoLocalModule,
+    UploadV2Module,
 /*     LocalesModule,
     SectoresTrabajoModule,
     ProgramacionModule */

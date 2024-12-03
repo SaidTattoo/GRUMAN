@@ -75,7 +75,7 @@ export class CrearActivoFijoLocalComponent implements OnInit {
     this.clienteService.getClientes().subscribe({
       next: (data: any) => {
         this.clientes = data.filter((cliente: any) => cliente.id !== 5 && cliente.nombre.toLowerCase() !== 'gruman');
-        console.log('Clientes:', this.clientes); // Verifica que los clientes se cargan correctamente
+        //console.log('Clientes:', this.clientes); // Verifica que los clientes se cargan correctamente
         if (this.clientes.length === 1) {
           const singleClient = this.clientes[0];
           this.form.get('client')?.setValue(singleClient.id);
@@ -93,7 +93,7 @@ export class CrearActivoFijoLocalComponent implements OnInit {
     this.localesService.getLocalesByCliente(clientId).subscribe({
       next: (data: any) => {
         this.locales = data;
-        console.log('Locales:', this.locales); // Verifica que los locales se cargan correctamente
+        //console.log('Locales:', this.locales); // Verifica que los locales se cargan correctamente
       },
       error: () => {
         Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los locales' });
@@ -105,7 +105,7 @@ export class CrearActivoFijoLocalComponent implements OnInit {
     this.tipoActivoService.getTiposActivo().subscribe({
       next: (data: any) => {
         this.tipoActivo = data;
-        console.log('Tipos de Activo:', this.tipoActivo); // Verifica que los tipos de activo se cargan correctamente
+        //console.log('Tipos de Activo:', this.tipoActivo); // Verifica que los tipos de activo se cargan correctamente
       },
       error: () => {
         Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los tipos de activo' });

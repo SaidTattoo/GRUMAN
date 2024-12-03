@@ -51,6 +51,6 @@ export class AppBlogDetailsComponent implements OnInit {
     this.blogDetail = this.blogService.blogPosts.filter(
       (x) => x.title === this.title
     );
-    console.log(this.blogDetail);
+    //console.log(this.blogDetail);
   }
 }

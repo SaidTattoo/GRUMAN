@@ -31,9 +31,9 @@ export class CrearSectorDefaultComponent {
   }
 
   onSubmit(){
-    console.log(this.sectorForm.value);
+    //console.log(this.sectorForm.value);
     this.sectoresService.createSectorDefault(this.sectorForm.value).subscribe(res => {
-      console.log(res);
+      //console.log(res);
       Swal.fire({
         title: 'Éxito',
         text: 'Sector creado correctamente',

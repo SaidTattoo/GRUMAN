@@ -9,21 +9,53 @@ import { Observable } from 'rxjs';
 export class UploadDataService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
+  /**
+   * Subir un archivo al servidor.
+   * @param formData - FormData que contiene el archivo.
+   * @param path - Ruta en el backend donde se subirá el archivo.
+   * @returns Observable con la respuesta del servidor.
+   */
   uploadFile(formData: FormData, path: string): Observable<any> {
-    // Construir la URL correctamente
+    console.log('Subiendo archivo...');
+    console.log('Ruta del servidor:', `${this.apiUrl}upload/${path}`);
+    const file = formData.get('file') as File;
+
+    if (file) {
+      console.log('Archivo detectado en FormData:', file.name, file.size, file.type);
+      formData.append('originalname', file.name);
+    } else {
+      console.warn('No se encontró ningún archivo en FormData');
+    }
+
     const url = `${this.apiUrl}upload/${path}`;
-    console.log('URL de subida:', url); // Para debug
     return this.http.post(url, formData);
   }
 
+  /**
+   * Descargar un archivo desde el servidor.
+   * @param path - Ruta en el backend desde donde se descargará el archivo.
+   * @returns Observable con el archivo como blob.
+   */
   downloadFile(path: string): Observable<any> {
+    console.log('Descargando archivo...');
+    console.log('Ruta del servidor:', `${this.apiUrl}upload/${path}`);
+
     return this.http.get(`${this.apiUrl}upload/${path}`, {
       responseType: 'blob'
     });
   }
+
+  /**
+   * Eliminar un archivo del servidor.
+   * @param path - Ruta en el backend del archivo a eliminar.
+   * @returns Observable con la respuesta del servidor.
+   */
   deleteFile(path: string): Observable<any> {
+    console.log('Eliminando archivo...');
+    console.log('Ruta del servidor:', `${this.apiUrl}upload/${path}`);
+
     const url = `${this.apiUrl}upload/${path}`;
     return this.http.delete(url);
   }

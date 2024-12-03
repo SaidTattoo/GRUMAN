@@ -22,12 +22,12 @@ export class SectoresTrabajoComponent implements OnInit {
    
     ngOnInit(): void {
         this.sectoresTrabajoService.getSectores().subscribe(sectores => {
-            console.log(sectores);
+            //console.log(sectores);
             this.dataSource = new MatTableDataSource<any>(sectores);
            
         });
     }
     editarSector(id: number) {
-        console.log(id);
+        //console.log(id);
     }
 }

@@ -13,7 +13,7 @@ import { ServiciosService } from 'src/app/services/servicios.service';
 })
 export class ServiciosComponent implements OnInit {
   servicios: any[] = [];
-  displayedColumns: string[] = ['id', 'nombre'];
+  displayedColumns: string[] = [ 'nombre'];
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
   constructor(private serviciosService: ServiciosService) { }
 

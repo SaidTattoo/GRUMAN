@@ -148,7 +148,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (res: any) => {
             this.locales = res;
-            console.log('Locales cargados:', this.locales);
+            //console.log('Locales cargados:', this.locales);
             this.programacionForm.get('local')?.enable(); // Asegúrate de habilitar el campo
           },
           error: (error) => {
@@ -167,7 +167,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     let currentUser: any = null;
     if (currentUserString) {
       currentUser = JSON.parse(currentUserString);
-      console.log('------------->', currentUser.companies);
+      //console.log('------------->', currentUser.companies);
       this.clientes = currentUser.companies.filter((cliente: any) => cliente.id !== 5 && cliente.nombre !== 'GRUMAN');
       this.getLocales();
       if (this.clientes.length === 1) {

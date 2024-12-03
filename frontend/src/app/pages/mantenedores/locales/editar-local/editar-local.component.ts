@@ -80,7 +80,7 @@ export class EditarLocalComponent implements OnInit{
       
     
       next: ({ local, clientes, regiones }) => {
-        console.log('****', local);
+        //console.log('****', local);
         this.clientes = clientes;
         this.regiones = regiones.sort((a, b) => 
           a.region_nombre.localeCompare(b.region_nombre)
@@ -129,7 +129,7 @@ export class EditarLocalComponent implements OnInit{
 
   getClientes() {
     this.clientesService.getClientes().subscribe((data) => {
-      console.log('****', data);
+      //console.log('****', data);
       this.clientes = data;
     });
   }
@@ -241,7 +241,7 @@ export class EditarLocalComponent implements OnInit{
 
   onClienteChange(event: any) {
     const clienteId = event.value;
-    console.log('Cliente seleccionado:', clienteId);
+    //console.log('Cliente seleccionado:', clienteId);
     let nombreCliente = this.clientes.find(cliente => cliente.id === this.localForm.get('cliente')?.value)?.nombre;
     const palabrasExcluidas = ['y', 'de', 'la', 'el', 'los', 'las', 'del', 'al', 'en', 'por', 'con', 'para'];
     if (nombreCliente) {
@@ -250,7 +250,7 @@ export class EditarLocalComponent implements OnInit{
       nombreCliente = palabras.map((palabra: string) => palabra.charAt(0).toUpperCase()).join('');
     }
 
-    console.log('****', nombreCliente );
+    //console.log('****', nombreCliente );
   }
 
   onCancel() {

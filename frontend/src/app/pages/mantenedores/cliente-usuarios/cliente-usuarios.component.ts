@@ -53,7 +53,7 @@ export class ClienteUsuariosComponent implements OnInit {
       lastname: ['', Validators.required],
       repetirContrasena: ['', Validators.required],
     }, { validators: this.passwordMatchValidator });
-    console.log(this.clienteUsuarioForm.value);
+    //console.log(this.clienteUsuarioForm.value);
   }
 
 
@@ -65,7 +65,7 @@ export class ClienteUsuariosComponent implements OnInit {
     } else {
       this.selectedClientIds.splice(index, 1);
     }
-    console.log(this.selectedClientIds);
+    //console.log(this.selectedClientIds);
   }
   trackByClienteId(index: number, cliente: any): number {
     return cliente.id;
@@ -100,7 +100,7 @@ export class ClienteUsuariosComponent implements OnInit {
 
     this.tecnicosService.createTecnico(tecnicoData).subscribe({
       next: (res) => {
-        console.log('Usuario creado', res);
+        //console.log('Usuario creado', res);
         Swal.fire({
           icon: 'success',
           title: 'Usuario creado',

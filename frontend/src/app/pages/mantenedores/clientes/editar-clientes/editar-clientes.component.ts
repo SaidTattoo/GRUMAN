@@ -29,7 +29,7 @@ export class EditarClientesComponent {
 
   ngOnInit() {
     this.clienteService.getCliente(this.route.snapshot.params['id']).subscribe((data: any) => {
-      console.log(data);
+      //console.log(data);
       this.cliente = data;
       this.clienteForm.patchValue(data);
       this.urlImage = data.logo; // Inicializa con el logo actual
@@ -46,12 +46,12 @@ export class EditarClientesComponent {
   }
 
   onSubmit() {
-    console.log('Formulario:', this.clienteForm.value);
+    //console.log('Formulario:', this.clienteForm.value);
 
       this.clienteForm.value.logo = this.urlImage;
-      console.log('Formulario:', this.clienteForm.value);
+      //console.log('Formulario:', this.clienteForm.value);
       this.clienteService.updateCliente(this.route.snapshot.params['id'], this.clienteForm.value).subscribe((data: any) => {
-        console.log(data);
+        //console.log(data);
         this.router.navigate(['/mantenedores/clientes']);
       });
 
@@ -64,7 +64,7 @@ export class EditarClientesComponent {
       formData.append('file', input.files[0]);
 
       this.uploadDataService.uploadFile(formData, 'clientes').subscribe((data: any) => {
-        console.log(data);
+        //console.log(data);
         this.urlImage = data.url;
       });
 

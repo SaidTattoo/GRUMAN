@@ -47,4 +47,7 @@ export class Client {
 
   @OneToMany(() => ActivoFijoLocal, activoFijoLocal => activoFijoLocal.client)
   activoFijoLocales: ActivoFijoLocal[];
+
+  @Column({ default: false })
+  deleted: boolean;
 }

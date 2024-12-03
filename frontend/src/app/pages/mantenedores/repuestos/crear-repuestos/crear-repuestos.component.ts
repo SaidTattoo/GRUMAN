@@ -40,7 +40,7 @@ export class CrearRepuestosComponent {
         sobreprecio: parseFloat(formValues.sobreprecio),
       };
   
-      console.log('Datos procesados para enviar:', repuesto);
+      //console.log('Datos procesados para enviar:', repuesto);
   
       // Enviar datos al servicio
       this.repuestosService.crearRepuesto(repuesto).subscribe(
@@ -67,7 +67,7 @@ export class CrearRepuestosComponent {
         title: 'Oops...',
         text: 'Por favor, completa todos los campos obligatorios.',
       });
-      console.log('Formulario inválido');
+      //console.log('Formulario inválido');
     }
   }
 }

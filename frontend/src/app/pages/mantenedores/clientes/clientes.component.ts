@@ -1,10 +1,10 @@
 import { JsonPipe } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatButton } from '@angular/material/button';
+import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardHeader } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -16,7 +16,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatInputModule,MatFormFieldModule,MatCard,MatCardContent, MatIcon, MatButton, MatCardHeader  ],
+  imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatInputModule,MatFormFieldModule,MatCard,MatCardContent, MatIcon, MatButton, MatCardHeader, MatIconModule, MatButtonModule ],
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.scss'
 })
@@ -77,7 +77,7 @@ export class ClientesComponent implements OnInit {
     });
   } 
   agregarDocumento(cliente: any) {
-    console.log(cliente);
+    //console.log(cliente);
     this.router.navigate(['/mantenedores/documentos/subir-documento', {
       tipo: 2,//cliente 
       tecnico: null,

@@ -41,7 +41,7 @@ export class ListadoSolicitudAprobacionCorrectivaComponent implements OnInit {
   }
   eliminar(element: any) {
     this.listadoSolicitudAprobacionCorrectivaService.removeSolicitudAprobacionCorrectiva(element.id).subscribe(data => {
-      console.log(data);
+      //console.log(data);
       this.listarSolicitudes();
     });
   }
@@ -49,7 +49,7 @@ export class ListadoSolicitudAprobacionCorrectivaComponent implements OnInit {
   listarSolicitudes() {
     this.listadoSolicitudAprobacionCorrectivaService.findAllSolicitudesAprobacionCorrectiva().subscribe(data => {
       this.dataSource = new MatTableDataSource(data);
-      console.log(this.dataSource);
+      //console.log(this.dataSource);
     });
   }
   crearSolicitud() {

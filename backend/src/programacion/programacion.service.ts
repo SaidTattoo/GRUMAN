@@ -27,7 +27,7 @@ export class ProgramacionService {
     }
 
     create(programacion: Programacion): Promise<Programacion> {
-        console.log(programacion);
+        //console.log(programacion);
         return this.programacionRepository.save(programacion);
     }
     //al eliminar un registro, se actualiza el campo deleted a true

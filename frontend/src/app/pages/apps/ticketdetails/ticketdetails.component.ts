@@ -125,14 +125,14 @@ export class AppTicketdetailsComponent {
     this.form = this.formBuilder.group({
       signature: ['', Validators.required]
     });
-    console.log(this.htmlContent1);
+    //console.log(this.htmlContent1);
   }
 
   onChange(event: any) {
-    console.log('changed');
+    //console.log('changed');
   }
 
   onBlur(event: any) {
-    console.log('blur ' + event);
+    //console.log('blur ' + event);
   }
 }

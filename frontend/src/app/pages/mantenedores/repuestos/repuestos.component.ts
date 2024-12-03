@@ -33,7 +33,7 @@ export class RepuestosComponent {
   ngOnInit() {
     this.repuestosService.getRepuestos().subscribe((data) => {
       this.repuestos = data;
-      console.log('--->', this.repuestos);
+      //console.log('--->', this.repuestos);
       this.dataSource = new MatTableDataSource(this.repuestos);
     });
   }
@@ -66,7 +66,7 @@ export class RepuestosComponent {
     });
   }
   agregarDocumento(repuesto: any) {
-    console.log(repuesto);
+    //console.log(repuesto);
     this.router.navigate(['/mantenedores/documentos/subir-documento', {
       tipo: 4,//repuesto 
       tecnico: null,

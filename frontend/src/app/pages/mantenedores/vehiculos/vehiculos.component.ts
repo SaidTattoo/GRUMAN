@@ -70,7 +70,7 @@ const ELEMENT_DATA: any[] = [
   styleUrls: ['./vehiculos.component.scss']
 })
 export class VehiculosComponent implements OnInit {
-   displayedColumns: string[] = ['id', 'movil', 'patente', 'marca', 'modelo', 'documentacion' , 'estado'];
+   displayedColumns: string[] = ['movil', 'patente', 'marca', 'modelo', 'documentacion' , 'estado'];
   data: Vehiculo[] = [];
  /*  displayedColumns: string[] = ['id', 'direccion', 'comuna', 'region', 'zona', 'grupo', 'referencia', 'telefono', 'email_local', 'email_encargado', 'nombre_encargado']; */
   dataSource = new MatTableDataSource();
@@ -85,7 +85,7 @@ export class VehiculosComponent implements OnInit {
         return vehiculo;
       });
       this.dataSource.data = this.data;
-      console.log(this.data);
+      //console.log(this.data);
     });
   }
   applyFilter(event: Event) {
@@ -96,7 +96,7 @@ export class VehiculosComponent implements OnInit {
   modalNuevoLocal(){
     const dialogRef = this.dialog.open(CrearVehiculoComponent);
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
+      //console.log('The dialog was closed');
       this.ngOnInit();
     });
   }

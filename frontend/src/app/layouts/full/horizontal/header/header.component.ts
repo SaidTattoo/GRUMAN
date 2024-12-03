@@ -124,7 +124,7 @@ export class AppHorizontalHeaderComponent implements OnInit {
     const dialogRef = this.dialog.open(AppSearchDialogComponent);
 
     dialogRef.afterClosed().subscribe((result) => {
-      console.log(`Dialog result: ${result}`);
+      //console.log(`Dialog result: ${result}`);
     });
   }
   userName: string | null = null;
@@ -135,7 +135,7 @@ export class AppHorizontalHeaderComponent implements OnInit {
   ngOnInit(): void {
     this.userProfile = this.authService.getUserProfile();
     this.authService.currentUser.subscribe(user => {
-      console.log(user);
+      //console.log(user);
       if (user) {
         this.userName = user.name;
         this.userRole = user.profile;

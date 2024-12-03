@@ -34,7 +34,7 @@ export class ListadoProgramacionComponent implements OnInit {
 
   getProgramacion() {
     this.programacionService.getProgramacion().subscribe((res: any) => {
-      console.log(res);
+      //console.log(res);
       this.dataSource = res;
     });
   }
@@ -67,7 +67,7 @@ export class ListadoProgramacionComponent implements OnInit {
    }).then((result) => {
     if (result.isConfirmed) {
       this.programacionService.deleteProgramacion(programacion.id).subscribe(response => {
-        console.log(response);
+        //console.log(response);
       this.getProgramacion();
       });
     }

@@ -20,7 +20,7 @@ import Swal from 'sweetalert2';
 export class TipoDocumentoComponent {
 
 
-  displayedColumns: string[] = ['id', 'nombre', 'acciones'];
+  displayedColumns: string[] = [ 'nombre', 'acciones'];
   dataSource = new MatTableDataSource<TipoDocumento>();
 
   constructor(private documentosService: DocumentosService, private router: Router) {}
@@ -32,7 +32,7 @@ export class TipoDocumentoComponent {
     
     this.documentosService.getTipoDocumentos().subscribe(data => {
       this.dataSource.data = data;
-      console.log(this.dataSource.data);
+      //console.log(this.dataSource.data);
     });
   }
   createTipoDocumento() {

@@ -26,7 +26,7 @@ export class ClientesController {
 
   @Post()
   async create(@Body() cliente: Cliente): Promise<Cliente> {
-    console.log(cliente);
+    //console.log(cliente);
     return this.clientesService.create(cliente);
   }
   @Put(':id')

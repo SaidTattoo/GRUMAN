@@ -88,7 +88,7 @@ export class UploadService {
   async deleteFile(vehiculoId: string, tipo: string, nombreArchivo: string) {
     try {
       const filePath = join(process.cwd(), 'uploads', 'vehiculos', vehiculoId, 'documentos', tipo, nombreArchivo);
-      console.log(`Intentando eliminar archivo en: ${filePath}`);
+      //console.log(`Intentando eliminar archivo en: ${filePath}`);
 
       if (!existsSync(filePath)) {
         console.error(`Archivo no encontrado: ${filePath}`);
@@ -96,7 +96,7 @@ export class UploadService {
       }
 
       await fs.unlink(filePath);
-      console.log(`Archivo eliminado: ${filePath}`);
+      //console.log(`Archivo eliminado: ${filePath}`);
     } catch (error) {
       console.error('Error al eliminar archivo:', error);
       throw new Error(`Error al eliminar el archivo ${nombreArchivo} del vehiculo ${vehiculoId}`);

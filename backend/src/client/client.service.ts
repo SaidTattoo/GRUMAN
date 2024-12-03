@@ -12,12 +12,12 @@ export class ClientService {
 
     /** FINDALLCLIENTS */
     async findAllClients(): Promise<Client[]> {
-        return this.clientRepository.find();
+        return this.clientRepository.find({ where: { deleted: false } });
     }
 
     /** FINDONECLIENT */
     async findOneClient(id: number): Promise<Client | undefined> {
-        return this.clientRepository.findOne({ where: { id } });
+        return this.clientRepository.findOne({ where: { id, deleted: false } });
     }
 
     /** CREATECLIENT */
@@ -37,5 +37,8 @@ export class ClientService {
             relations: ['users'], // Asegúrate de que 'users' esté correctamente definido en la entidad Client
         });
     }
-    
+
+        async deleteClient(id: number): Promise<void> {
+            await this.clientRepository.update(id, { deleted: true });
+    }
 }

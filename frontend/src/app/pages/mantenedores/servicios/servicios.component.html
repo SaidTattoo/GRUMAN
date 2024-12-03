@@ -1,10 +1,10 @@
 <mat-card class="cardWithShadow">
   <mat-card-content class="p-24">
         <mat-table [dataSource]="dataSource">
-        <ng-container matColumnDef="id">
+      <!--   <ng-container matColumnDef="id">
             <mat-header-cell *matHeaderCellDef> ID </mat-header-cell>
             <mat-cell *matCellDef="let element"> {{element.id}} </mat-cell>
-        </ng-container>
+        </ng-container> -->
         <ng-container matColumnDef="nombre">
             <mat-header-cell *matHeaderCellDef> Nombre </mat-header-cell>
             <mat-cell *matCellDef="let element"> {{element.nombre}} </mat-cell>

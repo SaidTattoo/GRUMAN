@@ -64,7 +64,7 @@ export class ServiciosRealizadosComponent implements OnInit {
 
   onSubmit() {
     if (this.programacionForm.invalid) {
-      console.log('Formulario inválido');
+      //console.log('Formulario inválido');
       return;
     }
     const formData = this.programacionForm.value;

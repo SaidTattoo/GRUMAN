@@ -25,7 +25,7 @@ export class EditarTecnicoComponent {
     private tecnicosService: TecnicosService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    console.log(data);
+    //console.log(data);
     this.form = this.fb.group({
       name: [data.tecnico.name, Validators.required],
       lastname: [data.tecnico.lastname, Validators.required],

@@ -106,7 +106,7 @@ export class AppTodoComponent implements OnInit {
   }
 
   deleteTodo(id: number): void {
-    console.log(id);
+    //console.log(id);
     this.todos.splice(id, 1);
   }
 

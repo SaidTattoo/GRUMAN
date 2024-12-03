@@ -41,7 +41,7 @@ export class CrearClienteComponent {
       formData.append('file', input.files[0]);
 
       this.uploadDataService.uploadFile(formData, 'clientes').subscribe((data: any) => {
-        console.log(data);
+        //console.log(data);
         this.urlImage = data.url;
       });
 
@@ -57,11 +57,11 @@ export class CrearClienteComponent {
   }
 
   submit() {
-    console.log(this.clienteForm.value);
+    //console.log(this.clienteForm.value);
       this.clienteForm.value.logo = this.urlImage;
-      console.log('Formulario:', this.clienteForm.value);
+      //console.log('Formulario:', this.clienteForm.value);
       this.clienteService.createCliente(this.clienteForm.value).subscribe((data: any) => {
-        console.log(data);
+        //console.log(data);
         this.router.navigate(['/mantenedores/clientes']);
       });
   }

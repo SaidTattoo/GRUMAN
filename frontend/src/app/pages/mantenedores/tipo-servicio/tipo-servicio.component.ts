@@ -17,11 +17,11 @@ import { TipoServicioService } from 'src/app/services/tipo-servicio.service';
 })
 export class TipoServicioComponent {
   constructor(private tipoServicioService: TipoServicioService, private router: Router) {}
-  displayedColumns: string[] = ['id', 'nombre', 'acciones'];
+  displayedColumns: string[] = [ 'nombre', 'acciones'];
   dataSource: any[] = [];
   ngOnInit(): void {
     this.tipoServicioService.findAll().subscribe((data) => {
-      console.log(data);
+      //console.log(data);
       this.dataSource = data;
     });
   }
@@ -29,9 +29,9 @@ export class TipoServicioComponent {
     this.router.navigate(['/mantenedores/tipo-servicio/crear']);
   }
   editar(element: any) {
-    console.log(element);
+    //console.log(element);
   }
   eliminar(element: any) {
-    console.log(element);
+    //console.log(element);
   }
 }

@@ -117,6 +117,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'transacciones/solicitar-visita',
+        loadChildren: () =>
+          import('./pages/transacciones/solicitar-visita/solicitar-visita.routes').then(
+            (m) => m.SOLICITAR_VISITA_ROUTES
+          ),
+      },
+      {
         path: 'transacciones/listado-programacion',
         loadChildren: () =>
           import('./pages/transacciones/listado-programacion/listado-programacion.routes').then(

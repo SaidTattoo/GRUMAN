@@ -42,6 +42,7 @@ export class AppHorizontalSidebarComponent implements OnInit {
   ngOnInit(): void {
     const currentUserString = localStorage.getItem('currentUser');
     let currentUser: any = null;
+  
     if (currentUserString) {
       try {
         currentUser = JSON.parse(currentUserString);
@@ -49,20 +50,19 @@ export class AppHorizontalSidebarComponent implements OnInit {
         console.error('Error parsing currentUser from localStorage', error);
       }
     }
+  
     const hasGrumanCompany = (user: any): boolean => {
       if (!user || !user.companies) {
         return false;
       }
-      
-      return user.companies.some((company: any) =>
-        company.nombre.toLowerCase() === 'gruman'.toLowerCase()
+      return user.companies.some(
+        (company: any) => company.nombre.toLowerCase() === 'gruman'.toLowerCase()
       );
-    
     };
-    
-    // Condición para mostrar "Mantenedores"
+  
     const showMantenedores = hasGrumanCompany(currentUser);
-    
+    const showSolicitarVisita = !hasGrumanCompany(currentUser);
+  
     this.navItems = [
       {
         navCap: 'Admin',
@@ -82,8 +82,18 @@ export class AppHorizontalSidebarComponent implements OnInit {
         iconName: 'home',
         route: 'dashboards/dashboard1',
         bgcolor: 'primary',
-    
-      },{
+      },
+      ...(showSolicitarVisita
+        ? [
+            {
+              displayName: 'Solicitar Visita',
+              iconName: 'calendar-check',
+              route: 'transacciones/solicitar-visita',
+              bgcolor: 'primary',
+            },
+          ]
+        : []),
+      {
         displayName: 'Programación',
         iconName: 'calendar',
         children: [
@@ -111,8 +121,9 @@ export class AppHorizontalSidebarComponent implements OnInit {
             bgcolor: 'primary',
             route: 'transacciones/listado-solicitud-aprobacion-correctiva',
           },
-        ]
-      },{
+        ],
+      },
+      {
         displayName: 'Servicios realizados',
         iconName: 'home-shield',
         bgcolor: 'primary',
@@ -135,7 +146,8 @@ export class AppHorizontalSidebarComponent implements OnInit {
                   displayName: 'Locales',
                   iconName: 'home-shield',
                   route: 'mantenedores/locales',
-                },{
+                },
+                {
                   displayName: 'Moviles',
                   iconName: 'home-shield',
                   route: 'mantenedores/vehiculos',
@@ -200,7 +212,6 @@ export class AppHorizontalSidebarComponent implements OnInit {
           ]
         : []),
     ];
-
-    
-   }
-}
+  }
+  
+}  

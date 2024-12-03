@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
@@ -53,179 +53,142 @@ export class DocumentacionComponent implements OnInit {
     private route: ActivatedRoute,
     private uploadService: UploadDataService,
     private vehiculosService: VehiculosService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {
     this.vehiculoId = this.route.snapshot.params['id'];
   }
 
   ngOnInit() {
-
-    this.vehiculosService.getDocumentacionVehiculo(this.vehiculoId).subscribe({
-      next: (documentacion) => {
-        this.documentacion = documentacion;
-        console.log('Documentación cargada:', this.documentacion);
-      },
-      error: (error) => {
-        console.error('Error al cargar la documentación:', error);
-      }
-    });
-
-   /*  if (this.vehiculoId) {
-      this.vehiculosService.getVehiculoById(this.vehiculoId).subscribe({
-        next: (vehiculo) => {
-          if (typeof vehiculo.documentacion === 'string') {
-            this.documentacion = JSON.parse(vehiculo.documentacion);
-          } else {
-            this.documentacion = vehiculo.documentacion;
-          }
-          console.log('Documentación cargada:', this.documentacion);
-        },
-        error: (error) => {
-          console.error('Error al cargar la documentación:', error);
-          Swal.fire('Error', 'No se pudo cargar la documentación', 'error');
-        }
-      });
-    } */
+    this.cargarDocumentacion();
   }
 
+  
   async subirDocumento(tipo: string) {
-    if (tipo === 'otros') {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.multiple = true;
-      input.accept = '.pdf,.doc,.docx,.xls,.xlsx';
+    console.log('Subiendo documento:', tipo);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = tipo === 'otros' ? '.pdf,.doc,.docx,.xls,.xlsx' : '.pdf';
+    input.multiple = tipo === 'otros';
 
-      input.onchange = async (e: any) => {
-        const files = Array.from(e.target.files || []);
-        
-        for (const file of files as File[]) {
-          const nombreArchivo = prompt('Ingrese un nombre para el documento:', file.name.split('.')[0]);
-          if (!nombreArchivo) continue;
+    input.onchange = async (e: any) => {
+      const files = Array.from(e.target.files || []);
+      console.log(`Archivos seleccionados para ${tipo}:`, files);
 
-          const formData = new FormData();
-          formData.append('file', file);
+      for (const file of files as File[]) {
+        let nombreArchivo = file.name.split('.')[0];
 
-          const path = `vehiculos/${this.vehiculoId}/documentos/otros/${nombreArchivo}`;
-
-          try {
-            const response = await firstValueFrom(this.uploadService.uploadFile(formData, path));
-            console.log('Respuesta del servidor:', response);
-            await this.cargarDocumentacion();
-            Swal.fire('Éxito', 'Documento subido correctamente', 'success');
-          } catch (error) {
-            console.error('Error al subir documento:', error);
-            Swal.fire('Error', 'No se pudo subir el documento', 'error');
-          }
+        if (tipo === 'otros') {
+          nombreArchivo = prompt('Ingrese un nombre para el documento:', nombreArchivo) || nombreArchivo;
         }
-      };
-
-      input.click();
-    } else {
-      // Código existente para documentos individuales
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.pdf';
-      
-      input.onchange = async (e: any) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
         const formData = new FormData();
         formData.append('file', file);
 
+        const path =
+          tipo === 'otros'
+            ? `vehiculos/${this.vehiculoId}/documentos/otros/${encodeURIComponent(nombreArchivo)}`
+            : `vehiculos/${this.vehiculoId}/documentos/${tipo}`;
+
         try {
-          await firstValueFrom(this.uploadService.uploadFile(file, `vehiculos/${this.vehiculoId}/documentos/${tipo}`));
+          console.log(`Intentando subir archivo a ${path}`);
+          const response = await firstValueFrom(this.uploadService.uploadFile(formData, path));
+          console.log('Respuesta del servidor:', response);
+
           await this.cargarDocumentacion();
           Swal.fire('Éxito', 'Documento subido correctamente', 'success');
         } catch (error) {
           console.error('Error al subir documento:', error);
           Swal.fire('Error', 'No se pudo subir el documento', 'error');
         }
-      };
+      }
+    };
 
-      input.click();
-    }
+    input.click(); 
   }
 
-    descargarDocumento(tipo: string, nombre?: string) {
-      Swal.fire({
-        title: 'Descargando...',
-        text: 'Por favor espere',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
+  descargarDocumento(tipo: string, nombre?: string) {
+   
+    Swal.fire({
+      title: 'Descargando...',
+      text: 'Por favor espere',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
 
-      const path = `vehiculos/${this.vehiculoId}/documentos/${tipo}`;
-      this.uploadService.downloadFile(path).subscribe({
-        next: (response: any) => {
-          // Crear un blob y descargarlo
-          const blob = new Blob([response], { type: response.type });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${tipo}.pdf`; // o el tipo de archivo correspondiente
-          link.click();
-          window.URL.revokeObjectURL(url);
-          Swal.close();
-        },
-        error: (error) => {
-          console.error('Error al descargar documento:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudo descargar el documento'
-          });
-        }
-      });
-    }
+    const path = `vehiculos/${this.vehiculoId}/documentos/${tipo}`;
+    console.log(`Intentando descargar documento desde ${path}`);
 
-    eliminarDocumento(tipo: string, nombre?: string) {
-      Swal.fire({
-        title: '¿Estás seguro?',
-        text: "No podrás revertir esta acción",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          const path = `vehiculos/${this.vehiculoId}/documentos/${tipo}`;
-          this.uploadService.deleteFile(path).subscribe({
-            next: () => {
-              Swal.fire(
-                'Eliminado',
-                'El documento ha sido eliminado',
-                'success'
-              );
-              // Actualizar la vista
-              if (this.documentacion) {
-                delete this.documentacion[tipo];
-                this.cdr.detectChanges();
-              }
-            },
-            error: (error) => {
-              console.error('Error al eliminar documento:', error);
-              Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'No se pudo eliminar el documento'
-              });
+    this.uploadService.downloadFile(path).subscribe({
+      next: (response: any) => {
+        const blob = new Blob([response], { type: response.type });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${tipo}.pdf`; // Ajustar según el tipo real del archivo
+        link.click();
+        window.URL.revokeObjectURL(url);
+        Swal.close();
+      },
+      error: (error) => {
+        console.error('Error al descargar documento:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo descargar el documento'
+        });
+      }
+    });
+  }
+
+  eliminarDocumento(tipo: string, nombre?: string) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'No podrás revertir esta acción',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const path = `vehiculos/${this.vehiculoId}/documentos/${tipo}`;
+        console.log(`Intentando eliminar documento en ${path}`);
+
+        this.uploadService.deleteFile(path).subscribe({
+          next: () => {
+            Swal.fire('Eliminado', 'El documento ha sido eliminado', 'success');
+            if (this.documentacion) {
+              delete this.documentacion[tipo];
+              this.cdr.detectChanges();
             }
-          });
-        }
-      });
-    }
+          },
+          error: (error) => {
+            console.error('Error al eliminar documento:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'No se pudo eliminar el documento'
+            });
+          }
+        });
+      }
+    });
+  }
 
-    actualizarDocumento(tipo: string) {
-      // Implementar lógica de actualización
-    }
+  actualizarDocumento(tipo: string) {
+    // Implementar lógica de actualización en el futuro
+  }
 
-    cargarDocumentacion() {
-      this.vehiculosService.getDocumentacionVehiculo(this.vehiculoId).subscribe(data => {
+  cargarDocumentacion() {
+    console.log('Cargando documentación para el vehículo:', this.vehiculoId);
+
+    this.vehiculosService.getDocumentacionVehiculo(this.vehiculoId).subscribe({
+      next: (data) => {
+        console.log('Documentación cargada:', data);
         this.documentacion = data || {
           revision_tecnica: null,
           permiso_circulacion: null,
@@ -233,7 +196,12 @@ export class DocumentacionComponent implements OnInit {
           gases: null,
           otros: []
         };
-        this.cdr.detectChanges(); // Asegúrate de detectar cambios
-      });
-    }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error al cargar la documentación:', error);
+        Swal.fire('Error', 'No se pudo cargar la documentación', 'error');
+      }
+    });
   }
+}

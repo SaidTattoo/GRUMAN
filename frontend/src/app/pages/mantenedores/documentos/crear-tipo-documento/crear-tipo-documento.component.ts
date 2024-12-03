@@ -25,9 +25,9 @@ export class CrearTipoDocumentoComponent {
   }
 
   createTipoDocumento() {
-    console.log(this.tipoDocumentoForm.value);
+    //console.log(this.tipoDocumentoForm.value);
     this.tipoDocumentoService.createTipoDocumento(this.tipoDocumentoForm.value).subscribe(response => {
-      console.log(response);
+      //console.log(response);
       this.router.navigate(['/mantenedores/documentos/tipo-documento']);
     });
   }

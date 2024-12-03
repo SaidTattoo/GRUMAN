@@ -34,7 +34,7 @@ export class CrearTipoServicioComponent implements OnInit {
   createTipoServicio() {
     if (this.tipoServicio.valid) {
       this.tipoServicioService.createTipoServicio(this.tipoServicio.value).subscribe(response => {
-        console.log(response);
+        //console.log(response);
       });
       // Lógica para crear el tipo de servicio
     }

@@ -90,6 +90,6 @@ export class AppDashboard1Component {
     { title: 'Reportes Técnicos', content: '', icon: 'report' }
   ];
   onCardClick(card: any) {
-    console.log('Card clicked:', card);
+    //console.log('Card clicked:', card);
   }
 }

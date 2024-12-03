@@ -12,17 +12,18 @@ import { CrearTecnicoComponent } from './crear-tecnico/crear-tecnico.component';
 import { EditarTecnicoComponent } from './editar-tecnico/editar-tecnico.component';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-tecnicos',
   standalone: true,
-  imports: [ CommonModule, MaterialModule, ReactiveFormsModule ],
+  imports: [ CommonModule, MaterialModule, ReactiveFormsModule, MatIconModule ],
   templateUrl: './tecnicos.component.html',
   styleUrl: './tecnicos.component.scss'
 })
 export class TecnicosComponent implements OnInit {
 
-  displayedColumns: string[] = ['id', 'nombre', 'acciones'];
+  displayedColumns: string[] = ['nombre', 'acciones'];
   dataSource = new MatTableDataSource<any>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -93,7 +94,7 @@ export class TecnicosComponent implements OnInit {
   }
 
   agregarDocumento(tecnico: any) {
-    console.log(tecnico);
+    //console.log(tecnico);
     this.router.navigate(['/mantenedores/documentos/subir-documento', {
       tipo: 3,//tecnico 
       tecnico: tecnico.id,
@@ -103,7 +104,7 @@ export class TecnicosComponent implements OnInit {
     }]);
   }
   cambiarPassword(tecnico: any) {
-    console.log(tecnico);
+    //console.log(tecnico);
     this.router.navigate(['/mantenedores/tecnicos/cambiar-password', { tecnico: tecnico.id }]);
   }
 }
