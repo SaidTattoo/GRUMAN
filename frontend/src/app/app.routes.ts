@@ -116,13 +116,13 @@ export const routes: Routes = [
             (m) => m.ACTIVO_FIJO_LOCAL_ROUTES
           ),
       },
-      {
+     /*  {
         path: 'transacciones/solicitar-visita',
         loadChildren: () =>
           import('./pages/transacciones/solicitar-visita/solicitar-visita.routes').then(
             (m) => m.SOLICITAR_VISITA_ROUTES
           ),
-      },
+      }, */
       {
         path: 'transacciones/listado-programacion',
         loadChildren: () =>
