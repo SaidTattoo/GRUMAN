@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -14,6 +14,8 @@ import { AuthService } from 'src/app/services/auth.service';
 import { CoreService } from 'src/app/services/core.service';
 import { BrandingComponent } from '../../vertical/sidebar/branding.component';
 import { navItems } from '../sidebar/sidebar-data';
+import { StorageService } from '../../../../services/storage.service';
+import { Subscription } from 'rxjs';
 
 interface notifications {
   id: number;
@@ -62,7 +64,7 @@ interface quicklinks {
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
-export class AppHorizontalHeaderComponent implements OnInit {
+export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
   searchText: string = '';
   userProfile:any;
   @Input() showToggle = true;
@@ -74,6 +76,11 @@ export class AppHorizontalHeaderComponent implements OnInit {
   navItemsData = navItemsPro.filter((navitem) => navitem.displayName);
 
   showFiller = false;
+
+  logout() {
+   
+    this.authService.logout();
+  }
 
   public selectedLanguage: any = {
     language: 'English',
@@ -106,11 +113,19 @@ export class AppHorizontalHeaderComponent implements OnInit {
     },
   ];
 
+  userName: string | null = null;
+  userRole: string | null = null;
+  userEmail: string | null = null;
+  userCompanies: any[] = [];
+  selectedCompany: any | null = null;
+  private userSub: Subscription;
+
   constructor(
     private vsidenav: CoreService,
     public dialog: MatDialog,
     private translate: TranslateService,
-    private authService: AuthService
+    private authService: AuthService,
+    private storage: StorageService
   ) {
     translate.setDefaultLang('en');
   }
@@ -127,23 +142,30 @@ export class AppHorizontalHeaderComponent implements OnInit {
       //console.log(`Dialog result: ${result}`);
     });
   }
-  userName: string | null = null;
-  userRole: string | null = null;
-  userEmail: string | null = null;
-  userCompanies: any[] = [];
-  selectedCompany: any | null = null;
+
   ngOnInit(): void {
-    this.userProfile = this.authService.getUserProfile();
-    this.authService.currentUser.subscribe(user => {
-      //console.log(user);
+    this.userSub = this.storage.user$.subscribe(user => {
       if (user) {
         this.userName = user.name;
         this.userRole = user.profile;
         this.userEmail = user.email;
-        this.userCompanies = user.clients || [];
+        this.userCompanies = user.companies || [];
         this.selectedCompany = this.userCompanies.length === 1 ? this.userCompanies[0] : null;
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.userSub) {
+      this.userSub.unsubscribe();
+    }
+  }
+
+  onCompanySelect(company: any): void {
+    this.selectedCompany = company;
+    const currentUser = this.storage.getItem('currentUser');
+    const updatedUser = { ...currentUser, companies: [company] };
+    this.storage.setItem('currentUser', updatedUser);
   }
 
   getUserInitials(): string {
@@ -153,10 +175,6 @@ export class AppHorizontalHeaderComponent implements OnInit {
       return initials.toUpperCase();
     }
     return '';
-  }
-
-  onCompanySelect(company: any): void {
-    this.selectedCompany = company;
   }
 
   notifications: notifications[] = [

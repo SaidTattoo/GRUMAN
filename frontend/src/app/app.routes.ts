@@ -96,6 +96,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'transacciones/solicitudes-de-visita',
+        loadChildren: () =>
+          import('./pages/transacciones/solicitudes-de-visita/solicitudes-de-visita.routes').then(
+            (m) => m.SOLICITUDES_DE_VISITA_ROUTES
+          ),
+      },
+      {
         path: 'transacciones/lista-servicios-realizados',
         loadChildren: () =>
           import('./pages/transacciones/lista-servicios-realizados/lista-servicios-realizados.routes').then(

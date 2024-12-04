@@ -136,7 +136,11 @@ export class AppHorizontalSidebarComponent implements OnInit {
         route: 'transacciones/lista-servicios-realizados',
       },
       ...(showMantenedores
-        ? [
+        ? [{
+            displayName: 'Solicitudes de Visita',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita',
+          },
             {
               displayName: 'Mantenedores',
               iconName: 'home-shield',

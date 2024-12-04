@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Locales } from '../locales/locales.entity';
+import { SolicitarVisita } from 'src/solicitar-visita/solicitar-visita.entity';
 
 @Entity('sector_trabajo')
 export class SectorTrabajo {
@@ -15,6 +16,8 @@ export class SectorTrabajo {
   deleted: boolean;
 
   @ManyToOne(() => Locales, (local) => local.sectoresTrabajo, { eager: false })
-@JoinColumn({ name: 'localId' }) // Vincula con la columna localId en la base de datos
-local: Locales;
-}
+  @JoinColumn({ name: 'localId' }) // Vincula con la columna localId en la base de datos
+  local: Locales;
+
+
+} 

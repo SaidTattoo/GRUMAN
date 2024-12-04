@@ -59,7 +59,9 @@ export class AuthService {
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
     // Notificar al servicio de menú para que restablezca los elementos
+  
     this.menuService.updateMenuItems([]);
+    this.router.navigate(['/authentication/login']);
   }
   isAuthenticated(): boolean {
     const user = this.currentUserValue;

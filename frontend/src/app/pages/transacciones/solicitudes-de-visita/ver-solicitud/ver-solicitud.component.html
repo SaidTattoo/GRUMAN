@@ -1,0 +1,110 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+    
+        <mat-card-header>
+            <mat-card-title class="d-flex justify-content-between align-items-center">
+              <span>Ticket: {{ activity.ticketGruman }}</span>
+              <span class="badge rounded-pill ms-auto" 
+                    [ngStyle]="{
+                      'background-color': activity.status === 'aprobado' ? '#28a745' :
+                                          activity.status === 'pendiente' ? '#ffc107' :
+                                          activity.status === 'rechazado' ? '#dc3545' : '',
+                      'color': activity.status === 'pendiente' ? '#000' : '#fff',
+                      'font-size': '12px',
+                      'padding': '6px 12px'
+                    }">
+                {{ activity.status }}
+              </span>
+            </mat-card-title>
+            <mat-card-subtitle>
+              ID: {{ activity.id }} | Especialidad: {{ activity.especialidad }}
+            </mat-card-subtitle>
+          </mat-card-header>
+  
+    <mat-card-content>
+      <div class="location-info mb-3">
+        <h3 class="mb-2">
+          <mat-icon class="align-middle me-2">store</mat-icon>
+          {{ activity.local.nombre_local }}
+        </h3>
+        <div class="ms-4">
+          <p class="mb-1">
+            <mat-icon class="align-middle me-2">location_on</mat-icon>
+            {{ activity.local.direccion }}
+          </p>
+          <p class="mb-1">
+            <mat-icon class="align-middle me-2">phone</mat-icon>
+            {{ activity.local.telefono }}
+          </p>
+          <p class="mb-1">
+            <mat-icon class="align-middle me-2">email</mat-icon>
+            {{ activity.local.email_local }}
+          </p>
+        </div>
+      </div>
+      <div class="details-container mb-3">
+        <h3>Detalles de la Actividad</h3>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Fecha de Ingreso:</strong> {{ formatDate(activity.fechaIngreso) }}</p>
+            <p><strong>Fecha de Alta:</strong> {{ formatDate(activity.fechaAlta) }}</p>
+            <p><strong>Tipo de Servicio:</strong> {{ activity.tipoServicioId }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Sector de Trabajo:</strong> {{ activity.sectorTrabajoId }}</p>
+            <p><strong>Especialidad:</strong> {{ activity.especialidad }}</p>
+          </div>
+        </div>
+        <div class="observaciones mt-2">
+          <strong>Observaciones:</strong>
+          <p class="observation-text">{{ activity.observaciones }}</p>
+        </div>
+      </div>
+      <div class="images-container">
+        <h3>Imágenes</h3>
+        <div class="image-grid">
+          <div *ngFor="let image of activity.imagenes" class="image-item">
+            <img [src]="image" 
+                 [alt]="'Activity image'" 
+                 (click)="openImageDialog(image)"
+                 class="thumbnail">
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  
+    <!-- <mat-card-actions class="d-flex justify-content-center mt-3">
+      <button mat-raised-button color="primary">
+        <mat-icon>edit</mat-icon> Editar
+      </button>
+      <button mat-raised-button color="warn">
+        <mat-icon>delete</mat-icon> Eliminar
+      </button>
+    </mat-card-actions> -->
+  
+    <div class="approval-actions text-center mt-4">
+        @if(activity.status === 'pendiente') {
+      <button mat-raised-button 
+              color="primary" 
+              class="btn-approve" 
+              (click)="approveActivity()">
+        <mat-icon>check</mat-icon> Aprobar
+      </button>
+      <button mat-raised-button 
+              color="warn" 
+              class="btn-reject" 
+              (click)="rejectActivity()">
+        <mat-icon>close</mat-icon> Rechazar
+      </button>
+      }
+      <!-- volver -->
+      <button mat-raised-button 
+              color="primary" 
+              class="btn-back" 
+              (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon> Volver
+      </button>
+    </div>
+ 
+  </mat-card-content>
+</mat-card>

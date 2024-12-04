@@ -1,136 +1,169 @@
 <mat-card class="cardWithShadow">
-    <mat-card-content class="p-24">
-        <form [formGroup]="visitaForm" class="form-layout">
-            <!-- Tipo Servicio -->
-            <div class="row">
-                <div class="col-sm-4 d-flex align-items-center">
-                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo Servicio</mat-label>
-                </div>
-                <div class="col-sm-8">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <mat-select formControlName="tipoServicio" placeholder="Seleccione tipo de servicio">
-                            <mat-option value="Correctivo">Correctivo</mat-option>
-                            <!-- Otros tipos de servicio -->
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-            </div>
+  <mat-card-content class="p-24">
+    <form [formGroup]="visitaForm" (ngSubmit)="onSubmit()" class="form-layout">
+      <!-- Tipo Servicio -->
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo Servicio</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-select formControlName="tipoServicioId" placeholder="Seleccione tipo de servicio">
+              @for (tipo of tipoServicio; track tipo.id) {
+                <mat-option [value]="tipo.id">
+                  {{tipo.nombre}}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
 
-            <!-- Local -->
-            <div class="row">
-                <div class="col-sm-4 d-flex align-items-center">
-                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Local</mat-label>
-                </div>
-                <div class="col-sm-8">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <mat-select formControlName="localId" placeholder="Seleccionar Local">
-                            @for (local of locales; track local.id) {
-                                <mat-option [value]="local.id">
-                                    {{local.nombre_local}}
-                                </mat-option>
-                            }
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-            </div>
+      <!-- Local -->
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Local</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-select formControlName="localId" placeholder="Seleccionar Local">
+              @for (local of locales; track local.id) {
+                <mat-option [value]="local.id">
+                  {{local.nombre_local}}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
 
-            <!-- Sector del trabajo -->
-            <div class="row">
-                <div class="col-sm-4 d-flex align-items-center">
-                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Sector del trabajo</mat-label>
-                </div>
-                <div class="col-sm-8">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <mat-select formControlName="sectorTrabajo" placeholder="Todos">
-                            <mat-option value="todos">Todos</mat-option>
-                            @for (sector of sectores; track sector.id) {
-                                <mat-option [value]="sector.id">
-                                    {{sector.nombre}}
-                                </mat-option>
-                            }
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-            </div>
+      <!-- Sector del trabajo -->
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Sector del trabajo</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-select formControlName="sectorTrabajoId" placeholder="Seleccionar sector">
+              @for (sector of sectores; track sector.id) {
+                <mat-option [value]="sector.id">
+                  {{sector.nombre}}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
 
-            <!-- Especialidad del trabajo -->
-            <div class="row">
-                <div class="col-sm-4 d-flex align-items-center">
-                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Especialidad del trabajo</mat-label>
-                </div>
-                <div class="col-sm-8">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <mat-select formControlName="especialidad" placeholder="Otros Servicios">
-                            <mat-option value="otros">Otros Servicios</mat-option>
-                            <!-- Otras especialidades -->
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-            </div>
+      <!-- Especialidad del trabajo -->
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Especialidad del trabajo</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <input matInput formControlName="especialidad" placeholder="Ingrese especialidad">
+          </mat-form-field>
+        </div>
+      </div>
 
-            <!-- Ticket Gruman -->
-            <div class="row">
-                <div class="col-sm-4 d-flex align-items-center">
-                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Ticket Gruman</mat-label>
-                </div>
-                <div class="col-sm-8">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <input matInput formControlName="ticketGruman" placeholder="Ingrese número de ticket">
-                        <mat-hint>Corresponde al número de ticket interno de Gruman</mat-hint>
-                    </mat-form-field>
-                </div>
-            </div>
+      <!-- Ticket Gruman -->
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Ticket Gruman</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <input matInput formControlName="ticketGruman" placeholder="Ingrese número de ticket">
+            <mat-hint>Corresponde al número de ticket interno de Gruman</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
 
-            <!-- Observaciones -->
-            <div class="row">
-                <div class="col-sm-4 d-flex align-items-center">
-                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Observaciones</mat-label>
-                </div>
-                <div class="col-sm-8">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <textarea matInput formControlName="observaciones" rows="4"></textarea>
-                    </mat-form-field>
-                </div>
-            </div>
+      <!-- Observaciones -->
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Observaciones</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <textarea matInput formControlName="observaciones" rows="4" placeholder="Ingrese observaciones"></textarea>
+          </mat-form-field>
+        </div>
+      </div>
 
-            <!-- Fecha de ingreso solicitud -->
-            <div class="row">
-                <div class="col-sm-4 d-flex align-items-center">
-                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Fecha de ingreso solicitud</mat-label>
-                </div>
-                <div class="col-sm-8">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <input matInput [matDatepicker]="picker" formControlName="fechaIngreso">
-                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                        <mat-datepicker #picker></mat-datepicker>
-                        <mat-hint>Corresponde la fecha propuesta de solución</mat-hint>
-                    </mat-form-field>
-                </div>
-            </div>
+      <!-- Fecha de ingreso solicitud -->
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Fecha de ingreso solicitud</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <input matInput [matDatepicker]="picker" formControlName="fechaIngreso">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-hint>Corresponde la fecha propuesta de solución</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
 
-            <!-- Subir Imagen -->
-            <div class="row">
-                <div class="col-sm-4 d-flex align-items-center">
-                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Subir Imagen</mat-label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" accept=".png,.jpg,.jpeg">
-                    <button mat-raised-button color="primary" (click)="fileInput.click()">Seleccionar Archivo</button>
-                    @if (selectedFileName) {
-                        <span class="ms-2">{{ selectedFileName }}</span>
-                    }
-                    <mat-hint>Formato de imágenes admitido png, jpg, jpeg</mat-hint>
-                </div>
-            </div>
+      <!-- Subir Imágenes -->
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Subir Imágenes</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <input 
+            type="file" 
+            #fileInput 
+            (change)="onFileSelected($event)" 
+            style="display: none;" 
+            accept="image/*"
+            multiple>
+          <button type="button" mat-raised-button color="primary" (click)="fileInput.click()">
+            <mat-icon>add_photo_alternate</mat-icon>
+            Seleccionar Imágenes
+          </button>
 
-            <!-- Botones -->
-            <div class="row mt-4">
-                <div class="col-12 text-end">
-                    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!visitaForm.valid">
-                        Solicitar Visita
+          <!-- Preview de imágenes -->
+          <div class="row mt-3">
+            @for(file of selectedFiles; track file.name; let i = $index) {
+              <div class="col-sm-3 mb-3">
+                <mat-card class="image-preview-card">
+                  <img [src]="previewUrls[i]" [alt]="file.name" class="img-fluid">
+                  <div class="image-preview-overlay">
+                    <button type="button" mat-icon-button color="warn" (click)="removeImage(i)">
+                      <mat-icon>delete</mat-icon>
                     </button>
-                </div>
-            </div>
-        </form>
-    </mat-card-content>
+                  </div>
+                  <mat-card-footer class="p-2">
+                    <small class="text-muted">{{ file.name }}</small>
+                  </mat-card-footer>
+                </mat-card>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Mostrar las imágenes subidas -->
+      <div class="image-preview-container">
+        <div *ngFor="let url of urlImage; let i = index" class="image-preview">
+          <img width ="100" [src]="url" alt="Preview" class="preview-image">
+          <!-- <button mat-icon-button color="warn" (click)="removeImage(i)">
+            <mat-icon>delete</mat-icon>
+          </button> -->
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="row mt-4">
+        <div class="col-12 text-end">
+          <button type="submit" mat-raised-button color="primary" [disabled]="!visitaForm.valid">
+            Solicitar Visita
+          </button>
+        </div>
+      </div>
+    </form>
+  </mat-card-content>
 </mat-card>

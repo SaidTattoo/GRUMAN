@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { SolicitarVisita } from 'src/solicitar-visita/solicitar-visita.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('tipo_servicio')
 export class TipoServicio {
@@ -7,4 +8,6 @@ export class TipoServicio {
 
   @Column()
   nombre: string;
+
+
 }
