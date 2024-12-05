@@ -135,7 +135,7 @@
               </div>
               <div class="col-sm-8">
                 <mat-form-field appearance="outline" class="w-100">
-                  <input matInput placeholder="Ingrese la dirección" formControlName="direccion" />
+                  <input matInput placeholder="Ingrese la dirección" (change)="onDireccionChange()" formControlName="direccion" />
                 </mat-form-field>
               </div>
             </div>
@@ -176,7 +176,7 @@
               </div>
               <div class="col-sm-8">
                 <mat-form-field appearance="outline" class="w-100">
-                  <input matInput placeholder="Ingrese la latitud" formControlName="latitud" />
+                  <input matInput placeholder="Ingrese la latitud" [disabled]="true" formControlName="latitud" />
                 </mat-form-field>
               </div>
             </div>
@@ -186,7 +186,7 @@
               </div>
               <div class="col-sm-8">
                 <mat-form-field appearance="outline" class="w-100">
-                  <input matInput placeholder="Ingrese la longitud" formControlName="longitud" />
+                  <input matInput placeholder="Ingrese la longitud" [disabled]="true" formControlName="longitud" />
                 </mat-form-field>
               </div>
             </div>

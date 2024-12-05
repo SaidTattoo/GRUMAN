@@ -14,6 +14,8 @@ import { RegionesComunasService } from 'src/app/services/regiones-comunas.servic
 import Swal from 'sweetalert2';
 import { MatSelectChange } from '@angular/material/select';
 import { MatSelect } from '@angular/material/select';
+import { GeocodingService } from 'src/app/services/geocoding.service';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-crear-local',
@@ -29,13 +31,16 @@ export class CrearLocalComponent implements OnInit {
   provincias: any[] = [];
   comunas: any[] = [];
   readonly REGION_METROPOLITANA_ID = 13; // ID de la RM
+  suggestions: any[] = [];
 
   constructor(
     private fb: FormBuilder,
     private localesService: LocalesService,
     private router: Router,
     private clientesService: ClientesService,
-    private regionesComunasService: RegionesComunasService
+    private regionesComunasService: RegionesComunasService,
+    private geocodingService: GeocodingService
+
   ) {
     this.localForm = this.fb.group({
       direccion: ['', Validators.required],
@@ -45,7 +50,7 @@ export class CrearLocalComponent implements OnInit {
       comuna: [{value: '', disabled: true}, Validators.required],
       clientId: ['', Validators.required],
       zona: ['', Validators.required],
-      grupo: ['', Validators.required],
+      grupo: ['', Validators.required],     
       referencia: ['', Validators.required],
       telefono: ['', Validators.required],
       email_local: ['', [Validators.required, Validators.email]],
@@ -71,7 +76,42 @@ export class CrearLocalComponent implements OnInit {
       this.clientes = data.filter(cliente => cliente.nombre !== 'GRUMAN');
     });
   }
-
+  calculateCoordinates() {
+    const direccion = this.localForm.get('direccion')?.value;
+    const comuna = this.comunas.find(
+      (c) => c.comuna_id === this.localForm.get('comuna')?.value
+    )?.comuna_nombre;
+    const region = this.regiones.find(
+      (r) => r.region_id === this.localForm.get('region')?.value
+    )?.region_nombre;
+  
+    if (direccion && comuna && region) {
+      const fullAddress = `${direccion}, ${comuna}, ${region}`;
+      this.geocodingService.geocodeAddress(fullAddress).subscribe({
+        next: (response) => {
+          if (response && response.length > 0) {
+            const location = response[0];
+            this.localForm.patchValue({
+              latitud: location.lat,
+              longitud: location.lon,
+            });
+            console.log('****', location);
+          } else {
+            console.error('No se encontraron coordenadas para esta dirección.');
+            //mostrar que revise si esta bien escrita  la direccion y la numeracion y/o  comuna o region o provincia ya 
+            Swal.fire({
+              title: 'Error',
+              text: 'No se encontraron coordenadas para esta dirección. Por favor, revise si la dirección está bien escrita y la numeración o la comuna, región o provincia.',
+              icon: 'error'
+            });
+          }
+        },
+        error: (error) => {
+          console.error('Error en la geocodificación:', error);
+        },
+      });
+    }
+  }
   cargarRegiones() {
     this.regionesComunasService.getRegiones().subscribe({
       next: (data) => {
@@ -125,6 +165,7 @@ export class CrearLocalComponent implements OnInit {
       this.localForm.get('provincia')?.disable();
       this.localForm.get('comuna')?.disable();
     }
+    this.calculateCoordinates();
   }
 
   onProvinciaChange(event: MatSelectChange) {
@@ -145,9 +186,11 @@ export class CrearLocalComponent implements OnInit {
     } else {
       this.localForm.get('comuna')?.disable();
     }
+    this.calculateCoordinates();
   }
 
   onSubmit() {
+    this.calculateCoordinates();
     // Habilitar los controles antes de enviar
     this.localForm.get('provincia')?.enable();
     this.localForm.get('comuna')?.enable();
@@ -188,7 +231,9 @@ export class CrearLocalComponent implements OnInit {
       });
     }
   }
-
+  onDireccionChange() {
+    this.calculateCoordinates();
+  }
   onClienteChange(event: any) {
     const clienteId = event.value;
     //console.log('Cliente seleccionado:', this.clientes);
@@ -203,5 +248,29 @@ export class CrearLocalComponent implements OnInit {
     //console.log('****', nombreCliente );
     // Aquí puedes realizar acciones adicionales, como actualizar otros campos del formulario
     
+  }
+  onSearch(event: Event): void {
+    const query = (event.target as HTMLInputElement).value;
+    this.geocodingService.searchAddress(query).subscribe({
+      next: (results) => {
+        this.suggestions = results;
+      },
+      error: (error) => {
+        console.error('Error en autocompletar:', error);
+      },
+    });
+  }
+
+  onOptionSelected(event: any): void {
+    const selectedAddress = this.suggestions.find(
+      (s) => s.display_name === event.option.value
+    );
+    if (selectedAddress) {
+      this.localForm.patchValue({
+        direccion: selectedAddress.display_name,
+        latitud: selectedAddress.lat,
+        longitud: selectedAddress.lon,
+      });
+    }
   }
 }
