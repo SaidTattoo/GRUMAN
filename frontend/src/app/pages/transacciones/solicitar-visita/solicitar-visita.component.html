@@ -8,11 +8,17 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="tipoServicioId" placeholder="Seleccione tipo de servicio">
-              @for (tipo of tipoServicio; track tipo.id) {
-                <mat-option [value]="tipo.id">
-                  {{tipo.nombre}}
-                </mat-option>
+            <mat-select formControlName="tipoServicioId" placeholder="Seleccione tipo de servicio"
+                      [disabled]="!tipoServicio?.length"
+                      [value]="'no-disponible'">
+              @if (tipoServicio?.length) {
+                @for (tipo of tipoServicio; track tipo.id) {
+                  <mat-option [value]="tipo.id">
+                    {{tipo.nombre}}
+                  </mat-option>
+                }
+              } @else {
+                <mat-option value="no-disponible" disabled>No hay tipos de servicio disponibles para este cliente</mat-option>
               }
             </mat-select>
           </mat-form-field>
