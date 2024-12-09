@@ -273,4 +273,7 @@ export class CrearLocalComponent implements OnInit {
       });
     }
   }
+  onCancelar() {
+    this.router.navigate(['/mantenedores/locales']);
+  }
 }

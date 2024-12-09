@@ -13,8 +13,16 @@ export class TipoServicioService {
   findAll(): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}tipo-servicio`);
   }
-
+  findById(id: number): Observable<any> {
+    return this.http.get(`${environment.apiUrl}tipo-servicio/${id}`);
+  }
+  updateTipoServicio(id: number, tipoServicio: any): Observable<any> {
+    return this.http.put(`${environment.apiUrl}tipo-servicio/${id}`, tipoServicio);
+  }
   createTipoServicio(tipoServicio: any): Observable<any> {
     return this.http.post(`${environment.apiUrl}tipo-servicio`, tipoServicio);
+  }
+  deleteTipoServicio(id: number): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}tipo-servicio/${id}`);
   }
 }

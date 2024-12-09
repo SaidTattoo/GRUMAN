@@ -1,8 +1,9 @@
 import { Programacion } from '../programacion/programacion.entity';
 import { User } from '../users/users.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToMany, ManyToOne, JoinColumn, JoinTable } from 'typeorm';
 import { Locales } from '../locales/locales.entity';
 import { ActivoFijoLocal } from '../activo-fijo-local/activo-fijo-local.entity';
+import { TipoServicio } from '../tipo-servicio/tipo-servicio.entity';
 
 
 
@@ -38,11 +39,11 @@ export class Client {
   @ManyToMany(() => User, user => user.clients)
   users: User[];
 
-    @ManyToOne(() => Locales, (local) => local.sectoresTrabajo)
+  @ManyToOne(() => Locales, (local) => local.sectoresTrabajo)
   @JoinColumn({ name: 'localId' })
   locales: Locales[];
 
-   @OneToMany(() => Programacion, programacion => programacion.client)
+  @OneToMany(() => Programacion, programacion => programacion.client)
   programaciones: Programacion[];  
 
   @OneToMany(() => ActivoFijoLocal, activoFijoLocal => activoFijoLocal.client)
@@ -50,4 +51,10 @@ export class Client {
 
   @Column({ default: false })
   deleted: boolean;
+
+  @ManyToMany(() => TipoServicio, (tipoServicio) => tipoServicio.clients, {
+    cascade: true, // Permite insertar automáticamente
+  })
+  @JoinTable() // Importante: Esto indica que `Cliente` controla la relación.
+  tipoServicio: TipoServicio[];
 }

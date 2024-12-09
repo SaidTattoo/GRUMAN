@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { TipoServicioService } from './tipo-servicio.service';
 import { TipoServicio } from './tipo-servicio.entity';
 
@@ -14,5 +14,20 @@ export class TipoServicioController {
     @Post()
     createTipoServicio(@Body() tipoServicio: TipoServicio): Promise<TipoServicio> {
         return this.tipoServicioService.createTipoServicio(tipoServicio);
+    }
+
+    @Put(':id')
+    updateTipoServicio(@Param('id') id: number, @Body() tipoServicio: TipoServicio): Promise<TipoServicio> {
+        return this.tipoServicioService.updateTipoServicio(id, tipoServicio);
+    }
+
+    @Get(':id')
+    findById(@Param('id') id: number): Promise<TipoServicio> {
+        return this.tipoServicioService.findById(id);
+    }
+
+    @Delete(':id')
+    deleteTipoServicio(@Param('id') id: number): Promise<TipoServicio> {
+        return this.tipoServicioService.deleteTipoServicio(id);
     }
 }

@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { Router } from '@angular/router';
 import { VehiculosService } from 'src/app/services/vehiculos.service';
 import Swal from 'sweetalert2';
 
@@ -19,7 +20,7 @@ export class CrearVehiculoComponent {
   form: FormGroup;
 
 
-  constructor(private fb: FormBuilder, private dialogRef: MatDialogRef<CrearVehiculoComponent>, private vehiculosService: VehiculosService) {
+  constructor(private fb: FormBuilder, private router: Router, private vehiculosService: VehiculosService) {
     this.form = this.fb.group({
       movil: ['', Validators.required],
       patente:['',Validators.required],
@@ -44,13 +45,16 @@ export class CrearVehiculoComponent {
       if (result.isConfirmed) {
         if(this.form.valid){
           this.vehiculosService.crearVehiculo(this.form.value).subscribe((res) => {
-            this.dialogRef.close(res);
-            this.form.reset();
+              this.router.navigate(['/mantenedores/vehiculos']);
+             
           });
         }else {
           Swal.fire('Error', 'Por favor, complete todos los campos requeridos.', 'error');
         }
       }
     });
+  }
+  onCancel(){
+    this.router.navigate(['/mantenedores/vehiculos']);
   }
 }

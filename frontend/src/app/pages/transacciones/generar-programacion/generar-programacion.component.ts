@@ -195,7 +195,24 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   } */
 
   getTiposServicio(): void {
-    this.tipoServicioService.findAll()
+    const currentUserString = localStorage.getItem('currentUser');
+    let currentUser: any = null;
+    if (currentUserString) {
+      currentUser = JSON.parse(currentUserString);
+      const clienteId = currentUser.companies[0].id;
+      console.log('clienteId', clienteId);
+      this.clientesService.getCliente(clienteId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (data) => {
+            this.tiposServicio = data.tipoServicio;
+            console.log('tiposServicio', this.tiposServicio);
+          }
+        });
+    }
+
+    //tiposervicio viene del cliente
+   /*  this.tipoServicioService.findAll()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -204,7 +221,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.showErrorMessage('Error al cargar los tipos de servicio');
         }
-      });
+      }); */
   }
 
   getSectores(): void {

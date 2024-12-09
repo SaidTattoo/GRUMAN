@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { TipoServicioService } from 'src/app/services/tipo-servicio.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-tipo-servicio',
@@ -20,18 +21,35 @@ export class TipoServicioComponent {
   displayedColumns: string[] = [ 'nombre', 'acciones'];
   dataSource: any[] = [];
   ngOnInit(): void {
+    this.getAllTipoServicio();
+   
+  }
+
+  getAllTipoServicio() {
     this.tipoServicioService.findAll().subscribe((data) => {
-      //console.log(data);
       this.dataSource = data;
     });
   }
+
   crear() {
     this.router.navigate(['/mantenedores/tipo-servicio/crear']);
   }
   editar(element: any) {
-    //console.log(element);
+    this.router.navigate(['/mantenedores/tipo-servicio/editar', element.id]);
   }
   eliminar(element: any) {
-    //console.log(element);
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Los datos no se pueden modificar una vez guardados.",
+      icon: 'warning',
+      showCancelButton: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.tipoServicioService.deleteTipoServicio(element.id).subscribe((data) => {
+          this.getAllTipoServicio();
+          
+        });
+      }
+    });
   }
 }

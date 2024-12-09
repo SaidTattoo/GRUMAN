@@ -17,6 +17,7 @@ import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.servic
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { UploadDataService } from 'src/app/services/upload-data.service';
 import Swal from 'sweetalert2';
+import { ClientesService } from 'src/app/services/clientes.service';
 
 @Component({
   selector: 'app-solicitar-visita',
@@ -54,7 +55,8 @@ export class SolicitarVisitaComponent implements OnInit {
     private solicitarVisitaService: SolicitarVisitaService,
     private sanitizer: DomSanitizer,
     private fb: FormBuilder,
-    private uploadDataService: UploadDataService
+    private uploadDataService: UploadDataService,
+    private clientesService: ClientesService
   ) {
     this.visitaForm = this.fb.group({
       tipoServicioId: [null, Validators.required],
@@ -161,8 +163,9 @@ export class SolicitarVisitaComponent implements OnInit {
   }
 
   getTipoServicio() {
-    this.tipoServicioService.findAll().subscribe((response) => {
-      this.tipoServicio = response;
+    this.clientesService.getCliente(this.clientId)
+    .subscribe((response) => {
+      this.tipoServicio = response.tipoServicio;
     });
   }
 

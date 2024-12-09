@@ -94,11 +94,7 @@ export class VehiculosComponent implements OnInit {
   }
   //AL CERRAR EL MODAL QUE ACTUALICE LA TABLA DE DATOS
   modalNuevoLocal(){
-    const dialogRef = this.dialog.open(CrearVehiculoComponent);
-    dialogRef.afterClosed().subscribe(result => {
-      //console.log('The dialog was closed');
-      this.ngOnInit();
-    });
+    this.router.navigate(['/mantenedores/vehiculos/crear-vehiculo']);
   }
   formatPatente(patente: string): string {
     return patente.replace(/(.{2})(?=.)/g, '$1<span class="dot">·</span>');

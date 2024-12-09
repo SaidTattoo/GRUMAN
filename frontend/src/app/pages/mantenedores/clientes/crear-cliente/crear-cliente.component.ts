@@ -1,17 +1,20 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardHeader } from '@angular/material/card';
+import { MatOptionModule } from '@angular/material/core';
 import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
+import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
 import { ClientesService } from 'src/app/services/clientes.service';
+import { TipoServicioService } from 'src/app/services/tipo-servicio.service';
 import { UploadDataService } from 'src/app/services/upload-data.service';
 
 @Component({
   selector: 'app-crear-cliente',
   standalone: true,
-  imports: [MatCard,MatFormFieldModule,ReactiveFormsModule ,MatCardContent, MatFormField, MatInput, MatButton, MatCardHeader,MatLabel  ],
+  imports: [MatCard,MatFormFieldModule,ReactiveFormsModule ,MatCardContent, MatFormField, MatInput, MatButton, MatCardHeader,MatLabel,MatSelectModule,MatOptionModule,MatSelectModule ],
   templateUrl: './crear-cliente.component.html',
   styleUrl: './crear-cliente.component.scss'
 })
@@ -21,7 +24,9 @@ export class CrearClienteComponent {
   imageBase64: string | null = null;
   clienteForm: FormGroup;
   urlImage: string | null = null;
-    constructor(private clienteService: ClientesService, private router: Router, private fb: FormBuilder, private uploadDataService: UploadDataService) {}
+  tipoServicioForm = new FormControl('');
+  tipoServicioList: any[] = [];
+    constructor(private clienteService: ClientesService, private router: Router, private fb: FormBuilder, private uploadDataService: UploadDataService, private tipoServicioService: TipoServicioService) {}
 
   ngOnInit(): void {
     this.clienteForm = this.fb.group({
@@ -31,7 +36,9 @@ export class CrearClienteComponent {
       razonSocial: ['', Validators.required],
       sobrePrecio: ['', Validators.required],
       valorPorLocal: ['', Validators.required],
+      tipoServicio: [''],
     });
+    this.getTipoServicio();
   }
 
   onFileSelected(event: Event) {
@@ -56,9 +63,18 @@ export class CrearClienteComponent {
     }
   }
 
+  getTipoServicio(){
+    this.tipoServicioService.findAll().subscribe((data: any) => {
+     
+      this.tipoServicioList = data;
+      console.log(this.tipoServicioList);
+    });
+  }
+
   submit() {
     //console.log(this.clienteForm.value);
       this.clienteForm.value.logo = this.urlImage;
+      this.clienteForm.value.tipoServicio = this.tipoServicioForm.value;
       //console.log('Formulario:', this.clienteForm.value);
       this.clienteService.createCliente(this.clienteForm.value).subscribe((data: any) => {
         //console.log(data);
@@ -78,5 +94,9 @@ export class CrearClienteComponent {
   }
   volver(){
     this.router.navigate(['/mantenedores/clientes']);
+  }
+
+  onTipoServicioChange(event: MatSelectChange): void {
+    console.log('Toppings seleccionados:', event.value);
   }
 }

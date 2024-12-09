@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { ClientesService } from 'src/app/services/clientes.service';
 import Swal from 'sweetalert2';
@@ -16,7 +17,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatInputModule,MatFormFieldModule,MatCard,MatCardContent, MatIcon, MatButton, MatCardHeader, MatIconModule, MatButtonModule ],
+  imports: [MatTableModule,MatPaginatorModule,MatSortModule,MatInputModule,MatFormFieldModule,MatCard,MatCardContent, MatIcon, MatButton, MatCardHeader, MatIconModule, MatButtonModule,MatTooltipModule ],
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.scss'
 })

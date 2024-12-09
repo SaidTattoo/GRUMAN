@@ -47,10 +47,16 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="tipoServicio" placeholder="Seleccionar Tipo de Servicio">
-              <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
-                {{ tipo.name }}
-              </mat-option>
+            <mat-select formControlName="tipoServicio" placeholder="Seleccionar Tipo de Servicio" 
+                      [disabled]="!tiposServicio?.length"
+                      [value]="'no-disponible'">
+              @if (tiposServicio?.length) {
+                <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
+                  {{ tipo.nombre }}
+                </mat-option>
+              } @else {
+                <mat-option value="no-disponible" disabled>No hay tipos de servicio disponibles para este cliente</mat-option>
+              }
             </mat-select>
             @if (programacionForm.get('tipoServicio')?.touched && programacionForm.get('tipoServicio')?.invalid) {
             <mat-error>

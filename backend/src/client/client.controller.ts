@@ -35,12 +35,16 @@ export class ClientController {
                     sobreprecio: 10,
                     valorPorLocal: 100,
                     fechaAlta: new Date(),
-                    activo: true,   
+                    activo: true, 
+                    tipoServicio: [1, 2, 3],
                 },
             },
         },
     })
+    @Post()
+    @ApiOperation({ summary: 'Crear un cliente' })
     createClient(@Body() client: Client): Promise<Client> {
+        console.log(client);
         return this.clientService.createClient(client);
     }
 

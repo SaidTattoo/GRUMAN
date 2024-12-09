@@ -79,16 +79,21 @@
             Acciones
           </th>
           <td mat-cell *matCellDef="let element" class="p-l-0">
-            <button mat-icon-button color="primary" (click)="openEditarClienteModal(element)">
+            <button mat-icon-button    [matTooltip]="'Editar cliente'" 
+            matTooltipPosition="above"color="primary" (click)="openEditarClienteModal(element)">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="openEliminarClienteModal(element)">
+            <button mat-icon-button    [matTooltip]="'Eliminar cliente'" 
+            matTooltipPosition="above" color="warn" (click)="openEliminarClienteModal(element)">
               <mat-icon>delete</mat-icon>
             </button>
-            <button mat-icon-button color="primary" (click)="agregarDocumento(element)">
+            <button mat-icon-button    [matTooltip]="'Agregar documento al cliente'" 
+            matTooltipPosition="above"color="primary" (click)="agregarDocumento(element)">
               <mat-icon>add</mat-icon>
             </button>
-            <button mat-icon-button color="primary" (click)="agregarUsuarioACliente(element)">
+            <button mat-icon-button color="primary" 
+                    [matTooltip]="'Agregar usuario al cliente'" 
+                    matTooltipPosition="above">
               <mat-icon>person_add</mat-icon>
             </button>
           </td>

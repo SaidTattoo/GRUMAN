@@ -42,6 +42,20 @@
               </mat-form-field>
             </div>
           </div>
+          <div class="row">
+            <div class="col-sm-4 d-flex align-items-center justify-content-end">
+              <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Tipo de Servicio</mat-label>
+            </div>
+            <div class="col-sm-8">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-select [formControl]="tipoServicioForm" multiple (selectionChange)="onTipoServicioChange($event)">
+                @for (tipoServicio of tipoServicioList; track tipoServicio.id) {
+                  <mat-option [value]="tipoServicio.id">{{tipoServicio.nombre}}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            </div>
+          </div>
         </div>
         <div class="col-lg-6 col-sm-6">
           <div class="row">
@@ -86,6 +100,12 @@
               <span>{{ fileName || cliente?.logo?.split('-').pop() }}</span>
               <img width="100" loading="lazy" [src]="imagePreview || cliente?.logo" alt="Vista previa del logo" class="img-preview" />
             </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 d-flex align-items-center justify-content-end">
+              <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Tipo de Servicio</mat-label>
+            </div>
+           
           </div>
         </div>
       </div>
