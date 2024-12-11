@@ -33,7 +33,7 @@ import {
   
     @Column({
       type: 'enum',
-      enum: ['user', 'reporter', 'admin', 'superadmin'],
+      enum: ['user', 'reporter', 'admin', 'superadmin','tecnico'],
       default: 'user',
     })
     profile: string;

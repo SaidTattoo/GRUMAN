@@ -102,8 +102,27 @@
         </ng-container>
 
         <!-- Email Local Column -->
+        
+        <ng-container matColumnDef="acciones">  
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Acciones
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-icon-button  [matTooltip]="'Ver vehiculo'" 
+            matTooltipPosition="above" (click)="verVehiculo(element)" >
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button  [matTooltip]="'Asignar tecnico'" 
+            matTooltipPosition="above" (click)="asignarTecnico(element)" >
+              <mat-icon>person</mat-icon>
+            </button>
+            <button mat-icon-button  [matTooltip]="'Eliminar vehiculo'" 
+            matTooltipPosition="above" (click)="eliminarVehiculo(element.id)" >
+              <mat-icon>delete</mat-icon>
+            </button>
 
-
+          </td>
+        </ng-container>
 
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

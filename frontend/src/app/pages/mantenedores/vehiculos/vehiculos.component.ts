@@ -70,7 +70,7 @@ const ELEMENT_DATA: any[] = [
   styleUrls: ['./vehiculos.component.scss']
 })
 export class VehiculosComponent implements OnInit {
-   displayedColumns: string[] = ['movil', 'patente', 'marca', 'modelo', 'documentacion' , 'estado'];
+   displayedColumns: string[] = ['movil', 'patente', 'marca', 'modelo', 'documentacion' , 'estado' ,'acciones'];
   data: Vehiculo[] = [];
  /*  displayedColumns: string[] = ['id', 'direccion', 'comuna', 'region', 'zona', 'grupo', 'referencia', 'telefono', 'email_local', 'email_encargado', 'nombre_encargado']; */
   dataSource = new MatTableDataSource();
@@ -119,5 +119,19 @@ export class VehiculosComponent implements OnInit {
 
   openDocumentacion(id: number){
     this.router.navigate(['/mantenedores/vehiculos/documentacion', id]);
+  }
+  verVehiculo(element: any) {
+    console.log('Ruta ver vehículo:', `/mantenedores/vehiculos/ver-vehiculo/${element.id}`);
+    this.router.navigate([`/mantenedores/vehiculos/ver-vehiculo/${element.id}`]);
+  }
+
+  asignarTecnico(element: any) {
+    console.log('Ruta asignar técnico:', `/mantenedores/vehiculos/asignar-tecnico/${element.id}`);
+    this.router.navigate([`/mantenedores/vehiculos/asignar-tecnico/${element.id}`]);
+  }
+  eliminarVehiculo(id: number){
+    this.vehiculosService.deleteVehiculo(id).subscribe(() => {
+      this.ngOnInit();
+    });
   }
 }

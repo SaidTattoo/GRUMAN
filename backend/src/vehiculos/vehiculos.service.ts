@@ -15,13 +15,13 @@ export class VehiculosService {
     return this.vehiculosRepository.find({ order: { id: 'DESC' } });
   }
 
-  /* async findOne(id: number): Promise<Vehiculo> {
-    const vehiculo = await this.vehiculosRepository.findOne(id);
+  async findOne(id: number): Promise<Vehiculo> {
+    const vehiculo = await this.vehiculosRepository.findOne({ where: { id } });
     if (vehiculo) {
       vehiculo.deserializeDocumentacion();
     }
     return vehiculo;
-  } */
+  } 
 
   create(vehiculo: Vehiculo): Promise<Vehiculo> {
     return this.vehiculosRepository.save(vehiculo);
@@ -32,7 +32,19 @@ export class VehiculosService {
     return this.findOne(id);
   } */
 
-  async remove(id: number): Promise<void> {
-    await this.vehiculosRepository.delete(id);
+ 
+
+
+  async updateUser(id: number, user_id: number): Promise<Vehiculo> {
+    await this.vehiculosRepository.update(id, { user_id });
+    return this.findOne(id);
+  }
+
+  async removeUser(id: number): Promise<void> {
+    await this.vehiculosRepository.update(id, { user_id: null });
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.vehiculosRepository.update(id, { deleted: true });
   }
 }

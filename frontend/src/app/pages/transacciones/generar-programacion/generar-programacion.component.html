@@ -48,14 +48,15 @@
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
             <mat-select formControlName="tipoServicio" placeholder="Seleccionar Tipo de Servicio" 
-                      [disabled]="!tiposServicio?.length"
-                      [value]="'no-disponible'">
-              @if (tiposServicio?.length) {
+                      [disabled]="!programacionForm.get('clientId')?.value || !tiposServicio.length">
+              @if (!programacionForm.get('clientId')?.value) {
+                <mat-option disabled>Primero seleccione un cliente</mat-option>
+              } @else if (tiposServicio.length) {
                 <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
                   {{ tipo.nombre }}
                 </mat-option>
               } @else {
-                <mat-option value="no-disponible" disabled>No hay tipos de servicio disponibles para este cliente</mat-option>
+                <mat-option disabled>No hay tipos de servicio disponibles para este cliente</mat-option>
               }
             </mat-select>
             @if (programacionForm.get('tipoServicio')?.touched && programacionForm.get('tipoServicio')?.invalid) {
@@ -145,6 +146,7 @@
            
             {{ loading ? 'Enviando...' : 'Enviar' }}
           </button>
+          <button mat-raised-button type="button" (click)="volver()">Volver<mat-icon>arrow_back</mat-icon></button>
         </div>
       </div>
     </form>

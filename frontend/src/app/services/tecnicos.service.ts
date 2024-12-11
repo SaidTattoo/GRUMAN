@@ -23,4 +23,6 @@ export class TecnicosService {
   deleteTecnico(id: number) {
     return this.http.delete(`${this.apiUrl}users/${id}`);
   }
+
+  
 }

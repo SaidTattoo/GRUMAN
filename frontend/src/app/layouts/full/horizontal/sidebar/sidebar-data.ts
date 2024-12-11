@@ -60,7 +60,7 @@ export const navItems: NavItem[] = [
         displayName: 'Generar Programación',
         iconName: 'home-shield',
         bgcolor: 'primary',
-        route: 'reportes/generar-programacion',
+        route: 'generar-programacion',
       },
       {
         displayName: 'Listado de Programación',
@@ -100,7 +100,7 @@ export const navItems: NavItem[] = [
               route: 'mantenedores/locales',
             },{
               displayName: 'Moviles',
-              iconName: 'home-shield',
+              iconName: ' delivery_truck_speed',
               route: 'mantenedores/vehiculos',
             },
             {

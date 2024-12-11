@@ -89,7 +89,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'reportes/generar-programacion',
+        path: 'generar-programacion',
         loadChildren: () =>
           import('./pages/transacciones/generar-programacion/generar-programacion.routes').then(
             (m) => m.GENERAR_PROGRAMACION_ROUTES

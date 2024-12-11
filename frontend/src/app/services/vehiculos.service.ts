@@ -23,6 +23,22 @@ export class VehiculosService {
   crearVehiculo(vehiculo: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}vehiculos`, vehiculo);
   }
+  //TODO: no implementado aun 
+  updateVehiculo(id: number, vehiculo: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}vehiculos/${id}`, vehiculo);
+  }
+
+  deleteVehiculo(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}vehiculos/${id}`);
+  }
+
+  updateUserVehiculo(id: number, user_id: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}vehiculos/${id}/user/${user_id}`, {});
+  }
+
+  removeUserVehiculo(id: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}vehiculos/${id}/remove-user`, {});
+  }
 
   getDocumentacionVehiculo(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}upload/vehiculos/${id}/documentos`).pipe(

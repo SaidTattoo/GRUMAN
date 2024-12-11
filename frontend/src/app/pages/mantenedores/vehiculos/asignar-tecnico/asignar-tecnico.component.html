@@ -1,0 +1,39 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+        <form [formGroup]="tecnicoForm">
+            <div class="row">
+                <div class="col-sm-4 d-flex align-items-center justify-content-end">
+                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Vehiculo patente:</mat-label>
+                </div>
+                <div class="col-sm-8">
+                    <span class="patente" [innerHTML]="formatPatente(vehiculo.patente)"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 d-flex align-items-center justify-content-end">
+                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Asignar a:</mat-label>
+                </div>
+                <div class="col-sm-8">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="user" placeholder="Técnico" (selectionChange)="selectUser($event)">
+                            @for (user of users; track user.id) {
+                                <mat-option [value]="user.id">{{user.name}}</mat-option>
+                            }
+                        </mat-select>
+                        @if (tecnicoForm.get('user')?.touched && tecnicoForm.get('user')?.hasError('required')) {
+                            <mat-error>Debe seleccionar un técnico</mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 d-flex align-items-center justify-content-end">
+                    <button mat-raised-button color="primary" (click)="asignarTecnico()" [disabled]="tecnicoForm.invalid">Asignar</button>
+                </div>
+                <div class="col-sm-4 d-flex align-items-center justify-content-end">    
+                    <button mat-raised-button type="button" (click)="goBack()">Volver<mat-icon>arrow_back</mat-icon></button>   
+                </div>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

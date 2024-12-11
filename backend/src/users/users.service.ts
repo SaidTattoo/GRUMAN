@@ -19,6 +19,11 @@ export class UsersService {
     findAllUsers(): Promise<User[]> {
         return this.userRepository.find({ relations: ['clients'] });
     }
+
+    findAllTecnicos(): Promise<User[]> {
+        return this.userRepository.find({ where: { profile: 'tecnico' }});
+    }
+
     /** FINDALLUSERS WHERE CLIENTE  */
     findAllUsersByClient(clientId: number): Promise<User[]> {
         return this.userRepository.find({ where: { clients: { id: clientId } }, relations: ['clients'] });

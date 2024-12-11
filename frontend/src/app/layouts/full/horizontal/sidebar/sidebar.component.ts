@@ -101,7 +101,7 @@ export class AppHorizontalSidebarComponent implements OnInit {
             displayName: 'Generar Programación',
             iconName: 'home-shield',
             bgcolor: 'primary',
-            route: 'reportes/generar-programacion',
+            route: 'generar-programacion',
           },
           {
             displayName: 'Listado de Programación',
@@ -153,7 +153,7 @@ export class AppHorizontalSidebarComponent implements OnInit {
                 },
                 {
                   displayName: 'Moviles',
-                  iconName: 'home-shield',
+                  iconName: 'car',
                   route: 'mantenedores/vehiculos',
                 },
                 {
@@ -163,7 +163,7 @@ export class AppHorizontalSidebarComponent implements OnInit {
                 },
                 {
                   displayName: 'Tecnicos',
-                  iconName: 'home-shield',
+                  iconName: 'user',
                   route: 'mantenedores/tecnicos',
                 },
                 {
@@ -183,7 +183,7 @@ export class AppHorizontalSidebarComponent implements OnInit {
                 },
                 {
                   displayName: 'Listado de Documentos',
-                  iconName: 'home-shield',
+                  iconName: 'file-description',
                   route: 'mantenedores/documentos',
                 },
                 {

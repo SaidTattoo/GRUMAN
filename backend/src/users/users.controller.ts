@@ -75,4 +75,10 @@ export class UsersController {
     getAllUsersByClient(@Param('id') id: number): Promise<User[]> {
         return this.usersService.getAllUsersByClient(id);
     }
+
+    @Get('tecnicos')
+    @ApiOperation({ summary: 'Obtener todos los tecnicos' })
+    findAllTecnicos(): Promise<User[]> {
+        return this.usersService.findAllTecnicos();
+    }
 }

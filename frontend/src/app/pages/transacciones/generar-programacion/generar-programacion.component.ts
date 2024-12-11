@@ -91,8 +91,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       this.getTiposServicio(),
       this.getSectores(),
       this.getVehiculos(),
-      /* this.getClientes(), */
-      this.getClientesFromLocalStorage(),
+      this.getClientes(),
+        /*this.getClientesFromLocalStorage(), */
       this.getLocales()
     ]).finally(() => {
       this.loading = false;
@@ -107,9 +107,12 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
           this.programacionForm.get('local')?.enable();
           this.getLocales();
           this.programacionForm.get('local')?.reset();
+          this.programacionForm.get('tipoServicio')?.reset();
+          this.getTiposServicio();
         } else {
           this.programacionForm.get('local')?.disable();
           this.locales = [];
+          this.tiposServicio = [];
         }
       });
   }
@@ -180,7 +183,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   }
 
 
- /*  getClientes(): void {
+   getClientes(): void {
     this.clientesService.getClientes()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -192,36 +195,27 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
           this.showErrorMessage('Error al cargar los clientes');
         }
       });
-  } */
+  } 
 
   getTiposServicio(): void {
-    const currentUserString = localStorage.getItem('currentUser');
-    let currentUser: any = null;
-    if (currentUserString) {
-      currentUser = JSON.parse(currentUserString);
-      const clienteId = currentUser.companies[0].id;
-      console.log('clienteId', clienteId);
+    const clienteId = this.programacionForm.get('clientId')?.value;
+    if (clienteId) {
       this.clientesService.getCliente(clienteId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (data) => {
-            this.tiposServicio = data.tipoServicio;
-            console.log('tiposServicio', this.tiposServicio);
+          next: (data: any) => {
+            this.tiposServicio = data.tipoServicio || [];
+            console.log('Tipos de servicio cargados:', this.tiposServicio);
+          },
+          error: (error) => {
+            console.error('Error al cargar tipos de servicio:', error);
+            this.showErrorMessage('Error al cargar los tipos de servicio');
+            this.tiposServicio = [];
           }
         });
+    } else {
+      this.tiposServicio = [];
     }
-
-    //tiposervicio viene del cliente
-   /*  this.tipoServicioService.findAll()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.tiposServicio = data;
-        },
-        error: (error) => {
-          this.showErrorMessage('Error al cargar los tipos de servicio');
-        }
-      }); */
   }
 
   getSectores(): void {
@@ -317,5 +311,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+  volver(){
+    this.router.navigate(['/transacciones/listado-programacion']);
   }
 }

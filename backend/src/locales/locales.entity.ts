@@ -30,13 +30,13 @@ export class Locales {
   @JoinColumn({ name: 'provinciaId' })
   provincia: Provincia;
 
-  @Column()
+  @Column({ nullable: true })
   zona: string;
 
   @Column()
   grupo: string;
 
-  @Column()
+  @Column({ nullable: true })
   referencia: string;
 
   @Column()

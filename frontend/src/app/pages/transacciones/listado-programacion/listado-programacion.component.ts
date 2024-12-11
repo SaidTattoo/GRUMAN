@@ -41,7 +41,7 @@ export class ListadoProgramacionComponent implements OnInit {
 
 
   newProgramacion() {
-    this.router.navigate(['/reportes/generar-programacion']);
+    this.router.navigate(['/generar-programacion']);
   }
 
   applyFilter(event: Event) {

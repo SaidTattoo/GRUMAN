@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { Vehiculo } from './vehiculos.entity';
 import { VehiculosService } from './vehiculos.service';
 
@@ -11,11 +11,11 @@ export class VehiculosController {
     return this.vehiculosService.findAll();
   }
 
-  /* @Get(':id')
+   @Get(':id')
   findOne(@Param('id') id: number): Promise<Vehiculo> {
     return this.vehiculosService.findOne(id);
   }
- */
+
   @Post()
   create(@Body() vehiculo: Vehiculo): Promise<Vehiculo> {
     return this.vehiculosService.create(vehiculo);
@@ -31,6 +31,17 @@ export class VehiculosController {
 
   @Delete(':id')
   remove(@Param('id') id: number): Promise<void> {
-    return this.vehiculosService.remove(id);
+    return this.vehiculosService.delete(id);
+  }
+
+  @Put(':id/user/:user_id')
+  updateUser(@Param('id') id: number, @Param('user_id') user_id: number): Promise<Vehiculo> {
+    console.log(id, user_id);
+    return this.vehiculosService.updateUser(id, user_id);
+  }
+
+  @Put(':id/remove-user')
+  async removeUser(@Param('id') id: number): Promise<void> {
+    return this.vehiculosService.removeUser(id);
   }
 }

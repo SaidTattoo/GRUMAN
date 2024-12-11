@@ -1,0 +1,92 @@
+
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+       
+      
+              <mat-card-header>
+                <mat-card-title class="d-flex align-items-center">
+                  <mat-icon class="me-2">directions_car</mat-icon>
+                  Detalles del Vehículo
+                </mat-card-title>
+               <!--  <mat-card-subtitle>ID: {{ vehiculo.id }}</mat-card-subtitle> -->
+              </mat-card-header>
+      
+              <mat-card-content class="mt-4">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="info-group mb-3">
+                      <h3 class="info-label">Información General</h3>
+                      <div class="info-item">
+                        <strong>Móvil:</strong> {{ vehiculo.movil }}
+                      </div>
+                      <div class="info-item">
+                        <strong>Patente:</strong> <span class="patente" [innerHTML]="formatPatente(vehiculo.patente)"></span>
+                      </div>
+                      <div class="info-item">
+                        <strong>Marca:</strong> {{ vehiculo.marca }}
+                      </div>
+                      <div class="info-item">
+                        <strong>Modelo:</strong> {{ vehiculo.modelo }}
+                      </div>
+                      <div class="info-item">
+                        <strong>Año:</strong> {{ vehiculo.anio }}
+                      </div>
+                    </div>
+                  </div>
+      
+                  <div class="col-md-6">
+                    <div class="info-group mb-3">
+                      <h3 class="info-label">Estado y Asignación</h3>
+                      <div class="info-item">
+                        <strong>Estado:</strong>
+                        <mat-chip-grid #chipGrid>
+                          <mat-chip-row [color]="vehiculo.activo ? 'primary' : 'warn'" selected>
+                            {{ vehiculo.activo ? 'Activo' : 'Inactivo' }}
+                          </mat-chip-row>
+                        </mat-chip-grid>
+                        <input [matChipInputFor]="chipGrid" style="display: none;"/>
+                      </div>
+                      <div class="info-item">
+                        <strong>Técnico Asignado:</strong>
+                        @if (vehiculo.user_id === null || vehiculo.user_id === 0) {
+                          <span class="text-warning">
+                            <mat-icon class="align-middle me-1">warning</mat-icon>
+                            Sin técnico asignado
+                          </span>
+                        } @else {
+                          <div class="d-flex align-items-center gap-2">
+                            <span>ID: {{ vehiculo.user_id }}</span>
+                            <button mat-raised-button color="warn" type="button" (click)="quitarTecnico()">
+                              <mat-icon>person_remove</mat-icon>
+                              Quitar técnico
+                            </button>
+                          </div>
+                        }
+                      </div>
+                      <div class="info-item">
+                        <strong>Documentación:</strong>
+                        @if (vehiculo.documentacion) {
+                          <span>{{ vehiculo.documentacion }}</span>
+                        } @else {
+                          <span class="text-muted">Sin documentación</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </mat-card-content>
+      
+              <mat-divider class="my-3"></mat-divider>
+      
+              <mat-card-actions class="d-flex justify-content-end">
+                <button mat-flat-button color="primary" (click)="volver()">
+                  <mat-icon>arrow_back</mat-icon>
+                  Volver
+                </button>
+                
+              </mat-card-actions>
+          
+
+        
+    </mat-card-content>
+</mat-card>

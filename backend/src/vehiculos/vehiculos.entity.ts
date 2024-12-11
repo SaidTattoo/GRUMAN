@@ -56,6 +56,13 @@ export class Vehiculo {
   @Column()
   anio: number;
 
+  @Column({ default: false })
+  deleted: boolean;
+
+  //user asignado a vehiculo 
+  @Column({ nullable: true })
+  user_id: number;
+
   @OneToMany(() => Programacion, programacion => programacion.vehiculo)
   programaciones: Programacion[]; 
 }

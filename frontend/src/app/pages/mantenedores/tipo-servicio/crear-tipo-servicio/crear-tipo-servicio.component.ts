@@ -44,14 +44,14 @@ export class CrearTipoServicioComponent implements OnInit {
       confirmButtonText: 'Sí, guardar!'
     }).then((result) => {
       if (result.isConfirmed) {
-    if (this.tipoServicio.valid) {
-          this.tipoServicioService.createTipoServicio(this.tipoServicio.value).subscribe(response => {
-            //console.log(response);
-            this.router.navigate(['/mantenedores/tipo-servicio']);
-          });
-        }
-      }
-    });
+        if (this.tipoServicio.valid) {
+              this.tipoServicioService.createTipoServicio(this.tipoServicio.value).subscribe(response => {
+                //console.log(response);
+                this.router.navigate(['/mantenedores/tipo-servicio']);
+              });
+            }
+          }
+        });
   }
 
   onCancel(){
