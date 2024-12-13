@@ -1,0 +1,29 @@
+.item-number {
+  min-width: 30px;
+  font-weight: bold;
+}
+
+.step-content {
+  padding: 16px;
+}
+
+mat-list-item {
+  height: 48px !important;
+  border-bottom: 1px solid #eee;
+}
+
+::ng-deep {
+  .mat-vertical-stepper-header {
+    padding: 8px 24px !important;
+  }
+
+  .mat-vertical-content-container {
+    margin-left: 24px;
+  }
+
+  .mat-step-header {
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+}

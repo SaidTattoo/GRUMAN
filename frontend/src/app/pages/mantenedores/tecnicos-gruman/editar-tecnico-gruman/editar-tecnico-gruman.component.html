@@ -1,0 +1,121 @@
+<mat-card>
+    <mat-card-header>
+      <mat-card-title class="m-b-0">Crear Técnico</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="tecnicoForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Nombre</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput placeholder="Ingrese el nombre" formControlName="name">
+              @if (tecnicoForm.get('name')?.invalid) {
+                <mat-error>El nombre es requerido</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Apellido</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput placeholder="Ingrese el apellido" formControlName="lastName">
+              @if (tecnicoForm.get('lastName')?.invalid) {
+                <mat-error>El apellido es requerido</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">RUT</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput placeholder="Ingrese el RUT" formControlName="rut">
+              @if (tecnicoForm.get('rut')?.invalid) {
+                <mat-error>El RUT es requerido</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Email</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput placeholder="Ingrese el email" formControlName="email">
+              @if (tecnicoForm.get('email')?.invalid) {
+                <mat-error>El email es requerido</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Contraseña</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput type="password" placeholder="Ingrese la contraseña" formControlName="password">
+              <mat-error *ngIf="tecnicoForm.get('password')?.errors?.['required']">
+                La contraseña es requerida
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <!-- REPETIR CONTRASEÑA -->
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Repetir Contraseña</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput type="password" placeholder="Ingrese la contraseña" formControlName="confirmPassword">
+              <mat-error *ngIf="tecnicoForm.get('confirmPassword')?.errors?.['required']">
+                Confirmar contraseña es requerido
+              </mat-error>
+              <mat-error *ngIf="tecnicoForm.get('confirmPassword')?.errors?.['passwordMismatch']">
+                Las contraseñas no coinciden
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Especialidades</mat-label>
+          </div>
+          <div class="col-sm-8">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-select formControlName="especialidades" multiple>
+                @for (especialidad of especialidades; track especialidad.id) {
+                  <mat-option [value]="especialidad.id">{{especialidad.nombre}}</mat-option>
+                }
+              </mat-select>
+              @if (tecnicoForm.get('especialidades')?.invalid) {
+                <mat-error>Debe seleccionar al menos una especialidad</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row justify-content-end">
+          <div class="col-sm-8">
+            <button mat-button type="button" (click)="onCancel()">Cancelar</button>
+            <button mat-flat-button 
+                    color="primary" 
+                    type="submit" 
+                    [disabled]="tecnicoForm.invalid || tecnicoForm.hasError('passwordMismatch')">
+              Guardar
+            </button>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  

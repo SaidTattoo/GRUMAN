@@ -28,6 +28,13 @@ export const routes: Routes = [
             (m) => m.TRABAJADORES_ROUTES
           ),
       },
+      {
+        path: 'mantenedores/especialidades',
+        loadChildren: () =>
+          import('./pages/mantenedores/especialidades/especialidades.routes').then(
+            (m) => m.ESPECIALIDADES_ROUTES
+          ),
+      },
 
       {
         path: 'mantenedores/vehiculos',
@@ -48,7 +55,15 @@ export const routes: Routes = [
           import('./pages/mantenedores/tecnicos/tecnicos.routes').then(
             (m) => m.TECNICOS_ROUTES
           ),
-      },{
+      },
+      {
+        path: 'mantenedores/tecnicos-gruman',
+        loadChildren: () =>
+          import('./pages/mantenedores/tecnicos-gruman/tecnicos-gruman.routes').then(
+            (m) => m.TECNICOS_GRUMAN_ROUTES
+          ),
+      },
+      {
         path: 'mantenedores/repuestos',
         loadChildren: () =>
           import('./pages/mantenedores/repuestos/repuestos.routes').then(
@@ -86,6 +101,13 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/mantenedores/servicios/servicios.routes').then(
             (m) => m.SERVICIOS_ROUTES
+          ),
+      },
+      {
+        path: 'mantenedores/lista-de-inspecciones',
+        loadChildren: () =>
+          import('./pages/mantenedores/lista-de-inspecciones/lista-de-inspecciones.routes').then(
+            (m) => m.LISTA_DE_INSPECCIONES_ROUTES
           ),
       },
       {

@@ -1,0 +1,22 @@
+.form-container {
+    margin: 20px 0;
+    max-width: 500px;
+}
+
+.button-container {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 20px;
+
+    button {
+        .mat-icon {
+            margin-right: 8px;
+        }
+    }
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #333;
+}

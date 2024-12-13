@@ -1,0 +1,31 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+      
+        
+        <form [formGroup]="especialidadForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+                <div class="col-sm-4 d-flex align-items-center justify-content-end">
+                    <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-24">Nombre</mat-label>
+                </div>
+                <div class="col-sm-8">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <input formControlName="nombre" matInput placeholder="Ej: Electricista" />
+                        @if (especialidadForm.get('nombre')?.hasError('required')) {
+                            <mat-error>El nombre es requerido</mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="button-container">
+                <button mat-raised-button type="button" (click)="volver()">
+                    <mat-icon>arrow_back</mat-icon>
+                    Volver
+                </button>
+                <button mat-raised-button color="primary" type="submit" [disabled]="especialidadForm.invalid">
+                    <mat-icon>save</mat-icon>
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../config';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -22,5 +23,8 @@ export class ClientesService {
   }
   deleteCliente(id: number) {
     return this.http.delete<any>(this.apiUrl + 'client/' + id);
+  }
+  findIdClientByName(name: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}client/name/${name}`);
   }
 }

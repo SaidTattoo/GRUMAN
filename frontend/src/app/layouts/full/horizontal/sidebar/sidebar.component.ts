@@ -155,6 +155,10 @@ export class AppHorizontalSidebarComponent implements OnInit {
                   displayName: 'Moviles',
                   iconName: 'car',
                   route: 'mantenedores/vehiculos',
+                },{
+                  displayName: 'Tecnicos Gruman',
+                  iconName: 'home-shield',
+                  route: 'mantenedores/tecnicos-gruman',
                 },
                 {
                   displayName: 'Tipo Activo',
@@ -175,6 +179,11 @@ export class AppHorizontalSidebarComponent implements OnInit {
                   displayName: 'Clientes',
                   iconName: 'home-shield',
                   route: 'mantenedores/clientes',
+                },  
+                {
+                  displayName: 'Inspecciones',
+                  iconName: 'home-shield',
+                  route: 'mantenedores/lista-de-inspecciones',
                 },
                 {
                   displayName: 'Cliente Usuarios',
@@ -210,7 +219,11 @@ export class AppHorizontalSidebarComponent implements OnInit {
                   displayName: 'Activo Fijo Local',
                   iconName: 'home-shield',
                   route: 'mantenedores/activo-fijo-local',
-                },
+                },{
+                  displayName: 'Especialidades',
+                  iconName: 'home-shield',
+                  route: 'mantenedores/especialidades',
+                }
               ],
             },
           ]

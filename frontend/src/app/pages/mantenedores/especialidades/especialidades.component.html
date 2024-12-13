@@ -1,0 +1,61 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+        <!-- Contenedor para búsqueda y botón -->
+        <div class="actions-container mb-3">
+            <!-- Botón crear -->
+            <button mat-flat-button color="primary" (click)="crearEspecialidad()">
+                Crear Especialidad
+            </button>
+
+            <!-- Campo de búsqueda -->
+            <mat-form-field appearance="outline">
+                <mat-label>Buscar especialidad</mat-label>
+                <input matInput (keyup)="applyFilter($event)" placeholder="Ej. Electricista" #input>
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+        </div>
+
+        <mat-table [dataSource]="dataSource" matSort>
+            <!-- ID Column -->
+          <!--   <ng-container matColumnDef="id">
+                <mat-header-cell *matHeaderCellDef> ID </mat-header-cell>
+                <mat-cell *matCellDef="let element"> {{element.id}} </mat-cell>
+            </ng-container> -->
+
+            <!-- Nombre Column -->
+            <ng-container matColumnDef="nombre">
+                <mat-header-cell *matHeaderCellDef> Nombre </mat-header-cell>
+                <mat-cell *matCellDef="let element"> {{element.nombre}} </mat-cell>
+            </ng-container>
+
+            <!-- especialidades  -->
+         
+            <!-- Acciones Column -->
+            <ng-container matColumnDef="acciones">
+                <mat-header-cell *matHeaderCellDef> Acciones </mat-header-cell>
+                <mat-cell *matCellDef="let element">
+                    <button mat-icon-button color="primary" (click)="editarEspecialidad(element)">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="eliminarEspecialidad(element)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </mat-cell>
+            </ng-container>
+
+            <!-- Header and Row Definitions -->
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
+            <!-- Mensaje cuando no hay datos -->
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+                    <div class="no-data-container">
+                        <mat-icon class="no-data-icon">inbox</mat-icon>
+                        <p class="no-data-text">No hay especialidades registradas</p>
+                    </div>
+                </td>
+            </tr>
+        </mat-table>
+    </mat-card-content>
+</mat-card>
