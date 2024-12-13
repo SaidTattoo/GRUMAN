@@ -48,11 +48,9 @@ export class UsersController {
         },
     })
     @Post()
-    async create(@Body() createUserDto: CreateUserDto) {
-      if (!createUserDto.rut || !createUserDto.email || !createUserDto.password || !createUserDto.clientId) {
-        throw new BadRequestException('El cuerpo de la solicitud debe incluir un usuario y un clientId.');
-      }
-      return this.usersService.createUser(createUserDto);
+    async createUser(@Body() createUserDto: any) {
+        const { confirmPassword, ...userData } = createUserDto;
+        return this.usersService.createUser(userData);
     }
 
     @Patch(':id/password')

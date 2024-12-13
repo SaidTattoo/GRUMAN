@@ -27,3 +27,69 @@ mat-list-item {
     }
   }
 }
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin: 16px 0;
+
+  &:first-child {
+    margin-top: 0;
+    padding: 48px 16px;
+    background-color: #fafafa;
+    border: 2px dashed #ddd;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    height: 48px;
+    width: 48px;
+    color: #666;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #666;
+    margin: 0;
+    margin-bottom: 16px;
+  }
+
+  button {
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+button[mat-raised-button], 
+button[mat-flat-button] {
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.items-accordion {
+  .mat-expansion-panel {
+    margin-bottom: 8px;
+  }
+}
+
+.section-number {
+  min-width: 30px;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.item-number {
+  min-width: 45px;
+  font-weight: bold;
+}

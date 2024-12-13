@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { Client } from './client.entity';
@@ -28,6 +28,11 @@ export class ClientService {
             where: { id, deleted: false },
             relations: ['tipoServicio']
         });
+    }
+
+    async findIdClientByName(name: string): Promise<number> {
+        const client = await this.clientRepository.findOne({ where: { nombre: name } });
+        return client ? client.id : null;
     }
 
     /** CREATECLIENT */
@@ -92,5 +97,17 @@ export class ClientService {
 
         async deleteClient(id: number): Promise<void> {
             await this.clientRepository.update(id, { deleted: true });
+    }
+
+    async findClientByName(name: string): Promise<Client> {
+        const client = await this.clientRepository.findOne({ 
+            where: { nombre: name, deleted: false } 
+        });
+        
+        if (!client) {
+            throw new NotFoundException(`Cliente con nombre ${name} no encontrado`);
+        }
+        
+        return client;
     }
 }

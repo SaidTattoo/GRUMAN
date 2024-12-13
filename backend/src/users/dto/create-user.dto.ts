@@ -5,4 +5,5 @@ export class CreateUserDto {
     password: string;
     profile: string;
     clientId: number;
+    especialidades?: number[];
   }

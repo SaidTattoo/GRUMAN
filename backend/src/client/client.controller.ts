@@ -79,4 +79,17 @@ export class ClientController {
     async deleteClient(@Param('id') id: number): Promise<void> {
         await this.clientService.deleteClient(id);
     }
+
+
+    @Get('client/name/:name')
+    @ApiOperation({ summary: 'Obtener un cliente por nombre' })
+    @ApiParam({ name: 'name', type: String, description: 'Nombre del cliente' })
+    findIdClientByName(@Param('name') name: string): Promise<number> {
+        return this.clientService.findIdClientByName(name);
+    }
+
+    @Get('name/:name')
+    async findClientByName(@Param('name') name: string) {
+        return this.clientService.findClientByName(name);
+    }
 }

@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Client } from 'src/client/client.entity';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Especialidad } from 'src/especialidad/especialidad.entity';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +14,8 @@ export class UsersService {
         private userRepository: Repository<User>,
         @InjectRepository(Client)
         private clientRepository: Repository<Client>,
+        @InjectRepository(Especialidad)
+        private especialidadRepository: Repository<Especialidad>,
     ) {}
 
     /** findAllUsers */
@@ -21,7 +24,7 @@ export class UsersService {
     }
 
     findAllTecnicos(): Promise<User[]> {
-        return this.userRepository.find({ where: { profile: 'tecnico' }});
+        return this.userRepository.find({ where: { profile: 'tecnico' }, relations: ['especialidades'] });
     }
 
     /** FINDALLUSERS WHERE CLIENTE  */
@@ -40,9 +43,10 @@ export class UsersService {
     /** CREATEUSER  and asign client */
     /**encode password */
     async createUser(createUserDto: CreateUserDto): Promise<User> {
-        const { name, rut, email, password, profile, clientId } = createUserDto;
+        console.log('------------->', createUserDto);
+        const { name, rut, email, password, profile, clientId, especialidades } = createUserDto;
         //console.log('------------->', createUserDto);
-       
+        
         const existingUser = await this.userRepository.findOne({
           where: [{ rut }, { email }],
         });
@@ -59,6 +63,11 @@ export class UsersService {
             throw new NotFoundException('Clientes no encontrados');
         }
 
+        // Buscar las especialidades por sus IDs
+        const especialidadesEntities = await this.especialidadRepository.findByIds(
+            especialidades
+        );
+
         const user = this.userRepository.create({
           rut,
           name,
@@ -66,6 +75,7 @@ export class UsersService {
           profile,
           password: hashedPassword,
           clients,
+          especialidades: especialidadesEntities
         });
         //console.log('------------->', user);
         return this.userRepository.save(user);
@@ -89,7 +99,7 @@ export class UsersService {
         const users: User[] = [];
 
         for (const createUserDto of createUsersDto) {
-            const { name, rut, email, password, profile, clientId } = createUserDto;
+            const { name, rut, email, password, profile, clientId, especialidades } = createUserDto;
             //console.log('------------->',createUserDto);
 
             const existingUser = await this.userRepository.findOne({
@@ -108,6 +118,12 @@ export class UsersService {
                 throw new NotFoundException(`Clientes no encontrados para el usuario: ${email}`);
             }
             //console.log('------------->',clients);
+
+            // Buscar las especialidades por sus IDs
+            const especialidadesEntities = await this.especialidadRepository.findByIds(
+                especialidades
+            );
+
             const user = this.userRepository.create({
                 rut,
                 name,
@@ -115,6 +131,7 @@ export class UsersService {
                 profile,
                 password: hashedPassword,
                 clients,
+                especialidades: especialidadesEntities
             });
             //console.log('------------->',user);
             const savedUser = await this.userRepository.save(user);
@@ -123,4 +140,6 @@ export class UsersService {
 
         return users;
     }
+
+   
 }

@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -28,8 +30,21 @@ import { ServiciosRealizadosModule } from './servicios_realizados/servicios_real
 import { ActivoFijoLocalModule } from './activo-fijo-local/activo-fijo-local.module';
 import { UploadV2Module } from './upload-v2/upload-v2.module';
 import { SolicitarVisitaModule } from './solicitar-visita/solicitar-visita.module';
+import { EspecialidadModule } from './especialidad/especialidad.module';
+import { InspectionModule } from './inspection/inspection.module';
 @Module({
   imports: [
+    ConfigModule.forRoot(),
+    TypeOrmModule.forRoot({
+      type: 'mariadb',
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: true,
+    }),
     DatabaseModule, 
     UsersModule, 
     AuthModule, 
@@ -56,6 +71,7 @@ import { SolicitarVisitaModule } from './solicitar-visita/solicitar-visita.modul
     ActivoFijoLocalModule,
     UploadV2Module,
     SolicitarVisitaModule,
+    EspecialidadModule,InspectionModule
 /*     LocalesModule,
     SectoresTrabajoModule,
     ProgramacionModule */
