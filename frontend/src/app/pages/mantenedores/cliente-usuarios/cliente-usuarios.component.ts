@@ -52,6 +52,7 @@ export class ClienteUsuariosComponent implements OnInit {
       password: ['', Validators.required],
       lastname: ['', Validators.required],
       repetirContrasena: ['', Validators.required],
+      especialidades: [[]],
     }, { validators: this.passwordMatchValidator });
     //console.log(this.clienteUsuarioForm.value);
   }
@@ -96,6 +97,7 @@ export class ClienteUsuariosComponent implements OnInit {
       password: formValues.password,
       repetirContrasena: formValues.repetirContrasena,
       lastname: formValues.lastname,
+      especialidades: [],
     };
 
     this.tecnicosService.createTecnico(tecnicoData).subscribe({

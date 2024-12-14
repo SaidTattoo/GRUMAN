@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -43,14 +43,18 @@ export class UsersService {
     /** CREATEUSER  and asign client */
     /**encode password */
     async createUser(createUserDto: CreateUserDto): Promise<User> {
-        console.log('------------->', createUserDto);
+        console.log(' createUserDto ------------->', createUserDto);
         const { name, rut, email, password, profile, clientId, especialidades } = createUserDto;
         //console.log('------------->', createUserDto);
-        
+        if (!createUserDto.clientId || !Array.isArray(createUserDto.clientId)) {
+            throw new BadRequestException('clientId debe ser un array válido');
+          }
         const existingUser = await this.userRepository.findOne({
           where: [{ rut }, { email }],
         });
-    
+        if (!Array.isArray(clientId) || clientId.length === 0) {
+            throw new Error('clientId debe ser un array no vacío');
+        }
         if (existingUser) {
           throw new ConflictException('El rut o el email ya están en uso.');
         }
@@ -59,6 +63,7 @@ export class UsersService {
 
         // Manejar múltiples clientId
         const clients = await this.clientRepository.findByIds(Array.isArray(clientId) ? clientId : [clientId]);
+        console.log('clients ------------->',clients);
         if (clients.length === 0) {
             throw new NotFoundException('Clientes no encontrados');
         }
@@ -67,7 +72,7 @@ export class UsersService {
         const especialidadesEntities = await this.especialidadRepository.findByIds(
             especialidades
         );
-
+        console.log('especialidadesEntities ------------->',especialidadesEntities);
         const user = this.userRepository.create({
           rut,
           name,
@@ -77,7 +82,7 @@ export class UsersService {
           clients,
           especialidades: especialidadesEntities
         });
-        //console.log('------------->', user);
+        console.log(' user ------------->', user);
         return this.userRepository.save(user);
     }
 
@@ -117,13 +122,13 @@ export class UsersService {
             if (clients.length === 0) {
                 throw new NotFoundException(`Clientes no encontrados para el usuario: ${email}`);
             }
-            //console.log('------------->',clients);
+            console.log('clients ------------->',clients);
 
             // Buscar las especialidades por sus IDs
             const especialidadesEntities = await this.especialidadRepository.findByIds(
                 especialidades
             );
-
+            console.log(' espcialidades ------------->',especialidadesEntities);
             const user = this.userRepository.create({
                 rut,
                 name,
@@ -133,7 +138,7 @@ export class UsersService {
                 clients,
                 especialidades: especialidadesEntities
             });
-            //console.log('------------->',user);
+            console.log('users ------------->',user);
             const savedUser = await this.userRepository.save(user);
             users.push(savedUser);
         }
