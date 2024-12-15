@@ -57,4 +57,7 @@ export class Client {
   })
   @JoinTable() // Importante: Esto indica que `Cliente` controla la relación.
   tipoServicio: TipoServicio[];
+
+  @Column('json', { nullable: true })
+  listaInspeccion: any;
 }

@@ -41,9 +41,19 @@ export class AppBoxedLoginComponent implements OnInit {
       
       this.authService.login(email, password).subscribe(
         (response) => {
+          console.log(response);
+          if (response.user.profile === 'tecnico') {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Acceso Denegado',
+              text: 'Por favor, utilice la aplicación móvil para tablets para iniciar sesión como técnico.',
+              confirmButtonText: 'Entendido'
+            });
+            return;
+          }
+
           this.storage.setItem('token', response.token);
           
-          // Transformar clientes a companies
           const userWithCompanies = {
             ...response.user,
             companies: response.user.clientes

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { Client } from './client.entity';
@@ -10,7 +10,7 @@ export class ClientService {
         @InjectRepository(Client)
         private clientRepository: Repository<Client>,
         @InjectRepository(TipoServicio)
-        private tipoServicioRepository: Repository<TipoServicio>,
+        private tipoServicioRepository: Repository<TipoServicio>
     ) {}
 
     /** FINDALLCLIENTS */
@@ -58,35 +58,45 @@ export class ClientService {
         return this.clientRepository.save(cliente);
     }
     /** UPDATECLIENT */
-    async updateClient(id: number, data: any): Promise<Client> {
-        const { tipoServicio, ...clienteData } = data;
-        
-        // Primero obtenemos el cliente existente
-        const clienteExistente = await this.clientRepository.findOne({
-            where: { id },
-            relations: ['tipoServicio']
-        });
+    async updateClient(id: number, updateClientDto: any) {
+        try {
+            const client = await this.clientRepository.findOne({ 
+                where: { id },
+                relations: ['tipoServicio']
+            });
 
-        if (!clienteExistente) {
-            throw new Error('Cliente no encontrado');
+            if (!client) {
+                throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
+            }
+
+            // Actualizar lista de inspección si existe en el DTO
+            if (updateClientDto.listaInspeccion) {
+                client.listaInspeccion = updateClientDto.listaInspeccion;
+            }
+
+            // Actualizar otros campos si existen
+            if (updateClientDto.nombre) client.nombre = updateClientDto.nombre;
+            if (updateClientDto.rut) client.rut = updateClientDto.rut;
+            if (updateClientDto.razonSocial) client.razonSocial = updateClientDto.razonSocial;
+            
+            // Actualizar tipo de servicio si existe
+            if (updateClientDto.tipoServicio) {
+                const servicio = await this.tipoServicioRepository.findOne({
+                    where: { id: updateClientDto.tipoServicio.id }
+                });
+                if (servicio) {
+                    client.tipoServicio = [servicio];
+                }
+            }
+
+            // Guardar los cambios
+            const savedClient = await this.clientRepository.save(client);
+            return savedClient;
+
+        } catch (error) {
+            console.error('Error en updateClient:', error);
+            throw new BadRequestException('Error al actualizar el cliente: ' + error.message);
         }
-
-        // Obtenemos los nuevos tipos de servicio
-        const servicios = await this.tipoServicioRepository.findByIds(tipoServicio);
-
-        // Actualizamos el cliente con los nuevos datos y servicios
-        clienteExistente.nombre = clienteData.nombre;
-        clienteExistente.rut = clienteData.rut;
-        clienteExistente.razonSocial = clienteData.razonSocial;
-        clienteExistente.logo = clienteData.logo;
-        clienteExistente.sobreprecio = clienteData.sobreprecio;
-        clienteExistente.valorPorLocal = clienteData.valorPorLocal;
-        clienteExistente.tipoServicio = servicios;
-
-        // Guardamos los cambios
-        await this.clientRepository.save(clienteExistente);
-
-        return this.findOneClient(id);
     }
     async findClientWithUsers(clientId: number): Promise<Client> {
         return this.clientRepository.findOne({

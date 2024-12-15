@@ -2,3 +2,11 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+@use '@angular/material' as mat;
+
+$custom-primary: mat.define-palette(mat.$green-palette, 500);
+
+.mat-primary .mat-mdc-checkbox-background {
+  background-color: #4CAF50 !important;
+}

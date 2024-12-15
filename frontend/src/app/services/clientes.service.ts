@@ -27,4 +27,10 @@ export class ClientesService {
   findIdClientByName(name: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}client/name/${name}`);
   }
+  updateListaInspeccion(clientId: number, listaInspeccion: any[]) {
+    return this.http.put(`${this.apiUrl}client/${clientId}`, { listaInspeccion });
+  }
+  getListaInspeccion(clienteId: number): Observable<any> {
+    return this.http.get(`${environment.apiUrl}client/${clienteId}/lista-inspeccion`);
+  }
 }

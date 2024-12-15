@@ -6,9 +6,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/users.entity';
 import { ActivoFijoLocal } from 'src/activo-fijo-local/activo-fijo-local.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
+import { Section } from '../inspection/entities/section.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Client, User, ActivoFijoLocal, TipoServicio])],
+  imports: [TypeOrmModule.forFeature([Client, User, ActivoFijoLocal, TipoServicio, Section])],
   controllers: [ClientController],
   providers: [ClientService]
 })

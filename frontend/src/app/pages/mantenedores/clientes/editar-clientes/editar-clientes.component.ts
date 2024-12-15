@@ -116,7 +116,10 @@ export class EditarClientesComponent {
       reader.readAsDataURL(file);
     }
   }
-
+  irListaDeInspecciones(){
+    //pasar el cliente name tambien 
+    this.router.navigate(['/mantenedores/clientes/lista-de-inspecciones', this.cliente.id]);
+  }
   volver(){
     this.router.navigate(['/mantenedores/clientes']);
   }
