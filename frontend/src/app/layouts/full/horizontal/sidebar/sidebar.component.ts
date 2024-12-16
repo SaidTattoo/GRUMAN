@@ -182,7 +182,7 @@ export class AppHorizontalSidebarComponent implements OnInit {
                 },  
                 {
                   displayName: 'Inspecciones',
-                  iconName: 'home-shield',
+                  iconName: 'file-description',
                   route: 'mantenedores/lista-de-inspecciones',
                 },
                 {

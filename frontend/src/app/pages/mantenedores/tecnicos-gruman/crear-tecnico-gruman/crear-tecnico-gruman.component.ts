@@ -56,7 +56,8 @@ export class CrearTecnicoGrumanComponent implements OnInit {
   }
   findIdClientByName(name: string) {
     this.clientesService.findIdClientByName(name).subscribe((id: any) => {
-      this.idClient = id;
+      this.idClient = id.id;
+      console.log('idClient',this.idClient);
     });
   }
   onSubmit() {
@@ -72,7 +73,7 @@ export class CrearTecnicoGrumanComponent implements OnInit {
             if (result.isConfirmed) {
                 const userData = {
                     ...this.tecnicoForm.value,
-                    clientId: this.idClient
+                    clientId: [this.idClient]
                 };
                 delete userData.confirmPassword; // Eliminar confirmPassword
 
@@ -82,7 +83,8 @@ export class CrearTecnicoGrumanComponent implements OnInit {
                         this.router.navigate(['/mantenedores/tecnicos-gruman']);
                     },
                     error: (error) => {
-                        Swal.fire('Error', 'No se pudo crear el técnico', 'error');
+                      /* dejar la palabra rut y email en negrita */
+                        Swal.fire('Error', `No se pudo crear el técnico por que el <strong>Rut</strong> o el <strong>Email</strong> ya existe`, 'error');
                     }
                 });
             }

@@ -3,6 +3,7 @@ import { ClientesComponent } from "./clientes.component";
 import { CrearClienteComponent } from "./crear-cliente/crear-cliente.component";
 import { EditarClientesComponent } from "./editar-clientes/editar-clientes.component";
 import { ClienteListaDeInspeccionesComponent } from "./cliente-lista-de-inspecciones/cliente-lista-de-inspecciones.component";
+import { VerListaInspeccionComponent } from "./ver-lista-inspeccion/ver-lista-inspeccion.component";
 
 export const CLIENTES_ROUTES: Routes = [
     {
@@ -28,6 +29,13 @@ export const CLIENTES_ROUTES: Routes = [
     {
         path: 'lista-de-inspecciones/:id',
         component: ClienteListaDeInspeccionesComponent,
+        data: {
+            title: 'Lista de Inspecciones',
+        }
+    },
+    {
+        path: 'ver-lista-inspeccion/:id',
+        component: VerListaInspeccionComponent,
         data: {
             title: 'Lista de Inspecciones',
         }

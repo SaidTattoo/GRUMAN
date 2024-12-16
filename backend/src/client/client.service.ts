@@ -31,6 +31,7 @@ export class ClientService {
     }
 
     async findIdClientByName(name: string): Promise<number> {
+        console.log(name);
         const client = await this.clientRepository.findOne({ where: { nombre: name } });
         return client ? client.id : null;
     }
@@ -40,9 +41,7 @@ export class ClientService {
         const { tipoServicio, ...clienteData } = data;
     
         // Verificar y obtener los servicios desde la base de datos
-        const servicios = await this.tipoServicioRepository.findByIds(
-            tipoServicio.map((ts) => ts.id),
-        );
+        const servicios = await this.tipoServicioRepository.findByIds(tipoServicio);
     
         if (servicios.length !== tipoServicio.length) {
             throw new Error('Algunos tipos de servicio no existen en la base de datos');

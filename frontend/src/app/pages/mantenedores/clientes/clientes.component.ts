@@ -90,4 +90,7 @@ export class ClientesComponent implements OnInit {
   agregarUsuarioACliente(cliente: any) {
     this.router.navigate(['/mantenedores/cliente-usuarios', cliente.id]);
   }
+  verListaInspeccion(cliente: any) {
+    this.router.navigate(['/mantenedores/clientes/ver-lista-inspeccion', cliente.id]);
+  }
 }

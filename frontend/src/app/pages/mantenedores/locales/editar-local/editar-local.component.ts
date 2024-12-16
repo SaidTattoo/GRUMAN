@@ -50,6 +50,7 @@ export class EditarLocalComponent implements OnInit{
     private cdr: ChangeDetectorRef
   ) {
     this.localForm = this.fb.group({
+      nombre_local: ['', Validators.required],
       direccion: ['', Validators.required],
       region: ['', Validators.required],
       provincia: [{value: '', disabled: true}, Validators.required],
@@ -70,39 +71,36 @@ export class EditarLocalComponent implements OnInit{
 
   ngOnInit(): void {
     this.localId = Number(this.route.snapshot.params['id']);
-    
-    // Primero cargamos los datos estáticos
+
     forkJoin({
       local: this.localesService.getLocalById(this.localId),
       clientes: this.clientesService.getClientes(),
       regiones: this.regionesComunasService.getRegiones()
     }).subscribe({
-      
-    
       next: ({ local, clientes, regiones }) => {
-        //console.log('****', local);
         this.clientes = clientes;
         this.regiones = regiones.sort((a, b) => 
           a.region_nombre.localeCompare(b.region_nombre)
         );
 
         // Cargar provincias
-        this.regionesComunasService.getProvinciasByRegion(local.region).subscribe(provincias => {
+        this.regionesComunasService.getProvinciasByRegion(local.region.region_id).subscribe(provincias => {
           this.provincias = provincias;
           this.localForm.get('provincia')?.enable();
 
           // Cargar comunas
-          this.regionesComunasService.getComunasByProvincia(local.provincia).subscribe(comunas => {
+          this.regionesComunasService.getComunasByProvincia(local.provincia.provincia_id).subscribe(comunas => {
             this.comunas = comunas;
             this.localForm.get('comuna')?.enable();
 
-            // Una vez que tenemos todos los datos, actualizamos el formulario
+            // Establecer valores en el formulario
             this.localForm.patchValue({
+              region: local.region.region_id,
+              provincia: local.provincia.provincia_id,
+              comuna: local.comuna.comuna_id,
+              nombre_local: local.nombre_local,
               direccion: local.direccion,
-              region: parseInt(local.region),
-              provincia: parseInt(local.provincia),
-              comuna: parseInt(local.comuna),
-              cliente: local.cliente?.id,
+              cliente: local.client.id,
               zona: local.zona,
               grupo: local.grupo,
               referencia: local.referencia,
@@ -129,7 +127,7 @@ export class EditarLocalComponent implements OnInit{
 
   getClientes() {
     this.clientesService.getClientes().subscribe((data) => {
-      //console.log('****', data);
+      console.log('****', data);
       this.clientes = data;
     });
   }

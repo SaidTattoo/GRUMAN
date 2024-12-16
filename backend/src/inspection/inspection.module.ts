@@ -5,13 +5,15 @@ import { InspectionService } from './inspection.service';
 import { Section } from './entities/section.entity';
 import { Item } from './entities/item.entity';
 import { SubItem } from './entities/sub-item.entity';
+import { Client } from 'src/client/client.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Section,
       Item,
-      SubItem
+      SubItem,
+      Client
     ])
   ],
   controllers: [InspectionController],

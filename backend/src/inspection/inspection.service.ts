@@ -8,6 +8,7 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { CreateSectionDto } from './dto/create-section.dto';
 import { CreateSubItemDto } from './dto/create-sub-item.dto';
 import { UpdateSectionDto } from './dto/update-section.dto';
+import { Client } from 'src/client/client.entity';
 
 
 @Injectable()
@@ -19,6 +20,8 @@ export class InspectionService {
         private itemRepository: Repository<Item>,
         @InjectRepository(SubItem)
         private subItemRepository: Repository<SubItem>,
+        @InjectRepository(Client)
+        private clientRepository: Repository<Client>
     ) {}
 
     async createSection(createSectionDto: CreateSectionDto) {
@@ -70,10 +73,41 @@ export class InspectionService {
 
     async removeItem(sectionId: number, itemId: number) {
         await this.itemRepository.update(itemId, { disabled: true });
+        
+        // Obtener todos los clientes
+        const clients = await this.clientRepository.find();
+        
+        // Actualizar la listaInspeccion de cada cliente
+        for (const client of clients) {
+            if (client.listaInspeccion && Array.isArray(client.listaInspeccion)) {
+                client.listaInspeccion = client.listaInspeccion.map(section => ({
+                    ...section,
+                    items: section.items.filter(item => item.id !== itemId)
+                }));
+                await this.clientRepository.save(client);
+            }
+        }
     }
 
     async removeSubItem(sectionId: number, itemId: number, subItemId: number) {
         await this.subItemRepository.update(subItemId, { disabled: true });
+        
+        // Obtener todos los clientes
+        const clients = await this.clientRepository.find();
+        
+        // Actualizar la listaInspeccion de cada cliente
+        for (const client of clients) {
+            if (client.listaInspeccion && Array.isArray(client.listaInspeccion)) {
+                client.listaInspeccion = client.listaInspeccion.map(section => ({
+                    ...section,
+                    items: section.items.map(item => ({
+                        ...item,
+                        subItems: item.subItems.filter(subItem => subItem.id !== subItemId)
+                    }))
+                }));
+                await this.clientRepository.save(client);
+            }
+        }
     }
 
     async updateSection(id: number, updateSectionDto: UpdateSectionDto) {
@@ -127,5 +161,19 @@ export class InspectionService {
 
     async removeSection(id: number) {
         await this.sectionRepository.update(id, { disabled: true });
+        
+        // Obtener todos los clientes
+        const clients = await this.clientRepository.find();
+        
+        // Actualizar la listaInspeccion de cada cliente
+        for (const client of clients) {
+            if (client.listaInspeccion && Array.isArray(client.listaInspeccion)) {
+                client.listaInspeccion = client.listaInspeccion.filter(
+                    section => section.id !== id
+                );
+                await this.clientRepository.save(client);
+            }
+        }
     }
+    
 } 

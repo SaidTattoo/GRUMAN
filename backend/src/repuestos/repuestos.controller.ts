@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { Repuesto } from './repuestos.entity';
 import { RepuestosService } from './repuestos.service';
 
@@ -17,5 +17,13 @@ export class RepuestosController {
   @Delete(':id')
   async delete(@Param('id') id: number): Promise<void> {
     await this.repuestosService.delete(id);
+  }
+  @Put(':id')
+  async update(@Param('id') id: number, @Body() repuesto: Repuesto): Promise<Repuesto> {
+    return this.repuestosService.update(id, repuesto);
+  }
+  @Get(':id')
+  async findOne(@Param('id') id: number): Promise<Repuesto> {
+    return this.repuestosService.findOne(id);
   }
 }

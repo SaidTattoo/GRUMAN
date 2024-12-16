@@ -11,6 +11,7 @@ import { EditItemDialogComponent } from './edit-item-dialog/edit-item-dialog.com
 import { InspectionService, Section, Item, SubItem } from '../../../services/inspection.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import Swal from 'sweetalert2';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-lista-de-inspecciones',
@@ -42,6 +43,7 @@ export class ListaDeInspeccionesComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private inspectionService: InspectionService
+    ,private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -64,7 +66,9 @@ export class ListaDeInspeccionesComponent implements OnInit {
       }
     });
   }
-
+  volver() {
+    this.router.navigate(['/mantenedores/clientes']);
+  }
   addSection() {
     const dialogRef = this.dialog.open(EditItemDialogComponent, {
       width: '400px',

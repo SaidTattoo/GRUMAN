@@ -17,7 +17,7 @@ registerLocaleData(localeEsCl, 'es-CL');
 @Component({
   selector: 'app-repuestos',
   standalone: true,
-  imports: [JsonPipe,MatTableModule,MatPaginatorModule,MatSortModule,MatCardModule, MatButtonModule, CommonModule, MatFormFieldModule, MatInputModule,MatIconModule],
+  imports: [MatTableModule,MatPaginatorModule,MatSortModule,MatCardModule, MatButtonModule, CommonModule, MatFormFieldModule, MatInputModule,MatIconModule],
   templateUrl: './repuestos.component.html',
   styleUrl: './repuestos.component.scss',
   providers: [{ provide: LOCALE_ID, useValue: 'es-CL' }]
@@ -35,14 +35,30 @@ export class RepuestosComponent {
       this.repuestos = data;
       //console.log('--->', this.repuestos);
       this.dataSource = new MatTableDataSource(this.repuestos);
+      this.dataSource.sort = this.sort;
     });
   }
   openCrearRepuesto(){
     this.router.navigate(['/mantenedores/repuestos/crear-repuesto']);
   }
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    this.dataSource.filter = filterValue;
+    this.dataSource.filterPredicate = (data: any, filter: string) => {
+      return (
+        data.familia.toLowerCase().includes(filter) ||
+        data.marca.toLowerCase().includes(filter) ||
+        data.articulo.toLowerCase().includes(filter)
+      );
+    };
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case 'familia': return item.familia;
+        case 'marca': return item.marca;
+        case 'articulo': return item.articulo;
+        default: return item[property];
+      }
+    };
   }
   openEditarRepuestoModal(repuesto: any) {
     this.router.navigate(['/mantenedores/repuestos/editar-repuesto', repuesto.id]);

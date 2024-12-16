@@ -54,4 +54,8 @@ export class RepuestosService {
   async delete(id: number): Promise<void> {
     await this.repuestosRepository.delete(id);
   }
+  async update(id: number, repuesto: Repuesto): Promise<Repuesto> {
+    await this.repuestosRepository.update(id, repuesto);
+    return this.findOne(id);
+  }
 }

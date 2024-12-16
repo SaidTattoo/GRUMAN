@@ -1,0 +1,93 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content class="p-24">
+      <div class="container">
+          <div class="header-actions">
+              <h2>Lista de Inspección del Cliente {{ cliente.nombre }}</h2>
+              <div class="d-flex gap-2">
+                  <button mat-raised-button color="primary" 
+                      (click)="guardarListaInspeccion()"
+                      [disabled]="isLoading || !sections || sections.length === 0">
+                      <mat-icon>save</mat-icon>
+                      Guardar Lista de Inspección
+                  </button>
+              </div>
+          </div>
+        
+          <div *ngIf="isLoading" class="text-center">
+            <p>Cargando...</p>
+          </div>
+        
+          <div *ngIf="error" class="alert alert-danger">
+            {{ error }}
+          </div>
+        
+          <div class="lista-inspeccion">
+            <!-- Secciones -->
+            <div *ngFor="let seccion of sections; let i = index" class="seccion">
+              <div class="seccion-header">
+                <div class="seccion-content">
+                  <span class="seccion-numero">{{ i + 1 }}.</span>
+                  <span class="seccion-titulo">{{ seccion.name }}</span>
+                </div>
+                <mat-checkbox 
+                  color="primary"
+                  [checked]="isSeccionSelected(seccion)"
+                  (change)="onSeccionChange($event, seccion)">
+                </mat-checkbox>
+              </div>
+        
+              <!-- Items -->
+              <div *ngFor="let item of seccion.items; let j = index" class="item">
+                <div class="item-header">
+                  <div class="item-content">
+                    <span class="item-numero">{{ i + 1 }}.{{ j + 1 }}</span>
+                    <span class="item-titulo">{{ item.name }}</span>
+                  </div>
+                  <mat-checkbox 
+                    class="mat-checkbox-green"
+                    [checked]="isItemSelected(item)"
+                    (change)="onItemChange($event, seccion, item)">
+                  </mat-checkbox>
+                </div>
+        
+                <!-- Subitems -->
+                <div *ngFor="let subitem of item.subItems; let k = index" class="subitem">
+                  <div class="subitem-header">
+                    <div class="subitem-content">
+                      <span class="subitem-numero">{{ i + 1 }}.{{ j + 1 }}.{{ k + 1 }}</span>
+                      <span class="subitem-titulo">{{ subitem.name }}</span>
+                    </div>
+                    <mat-checkbox 
+                      class="mat-checkbox-green"
+                      [checked]="isSubitemSelected(subitem)"
+                      (change)="onSubitemChange($event, seccion, item, subitem)">
+                    </mat-checkbox>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón volver al final solo si hay secciones -->
+            <div *ngIf="sections && sections.length > 0" class="d-flex justify-content-center mt-4">
+              <button mat-raised-button color="basic" (click)="volver()">
+                <mat-icon>arrow_back</mat-icon>
+                Volver
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado vacío con botón volver centrado -->
+        <div class="empty-state" *ngIf="!sections || sections.length === 0">
+          <div class="icon-container">
+            <i class="list-icon"></i>
+          </div>
+          <h3>No hay secciones de inspección</h3>
+          <p class="empty-state-message">No se encontraron secciones de inspección para este cliente</p>
+          <button mat-raised-button color="basic" (click)="volver()" class="mt-3">
+            <mat-icon>arrow_back</mat-icon>
+            Volver
+          </button>
+        </div>
+  </mat-card-content>
+</mat-card>

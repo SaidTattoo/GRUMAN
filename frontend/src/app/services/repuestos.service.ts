@@ -15,6 +15,12 @@ export class RepuestosService {
   crearRepuesto(repuesto: any) {
     return this.http.post(this.apiUrl + 'repuestos', repuesto);
   }
+  updateRepuesto(id: number, repuesto: any) {
+    return this.http.put(this.apiUrl + 'repuestos/' + id, repuesto);
+  }
+  getRepuesto(id: number) {
+    return this.http.get<any>(this.apiUrl + 'repuestos/' + id);
+  }
   eliminarRepuesto(id: number) {
     return this.http.delete(this.apiUrl + 'repuestos/' + id);
   }

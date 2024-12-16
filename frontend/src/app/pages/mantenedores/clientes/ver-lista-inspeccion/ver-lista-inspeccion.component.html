@@ -1,0 +1,56 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+      <div class="header mb-4">
+        <h2>Lista de Inspección - {{ cliente?.nombre }}</h2>
+      </div>
+  
+      <div *ngIf="isLoading" class="text-center">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando lista de inspección...</p>
+      </div>
+  
+      <div *ngIf="!isLoading" class="lista-container">
+        <div *ngFor="let seccion of sections" class="lista-seccion">
+          <!-- Título de la sección -->
+          <div class="seccion-header">
+            {{seccion.name}}
+          </div>
+          
+          <!-- Items -->
+          <ul class="lista-items">
+            <li *ngFor="let item of seccion.items">
+              {{item.name}}
+              <!-- Subitems -->
+              <ul class="lista-subitems">
+                <li *ngFor="let subitem of item.subItems" [class.deshabilitado]="subitem.disabled">
+                  {{subitem.name}}
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Botón volver cuando hay secciones -->
+        <div *ngIf="tieneInspecciones" class="text-center mt-4">
+          <button mat-raised-button color="primary" (click)="volver()">
+            <mat-icon>arrow_back</mat-icon>
+            Volver
+          </button>
+        </div>
+      </div>
+
+      <!-- Estado vacío con botón volver -->
+      <div *ngIf="!tieneInspecciones" class="empty-state">
+        <div class="icon-container">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+        <h3>No hay secciones de inspección</h3>
+        <p class="empty-state-message">No se encontraron secciones de inspección para este cliente</p>
+        <button mat-raised-button color="primary" (click)="volver()" class="mt-3">
+          <mat-icon>arrow_back</mat-icon>
+          Volver
+        </button>
+      </div>
+    </mat-card-content>
+    
+  </mat-card>

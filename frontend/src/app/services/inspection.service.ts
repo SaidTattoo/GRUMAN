@@ -73,4 +73,12 @@ export class InspectionService {
   deleteSubItem(sectionId: number, itemId: number, subItemId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/sections/${sectionId}/items/${itemId}/subitems/${subItemId}`);
   }
+
+  disableSection(sectionId: number) {
+    return this.http.delete(`${this.apiUrl}/sections/${sectionId}`);
+  }
+
+  cleanupInspectionLists() {
+    return this.http.post(`${this.apiUrl}/cleanup-lists`, {});
+  }
 } 
