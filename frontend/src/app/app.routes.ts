@@ -139,6 +139,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mantenedores/mes-de-facturacion',
+        loadChildren: () =>
+          import('./pages/mantenedores/mes-de-facturacion/mes-de-facturacion.routes').then(
+            (m) => m.MES_DE_FACTURACION_ROUTES
+          ),
+      },
+      {
         path: 'mantenedores/activo-fijo-local',
         loadChildren: () =>
           import('./pages/mantenedores/activo-fijo-local/activo-fijo-local.routes').then(

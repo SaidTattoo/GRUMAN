@@ -1,11 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Inject, forwardRef } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { Client } from './client.entity';
 import { ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { FacturacionService } from '../facturacion/facturacion.service';
 
 @Controller('client')
 export class ClientController {
-    constructor(private readonly clientService: ClientService) {}
+    constructor(
+        private readonly clientService: ClientService,
+        @Inject(forwardRef(() => FacturacionService))
+        private readonly facturacionService: FacturacionService
+    ) {}
     
     @Get()
     @ApiOperation({ summary: 'Obtener todos los clientes' })
@@ -41,8 +46,6 @@ export class ClientController {
             },
         },
     })
-    @Post()
-    @ApiOperation({ summary: 'Crear un cliente' })
     createClient(@Body() client: Client): Promise<Client> {
         console.log(client);
         return this.clientService.createClient(client);
@@ -54,7 +57,6 @@ export class ClientController {
     findClientWithUsers(@Param('id') id: number): Promise<Client> {
         return this.clientService.findClientWithUsers(id);
     }
-
 
     @Put(':id')
     @ApiOperation({ summary: 'Actualizar un cliente' })
@@ -74,12 +76,10 @@ export class ClientController {
         return this.clientService.updateClient(id, client);
     }
 
-   
     @Delete(':id')
     async deleteClient(@Param('id') id: number): Promise<void> {
         await this.clientService.deleteClient(id);
     }
-
 
     @Get('client/name/:name')
     @ApiOperation({ summary: 'Obtener un cliente por nombre' })

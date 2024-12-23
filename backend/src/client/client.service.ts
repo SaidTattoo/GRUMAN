@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { Client } from './client.entity';
 import { TipoServicio } from '../tipo-servicio/tipo-servicio.entity';
+import { FacturacionService } from '../facturacion/facturacion.service';
 
 @Injectable()
 export class ClientService {
@@ -10,7 +11,9 @@ export class ClientService {
         @InjectRepository(Client)
         private clientRepository: Repository<Client>,
         @InjectRepository(TipoServicio)
-        private tipoServicioRepository: Repository<TipoServicio>
+        private tipoServicioRepository: Repository<TipoServicio>,
+        @Inject(forwardRef(() => FacturacionService))
+        private facturacionService: FacturacionService
     ) {}
 
     /** FINDALLCLIENTS */
@@ -18,7 +21,7 @@ export class ClientService {
     async findAllClients(): Promise<Client[]> {
         return this.clientRepository.find({ 
             where: { deleted: false, nombre: Not('GRUMAN') },
-            relations: ['tipoServicio'],
+            relations: ['tipoServicio', 'facturaciones'],
         });
     }
 
@@ -26,7 +29,7 @@ export class ClientService {
     async findOneClient(id: number): Promise<Client | undefined> {
         return this.clientRepository.findOne({ 
             where: { id, deleted: false },
-            relations: ['tipoServicio']
+            relations: ['tipoServicio', 'facturaciones']
         });
     }
 
@@ -53,9 +56,16 @@ export class ClientService {
             tipoServicio: servicios,
         });
     
-        // Guardar en la base de datos
-        return this.clientRepository.save(cliente);
+        const anioActual = new Date().getFullYear();
+        const ANIOS_FACTURACION = 2;
+        
+        // Guardar en la base de datos y generar facturación
+        const clienteGuardado = await this.clientRepository.save(cliente);
+        await this.facturacionService.generarFacturacionMensual(clienteGuardado, anioActual, ANIOS_FACTURACION);
+        
+        return clienteGuardado;
     }
+
     /** UPDATECLIENT */
     async updateClient(id: number, updateClientDto: any) {
         try {
@@ -97,26 +107,28 @@ export class ClientService {
             throw new BadRequestException('Error al actualizar el cliente: ' + error.message);
         }
     }
-    async findClientWithUsers(clientId: number): Promise<Client> {
-        return this.clientRepository.findOne({
-            where: { id: clientId },
-            relations: ['users'], // Asegúrate de que 'users' esté correctamente definido en la entidad Client
-        });
+
+    /** DELETECLIENT */
+    async deleteClient(id: number): Promise<void> {
+        const client = await this.clientRepository.findOne({ where: { id } });
+        if (!client) {
+            throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
+        }
+        client.deleted = true;
+        await this.clientRepository.save(client);
     }
 
-        async deleteClient(id: number): Promise<void> {
-            await this.clientRepository.update(id, { deleted: true });
+    async findClientWithUsers(id: number): Promise<Client> {
+        return this.clientRepository.findOne({
+            where: { id },
+            relations: ['users', 'tipoServicio']
+        });
     }
 
     async findClientByName(name: string): Promise<Client> {
-        const client = await this.clientRepository.findOne({ 
-            where: { nombre: name, deleted: false } 
+        return this.clientRepository.findOne({
+            where: { nombre: name },
+            relations: ['tipoServicio']
         });
-        
-        if (!client) {
-            throw new NotFoundException(`Cliente con nombre ${name} no encontrado`);
-        }
-        
-        return client;
     }
 }

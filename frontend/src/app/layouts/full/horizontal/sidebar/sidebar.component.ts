@@ -223,6 +223,11 @@ export class AppHorizontalSidebarComponent implements OnInit {
                   displayName: 'Especialidades',
                   iconName: 'home-shield',
                   route: 'mantenedores/especialidades',
+                } ,
+                {
+                  displayName: 'Mes de Facturación',
+                  iconName: 'home-shield',
+                  route: 'mantenedores/mes-de-facturacion',
                 }
               ],
             },

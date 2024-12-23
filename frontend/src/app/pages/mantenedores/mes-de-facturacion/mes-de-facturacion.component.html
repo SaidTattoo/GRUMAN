@@ -1,0 +1,46 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content class="p-24">
+       
+      
+        <mat-table [dataSource]="dataSource">
+            <!-- Definición de la columna 'nombre' -->
+            <ng-container matColumnDef="cliente">
+                <mat-header-cell *matHeaderCellDef> cliente </mat-header-cell>
+                <mat-cell *matCellDef="let element"> {{element.nombre}} </mat-cell>
+            </ng-container>
+
+           
+            <ng-container matColumnDef="fechaMesFacturacion">    
+                <mat-header-cell *matHeaderCellDef> fechaMesFacturacion </mat-header-cell>
+                <mat-cell *matCellDef="let element"> 
+                    <ng-container *ngIf="element.facturaciones.length === 0; else mostrarCantidad">
+                        <button [matTooltip]="'Generar facturacion mensual 24 meses'" 
+                                matTooltipPosition="above" mat-icon-button color="primary" 
+                                (click)="generarMesFacturacion(element)">
+                            <mat-icon>add</mat-icon>
+                        </button>
+                    </ng-container>
+                    <ng-template #mostrarCantidad>
+                        {{element.facturaciones.length}}
+                    </ng-template>
+                </mat-cell>
+            </ng-container>
+
+
+
+            <!-- Definición de la columna 'acciones' -->
+            <ng-container matColumnDef="acciones">
+                <mat-header-cell *matHeaderCellDef> Acciones </mat-header-cell>
+                <mat-cell *matCellDef="let element"> 
+                    <button  mat-icon-button color="primary" (click)="editarMesDeFacturacion(element.id)" >
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                </mat-cell>
+            </ng-container> 
+            <!-- Fila de encabezado -->
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <!-- Fila de datos -->
+            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        </mat-table>
+    </mat-card-content>
+</mat-card>

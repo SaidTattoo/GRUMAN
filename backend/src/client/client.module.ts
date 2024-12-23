@@ -1,16 +1,19 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Client } from './client.entity';
 import { ClientController } from './client.controller';
 import { ClientService } from './client.service';
-import { Client } from './client.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/users/users.entity';
-import { ActivoFijoLocal } from 'src/activo-fijo-local/activo-fijo-local.entity';
-import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
-import { Section } from '../inspection/entities/section.entity';
+import { TipoServicio } from '../tipo-servicio/tipo-servicio.entity';
+import { Facturacion } from '../facturacion/facturacion.entity';
+import { FacturacionModule } from '../facturacion/facturacion.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Client, User, ActivoFijoLocal, TipoServicio, Section])],
+  imports: [
+    TypeOrmModule.forFeature([Client, TipoServicio, Facturacion]),
+    forwardRef(() => FacturacionModule)
+  ],
   controllers: [ClientController],
-  providers: [ClientService]
+  providers: [ClientService],
+  exports: [ClientService]
 })
 export class ClientModule {}

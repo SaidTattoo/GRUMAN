@@ -1,0 +1,74 @@
+<mat-card>
+  <mat-card-content>
+    <form [formGroup]="form">
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Mes de Facturación</mat-label>
+          <mat-select formControlName="mesFacturacion">
+            <mat-option *ngFor="let mes of facturaciones.meses" [value]="mes.value">
+              {{ mes.viewValue }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.get('mesFacturacion')?.hasError('required')">
+            Este campo es requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Día de Inicio de Facturación</mat-label>
+          <input matInput type="number" min="1" max="31" formControlName="diaInicio">
+          <mat-hint>Se sugiere que el período sea de 30 días</mat-hint>
+          <mat-error *ngIf="form.get('diaInicio')?.hasError('required')">
+            Este campo es requerido
+          </mat-error>
+          <mat-error *ngIf="form.get('diaInicio')?.hasError('min') || form.get('diaInicio')?.hasError('max')">
+            El día debe estar entre 1 y 31
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Día de Fin de Facturación</mat-label>
+          <input matInput type="number" min="1" max="31" formControlName="diaFin">
+          <mat-hint>Sugerencia: día {{ diaSugerido }}</mat-hint>
+          <mat-error *ngIf="form.get('diaFin')?.hasError('required')">
+            Este campo es requerido
+          </mat-error>
+          <mat-error *ngIf="form.get('diaFin')?.hasError('min') || form.get('diaFin')?.hasError('max')">
+            El día debe estar entre 1 y 31
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="preview-dates">
+        <p><strong>Vista previa de fechas:</strong></p>
+        <p>Fecha de inicio: {{ fechaInicioPreview | date:'dd/MM/yyyy' }}</p>
+        <p>Fecha de término: {{ fechaFinPreview | date:'dd/MM/yyyy' }}</p>
+      </div>
+
+      <div class="button-container">
+        <button mat-raised-button color="primary" type="submit" (click)="submit()" [disabled]="!form.valid">Actualizar</button>
+        <button mat-raised-button type="button" (click)="router.navigate(['/mantenedores/mes-de-facturacion'])">Cancelar</button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+<style>
+  .preview-dates {
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #e0e0e0;
+    border-radius: 8px;
+    width: 100%;
+    text-align: center;
+    border: 3px solid #ccc;
+  }
+
+  .preview-dates p {
+    margin: 5px 0;
+  }
+</style>

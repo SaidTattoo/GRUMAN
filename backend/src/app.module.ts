@@ -32,6 +32,7 @@ import { UploadV2Module } from './upload-v2/upload-v2.module';
 import { SolicitarVisitaModule } from './solicitar-visita/solicitar-visita.module';
 import { EspecialidadModule } from './especialidad/especialidad.module';
 import { InspectionModule } from './inspection/inspection.module';
+import { FacturacionModule } from './facturacion/facturacion.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -71,7 +72,7 @@ import { InspectionModule } from './inspection/inspection.module';
     ActivoFijoLocalModule,
     UploadV2Module,
     SolicitarVisitaModule,
-    EspecialidadModule,InspectionModule
+    EspecialidadModule,InspectionModule, FacturacionModule
 /*     LocalesModule,
     SectoresTrabajoModule,
     ProgramacionModule */

@@ -33,4 +33,7 @@ export class ClientesService {
   getListaInspeccion(clienteId: number): Observable<any> {
     return this.http.get(`${environment.apiUrl}client/${clienteId}/lista-inspeccion`);
   }
+  updateMesDeFacturacion(id: number, fechaInicioFacturacion: string, fechaFinFacturacion: string, fechaMesFacturacion: string) {
+    return this.http.put(`${this.apiUrl}client/mes/${id}`, { fechaInicioFacturacion, fechaFinFacturacion, fechaMesFacturacion });
+  }
 }

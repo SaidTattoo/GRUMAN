@@ -4,6 +4,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToMany, ManyToOn
 import { Locales } from '../locales/locales.entity';
 import { ActivoFijoLocal } from '../activo-fijo-local/activo-fijo-local.entity';
 import { TipoServicio } from '../tipo-servicio/tipo-servicio.entity';
+import { Facturacion } from '../facturacion/facturacion.entity';
 
 
 
@@ -60,4 +61,7 @@ export class Client {
 
   @Column('json', { default: '[]' })
   listaInspeccion: any;
+
+  @OneToMany(() => Facturacion, (facturacion) => facturacion.cliente)
+  facturaciones: Facturacion[];
 }
