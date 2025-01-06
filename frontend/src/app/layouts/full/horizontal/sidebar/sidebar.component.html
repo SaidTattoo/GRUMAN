@@ -3,11 +3,14 @@
   <div class="container">
     <div>
       <div class="horizontal-navbar hstack align-items-center">
-    @for(item of navItems; track item) {
-        <app-horizontal-nav-item [item]="item" class="parentBox {{ item.ddType }}" [ngClass]="{
-              pactive: item.route == parentActive ? 'pactive' : ''
-            }">
-        </app-horizontal-nav-item>
+        @for(item of navItems; track item) {
+          <app-horizontal-nav-item [item]="item" class="parentBox {{ item.ddType }}" [ngClass]="{
+            pactive: item.route == parentActive ? 'pactive' : ''
+          }">
+            @if(item.route === 'transacciones/solicitar-visita' && hasPendingRequests > 0) {
+              <span class="pending-indicator"></span>
+            }
+          </app-horizontal-nav-item>
         }
       </div>
     </div>

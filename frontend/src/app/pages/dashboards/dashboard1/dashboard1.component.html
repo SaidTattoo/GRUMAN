@@ -11,23 +11,61 @@
         </div>
       </mat-card-header>
       <mat-card-content>
+
         <div class="m-t-35 m-b-24">
             <!-- aca quiero dos filas con 8 cards cada uno   -->
             <div class="row">
               <div class="col-12">
                 <div class="d-flex flex-wrap justify-content-between">
                   <!-- Primera fila de tarjetas -->
-                   @for (card of cards.slice(0, 8); track card.title) {
-                  <div  class="card-container">
-                    <mat-card class="cardWithShadow" (click)="onCardClick(card)">
-                      <mat-card-content>
-                        <mat-icon>{{ card.icon }}</mat-icon>
-                        <h3>{{ card.title }}</h3>
-                        <p>{{ card.content }}</p>
-                      </mat-card-content>
-                    </mat-card>
-                  </div>
-                }
+                 
+                <div  class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white overflow-hidden">
+                    <mat-card-content>
+                      <img width="50px" src="{{'assets/images/cancel.png'}}" alt="cancel">
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">
+                          {{ count_reactivos_pendientes_autorizacion }}
+                        </h5>
+                        <span class="f-s-14">Reactivos Pendientes Autorización</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div> 
+                <div  class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white overflow-hidden">
+                    <mat-card-content>
+                      <img width="50px" src="{{'assets/images/cancel.png'}}" alt="cancel">
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">
+                          {{ count_correctivos_pendientes_autorizacion }}
+                        </h5>
+                        <span class="f-s-14">Correctivos Pendientes Autorización</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div> 
+                <div  class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white overflow-hidden">
+                    <mat-card-content>
+                      <img width="50px" src="{{'assets/images/cancel.png'}}" alt="cancel">
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">
+                          {{ count_servicios_autorizados_pendientes_visita }}
+                        </h5>
+                        <span class="f-s-14">Servicios autorizados y pendientes de visita</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div> 
+
+
+
+
+
+
+
+
                 </div>
                 
               </div>
@@ -40,8 +78,8 @@
                   <div  class="card-container">
                     <mat-card class="cardWithShadow" (click)="onCardClick(card)">
                       <mat-card-content>
-                        <mat-icon>{{ card.icon }}</mat-icon>
-                        <h3>{{ card.title }}</h3>
+                        <mat-icon >{{ card.icon }}</mat-icon>
+                        <h3 >{{ card.title }}</h3>
                         <p>{{ card.content }}</p>
                       </mat-card-content>
                     </mat-card>

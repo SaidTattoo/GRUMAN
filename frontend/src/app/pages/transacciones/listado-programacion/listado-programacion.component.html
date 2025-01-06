@@ -54,12 +54,21 @@
           </ng-container>
   
           <!-- Vehiculo Column -->
-          <ng-container matColumnDef="vehiculo">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">Vehículo</th>
-            <td mat-cell *matCellDef="let element" class="p-l-0">{{ element.vehiculo?.patente || 'Sin vehículo' }}</td>
+          <ng-container matColumnDef="tecnico">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">Técnico</th>
+            <td mat-cell *matCellDef="let element" class="p-l-0">
+              <div class="user-chip" style="display: flex; width: 180px; align-items: center; border: 3px solid green; border-radius: 25px; padding: 4px;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #589e51; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; margin-right: 8px;">
+                  {{ element.user?.name ? element.user.name.charAt(0) : 'S' }}
+                </div>
+                <div style="font-size: 12px;">
+                  {{ element.user?.name || 'Sin Técnico' }}
+                </div>
+              </div>
+            </td>
           </ng-container>
-  
-       
+            
+                
   
           <!-- Acciones Column -->
           <ng-container matColumnDef="acciones">

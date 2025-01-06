@@ -1,3 +1,4 @@
+import { Programacion } from 'src/programacion/programacion.entity';
 import { Client } from '../client/client.entity';
 import { Especialidad } from '../especialidad/especialidad.entity';
 import {
@@ -6,6 +7,7 @@ import {
     Entity,
     JoinTable,
     ManyToMany,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
@@ -51,6 +53,10 @@ export class User {
         }
     })
     especialidades: Especialidad[];
+
+
+    @OneToMany(() => Programacion, programacion => programacion.user)
+    programaciones: Programacion[];
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;

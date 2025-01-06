@@ -19,6 +19,7 @@ import { VehiculosService } from 'src/app/services/vehiculos.service';
 import localeEnGb from '@angular/common/locales/en-GB';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
+import { UsersService } from 'src/app/services/users.service';
 const MY_DATE_FORMAT = {
   parse: {
     dateInput: 'DD/MM/YYYY', // this is how your date will be parsed from Input
@@ -50,6 +51,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   vehiculos: any[] = [];
   clientes: any[] = [];
   loading = false;
+  tecnicos: any[] = [];
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -59,7 +61,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     private programacionService: ProgramacionService,
     private clientesService: ClientesService,
     private dateAdapter: DateAdapter <Date>,
-    private router: Router
+    private router: Router,
+    private usersService: UsersService
   ) {
     this.initForm();
     registerLocaleData(localeEnGb); 
@@ -75,7 +78,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       tipoServicio: new FormControl('', [Validators.required]),
       sectorTrabajo: new FormControl('', [Validators.required]),
       fecha: new FormControl('', [Validators.required, this.fechaValidator]),
-      vehiculo: new FormControl('', [Validators.required]),
+      user: new FormControl('', [Validators.required]),
       observaciones: new FormControl('', [Validators.maxLength(500)])
     });
   }
@@ -93,7 +96,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       this.getVehiculos(),
       this.getClientes(),
         /*this.getClientesFromLocalStorage(), */
-      this.getLocales()
+      this.getLocales(),
+      this.getTecnicos()
     ]).finally(() => {
       this.loading = false;
     });
@@ -262,7 +266,15 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     }).then((result) => {
       if (result.isConfirmed) {
         this.loading = true;
-        this.programacionService.createProgramacion(this.programacionForm.value)
+        const formData = this.programacionForm.value;
+        
+        // Asegurarnos de que el campo user esté correctamente asignado
+        const programacionData = {
+          ...formData,
+          userId: formData.user // Asegurarnos de que el ID del usuario se envíe correctamente
+        };
+        
+        this.programacionService.createProgramacion(programacionData)
           .pipe(takeUntil(this.destroy$))
           .subscribe({
             next: (res: any) => {
@@ -272,6 +284,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
             },
             error: (error) => {
               this.showErrorMessage('Error al crear la programación');
+              console.error('Error:', error);
             },
             complete: () => {
               this.loading = false;
@@ -314,5 +327,13 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   }
   volver(){
     this.router.navigate(['/transacciones/listado-programacion']);
+  }
+
+  getTecnicos(): void {
+    this.usersService.getAllTecnicos()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res: any) => {
+        this.tecnicos = res;
+      });
   }
 }

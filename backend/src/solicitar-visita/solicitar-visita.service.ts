@@ -55,4 +55,9 @@ export class SolicitarVisitaService {
         await this.solicitarVisitaRepository.update(id, { status: 'finalizada' });
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
+
+    //quiero obtener la cantidad de solicitudes pendientes
+    async getPendientes() :Promise<SolicitarVisita[]>{
+        return await this.solicitarVisitaRepository.find({ relations: ['local', 'client'] });
+    }
 }

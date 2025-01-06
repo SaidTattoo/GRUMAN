@@ -21,13 +21,7 @@ export const routes: Routes = [
             (m) => m.LOCALES_ROUTES
           ),
       },
-      {
-        path: 'mantenedores/trabajadores',
-        loadChildren: () =>
-          import('./pages/mantenedores/trabajadores/trabajadores.routes').then(
-            (m) => m.TRABAJADORES_ROUTES
-          ),
-      },
+     
       {
         path: 'mantenedores/especialidades',
         loadChildren: () =>

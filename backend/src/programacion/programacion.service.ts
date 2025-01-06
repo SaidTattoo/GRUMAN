@@ -15,26 +15,28 @@ export class ProgramacionService {
             where: {
                 deleted: false
             },
-            relations: ['client' , 'vehiculo' , 'local'  ]
+            relations: ['client', 'local', 'user']
         });
     }
 
     findById(id: number): Promise<Programacion> {
         return this.programacionRepository.findOne({
             where: { id, deleted: false },
-            relations: ['client' , 'vehiculo' , 'local'  ]
+            relations: ['client', 'local', 'user']
         });
     }
 
     create(programacion: Programacion): Promise<Programacion> {
-        //console.log(programacion);
         return this.programacionRepository.save(programacion);
     }
-    //al eliminar un registro, se actualiza el campo deleted a true
+
     delete(id: number): Promise<UpdateResult> {
         return this.programacionRepository.update(id, { deleted: true });
     }
+
     update(id: number, programacion: Programacion): Promise<UpdateResult> {
         return this.programacionRepository.update(id, programacion);
     }
+
+   
 }

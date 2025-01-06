@@ -40,7 +40,7 @@ export class ClienteUsuariosComponent implements OnInit {
     
 
 
-    this.clientesService.getClientes().subscribe((data:any) => {
+    this.clientesService.getClientesWithGruman().subscribe((data:any) => {
       this.clientes = data;
     });
 

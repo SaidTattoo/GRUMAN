@@ -53,4 +53,10 @@ async create(@Body() createSolicitarVisitaDto: any) {
   async rechazarSolicitudVisita(@Param('id') id: number) {
     return this.solicitarVisitaService.rechazarSolicitudVisita(id);
   }
+
+  @Get('pendientes')
+  async getPendientes() {
+    console.log('solicitudes pendientes');
+    return this.solicitarVisitaService.getPendientes();
+  }
 }

@@ -63,6 +63,6 @@ export class Vehiculo {
   @Column({ nullable: true })
   user_id: number;
 
-  @OneToMany(() => Programacion, programacion => programacion.vehiculo)
-  programaciones: Programacion[]; 
+ /*  @OneToMany(() => Programacion, programacion => programacion.vehiculo)
+  programaciones: Programacion[];  */
 }

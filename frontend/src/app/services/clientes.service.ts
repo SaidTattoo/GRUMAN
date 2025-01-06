@@ -12,6 +12,9 @@ export class ClientesService {
   getClientes() {
     return this.http.get<any[]>(this.apiUrl + 'client');
   }
+  getClientesWithGruman() {
+    return this.http.get<any[]>(this.apiUrl + 'client/gruman');
+  }
   getCliente(id: number) {
     return this.http.get<any>(this.apiUrl + 'client/' + id);
   }

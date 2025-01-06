@@ -18,6 +18,12 @@ export class ClientController {
         return this.clientService.findAllClients();
     }
 
+    @Get('gruman')
+    @ApiOperation({ summary: 'Obtener todos los clientes con GRUMAN' })
+    findAllClientsWithGruman(): Promise<Client[]> {
+        return this.clientService.findAllClientsWithGruman();
+    }
+
     @Get(':id')
     @ApiOperation({ summary: 'Obtener un cliente por ID' })
     findOneClient(@Param('id') id: number): Promise<Client | undefined> {

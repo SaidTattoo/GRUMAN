@@ -4,23 +4,29 @@ import {
   Input,
   ChangeDetectorRef,
   OnChanges,
+  OnDestroy,
 } from '@angular/core';
 import { navItems } from './sidebar-data';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NavService } from '../../../../services/nav.service';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { AppHorizontalNavItemComponent } from './nav-item/nav-item.component';
 import { CommonModule } from '@angular/common';
+import { Subscription, interval } from 'rxjs';
+import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
 
 @Component({
   selector: 'app-horizontal-sidebar',
   standalone: true,
-  imports: [AppHorizontalNavItemComponent, CommonModule],
+  imports: [AppHorizontalNavItemComponent, CommonModule, RouterModule],
   templateUrl: './sidebar.component.html',
 })
-export class AppHorizontalSidebarComponent implements OnInit {
+export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
   navItems = navItems;
   parentActive = '';
+  hasPendingRequests = 0;
+  private subscription: Subscription;
+  private updateSubscription: Subscription;
 
   mobileQuery: MediaQueryList;
   private _mobileQueryListener: () => void;
@@ -29,7 +35,8 @@ export class AppHorizontalSidebarComponent implements OnInit {
     public navService: NavService,
     public router: Router,
     media: MediaMatcher,
-    changeDetectorRef: ChangeDetectorRef
+    changeDetectorRef: ChangeDetectorRef,
+    private solicitarVisitaService: SolicitarVisitaService
   ) {
     this.mobileQuery = media.matchMedia('(min-width: 1100px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
@@ -37,6 +44,8 @@ export class AppHorizontalSidebarComponent implements OnInit {
     this.router.events.subscribe(
       () => (this.parentActive = this.router.url.split('/')[1])
     );
+   
+
   }
 
   ngOnInit(): void {
@@ -83,6 +92,40 @@ export class AppHorizontalSidebarComponent implements OnInit {
         route: 'dashboards/dashboard1',
         bgcolor: 'primary',
       },
+      ...(showMantenedores
+        ? [
+          {
+            displayName: 'Programación',
+            iconName: 'calendar',
+            children: [
+              {
+                displayName: 'Generar Programación',
+                iconName: 'home-shield',
+                bgcolor: 'primary',
+                route: 'generar-programacion',
+              },
+              {
+                displayName: 'Listado de Programación',
+                iconName: 'home-shield',
+                bgcolor: 'primary',
+                route: 'transacciones/listado-programacion',
+              },
+              {
+                displayName: 'Solicitud de aprobación de correctiva',
+                iconName: 'home-shield',
+                bgcolor: 'primary',
+                route: 'transacciones/solicitud-aprobacion-correctiva',
+              },
+              {
+                displayName: 'Listado de solicitudes de aprobación de correctiva',
+                iconName: 'home-shield',
+                bgcolor: 'primary',
+                route: 'transacciones/listado-solicitud-aprobacion-correctiva',
+              },
+            ],
+          },
+          ]
+        : []),
       ...(showSolicitarVisita
         ? [
             {
@@ -93,36 +136,8 @@ export class AppHorizontalSidebarComponent implements OnInit {
             },
           ]
         : []),
-      {
-        displayName: 'Programación',
-        iconName: 'calendar',
-        children: [
-          {
-            displayName: 'Generar Programación',
-            iconName: 'home-shield',
-            bgcolor: 'primary',
-            route: 'generar-programacion',
-          },
-          {
-            displayName: 'Listado de Programación',
-            iconName: 'home-shield',
-            bgcolor: 'primary',
-            route: 'transacciones/listado-programacion',
-          },
-          {
-            displayName: 'Solicitud de aprobación de correctiva',
-            iconName: 'home-shield',
-            bgcolor: 'primary',
-            route: 'transacciones/solicitud-aprobacion-correctiva',
-          },
-          {
-            displayName: 'Listado de solicitudes de aprobación de correctiva',
-            iconName: 'home-shield',
-            bgcolor: 'primary',
-            route: 'transacciones/listado-solicitud-aprobacion-correctiva',
-          },
-        ],
-      },
+        
+     
       {
         displayName: 'Servicios realizados',
         iconName: 'home-shield',
@@ -236,4 +251,15 @@ export class AppHorizontalSidebarComponent implements OnInit {
     ];
   }
   
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+    if (this.updateSubscription) {
+      this.updateSubscription.unsubscribe();
+    }
+    this.mobileQuery.removeListener(this._mobileQueryListener);
+  }
+
+
 }  

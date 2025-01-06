@@ -11,6 +11,7 @@ import { AppTopProjectsComponent } from '../../../components/dashboard1/top-proj
 import { AppVisitUsaComponent } from '../../../components/dashboard1/visit-usa/visit-usa.component';
 import { AppLatestReviewsComponent } from '../../../components/dashboard1/latest-reviews/latest-reviews.component';
 import { MaterialModule } from 'src/app/material.module';
+import { DashboardService } from 'src/app/services/dashboard.service';
 
 @Component({
   selector: 'app-dashboard1',
@@ -70,26 +71,47 @@ import { MaterialModule } from 'src/app/material.module';
   ],
 })
 export class AppDashboard1Component {
-  constructor() {}
+  constructor( private dashboardService: DashboardService ) { }
   cards = [
-    { title: '14 Reactivo Pendientes Autorización', content: '', icon: 'assignment_late' },
-    { title: '133 Correctivo Pendientes Autorización', content: '', icon: 'build' },
-    { title: '133 Servicios autorizados y pendientes de visita', content: '', icon: 'assignment_turned_in' },
-    { title: '3 Próxima Visita Preventiva', content: '', icon: 'event' },
-    { title: 'Servicios del día', content: '', icon: 'today' },
-    { title: 'Análisis de Causa Raíz', content: '', icon: 'search' },
-    { title: '101.28% Cumplimiento Preventivos', content: '', icon: 'check_circle' },
-    { title: 'Gastos Repuestos', content: '', icon: 'attach_money' },
-    { title: 'Performance Reactivos', content: '', icon: 'trending_up' },
-    { title: 'Gasto total Acumulado', content: '', icon: 'account_balance_wallet' },
-    { title: 'Servicios Reactivos', content: '', icon: 'build_circle' },
-    { title: 'Servicios Correctivos', content: '', icon: 'build' },
-    { title: 'Resumen Ejecutivo', content: '', icon: 'description' },
-    { title: 'Solicitud Correctiva', content: '', icon: 'assignment' },
-    { title: 'Solicitudes Realizadas', content: '', icon: 'done_all' },
-    { title: 'Reportes Técnicos', content: '', icon: 'report' }
+    { title: '14 Reactivo Pendientes Autorización', content: '', image: 'assets/images/cancel.png', icon: 'assignment_late' },
+    { title: '133 Correctivo Pendientes Autorización', content: '', image: 'assets/images/computer.png', icon: 'build' },
+    { title: '133 Servicios autorizados y pendientes de visita', content: '', image: 'assets/images/computer.png', icon: 'assignment_turned_in' },
+    { title: '3 Próxima Visita Preventiva', content: '', image: 'assets/images/location.png', icon: 'event' },
+    { title: 'Servicios del día', content: '', image: 'assets/images/computer.png', icon: 'today' },
+    { title: 'Análisis de Causa Raíz', content: '', image: 'assets/images/computer.png', icon: 'search' },
+    { title: '101.28% Cumplimiento Preventivos', content: '', image: 'assets/images/computer.png', icon: 'check_circle' },
+    { title: 'Gastos Repuestos', content: '', image: 'assets/images/settings.png', icon: 'attach_money' },
+    { title: 'Performance Reactivos', content: '', image: 'assets/images/computer.png', icon: 'trending_up' },
+    { title: 'Gasto total Acumulado', content: '', image: 'assets/images/computer.png', icon: 'account_balance_wallet' },
+    { title: 'Servicios Reactivos', content: '', image: 'assets/images/computer.png', icon: 'build_circle' },
+    { title: 'Servicios Correctivos', content: '', image: 'assets/images/computer.png', icon: 'build' },
+    { title: 'Resumen Ejecutivo', content: '', image: 'assets/images/computer.png', icon: 'description' },
+    { title: 'Solicitud Correctiva', content: '', image: 'assets/images/computer.png', icon: 'assignment' },
+    { title: 'Solicitudes Realizadas', content: '', image: 'assets/images/computer.png', icon: 'done_all' },
+    { title: 'Reportes Técnicos', content: '', image: 'assets/images/settings.png', icon: 'report' }
   ];
   onCardClick(card: any) {
     //console.log('Card clicked:', card);
   }
+
+
+  count_reactivos_pendientes_autorizacion = 14;
+  count_correctivos_pendientes_autorizacion = 133;
+  count_servicios_autorizados_pendientes_visita = 131;
+  count_proximas_visitas_preventivas = 3;
+  count_servicios_del_dia = 10;
+  count_analisis_causa_raiz = 10;
+  count_cumplimiento_preventivos = 101.28;
+  count_gastos_repostos = 10;
+  count_performance_reactivos = 10;
+  count_gasto_total_acumulado = 10;
+
+  getReactivosPendientesAutorizacion() {
+    this.dashboardService.getReactivosPendientesAutorizacion().subscribe((data: any) => {
+      this.count_reactivos_pendientes_autorizacion = data.count;
+    });
+    return this.count_reactivos_pendientes_autorizacion;
+  }
 }
+
+
