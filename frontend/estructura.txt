@@ -1,0 +1,1158 @@
+.
+├── Dockerfile
+├── README.md
+├── angular.json
+├── estructura.txt
+├── netlify.toml
+├── nginx.conf
+├── package-lock.json
+├── package.json
+├── src
+│   ├── app
+│   │   ├── admin
+│   │   │   └── users
+│   │   │       ├── components
+│   │   │       │   └── edit-user-modal
+│   │   │       │       ├── edit-user-modal.component.html
+│   │   │       │       ├── edit-user-modal.component.scss
+│   │   │       │       ├── edit-user-modal.component.spec.ts
+│   │   │       │       └── edit-user-modal.component.ts
+│   │   │       ├── users.component.html
+│   │   │       ├── users.component.scss
+│   │   │       ├── users.component.spec.ts
+│   │   │       └── users.component.ts
+│   │   ├── app.component.html
+│   │   ├── app.component.spec.ts
+│   │   ├── app.component.ts
+│   │   ├── app.config.ts
+│   │   ├── app.routes.ts
+│   │   ├── components
+│   │   │   ├── dashboard1
+│   │   │   │   ├── congratulate-card
+│   │   │   │   │   ├── congratulate-card.component.html
+│   │   │   │   │   └── congratulate-card.component.ts
+│   │   │   │   ├── customers
+│   │   │   │   │   ├── customers.component.html
+│   │   │   │   │   └── customers.component.ts
+│   │   │   │   ├── latest-deals
+│   │   │   │   │   ├── latest-deals.component.html
+│   │   │   │   │   └── latest-deals.component.ts
+│   │   │   │   ├── latest-reviews
+│   │   │   │   │   ├── latest-reviews.component.html
+│   │   │   │   │   └── latest-reviews.component.ts
+│   │   │   │   ├── payments
+│   │   │   │   │   ├── payments.component.html
+│   │   │   │   │   └── payments.component.ts
+│   │   │   │   ├── products
+│   │   │   │   │   ├── products.component.html
+│   │   │   │   │   └── products.component.ts
+│   │   │   │   ├── top-projects
+│   │   │   │   │   ├── top-projects.component.html
+│   │   │   │   │   └── top-projects.component.ts
+│   │   │   │   └── visit-usa
+│   │   │   │       ├── visit-usa.component.html
+│   │   │   │       └── visit-usa.component.ts
+│   │   │   ├── dashboard2
+│   │   │   │   ├── blog-card
+│   │   │   │   │   ├── blog-card.component.html
+│   │   │   │   │   └── blog-card.component.ts
+│   │   │   │   ├── new-goals
+│   │   │   │   │   ├── new-goals.component.html
+│   │   │   │   │   └── new-goals.component.ts
+│   │   │   │   ├── product-sales
+│   │   │   │   │   ├── product-sales.component.html
+│   │   │   │   │   └── product-sales.component.ts
+│   │   │   │   ├── profile-card
+│   │   │   │   │   ├── profile-card.component.html
+│   │   │   │   │   └── profile-card.component.ts
+│   │   │   │   ├── profile-expance
+│   │   │   │   │   ├── profile-expance.component.html
+│   │   │   │   │   └── profile-expance.component.ts
+│   │   │   │   ├── top-cards
+│   │   │   │   │   ├── top-cards.component.html
+│   │   │   │   │   └── top-cards.component.ts
+│   │   │   │   ├── top-employees
+│   │   │   │   │   ├── top-employees.component.html
+│   │   │   │   │   └── top-employees.component.ts
+│   │   │   │   ├── traffic-distribution
+│   │   │   │   │   ├── traffic-distribution.component.html
+│   │   │   │   │   └── traffic-distribution.component.ts
+│   │   │   │   ├── upcoming-schedules
+│   │   │   │   │   ├── upcoming-schedules.component.html
+│   │   │   │   │   └── upcoming-schedules.component.ts
+│   │   │   │   └── welcome-card
+│   │   │   │       ├── welcome-card.component.html
+│   │   │   │       └── welcome-card.component.ts
+│   │   │   └── index.ts
+│   │   ├── config.ts
+│   │   ├── core
+│   │   │   └── services
+│   │   │       └── user.service.ts
+│   │   ├── guards
+│   │   │   ├── auth.guard.spec.ts
+│   │   │   ├── auth.guard.ts
+│   │   │   ├── login.guard.spec.ts
+│   │   │   └── login.guard.ts
+│   │   ├── interfaces
+│   │   │   ├── documento.interface.ts
+│   │   │   └── tipoDocumento.interface.ts
+│   │   ├── layouts
+│   │   │   ├── blank
+│   │   │   │   ├── blank.component.html
+│   │   │   │   └── blank.component.ts
+│   │   │   ├── full
+│   │   │   │   ├── full.component.html
+│   │   │   │   ├── full.component.ts
+│   │   │   │   ├── horizontal
+│   │   │   │   │   ├── header
+│   │   │   │   │   │   ├── header.component.css
+│   │   │   │   │   │   ├── header.component.html
+│   │   │   │   │   │   ├── header.component.ts
+│   │   │   │   │   │   └── search-dialog.component.html
+│   │   │   │   │   └── sidebar
+│   │   │   │   │       ├── nav-item
+│   │   │   │   │       │   ├── nav-item.component.html
+│   │   │   │   │       │   └── nav-item.component.ts
+│   │   │   │   │       ├── sidebar-data.ts
+│   │   │   │   │       ├── sidebar.component.html
+│   │   │   │   │       ├── sidebar.component.scss
+│   │   │   │   │       └── sidebar.component.ts
+│   │   │   │   ├── shared
+│   │   │   │   │   ├── breadcrumb
+│   │   │   │   │   │   ├── breadcrumb.component.html
+│   │   │   │   │   │   └── breadcrumb.component.ts
+│   │   │   │   │   └── customizer
+│   │   │   │   │       ├── customizer.component.html
+│   │   │   │   │       ├── customizer.component.scss
+│   │   │   │   │       └── customizer.component.ts
+│   │   │   │   └── vertical
+│   │   │   │       ├── header
+│   │   │   │       │   ├── header.component.html
+│   │   │   │       │   ├── header.component.ts
+│   │   │   │       │   └── search-dialog.component.html
+│   │   │   │       └── sidebar
+│   │   │   │           ├── branding.component.ts
+│   │   │   │           ├── nav-item
+│   │   │   │           │   ├── nav-item.component.html
+│   │   │   │           │   ├── nav-item.component.ts
+│   │   │   │           │   └── nav-item.ts
+│   │   │   │           ├── sidebar-data.ts
+│   │   │   │           ├── sidebar.component.html
+│   │   │   │           └── sidebar.component.ts
+│   │   │   └── navbar-data
+│   │   │       └── navbar-data.ts
+│   │   ├── material.module.ts
+│   │   ├── pages
+│   │   │   ├── apps
+│   │   │   │   ├── apps.routes.ts
+│   │   │   │   ├── blogs
+│   │   │   │   │   ├── blogData.ts
+│   │   │   │   │   ├── blogService.service.ts
+│   │   │   │   │   ├── blogs.component.html
+│   │   │   │   │   ├── blogs.component.scss
+│   │   │   │   │   ├── blogs.component.ts
+│   │   │   │   │   └── details
+│   │   │   │   │       ├── details.component.html
+│   │   │   │   │       ├── details.component.scss
+│   │   │   │   │       └── details.component.ts
+│   │   │   │   ├── chat
+│   │   │   │   │   ├── chat-data.ts
+│   │   │   │   │   ├── chat.component.html
+│   │   │   │   │   ├── chat.component.scss
+│   │   │   │   │   └── chat.component.ts
+│   │   │   │   ├── contact
+│   │   │   │   │   ├── contact-data.ts
+│   │   │   │   │   ├── contact-dialog-content.html
+│   │   │   │   │   ├── contact.component.html
+│   │   │   │   │   ├── contact.component.ts
+│   │   │   │   │   ├── contact.service.ts
+│   │   │   │   │   └── contact.ts
+│   │   │   │   ├── courses
+│   │   │   │   │   ├── course-data.ts
+│   │   │   │   │   ├── course-detail
+│   │   │   │   │   │   ├── course-detail.component.html
+│   │   │   │   │   │   ├── course-detail.component.scss
+│   │   │   │   │   │   ├── course-detail.component.spec.ts
+│   │   │   │   │   │   └── course-detail.component.ts
+│   │   │   │   │   ├── course.service.ts
+│   │   │   │   │   ├── course.ts
+│   │   │   │   │   ├── courses.component.html
+│   │   │   │   │   ├── courses.component.scss
+│   │   │   │   │   └── courses.component.ts
+│   │   │   │   ├── email
+│   │   │   │   │   ├── detail
+│   │   │   │   │   │   ├── detail.component.html
+│   │   │   │   │   │   └── detail.component.ts
+│   │   │   │   │   ├── email-data.ts
+│   │   │   │   │   ├── email.component.html
+│   │   │   │   │   ├── email.component.ts
+│   │   │   │   │   ├── email.service.ts
+│   │   │   │   │   ├── email.ts
+│   │   │   │   │   ├── listing
+│   │   │   │   │   │   ├── categories.ts
+│   │   │   │   │   │   ├── compose-dialog-content.html
+│   │   │   │   │   │   ├── listing.component.html
+│   │   │   │   │   │   ├── listing.component.scss
+│   │   │   │   │   │   └── listing.component.ts
+│   │   │   │   │   └── user-data.ts
+│   │   │   │   ├── employee
+│   │   │   │   │   ├── add
+│   │   │   │   │   │   ├── add.component.html
+│   │   │   │   │   │   └── add.component.ts
+│   │   │   │   │   ├── employee-dialog-content.html
+│   │   │   │   │   ├── employee.component.html
+│   │   │   │   │   ├── employee.component.ts
+│   │   │   │   │   └── employee.ts
+│   │   │   │   ├── fullcalendar
+│   │   │   │   │   ├── calendar-form-dialog
+│   │   │   │   │   │   ├── calendar-form-dialog.component.html
+│   │   │   │   │   │   ├── calendar-form-dialog.component.scss
+│   │   │   │   │   │   └── calendar-form-dialog.component.ts
+│   │   │   │   │   ├── dialog.component.html
+│   │   │   │   │   ├── event.model.ts
+│   │   │   │   │   ├── fullcalendar.component.html
+│   │   │   │   │   ├── fullcalendar.component.scss
+│   │   │   │   │   └── fullcalendar.component.ts
+│   │   │   │   ├── invoice
+│   │   │   │   │   ├── add-invoice
+│   │   │   │   │   │   ├── add-invoice.component.html
+│   │   │   │   │   │   ├── add-invoice.component.ts
+│   │   │   │   │   │   └── added-dialog
+│   │   │   │   │   │       ├── added-dialog.component.html
+│   │   │   │   │   │       └── added-dialog.component.ts
+│   │   │   │   │   ├── edit-invoice
+│   │   │   │   │   │   ├── edit-invoice.component.html
+│   │   │   │   │   │   ├── edit-invoice.component.ts
+│   │   │   │   │   │   └── ok-dialog
+│   │   │   │   │   │       ├── ok-dialog.component.html
+│   │   │   │   │   │       └── ok-dialog.component.ts
+│   │   │   │   │   ├── invoice-data.ts
+│   │   │   │   │   ├── invoice-list
+│   │   │   │   │   │   ├── invoice-list.component.html
+│   │   │   │   │   │   └── invoice-list.component.ts
+│   │   │   │   │   ├── invoice-view
+│   │   │   │   │   │   ├── invoice-view.component.html
+│   │   │   │   │   │   ├── invoice-view.component.scss
+│   │   │   │   │   │   ├── invoice-view.component.spec.ts
+│   │   │   │   │   │   └── invoice-view.component.ts
+│   │   │   │   │   ├── invoice.ts
+│   │   │   │   │   └── serviceinvoice.service.ts
+│   │   │   │   ├── notes
+│   │   │   │   │   ├── note.service.ts
+│   │   │   │   │   ├── note.ts
+│   │   │   │   │   ├── notes-data.ts
+│   │   │   │   │   ├── notes.component.html
+│   │   │   │   │   ├── notes.component.scss
+│   │   │   │   │   └── notes.component.ts
+│   │   │   │   ├── permission
+│   │   │   │   │   ├── permission.component.html
+│   │   │   │   │   ├── permission.component.scss
+│   │   │   │   │   └── permission.component.ts
+│   │   │   │   ├── task
+│   │   │   │   │   ├── date.service.ts
+│   │   │   │   │   ├── task.component.html
+│   │   │   │   │   ├── task.component.scss
+│   │   │   │   │   ├── task.component.spec.ts
+│   │   │   │   │   ├── task.component.ts
+│   │   │   │   │   ├── tasks-data.ts
+│   │   │   │   │   ├── tasks-service.service.ts
+│   │   │   │   │   └── tasks.ts
+│   │   │   │   ├── taskboard
+│   │   │   │   │   ├── delete-task
+│   │   │   │   │   │   ├── delete-task.component.html
+│   │   │   │   │   │   └── delete-task.component.ts
+│   │   │   │   │   ├── ok-task
+│   │   │   │   │   │   ├── ok-task.component.html
+│   │   │   │   │   │   └── ok-task.component.ts
+│   │   │   │   │   ├── task-dialog.component.html
+│   │   │   │   │   ├── task-dialog.component.ts
+│   │   │   │   │   ├── taskboard.component.html
+│   │   │   │   │   ├── taskboard.component.scss
+│   │   │   │   │   └── taskboard.component.ts
+│   │   │   │   ├── ticketdetails
+│   │   │   │   │   ├── ticketdetails.component.html
+│   │   │   │   │   └── ticketdetails.component.ts
+│   │   │   │   ├── ticketlist
+│   │   │   │   │   ├── ticket-dialog-content.html
+│   │   │   │   │   ├── ticket.ts
+│   │   │   │   │   ├── ticketlist.component.html
+│   │   │   │   │   └── ticketlist.component.ts
+│   │   │   │   └── todo
+│   │   │   │       ├── todo-data.ts
+│   │   │   │       ├── todo.component.html
+│   │   │   │       ├── todo.component.scss
+│   │   │   │       ├── todo.component.ts
+│   │   │   │       ├── todo.service.ts
+│   │   │   │       └── todo.ts
+│   │   │   ├── authentication
+│   │   │   │   ├── authentication.routes.ts
+│   │   │   │   ├── boxed-forgot-password
+│   │   │   │   │   ├── boxed-forgot-password.component.html
+│   │   │   │   │   └── boxed-forgot-password.component.ts
+│   │   │   │   ├── boxed-login
+│   │   │   │   │   ├── boxed-login.component.html
+│   │   │   │   │   └── boxed-login.component.ts
+│   │   │   │   ├── boxed-register
+│   │   │   │   │   ├── boxed-register.component.html
+│   │   │   │   │   └── boxed-register.component.ts
+│   │   │   │   ├── boxed-two-steps
+│   │   │   │   │   ├── boxed-two-steps.component.html
+│   │   │   │   │   └── boxed-two-steps.component.ts
+│   │   │   │   ├── error
+│   │   │   │   │   ├── error.component.html
+│   │   │   │   │   └── error.component.ts
+│   │   │   │   ├── maintenance
+│   │   │   │   │   ├── maintenance.component.html
+│   │   │   │   │   └── maintenance.component.ts
+│   │   │   │   ├── select-client
+│   │   │   │   │   ├── select-client.component.html
+│   │   │   │   │   ├── select-client.component.scss
+│   │   │   │   │   ├── select-client.component.spec.ts
+│   │   │   │   │   └── select-client.component.ts
+│   │   │   │   ├── side-forgot-password
+│   │   │   │   │   ├── side-forgot-password.component.html
+│   │   │   │   │   └── side-forgot-password.component.ts
+│   │   │   │   ├── side-login
+│   │   │   │   │   ├── side-login.component.html
+│   │   │   │   │   └── side-login.component.ts
+│   │   │   │   ├── side-register
+│   │   │   │   │   ├── side-register.component.html
+│   │   │   │   │   └── side-register.component.ts
+│   │   │   │   └── side-two-steps
+│   │   │   │       ├── side-two-steps.component.html
+│   │   │   │       └── side-two-steps.component.ts
+│   │   │   ├── charts
+│   │   │   │   ├── area
+│   │   │   │   │   ├── area.component.html
+│   │   │   │   │   └── area.component.ts
+│   │   │   │   ├── candlestick
+│   │   │   │   │   ├── candlestick.component.html
+│   │   │   │   │   └── candlestick.component.ts
+│   │   │   │   ├── charts.routes.ts
+│   │   │   │   ├── column
+│   │   │   │   │   ├── column.component.html
+│   │   │   │   │   └── column.component.ts
+│   │   │   │   ├── doughnut-pie
+│   │   │   │   │   ├── doughnut-pie.component.html
+│   │   │   │   │   └── doughnut-pie.component.ts
+│   │   │   │   ├── gredient
+│   │   │   │   │   ├── gredient.component.html
+│   │   │   │   │   └── gredient.component.ts
+│   │   │   │   ├── line
+│   │   │   │   │   ├── line.component.html
+│   │   │   │   │   └── line.component.ts
+│   │   │   │   └── radial-radar
+│   │   │   │       ├── radial-radar.component.html
+│   │   │   │       └── radial-radar.component.ts
+│   │   │   ├── dashboards
+│   │   │   │   ├── dashboard1
+│   │   │   │   │   ├── dashboard1.component.html
+│   │   │   │   │   └── dashboard1.component.ts
+│   │   │   │   ├── dashboard2
+│   │   │   │   │   ├── dashboard2.component.html
+│   │   │   │   │   └── dashboard2.component.ts
+│   │   │   │   └── dashboards.routes.ts
+│   │   │   ├── datatable
+│   │   │   │   ├── datatable.routes.ts
+│   │   │   │   └── kichen-sink
+│   │   │   │       ├── add
+│   │   │   │       │   ├── add.component.html
+│   │   │   │       │   └── add.component.ts
+│   │   │   │       ├── kichen-sink-dialog-content.html
+│   │   │   │       ├── kichen-sink.component.html
+│   │   │   │       ├── kichen-sink.component.ts
+│   │   │   │       └── kichen-sink.ts
+│   │   │   ├── forms
+│   │   │   │   ├── form-elements
+│   │   │   │   │   ├── autocomplete
+│   │   │   │   │   │   ├── autocomplete.component.html
+│   │   │   │   │   │   └── autocomplete.component.ts
+│   │   │   │   │   ├── button
+│   │   │   │   │   │   ├── button.component.html
+│   │   │   │   │   │   └── button.component.ts
+│   │   │   │   │   ├── checkbox
+│   │   │   │   │   │   ├── checkbox.component.html
+│   │   │   │   │   │   └── checkbox.component.ts
+│   │   │   │   │   ├── datepicker
+│   │   │   │   │   │   ├── datepicker.component.html
+│   │   │   │   │   │   ├── datepicker.component.scss
+│   │   │   │   │   │   └── datepicker.component.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── radio
+│   │   │   │   │       ├── radio.component.html
+│   │   │   │   │       └── radio.component.ts
+│   │   │   │   ├── form-horizontal
+│   │   │   │   │   ├── form-horizontal.component.html
+│   │   │   │   │   └── form-horizontal.component.ts
+│   │   │   │   ├── form-layouts
+│   │   │   │   │   ├── form-layouts.component.html
+│   │   │   │   │   └── form-layouts.component.ts
+│   │   │   │   ├── form-vertical
+│   │   │   │   │   ├── form-vertical.component.html
+│   │   │   │   │   └── form-vertical.component.ts
+│   │   │   │   ├── form-wizard
+│   │   │   │   │   ├── form-wizard.component.html
+│   │   │   │   │   └── form-wizard.component.ts
+│   │   │   │   └── forms.routes.ts
+│   │   │   ├── mantenedores
+│   │   │   │   ├── activo-fijo-local
+│   │   │   │   │   ├── activo-fijo-local.component.html
+│   │   │   │   │   ├── activo-fijo-local.component.scss
+│   │   │   │   │   ├── activo-fijo-local.component.spec.ts
+│   │   │   │   │   ├── activo-fijo-local.component.ts
+│   │   │   │   │   ├── activo-fijo-local.routes.ts
+│   │   │   │   │   ├── crear-activo-fijo-local
+│   │   │   │   │   │   ├── crear-activo-fijo-local.component.html
+│   │   │   │   │   │   ├── crear-activo-fijo-local.component.scss
+│   │   │   │   │   │   ├── crear-activo-fijo-local.component.spec.ts
+│   │   │   │   │   │   └── crear-activo-fijo-local.component.ts
+│   │   │   │   │   └── editar-activo-fijo-local
+│   │   │   │   │       ├── editar-activo-fijo-local.component.html
+│   │   │   │   │       ├── editar-activo-fijo-local.component.scss
+│   │   │   │   │       ├── editar-activo-fijo-local.component.spec.ts
+│   │   │   │   │       └── editar-activo-fijo-local.component.ts
+│   │   │   │   ├── cliente-usuarios
+│   │   │   │   │   ├── cliente-usuarios.component.html
+│   │   │   │   │   ├── cliente-usuarios.component.scss
+│   │   │   │   │   ├── cliente-usuarios.component.spec.ts
+│   │   │   │   │   ├── cliente-usuarios.component.ts
+│   │   │   │   │   └── cliente-usuarios.routes.ts
+│   │   │   │   ├── clientes
+│   │   │   │   │   ├── cliente-lista-de-inspecciones
+│   │   │   │   │   │   ├── cliente-lista-de-inspecciones.component.html
+│   │   │   │   │   │   ├── cliente-lista-de-inspecciones.component.scss
+│   │   │   │   │   │   └── cliente-lista-de-inspecciones.component.ts
+│   │   │   │   │   ├── clientes.component.html
+│   │   │   │   │   ├── clientes.component.scss
+│   │   │   │   │   ├── clientes.component.spec.ts
+│   │   │   │   │   ├── clientes.component.ts
+│   │   │   │   │   ├── clientes.routes.ts
+│   │   │   │   │   ├── crear-cliente
+│   │   │   │   │   │   ├── crear-cliente.component.html
+│   │   │   │   │   │   ├── crear-cliente.component.scss
+│   │   │   │   │   │   └── crear-cliente.component.ts
+│   │   │   │   │   ├── editar-clientes
+│   │   │   │   │   │   ├── editar-clientes.component.html
+│   │   │   │   │   │   ├── editar-clientes.component.scss
+│   │   │   │   │   │   ├── editar-clientes.component.spec.ts
+│   │   │   │   │   │   └── editar-clientes.component.ts
+│   │   │   │   │   └── ver-lista-inspeccion
+│   │   │   │   │       ├── ver-lista-inspeccion.component.html
+│   │   │   │   │       ├── ver-lista-inspeccion.component.scss
+│   │   │   │   │       ├── ver-lista-inspeccion.component.spec.ts
+│   │   │   │   │       └── ver-lista-inspeccion.component.ts
+│   │   │   │   ├── documentos
+│   │   │   │   │   ├── crear-tipo-documento
+│   │   │   │   │   │   ├── crear-tipo-documento.component.html
+│   │   │   │   │   │   ├── crear-tipo-documento.component.scss
+│   │   │   │   │   │   ├── crear-tipo-documento.component.spec.ts
+│   │   │   │   │   │   └── crear-tipo-documento.component.ts
+│   │   │   │   │   ├── documentos.component.html
+│   │   │   │   │   ├── documentos.component.scss
+│   │   │   │   │   ├── documentos.component.ts
+│   │   │   │   │   ├── documentos.routes.ts
+│   │   │   │   │   ├── subir-documento
+│   │   │   │   │   │   ├── subir-documento.component.html
+│   │   │   │   │   │   ├── subir-documento.component.scss
+│   │   │   │   │   │   ├── subir-documento.component.spec.ts
+│   │   │   │   │   │   └── subir-documento.component.ts
+│   │   │   │   │   └── tipo-documento
+│   │   │   │   │       ├── tipo-documento.component.html
+│   │   │   │   │       ├── tipo-documento.component.scss
+│   │   │   │   │       └── tipo-documento.component.ts
+│   │   │   │   ├── especialidades
+│   │   │   │   │   ├── crear-especialidad
+│   │   │   │   │   │   ├── crear-especialidad.component.html
+│   │   │   │   │   │   ├── crear-especialidad.component.scss
+│   │   │   │   │   │   ├── crear-especialidad.component.spec.ts
+│   │   │   │   │   │   └── crear-especialidad.component.ts
+│   │   │   │   │   ├── editar-especialidad
+│   │   │   │   │   │   ├── editar-especialidad.component.html
+│   │   │   │   │   │   ├── editar-especialidad.component.scss
+│   │   │   │   │   │   └── editar-especialidad.component.ts
+│   │   │   │   │   ├── especialidades.component.html
+│   │   │   │   │   ├── especialidades.component.scss
+│   │   │   │   │   ├── especialidades.component.ts
+│   │   │   │   │   └── especialidades.routes.ts
+│   │   │   │   ├── lista-de-inspecciones
+│   │   │   │   │   ├── edit-item-dialog
+│   │   │   │   │   │   └── edit-item-dialog.component.ts
+│   │   │   │   │   ├── lista-de-inspecciones.component.html
+│   │   │   │   │   ├── lista-de-inspecciones.component.scss
+│   │   │   │   │   ├── lista-de-inspecciones.component.spec.ts
+│   │   │   │   │   ├── lista-de-inspecciones.component.ts
+│   │   │   │   │   └── lista-de-inspecciones.routes.ts
+│   │   │   │   ├── locales
+│   │   │   │   │   ├── crear-local
+│   │   │   │   │   │   ├── crear-local.component.html
+│   │   │   │   │   │   ├── crear-local.component.scss
+│   │   │   │   │   │   ├── crear-local.component.spec.ts
+│   │   │   │   │   │   └── crear-local.component.ts
+│   │   │   │   │   ├── editar-local
+│   │   │   │   │   │   ├── editar-local.component.html
+│   │   │   │   │   │   ├── editar-local.component.scss
+│   │   │   │   │   │   ├── editar-local.component.spec.ts
+│   │   │   │   │   │   └── editar-local.component.ts
+│   │   │   │   │   ├── locales
+│   │   │   │   │   │   ├── locales.component.html
+│   │   │   │   │   │   ├── locales.component.scss
+│   │   │   │   │   │   ├── locales.component.spec.ts
+│   │   │   │   │   │   └── locales.component.ts
+│   │   │   │   │   └── locales.routes.ts
+│   │   │   │   ├── mes-de-facturacion
+│   │   │   │   │   ├── editar-mes-de-facturacion
+│   │   │   │   │   │   ├── editar-mes-de-facturacion.component.html
+│   │   │   │   │   │   ├── editar-mes-de-facturacion.component.scss
+│   │   │   │   │   │   ├── editar-mes-de-facturacion.component.spec.ts
+│   │   │   │   │   │   └── editar-mes-de-facturacion.component.ts
+│   │   │   │   │   ├── mes-de-facturacion.component.html
+│   │   │   │   │   ├── mes-de-facturacion.component.scss
+│   │   │   │   │   ├── mes-de-facturacion.component.ts
+│   │   │   │   │   └── mes-de-facturacion.routes.ts
+│   │   │   │   ├── repuestos
+│   │   │   │   │   ├── crear-repuestos
+│   │   │   │   │   │   ├── crear-repuestos.component.html
+│   │   │   │   │   │   ├── crear-repuestos.component.scss
+│   │   │   │   │   │   └── crear-repuestos.component.ts
+│   │   │   │   │   ├── editar-repuestos
+│   │   │   │   │   │   ├── editar-repuestos.component.html
+│   │   │   │   │   │   ├── editar-repuestos.component.scss
+│   │   │   │   │   │   └── editar-repuestos.component.ts
+│   │   │   │   │   ├── repuestos.component.html
+│   │   │   │   │   ├── repuestos.component.scss
+│   │   │   │   │   ├── repuestos.component.ts
+│   │   │   │   │   └── repuestos.routes.ts
+│   │   │   │   ├── sectores-trabajo
+│   │   │   │   │   ├── crear-sector
+│   │   │   │   │   │   ├── crear-sector.component.html
+│   │   │   │   │   │   ├── crear-sector.component.scss
+│   │   │   │   │   │   ├── crear-sector.component.spec.ts
+│   │   │   │   │   │   └── crear-sector.component.ts
+│   │   │   │   │   ├── crear-sector-default
+│   │   │   │   │   │   ├── crear-sector-default.component.html
+│   │   │   │   │   │   ├── crear-sector-default.component.scss
+│   │   │   │   │   │   ├── crear-sector-default.component.spec.ts
+│   │   │   │   │   │   └── crear-sector-default.component.ts
+│   │   │   │   │   ├── sectores-trabajo.component.html
+│   │   │   │   │   ├── sectores-trabajo.component.scss
+│   │   │   │   │   ├── sectores-trabajo.component.ts
+│   │   │   │   │   └── sectores-trabajo.routes.ts
+│   │   │   │   ├── servicios
+│   │   │   │   │   ├── servicios.component.html
+│   │   │   │   │   ├── servicios.component.scss
+│   │   │   │   │   ├── servicios.component.spec.ts
+│   │   │   │   │   ├── servicios.component.ts
+│   │   │   │   │   └── servicios.routes.ts
+│   │   │   │   ├── tecnicos
+│   │   │   │   │   ├── cambiar-password
+│   │   │   │   │   │   ├── cambiar-password.component.html
+│   │   │   │   │   │   ├── cambiar-password.component.scss
+│   │   │   │   │   │   ├── cambiar-password.component.spec.ts
+│   │   │   │   │   │   └── cambiar-password.component.ts
+│   │   │   │   │   ├── crear-tecnico
+│   │   │   │   │   │   ├── crear-tecnico.component.html
+│   │   │   │   │   │   ├── crear-tecnico.component.scss
+│   │   │   │   │   │   ├── crear-tecnico.component.spec.ts
+│   │   │   │   │   │   └── crear-tecnico.component.ts
+│   │   │   │   │   ├── editar-tecnico
+│   │   │   │   │   │   ├── editar-tecnico.component.html
+│   │   │   │   │   │   ├── editar-tecnico.component.scss
+│   │   │   │   │   │   ├── editar-tecnico.component.spec.ts
+│   │   │   │   │   │   └── editar-tecnico.component.ts
+│   │   │   │   │   ├── tecnicos.component.html
+│   │   │   │   │   ├── tecnicos.component.scss
+│   │   │   │   │   ├── tecnicos.component.ts
+│   │   │   │   │   └── tecnicos.routes.ts
+│   │   │   │   ├── tecnicos-gruman
+│   │   │   │   │   ├── crear-tecnico-gruman
+│   │   │   │   │   │   ├── crear-tecnico-gruman.component.html
+│   │   │   │   │   │   ├── crear-tecnico-gruman.component.scss
+│   │   │   │   │   │   ├── crear-tecnico-gruman.component.spec.ts
+│   │   │   │   │   │   └── crear-tecnico-gruman.component.ts
+│   │   │   │   │   ├── editar-tecnico-gruman
+│   │   │   │   │   │   ├── editar-tecnico-gruman.component.html
+│   │   │   │   │   │   ├── editar-tecnico-gruman.component.scss
+│   │   │   │   │   │   ├── editar-tecnico-gruman.component.spec.ts
+│   │   │   │   │   │   └── editar-tecnico-gruman.component.ts
+│   │   │   │   │   ├── tecnicos-gruman.component.html
+│   │   │   │   │   ├── tecnicos-gruman.component.scss
+│   │   │   │   │   ├── tecnicos-gruman.component.spec.ts
+│   │   │   │   │   ├── tecnicos-gruman.component.ts
+│   │   │   │   │   └── tecnicos-gruman.routes.ts
+│   │   │   │   ├── tipo-activo
+│   │   │   │   │   ├── crear-tipo-activo
+│   │   │   │   │   │   ├── crear-tipo-activo.component.html
+│   │   │   │   │   │   ├── crear-tipo-activo.component.scss
+│   │   │   │   │   │   └── crear-tipo-activo.component.ts
+│   │   │   │   │   ├── tipo-activo.component.html
+│   │   │   │   │   ├── tipo-activo.component.scss
+│   │   │   │   │   ├── tipo-activo.component.ts
+│   │   │   │   │   └── tipo-activo.routes.ts
+│   │   │   │   ├── tipo-servicio
+│   │   │   │   │   ├── crear-tipo-servicio
+│   │   │   │   │   │   ├── crear-tipo-servicio.component.html
+│   │   │   │   │   │   ├── crear-tipo-servicio.component.scss
+│   │   │   │   │   │   └── crear-tipo-servicio.component.ts
+│   │   │   │   │   ├── editar-tipo-servicio
+│   │   │   │   │   │   ├── editar-tipo-servicio.component.html
+│   │   │   │   │   │   ├── editar-tipo-servicio.component.scss
+│   │   │   │   │   │   └── editar-tipo-servicio.component.ts
+│   │   │   │   │   ├── tipo-servicio.component.html
+│   │   │   │   │   ├── tipo-servicio.component.scss
+│   │   │   │   │   ├── tipo-servicio.component.ts
+│   │   │   │   │   └── tipo-servicio.routes.ts
+│   │   │   │   ├── utils
+│   │   │   │   │   └── table
+│   │   │   │   │       ├── table.component.html
+│   │   │   │   │       ├── table.component.scss
+│   │   │   │   │       └── table.component.ts
+│   │   │   │   └── vehiculos
+│   │   │   │       ├── asignar-tecnico
+│   │   │   │       │   ├── asignar-tecnico.component.html
+│   │   │   │       │   ├── asignar-tecnico.component.scss
+│   │   │   │       │   ├── asignar-tecnico.component.spec.ts
+│   │   │   │       │   └── asignar-tecnico.component.ts
+│   │   │   │       ├── crear-vehiculo
+│   │   │   │       │   ├── crear-vehiculo.component.html
+│   │   │   │       │   ├── crear-vehiculo.component.scss
+│   │   │   │       │   ├── crear-vehiculo.component.spec.ts
+│   │   │   │       │   └── crear-vehiculo.component.ts
+│   │   │   │       ├── documentacion
+│   │   │   │       │   ├── documentacion.component.html
+│   │   │   │       │   ├── documentacion.component.scss
+│   │   │   │       │   ├── documentacion.component.spec.ts
+│   │   │   │       │   └── documentacion.component.ts
+│   │   │   │       ├── vehiculos.component.html
+│   │   │   │       ├── vehiculos.component.scss
+│   │   │   │       ├── vehiculos.component.ts
+│   │   │   │       ├── vehiculos.routes.ts
+│   │   │   │       └── ver-vehiculo
+│   │   │   │           ├── ver-vehiculo.component.html
+│   │   │   │           ├── ver-vehiculo.component.scss
+│   │   │   │           ├── ver-vehiculo.component.spec.ts
+│   │   │   │           └── ver-vehiculo.component.ts
+│   │   │   ├── pages.routes.ts
+│   │   │   ├── starter
+│   │   │   │   ├── starter.component.html
+│   │   │   │   ├── starter.component.scss
+│   │   │   │   └── starter.component.ts
+│   │   │   ├── tables
+│   │   │   │   ├── basic-table
+│   │   │   │   │   ├── basic-table.component.html
+│   │   │   │   │   └── basic-table.component.ts
+│   │   │   │   ├── dynamic-table
+│   │   │   │   │   ├── dynamic-table.component.html
+│   │   │   │   │   └── dynamic-table.component.ts
+│   │   │   │   ├── expand-table
+│   │   │   │   │   ├── expand-table.component.html
+│   │   │   │   │   ├── expand-table.component.scss
+│   │   │   │   │   └── expand-table.component.ts
+│   │   │   │   ├── filterable-table
+│   │   │   │   │   ├── filterable-table.component.html
+│   │   │   │   │   └── filterable-table.component.ts
+│   │   │   │   ├── footer-row-table
+│   │   │   │   │   ├── footer-row-table.component.html
+│   │   │   │   │   ├── footer-row-table.component.scss
+│   │   │   │   │   └── footer-row-table.component.ts
+│   │   │   │   ├── http-table
+│   │   │   │   │   ├── http-table.component.html
+│   │   │   │   │   ├── http-table.component.scss
+│   │   │   │   │   └── http-table.component.ts
+│   │   │   │   ├── mix-table
+│   │   │   │   │   ├── mix-table.component.html
+│   │   │   │   │   └── mix-table.component.ts
+│   │   │   │   ├── multi-header-footer-table
+│   │   │   │   │   ├── multi-header-footer-table.component.html
+│   │   │   │   │   ├── multi-header-footer-table.component.scss
+│   │   │   │   │   └── multi-header-footer-table.component.ts
+│   │   │   │   ├── pagination-table
+│   │   │   │   │   ├── pagination-table.component.html
+│   │   │   │   │   └── pagination-table.component.ts
+│   │   │   │   ├── row-context-table
+│   │   │   │   │   ├── row-context-table.component.html
+│   │   │   │   │   └── row-context-table.component.ts
+│   │   │   │   ├── selection-table
+│   │   │   │   │   ├── selection-table.component.html
+│   │   │   │   │   └── selection-table.component.ts
+│   │   │   │   ├── sortable-table
+│   │   │   │   │   ├── sortable-table.component.html
+│   │   │   │   │   └── sortable-table.component.ts
+│   │   │   │   ├── sticky-column-table
+│   │   │   │   │   ├── sticky-column-table.component.html
+│   │   │   │   │   ├── sticky-column-table.component.scss
+│   │   │   │   │   └── sticky-column-table.component.ts
+│   │   │   │   ├── sticky-header-footer-table
+│   │   │   │   │   ├── sticky-header-footer-table.component.html
+│   │   │   │   │   ├── sticky-header-footer-table.component.scss
+│   │   │   │   │   └── sticky-header-footer-table.component.ts
+│   │   │   │   ├── tables.module.ts
+│   │   │   │   └── tables.routes.ts
+│   │   │   ├── theme-pages
+│   │   │   │   ├── account-setting
+│   │   │   │   │   ├── account-setting.component.html
+│   │   │   │   │   └── account-setting.component.ts
+│   │   │   │   ├── faq
+│   │   │   │   │   ├── faq.component.html
+│   │   │   │   │   └── faq.component.ts
+│   │   │   │   ├── landingpage
+│   │   │   │   │   ├── landingpage.component.html
+│   │   │   │   │   ├── landingpage.component.ts
+│   │   │   │   │   └── landingpage.routes.ts
+│   │   │   │   ├── pricing
+│   │   │   │   │   ├── pricing.component.html
+│   │   │   │   │   ├── pricing.component.scss
+│   │   │   │   │   └── pricing.component.ts
+│   │   │   │   ├── theme-pages.routes.ts
+│   │   │   │   └── treeview
+│   │   │   │       ├── treeview.component.html
+│   │   │   │       └── treeview.component.ts
+│   │   │   ├── transacciones
+│   │   │   │   ├── editar-solicitud-correctiva
+│   │   │   │   │   ├── editar-solicitud-correctiva.component.html
+│   │   │   │   │   ├── editar-solicitud-correctiva.component.scss
+│   │   │   │   │   ├── editar-solicitud-correctiva.component.spec.ts
+│   │   │   │   │   └── editar-solicitud-correctiva.component.ts
+│   │   │   │   ├── generar-programacion
+│   │   │   │   │   ├── generar-programacion.component.html
+│   │   │   │   │   ├── generar-programacion.component.scss
+│   │   │   │   │   ├── generar-programacion.component.ts
+│   │   │   │   │   └── generar-programacion.routes.ts
+│   │   │   │   ├── lista-servicios-realizados
+│   │   │   │   │   ├── lista-servicios-realizados.component.html
+│   │   │   │   │   ├── lista-servicios-realizados.component.scss
+│   │   │   │   │   ├── lista-servicios-realizados.component.spec.ts
+│   │   │   │   │   ├── lista-servicios-realizados.component.ts
+│   │   │   │   │   └── lista-servicios-realizados.routes.ts
+│   │   │   │   ├── listado-programacion
+│   │   │   │   │   ├── editar-programacion
+│   │   │   │   │   │   ├── editar-programacion.component.html
+│   │   │   │   │   │   ├── editar-programacion.component.scss
+│   │   │   │   │   │   ├── editar-programacion.component.spec.ts
+│   │   │   │   │   │   └── editar-programacion.component.ts
+│   │   │   │   │   ├── listado-programacion.component.html
+│   │   │   │   │   ├── listado-programacion.component.scss
+│   │   │   │   │   ├── listado-programacion.component.spec.ts
+│   │   │   │   │   ├── listado-programacion.component.ts
+│   │   │   │   │   └── listado-programacion.routes.ts
+│   │   │   │   ├── listado-solicitud-aprobacion-correctiva
+│   │   │   │   │   ├── listado-solicitud-aprobacion-correctiva.component.html
+│   │   │   │   │   ├── listado-solicitud-aprobacion-correctiva.component.scss
+│   │   │   │   │   ├── listado-solicitud-aprobacion-correctiva.component.spec.ts
+│   │   │   │   │   ├── listado-solicitud-aprobacion-correctiva.component.ts
+│   │   │   │   │   └── listado-solicitud-aprobacion-correctiva.routes.ts
+│   │   │   │   ├── servicios-realizados
+│   │   │   │   │   ├── servicios-realizados.component.html
+│   │   │   │   │   ├── servicios-realizados.component.scss
+│   │   │   │   │   ├── servicios-realizados.component.spec.ts
+│   │   │   │   │   ├── servicios-realizados.component.ts
+│   │   │   │   │   └── servicios-realizados.routes.ts
+│   │   │   │   ├── solicitar-visita
+│   │   │   │   │   ├── solicitar-visita.component.html
+│   │   │   │   │   ├── solicitar-visita.component.scss
+│   │   │   │   │   ├── solicitar-visita.component.spec.ts
+│   │   │   │   │   ├── solicitar-visita.component.ts
+│   │   │   │   │   └── solicitar-visita.routes.ts
+│   │   │   │   ├── solicitud-aprobacion-correctiva
+│   │   │   │   │   ├── solicitud-aprobacion-correctiva.routes.ts
+│   │   │   │   │   ├── solicitud-aprobacion-correctiva.component.html
+│   │   │   │   │   ├── solicitud-aprobacion-correctiva.component.scss
+│   │   │   │   │   └── solicitud-aprobacion-correctiva.component.ts
+│   │   │   │   └── solicitudes-de-visita
+│   │   │   │       ├── solicitudes-de-visita.component.html
+│   │   │   │       ├── solicitudes-de-visita.component.scss
+│   │   │   │       ├── solicitudes-de-visita.component.spec.ts
+│   │   │   │       ├── solicitudes-de-visita.component.ts
+│   │   │   │       ├── solicitudes-de-visita.routes.ts
+│   │   │   │       ├── ver-imagenes
+│   │   │   │       │   ├── ver-imagenes.component.html
+│   │   │   │       │   ├── ver-imagenes.component.scss
+│   │   │   │       │   ├── ver-imagenes.component.spec.ts
+│   │   │   │       │   └── ver-imagenes.component.ts
+│   │   │   │       └── ver-solicitud
+│   │   │   │           ├── ver-solicitud.component.html
+│   │   │   │           ├── ver-solicitud.component.scss
+│   │   │   │           ├── ver-solicitud.component.spec.ts
+│   │   │   │           └── ver-solicitud.component.ts
+│   │   │   ├── ui-components
+│   │   │   │   ├── badge
+│   │   │   │   │   ├── badge.component.html
+│   │   │   │   │   └── badge.component.ts
+│   │   │   │   ├── chips
+│   │   │   │   │   ├── chips.component.html
+│   │   │   │   │   ├── chips.component.scss
+│   │   │   │   │   └── chips.component.ts
+│   │   │   │   ├── dialog
+│   │   │   │   │   ├── dialog-content.component.html
+│   │   │   │   │   ├── dialog-data.component.html
+│   │   │   │   │   ├── dialog-form-overview.component.html
+│   │   │   │   │   ├── dialog-menu.component.html
+│   │   │   │   │   ├── dialog-overview.component.html
+│   │   │   │   │   ├── dialog.component.html
+│   │   │   │   │   └── dialog.component.ts
+│   │   │   │   ├── divider
+│   │   │   │   │   ├── divider.component.html
+│   │   │   │   │   └── divider.component.ts
+│   │   │   │   ├── expansion
+│   │   │   │   │   ├── expansion.component.html
+│   │   │   │   │   └── expansion.component.ts
+│   │   │   │   ├── lists
+│   │   │   │   │   ├── lists.component.html
+│   │   │   │   │   └── lists.component.ts
+│   │   │   │   ├── menu
+│   │   │   │   │   ├── menu.component.html
+│   │   │   │   │   └── menu.component.ts
+│   │   │   │   ├── paginator
+│   │   │   │   │   ├── paginator.component.html
+│   │   │   │   │   └── paginator.component.ts
+│   │   │   │   ├── progress
+│   │   │   │   │   ├── progress.component.html
+│   │   │   │   │   └── progress.component.ts
+│   │   │   │   ├── progress-snipper
+│   │   │   │   │   ├── progress-snipper.component.html
+│   │   │   │   │   └── progress-snipper.component.ts
+│   │   │   │   ├── ripples
+│   │   │   │   │   ├── ripples.component.html
+│   │   │   │   │   ├── ripples.component.scss
+│   │   │   │   │   └── ripples.component.ts
+│   │   │   │   ├── slide-toggle
+│   │   │   │   │   ├── slide-toggle.component.html
+│   │   │   │   │   └── slide-toggle.component.ts
+│   │   │   │   ├── slider
+│   │   │   │   │   ├── slider.component.html
+│   │   │   │   │   └── slider.component.ts
+│   │   │   │   ├── snackbar
+│   │   │   │   │   ├── snackbar-custom.component.html
+│   │   │   │   │   ├── snackbar.component.html
+│   │   │   │   │   └── snackbar.component.ts
+│   │   │   │   ├── tabs
+│   │   │   │   │   ├── tabs.component.html
+│   │   │   │   │   └── tabs.component.ts
+│   │   │   │   ├── toolbar
+│   │   │   │   │   ├── toolbar.component.html
+│   │   │   │   │   └── toolbar.component.ts
+│   │   │   │   ├── tooltips
+│   │   │   │   │   ├── tooltips.component.html
+│   │   │   │   │   └── tooltips.component.ts
+│   │   │   │   └── ui-components.routes.ts
+│   │   │   └── widgets
+│   │   │       ├── banners
+│   │   │       │   ├── banners.component.html
+│   │   │       │   └── banners.component.ts
+│   │   │       ├── cards
+│   │   │       │   ├── cards.component.html
+│   │   │       │   ├── cards.component.scss
+│   │   │       │   └── cards.component.ts
+│   │   │       ├── charts
+│   │   │       │   ├── charts.component.html
+│   │   │       │   └── charts.component.ts
+│   │   │       └── widgets.routes.ts
+│   │   ├── pipe
+│   │   │   ├── filter.pipe.ts
+│   │   │   └── format-rut.pipe.ts
+│   │   ├── services
+│   │   │   ├── activo-fijo-local.service.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── clientes.service.ts
+│   │   │   ├── core.service.ts
+│   │   │   ├── dashboard.service.spec.ts
+│   │   │   ├── dashboard.service.ts
+│   │   │   ├── documentos.service.ts
+│   │   │   ├── especialidades.service.ts
+│   │   │   ├── facturacion.service.ts
+│   │   │   ├── geocoding.service.ts
+│   │   │   ├── inspection.service.ts
+│   │   │   ├── listado-solicitud-aprobacion-correctiva.service.spec.ts
+│   │   │   ├── listado-solicitud-aprobacion-correctiva.service.ts
+│   │   │   ├── locales.service.ts
+│   │   │   ├── menu.service.spec.ts
+│   │   │   ├── menu.service.ts
+│   │   │   ├── nav.service.ts
+│   │   │   ├── programacion.service.ts
+│   │   │   ├── regiones-comunas.service.ts
+│   │   │   ├── repuestos.service.ts
+│   │   │   ├── sectores.service.ts
+│   │   │   ├── servicios-realizados.service.spec.ts
+│   │   │   ├── servicios-realizados.service.ts
+│   │   │   ├── servicios.service.ts
+│   │   │   ├── solicitar-visita.service.ts
+│   │   │   ├── storage.service.ts
+│   │   │   ├── tecnicos.service.ts
+│   │   │   ├── tipo-activo.service.ts
+│   │   │   ├── tipo-servicio.service.ts
+│   │   │   ├── upload-data.service.ts
+│   │   │   ├── users.service.ts
+│   │   │   └── vehiculos.service.ts
+│   │   └── shared
+│   │       └── date-format.ts
+│   ├── assets
+│   │   ├── i18n
+│   │   │   ├── de.json
+│   │   │   ├── en.json
+│   │   │   ├── es.json
+│   │   │   └── fr.json
+│   │   ├── images
+│   │   │   ├── backgrounds
+│   │   │   │   ├── bronze.png
+│   │   │   │   ├── errorimg.svg
+│   │   │   │   ├── gifts.png
+│   │   │   │   ├── gold.png
+│   │   │   │   ├── login-bg.png
+│   │   │   │   ├── login3-bg.png
+│   │   │   │   ├── maintenance.svg
+│   │   │   │   ├── maintenance2.svg
+│   │   │   │   ├── man-working-on-laptop.png
+│   │   │   │   ├── shap-login.png
+│   │   │   │   ├── silver.png
+│   │   │   │   ├── top-error-shape.png
+│   │   │   │   ├── top-info-shape.png
+│   │   │   │   ├── top-warning-shape.png
+│   │   │   │   ├── welcome-bg.png
+│   │   │   │   └── welcome-bg2.png
+│   │   │   ├── blog
+│   │   │   │   ├── blog-img1.jpg
+│   │   │   │   ├── blog-img10.jpg
+│   │   │   │   ├── blog-img2.jpg
+│   │   │   │   ├── blog-img3.jpg
+│   │   │   │   ├── blog-img4.jpg
+│   │   │   │   ├── blog-img5.jpg
+│   │   │   │   ├── blog-img6.jpg
+│   │   │   │   ├── blog-img7.jpg
+│   │   │   │   ├── blog-img8.jpg
+│   │   │   │   └── blog-img9.jpg
+│   │   │   ├── breadcrumb
+│   │   │   │   └── emailSv.png
+│   │   │   ├── cancel.png
+│   │   │   ├── computer.png
+│   │   │   ├── empresas
+│   │   │   │   ├── atlantis_logo.jpg
+│   │   │   │   ├── cruzverde.png
+│   │   │   │   ├── gruman.png
+│   │   │   │   ├── maicao.png
+│   │   │   │   ├── rotter_krauss.png
+│   │   │   │   ├── san_camilo.png
+│   │   │   │   ├── waze.png
+│   │   │   │   └── wazee.png
+│   │   │   ├── flag
+│   │   │   │   ├── icon-flag-de.svg
+│   │   │   │   ├── icon-flag-en.svg
+│   │   │   │   ├── icon-flag-es.svg
+│   │   │   │   └── icon-flag-fr.svg
+│   │   │   ├── landingpage
+│   │   │   │   ├── apps
+│   │   │   │   │   ├── app-blog.jpg
+│   │   │   │   │   ├── app-calendar.jpg
+│   │   │   │   │   ├── app-chat.jpg
+│   │   │   │   │   ├── app-contact.jpg
+│   │   │   │   │   ├── app-courses.jpg
+│   │   │   │   │   ├── app-email.jpg
+│   │   │   │   │   ├── app-employee.jpg
+│   │   │   │   │   ├── app-invoice.jpg
+│   │   │   │   │   ├── app-note.jpg
+│   │   │   │   │   ├── app-taskboard.jpg
+│   │   │   │   │   ├── app-ticket.jpg
+│   │   │   │   │   └── app-todo.jpg
+│   │   │   │   ├── background
+│   │   │   │   │   ├── c2a.png
+│   │   │   │   │   └── slider-group.png
+│   │   │   │   ├── demos
+│   │   │   │   │   ├── demo-authguard.jpg
+│   │   │   │   │   ├── demo-dark.jpg
+│   │   │   │   │   ├── demo-horizontal.jpg
+│   │   │   │   │   ├── demo-main.jpg
+│   │   │   │   │   ├── demo-minisidebar.jpg
+│   │   │   │   │   └── demo-rtl.jpg
+│   │   │   │   ├── favicon.png
+│   │   │   │   └── slider-group.png
+│   │   │   ├── location.png
+│   │   │   ├── logos
+│   │   │   │   ├── dark-logo.svg
+│   │   │   │   └── light-logo.svg
+│   │   │   ├── products
+│   │   │   │   ├── empty-shopping-cart.svg
+│   │   │   │   ├── product-5.png
+│   │   │   │   ├── product-6.png
+│   │   │   │   ├── product-7.png
+│   │   │   │   ├── product-8.png
+│   │   │   │   ├── product-9.png
+│   │   │   │   ├── s1.jpg
+│   │   │   │   ├── s11.jpg
+│   │   │   │   ├── s2.jpg
+│   │   │   │   ├── s3.jpg
+│   │   │   │   ├── s4.jpg
+│   │   │   │   ├── s5.jpg
+│   │   │   │   ├── s6.jpg
+│   │   │   │   ├── s7.jpg
+│   │   │   │   └── s9.jpg
+│   │   │   ├── profile
+│   │   │   │   ├── user-1.jpg
+│   │   │   │   ├── user-10.jpg
+│   │   │   │   ├── user-2.jpg
+│   │   │   │   ├── user-3.jpg
+│   │   │   │   ├── user-4.jpg
+│   │   │   │   ├── user-5.jpg
+│   │   │   │   ├── user-6.jpg
+│   │   │   │   ├── user-7.jpg
+│   │   │   │   ├── user-8.jpg
+│   │   │   │   ├── user-9.jpg
+│   │   │   │   ├── user1.jpg
+│   │   │   │   ├── user2.jpg
+│   │   │   │   ├── user3.jpg
+│   │   │   │   ├── user4.jpg
+│   │   │   │   └── user5.jpg
+│   │   │   ├── settings.png
+│   │   │   └── svgs
+│   │   │       ├── facebook-icon.svg
+│   │   │       ├── google-icon.svg
+│   │   │       ├── icon-biology.svg
+│   │   │       ├── icon-dd-application.svg
+│   │   │       ├── icon-dd-cart.svg
+│   │   │       ├── icon-dd-chat.svg
+│   │   │       ├── icon-dd-date.svg
+│   │   │       ├── icon-dd-invoice.svg
+│   │   │       ├── icon-dd-lifebuoy.svg
+│   │   │       ├── icon-dd-message-box.svg
+│   │   │       ├── icon-dd-mobile.svg
+│   │   │       ├── icon-erase.svg
+│   │   │       ├── icon-globe.svg
+│   │   │       ├── icon-idea.svg
+│   │   │       ├── icon-master-card-2.svg
+│   │   │       ├── icon-master-card.svg
+│   │   │       ├── icon-office-bag.svg
+│   │   │       ├── icon-paypal.svg
+│   │   │       ├── icon-pie.svg
+│   │   │       └── paypal.svg
+│   │   ├── scss
+│   │   │   ├── _container.scss
+│   │   │   ├── _variables.scss
+│   │   │   ├── apps
+│   │   │   │   ├── _calendar.scss
+│   │   │   │   └── _email.scss
+│   │   │   ├── dark
+│   │   │   │   └── _dark.scss
+│   │   │   ├── grid
+│   │   │   │   ├── _grid.scss
+│   │   │   │   ├── _mixins.scss
+│   │   │   │   └── _variables.scss
+│   │   │   ├── helpers
+│   │   │   │   ├── _border.scss
+│   │   │   │   ├── _color.scss
+│   │   │   │   ├── _custom-flex.scss
+│   │   │   │   ├── _display.scss
+│   │   │   │   ├── _flexbox.scss
+│   │   │   │   ├── _functions.scss
+│   │   │   │   ├── _icon-size.scss
+│   │   │   │   ├── _index.scss
+│   │   │   │   ├── _rounded.scss
+│   │   │   │   ├── _spacing.scss
+│   │   │   │   ├── _text.scss
+│   │   │   │   └── _variables.scss
+│   │   │   ├── horizontal
+│   │   │   │   └── _horizontal.scss
+│   │   │   ├── icons
+│   │   │   │   └── font-awesome
+│   │   │   │       ├── css
+│   │   │   │       │   ├── fa-brands.css
+│   │   │   │       │   ├── fa-brands.min.css
+│   │   │   │       │   ├── fa-regular.css
+│   │   │   │       │   ├── fa-regular.min.css
+│   │   │   │       │   ├── fa-solid.css
+│   │   │   │       │   ├── fa-solid.min.css
+│   │   │   │       │   ├── fontawesome-all.css
+│   │   │   │       │   ├── fontawesome-all.min.css
+│   │   │   │       │   ├── fontawesome.css
+│   │   │   │       │   └── fontawesome.min.css
+│   │   │   │       ├── less
+│   │   │   │       │   ├── _animated.less
+│   │   │   │       │   ├── _bordered-pulled.less
+│   │   │   │       │   ├── _core.less
+│   │   │   │       │   ├── _fixed-width.less
+│   │   │   │       │   ├── _icons.less
+│   │   │   │       │   ├── _larger.less
+│   │   │   │       │   ├── _list.less
+│   │   │   │       │   ├── _mixins.less
+│   │   │   │       │   ├── _rotated-flipped.less
+│   │   │   │       │   ├── _screen-reader.less
+│   │   │   │       │   ├── _stacked.less
+│   │   │   │       │   ├── _variables.less
+│   │   │   │       │   ├── fa-brands.less
+│   │   │   │       │   ├── fa-regular.less
+│   │   │   │       │   ├── fa-solid.less
+│   │   │   │       │   └── fontawesome.less
+│   │   │   │       ├── scss
+│   │   │   │       │   ├── _animated.scss
+│   │   │   │       │   ├── _bordered-pulled.scss
+│   │   │   │       │   ├── _core.scss
+│   │   │   │       │   ├── _fixed-width.scss
+│   │   │   │       │   ├── _icons.scss
+│   │   │   │       │   ├── _larger.scss
+│   │   │   │       │   ├── _list.scss
+│   │   │   │       │   ├── _mixins.scss
+│   │   │   │       │   ├── _rotated-flipped.scss
+│   │   │   │       │   ├── _screen-reader.scss
+│   │   │   │       │   ├── _stacked.scss
+│   │   │   │       │   ├── _variables.scss
+│   │   │   │       │   ├── fa-brands.scss
+│   │   │   │       │   ├── fa-regular.scss
+│   │   │   │       │   ├── fa-solid.scss
+│   │   │   │       │   └── fontawesome.scss
+│   │   │   │       └── webfonts
+│   │   │   │           ├── fa-brands-400.eot
+│   │   │   │           ├── fa-brands-400.svg
+│   │   │   │           ├── fa-brands-400.ttf
+│   │   │   │           ├── fa-brands-400.woff
+│   │   │   │           ├── fa-brands-400.woff2
+│   │   │   │           ├── fa-regular-400.eot
+│   │   │   │           ├── fa-regular-400.svg
+│   │   │   │           ├── fa-regular-400.ttf
+│   │   │   │           ├── fa-regular-400.woff
+│   │   │   │           ├── fa-regular-400.woff2
+│   │   │   │           ├── fa-solid-900.eot
+│   │   │   │           ├── fa-solid-900.svg
+│   │   │   │           ├── fa-solid-900.ttf
+│   │   │   │           ├── fa-solid-900.woff
+│   │   │   │           └── fa-solid-900.woff2
+│   │   │   ├── layouts
+│   │   │   │   ├── _breacrumb.scss
+│   │   │   │   ├── _customizer.scss
+│   │   │   │   ├── _header.scss
+│   │   │   │   ├── _layouts.scss
+│   │   │   │   ├── _sidebar.scss
+│   │   │   │   └── _transitions.scss
+│   │   │   ├── overrides
+│   │   │   │   ├── _borderColor.scss
+│   │   │   │   ├── _buttons.scss
+│   │   │   │   ├── _card.scss
+│   │   │   │   ├── _checkbox.scss
+│   │   │   │   ├── _drawer.scss
+│   │   │   │   ├── _dropdown.scss
+│   │   │   │   ├── _form.scss
+│   │   │   │   ├── _list.scss
+│   │   │   │   ├── _materialoverrides.scss
+│   │   │   │   ├── _progress.scss
+│   │   │   │   ├── _radio.scss
+│   │   │   │   ├── _table.scss
+│   │   │   │   └── _typography.scss
+│   │   │   ├── pages
+│   │   │   │   ├── _auth.scss
+│   │   │   │   ├── _dashboards.scss
+│   │   │   │   └── _landingpage.scss
+│   │   │   ├── rtl
+│   │   │   │   └── _rtl.scss
+│   │   │   ├── style.scss
+│   │   │   └── themecolors
+│   │   │       ├── _aqua_theme.scss
+│   │   │       ├── _cyan_theme.scss
+│   │   │       ├── _default_theme.scss
+│   │   │       ├── _green_theme.scss
+│   │   │       ├── _orange_theme.scss
+│   │   │       └── _purple_theme.scss
+│   │   └── world.json
+│   ├── favicon.ico
+│   ├── index.html
+│   ├── main.ts
+│   └── styles.scss
+├── tsconfig.app.json
+├── tsconfig.json
+└── tsconfig.spec.json
+
+259 directories, 897 files

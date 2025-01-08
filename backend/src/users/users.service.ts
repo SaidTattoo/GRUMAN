@@ -27,6 +27,10 @@ export class UsersService {
         return this.userRepository.find({ where: { profile: 'tecnico' }, relations: ['especialidades'] });
     }
 
+    findOneTecnico(id: number): Promise<User | undefined> {
+        return this.userRepository.findOne({ where: { id }, relations: ['clients',  'especialidades'] });
+    }
+
     /** FINDALLUSERS WHERE CLIENTE  */
     findAllUsersByClient(clientId: number): Promise<User[]> {
         return this.userRepository.find({ where: { clients: { id: clientId } }, relations: ['clients'] });
@@ -146,5 +150,30 @@ export class UsersService {
         return users;
     }
 
-   
+    async updateUser(id: number, updateUserDto: any): Promise<User> {
+        const user = await this.userRepository.findOne({
+            where: { id },
+            relations: ['clients']
+        });
+
+        if (!user) {
+            throw new NotFoundException('Usuario no encontrado');
+        }
+
+        // Actualizar los datos básicos del usuario
+        Object.assign(user, {
+            name: updateUserDto.name,
+            lastname: updateUserDto.lastname,
+            email: updateUserDto.email,
+            rut: updateUserDto.rut,
+            profile: updateUserDto.profile
+        });
+
+        // Si se proporcionan nuevos clientes, actualizar la relación
+        if (updateUserDto.clients) {
+            user.clients = await this.clientRepository.findByIds(updateUserDto.clients);
+        }
+
+        return this.userRepository.save(user);
+    }
 }

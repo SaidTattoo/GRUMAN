@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
+import { CommonModule } from '@angular/common';
 
 // components
 import { AppCongratulateCardComponent } from '../../../components/dashboard1/congratulate-card/congratulate-card.component';
@@ -12,11 +13,19 @@ import { AppVisitUsaComponent } from '../../../components/dashboard1/visit-usa/v
 import { AppLatestReviewsComponent } from '../../../components/dashboard1/latest-reviews/latest-reviews.component';
 import { MaterialModule } from 'src/app/material.module';
 import { DashboardService } from 'src/app/services/dashboard.service';
+enum TipoOrden {
+  PREVENTIVO = 2,
+  CORRECTIVO =7,
+  VISITA_TECNICA = 8,
+  REACTIVO = 1,
+}
 
 @Component({
   selector: 'app-dashboard1',
   standalone: true,
   imports: [
+    CommonModule,
+    MaterialModule,
     TablerIconsModule,
     AppCongratulateCardComponent,
     AppCustomersComponent,
@@ -27,7 +36,6 @@ import { DashboardService } from 'src/app/services/dashboard.service';
     AppVisitUsaComponent,
     AppProductsComponent,
     AppLatestReviewsComponent,
-    MaterialModule,
   ],
   templateUrl: './dashboard1.component.html',
   styles: [
@@ -70,7 +78,7 @@ import { DashboardService } from 'src/app/services/dashboard.service';
     `,
   ],
 })
-export class AppDashboard1Component {
+export class AppDashboard1Component  implements OnInit{
   constructor( private dashboardService: DashboardService ) { }
   cards = [
     { title: '14 Reactivo Pendientes Autorización', content: '', image: 'assets/images/cancel.png', icon: 'assignment_late' },
@@ -95,7 +103,6 @@ export class AppDashboard1Component {
   }
 
 
-  count_reactivos_pendientes_autorizacion = 14;
   count_correctivos_pendientes_autorizacion = 133;
   count_servicios_autorizados_pendientes_visita = 131;
   count_proximas_visitas_preventivas = 3;
@@ -106,12 +113,52 @@ export class AppDashboard1Component {
   count_performance_reactivos = 10;
   count_gasto_total_acumulado = 10;
 
+  count_reactivos_pendientes_autorizacion = 14;
+
   getReactivosPendientesAutorizacion() {
-    this.dashboardService.getReactivosPendientesAutorizacion().subscribe((data: any) => {
-      this.count_reactivos_pendientes_autorizacion = data.count;
-    });
-    return this.count_reactivos_pendientes_autorizacion;
+   
   }
+
+    ngOnInit() {
+      this.dashboardService.getOrdenesServicio().subscribe((data: any) => {
+        console.log(data);
+      });
+
+      this.dashboardService.getOrdenesServicioPorEstado('esperando_aprobacion', TipoOrden.CORRECTIVO).subscribe((data: any) => {
+        this.count_correctivos_pendientes_autorizacion = data;
+      });
+      this.dashboardService.getOrdenesServicioPorEstado('esperando_aprobacion', TipoOrden.REACTIVO).subscribe((data: any) => {
+        this.count_reactivos_pendientes_autorizacion = data;
+      });
+
+      this.dashboardService.getServiciosAutorizadosPendientesVisita().subscribe((data: any) => {
+        this.count_servicios_autorizados_pendientes_visita = data;
+      });
+
+      this.dashboardService.getProximasVisitasPreventivas().subscribe((data: any) => {
+        this.count_proximas_visitas_preventivas = data;
+      });
+
+      this.dashboardService.getServiciosDelDia().subscribe((data: any) => {
+        this.count_servicios_del_dia = data;
+      });
+
+      this.dashboardService.getCumplimientoPreventivos().subscribe((data: any) => {
+        this.count_cumplimiento_preventivos = data;
+      });
+
+      this.dashboardService.getGastosRepuestos().subscribe((data: any) => {
+        this.count_gastos_repostos = data;
+      });
+
+      this.dashboardService.getPerformanceReactivos().subscribe((data: any) => {
+        this.count_performance_reactivos = data;
+      });
+
+      this.dashboardService.getGastoTotalAcumulado().subscribe((data: any) => {
+        this.count_gasto_total_acumulado = data;
+      });
+    }
 }
 
 

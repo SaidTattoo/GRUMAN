@@ -14,6 +14,7 @@ import { AppHorizontalNavItemComponent } from './nav-item/nav-item.component';
 import { CommonModule } from '@angular/common';
 import { Subscription, interval } from 'rxjs';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
+import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
   selector: 'app-horizontal-sidebar',
@@ -27,6 +28,7 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
   hasPendingRequests = 0;
   private subscription: Subscription;
   private updateSubscription: Subscription;
+  private storageSubscription: Subscription;
 
   mobileQuery: MediaQueryList;
   private _mobileQueryListener: () => void;
@@ -36,7 +38,8 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
     public router: Router,
     media: MediaMatcher,
     changeDetectorRef: ChangeDetectorRef,
-    private solicitarVisitaService: SolicitarVisitaService
+    private solicitarVisitaService: SolicitarVisitaService,
+    private storage: StorageService
   ) {
     this.mobileQuery = media.matchMedia('(min-width: 1100px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
@@ -49,28 +52,23 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const currentUserString = localStorage.getItem('currentUser');
-    let currentUser: any = null;
-  
-    if (currentUserString) {
-      try {
-        currentUser = JSON.parse(currentUserString);
-      } catch (error) {
-        console.error('Error parsing currentUser from localStorage', error);
+    this.storageSubscription = this.storage.user$.subscribe(user => {
+      if (user) {
+        this.updateNavItems(user);
       }
-    }
-  
+    });
+  }
+
+  updateNavItems(user: any): void {
     const hasGrumanCompany = (user: any): boolean => {
-      if (!user || !user.companies) {
+      if (!user?.selectedCompany) {
         return false;
       }
-      return user.companies.some(
-        (company: any) => company.nombre.toLowerCase() === 'gruman'.toLowerCase()
-      );
+      return user.selectedCompany.nombre.toLowerCase() === 'gruman'.toLowerCase();
     };
   
-    const showMantenedores = hasGrumanCompany(currentUser);
-    const showSolicitarVisita = !hasGrumanCompany(currentUser);
+    const showMantenedores = hasGrumanCompany(user);
+    const showSolicitarVisita = !hasGrumanCompany(user);
   
     this.navItems = [
       {
@@ -257,6 +255,9 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
     }
     if (this.updateSubscription) {
       this.updateSubscription.unsubscribe();
+    }
+    if (this.storageSubscription) {
+      this.storageSubscription.unsubscribe();
     }
     this.mobileQuery.removeListener(this._mobileQueryListener);
   }

@@ -12,22 +12,22 @@
     
     @if(userProfile?.companies?.length > 1) {
       <div class="m-l-auto">
-        <mat-form-field class="theme-select" appearance="outline">
-          <mat-label>Seleccionar Compañía</mat-label>
-          <mat-select [(value)]="selectedCompany" (selectionChange)="onCompanySelect($event.value)">
-            @for(company of userProfile.companies; track company.id) {
-              <mat-option [value]="company">
-                {{ company.nombre }}
-              </mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        <button mat-button [matMenuTriggerFor]="companyMenu" class="company-select-btn">
+          @if (selectedCompany?.logo) {
+            <img [src]="selectedCompany.logo" alt="company logo" class="company-logo">
+          }
+          <span class="ms-2">{{ selectedCompany?.name || 'Seleccionar Cliente' }}</span>
+          <mat-icon>keyboard_arrow_down</mat-icon>
+        </button>
       </div>
     }
 
     @if(selectedCompany) {
-      <div class="m-l-8">
+      <div class="d-flex align-items-center m-l-8">
         <img [src]="selectedCompany.logo" width="60" alt="{{ selectedCompany.nombre }}" />
+        <button mat-icon-button [matMenuTriggerFor]="companyMenu" class="ms-2" matTooltip="Cambiar Cliente">
+          <mat-icon>swap_horiz</mat-icon>
+        </button>
       </div>
     }
 
@@ -73,6 +73,28 @@
           </button>
         </div>
       </ng-scrollbar>
+    </mat-menu>
+    <button 
+    mat-icon-button
+    [matBadge]="unreadChanges"
+    [matBadgeHidden]="unreadChanges === 0"
+    matBadgeColor="warn"
+    (click)="openChangelog()"
+  >
+    <mat-icon>update</mat-icon>
+  </button>
+    <mat-menu #companyMenu="matMenu" class="company-menu">
+      @for (company of userCompanies; track company.id) {
+        <button mat-menu-item (click)="onCompanySelect(company)">
+          @if (company.logo) {
+            <img [src]="company.logo" alt="company logo" class="company-logo">
+          }
+          <span class="ms-2">{{ company.nombre }}</span>
+        </button>
+      }
+      @empty {
+        <button mat-menu-item disabled>No hay compañías disponibles</button>
+      }
     </mat-menu>
   </div>
 </mat-toolbar>

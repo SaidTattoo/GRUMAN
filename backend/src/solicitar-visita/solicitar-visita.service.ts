@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Client } from 'src/client/client.entity';
 import { Locales } from 'src/locales/locales.entity';
+import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
 
 @Injectable()
 export class SolicitarVisitaService {
@@ -14,13 +15,16 @@ export class SolicitarVisitaService {
         private localesRepository: Repository<Locales>,
         @InjectRepository(Client)
         private clientRepository: Repository<Client>,
+        @InjectRepository(TipoServicio)
+        private tipoServicioRepository: Repository<TipoServicio>,
     ) {}
 
     async crearSolicitudVisita(solicitud: any): Promise<SolicitarVisita> {
         const solicitudVisita = new SolicitarVisita();
       
         // Asigna valores
-        solicitudVisita.tipoServicioId = solicitud.tipoServicioId;
+        const tipoServicio = await this.tipoServicioRepository.findOne({ where: { id: solicitud.tipoServicioId } });
+        solicitudVisita.tipoServicioId = tipoServicio.id;
         solicitudVisita.local = await this.localesRepository.findOne({ where: { id: solicitud.localId } });
         solicitudVisita.client = await this.clientRepository.findOne({ where: { id: solicitud.clientId } });
         solicitudVisita.sectorTrabajoId = solicitud.sectorTrabajoId;
@@ -31,7 +35,7 @@ export class SolicitarVisitaService {
         solicitudVisita.imagenes = solicitud.imagenes;
       
         return await this.solicitarVisitaRepository.save(solicitudVisita);
-      }
+    }
 
     getSolicitudVisita(id: number): Promise<SolicitarVisita> {
         return this.solicitarVisitaRepository.findOne({ where: { id }, relations: ['local'] });
@@ -57,7 +61,10 @@ export class SolicitarVisitaService {
     }
 
     //quiero obtener la cantidad de solicitudes pendientes
-    async getPendientes() :Promise<SolicitarVisita[]>{
-        return await this.solicitarVisitaRepository.find({ relations: ['local', 'client'] });
+    async getPendientes(): Promise<number> {
+        const pendientes = await this.solicitarVisitaRepository.count({
+            where: { status: 'pendiente' }
+        });
+        return pendientes;
     }
 }

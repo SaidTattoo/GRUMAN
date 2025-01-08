@@ -53,14 +53,7 @@ export class TecnicosComponent implements OnInit {
   }
 
   editar(tecnico: any) {
-    const dialogRef = this.dialog.open(EditarTecnicoComponent, {
-      data: { tecnico }
-    });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadTecnicos();
-      }
-    });
+    this.router.navigate(['/mantenedores/cliente-usuarios/editar', tecnico.id]);
   }
 
   eliminar(tecnico: any) {

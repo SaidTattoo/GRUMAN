@@ -20,6 +20,7 @@ import localeEnGb from '@angular/common/locales/en-GB';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
 import { UsersService } from 'src/app/services/users.service';
+import { OrdenServicioService } from 'src/app/services/orden-servicio.service';
 const MY_DATE_FORMAT = {
   parse: {
     dateInput: 'DD/MM/YYYY', // this is how your date will be parsed from Input
@@ -62,7 +63,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     private clientesService: ClientesService,
     private dateAdapter: DateAdapter <Date>,
     private router: Router,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private ordenServicioService: OrdenServicioService
   ) {
     this.initForm();
     registerLocaleData(localeEnGb); 
@@ -274,6 +276,20 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
           userId: formData.user // Asegurarnos de que el ID del usuario se envíe correctamente
         };
         
+
+
+        this.ordenServicioService.crearOrdenServicioGenerarProgramacion(programacionData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res: any) => {
+            console.log('Orden de servicio creada:', res);
+          },
+          error: (error) => {
+            console.error('Error al crear la orden de servicio:', error);
+          }
+        });
+
+
         this.programacionService.createProgramacion(programacionData)
           .pipe(takeUntil(this.destroy$))
           .subscribe({

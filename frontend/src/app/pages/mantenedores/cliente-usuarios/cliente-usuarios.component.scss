@@ -1,38 +1,53 @@
 .client-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 columnas */
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+  padding: 20px;
   justify-items: center;
   align-items: center;
-  padding: 16px;
 }
 
 .client-item {
-  width: 300px;
-  height: 200px;
-  border-radius: 5%;
+  width: 150px;
+  height: 150px;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+  padding: 10px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+
+  &.selected {
+    border-color: #1e88e5; // Color primario de Angular Material
+    box-shadow: 0 0 15px rgba(30,136,229,0.3);
+  }
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
 }
 
-.client-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 5%;
-}
+// Responsive adjustments
+@media (max-width: 768px) {
+  .client-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+  }
 
-.client-item:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-.client-item.selected {
-  border: 4px solid #3f51b5; /* Color del borde de selección */
-  box-shadow: 0 0 15px rgba(63, 81, 181, 0.5); /* Sombra azul */
-  transform: scale(1.2);
+  .client-item {
+    width: 120px;
+    height: 120px;
+  }
 }

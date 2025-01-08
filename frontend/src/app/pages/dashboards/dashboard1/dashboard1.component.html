@@ -4,93 +4,124 @@
       <mat-card-header>
         <div class="d-flex align-items-center justify-content-between w-100">
           <div>
-            <mat-card-title>Escritorio Atlantis </mat-card-title>
-            <mat-card-subtitle class="mat-body-1">Resumen del sistema para mes de Septiembre 2024</mat-card-subtitle>
+            <mat-card-title>Escritorio Atlantis</mat-card-title>
+            <mat-card-subtitle class="mat-body-1">Resumen del sistema</mat-card-subtitle>
           </div>
-          
         </div>
       </mat-card-header>
       <mat-card-content>
-
         <div class="m-t-35 m-b-24">
-            <!-- aca quiero dos filas con 8 cards cada uno   -->
-            <div class="row">
-              <div class="col-12">
-                <div class="d-flex flex-wrap justify-content-between">
-                  <!-- Primera fila de tarjetas -->
-                 
-                <div  class="card-container">
-                  <mat-card class="cardWithShadow bg-primary text-white overflow-hidden">
+          <div class="row">
+            <div class="col-12">
+              <div class="d-flex flex-wrap justify-content-between">
+                <!-- Reactivos Pendientes -->
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
-                      <img width="50px" src="{{'assets/images/cancel.png'}}" alt="cancel">
+                      <mat-icon>assignment_late</mat-icon>
                       <div class="m-t-35">
-                        <h5 class="f-w-600 f-s-21 m-0">
-                          {{ count_reactivos_pendientes_autorizacion }}
-                        </h5>
+                        <h5 class="f-w-600 f-s-21 m-0">{{ count_reactivos_pendientes_autorizacion }}</h5>
                         <span class="f-s-14">Reactivos Pendientes Autorización</span>
                       </div>
                     </mat-card-content>
                   </mat-card>
-                </div> 
-                <div  class="card-container">
-                  <mat-card class="cardWithShadow bg-primary text-white overflow-hidden">
+                </div>
+
+                <!-- Correctivos Pendientes -->
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
-                      <img width="50px" src="{{'assets/images/cancel.png'}}" alt="cancel">
+                      <mat-icon>build</mat-icon>
                       <div class="m-t-35">
-                        <h5 class="f-w-600 f-s-21 m-0">
-                          {{ count_correctivos_pendientes_autorizacion }}
-                        </h5>
+                        <h5 class="f-w-600 f-s-21 m-0">{{ count_correctivos_pendientes_autorizacion }}</h5>
                         <span class="f-s-14">Correctivos Pendientes Autorización</span>
                       </div>
                     </mat-card-content>
                   </mat-card>
-                </div> 
-                <div  class="card-container">
-                  <mat-card class="cardWithShadow bg-primary text-white overflow-hidden">
+                </div>
+
+                <!-- Servicios Autorizados Pendientes -->
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
-                      <img width="50px" src="{{'assets/images/cancel.png'}}" alt="cancel">
+                      <mat-icon>assignment_turned_in</mat-icon>
                       <div class="m-t-35">
-                        <h5 class="f-w-600 f-s-21 m-0">
-                          {{ count_servicios_autorizados_pendientes_visita }}
-                        </h5>
+                        <h5 class="f-w-600 f-s-21 m-0">{{ count_servicios_autorizados_pendientes_visita }}</h5>
                         <span class="f-s-14">Servicios autorizados y pendientes de visita</span>
                       </div>
                     </mat-card-content>
                   </mat-card>
-                </div> 
-
-
-
-
-
-
-
-
                 </div>
-                
+
+                <!-- Próximas Visitas -->
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
+                    <mat-card-content>
+                      <mat-icon>event</mat-icon>
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">{{ count_proximas_visitas_preventivas }}</h5>
+                        <span class="f-s-14">Próxima Visita Preventiva</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+
+                <!-- Servicios del Día -->
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
+                    <mat-card-content>
+                      <mat-icon>today</mat-icon>
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">{{ count_servicios_del_dia }}</h5>
+                        <span class="f-s-14">Servicios del día</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+
+                <!-- Cumplimiento Preventivos -->
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
+                    <mat-card-content>
+                      <mat-icon>check_circle</mat-icon>
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">{{ count_cumplimiento_preventivos }}%</h5>
+                        <span class="f-s-14">Cumplimiento Preventivos</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+
+                <!-- Gastos Repuestos -->
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
+                    <mat-card-content>
+                      <mat-icon>attach_money</mat-icon>
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">{{ count_gastos_repostos | currency }}</h5>
+                        <span class="f-s-14">Gastos Repuestos</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+
+                <!-- Performance Reactivos -->
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
+                    <mat-card-content>
+                      <mat-icon>trending_up</mat-icon>
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">{{ count_performance_reactivos }}%</h5>
+                        <span class="f-s-14">Performance Reactivos</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-12">
-                <div class="d-flex flex-wrap justify-content-between">
-                  <!-- Segunda fila de tarjetas -->
-                  @for (card of cards.slice(8, 16); track card.title) {
-                  <div  class="card-container">
-                    <mat-card class="cardWithShadow" (click)="onCardClick(card)">
-                      <mat-card-content>
-                        <mat-icon >{{ card.icon }}</mat-icon>
-                        <h3 >{{ card.title }}</h3>
-                        <p>{{ card.content }}</p>
-                      </mat-card-content>
-                    </mat-card>
-                  </div>
-                }
-                </div>
-              </div>
-            </div>
+          </div>
         </div>
       </mat-card-content>
     </mat-card>
   </div>
- 
 </div>

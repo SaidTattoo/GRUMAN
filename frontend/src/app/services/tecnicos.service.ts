@@ -13,16 +13,19 @@ export class TecnicosService {
     return this.http.get(`${this.apiUrl}users`);
   }
   getTecnico(id: number) {
-    return this.http.get(`${this.apiUrl}users/${id}`);
+    return this.http.get(`${this.apiUrl}users/tecnicos/${id}`);
   }
   createTecnico(tecnico: any) {
     return this.http.post(`${this.apiUrl}users`, tecnico);
   }
-  updateTecnico(id: number, tecnico: any) {
-    return this.http.put(`${this.apiUrl}users/${id}`, tecnico);
+  updateTecnico(id: number, data: any) {
+    return this.http.put(`${this.apiUrl}users/${id}`, {
+        ...data,
+        clients: data.clientId
+    });
   }
   deleteTecnico(id: number) {
-    return this.http.delete(`${this.apiUrl}users/${id}`);
+    return this.http.delete(`${this.apiUrl}users/tecnicos/${id}`);
   }
 
   getTecnicosGruman(): Observable<any> {
