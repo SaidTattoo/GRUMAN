@@ -29,7 +29,7 @@
           <mat-form-field appearance="outline" class="w-100">
             <mat-select formControlName="local" placeholder="Seleccionar Local">
               <mat-option *ngFor="let local of locales" [value]="local.id">
-                {{ local.direccion }}
+                {{ local.nombre_local }}
               </mat-option>
             </mat-select>
               @if (programacionForm.get('local')?.touched && programacionForm.get('local')?.invalid) {
