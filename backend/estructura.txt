@@ -1,0 +1,255 @@
+.
+├── Dockerfile
+├── README.md
+├── estructura.txt
+├── nest-cli.json
+├── package-lock.json
+├── package.json
+├── src
+│   ├── activo-fijo-local
+│   │   ├── activo-fijo-local.controller.ts
+│   │   ├── activo-fijo-local.entity.ts
+│   │   ├── activo-fijo-local.module.ts
+│   │   └── activo-fijo-local.service.ts
+│   ├── app.controller.spec.ts
+│   ├── app.controller.ts
+│   ├── app.module.ts
+│   ├── app.service.ts
+│   ├── auth
+│   │   ├── auth.controller.ts
+│   │   ├── auth.module.ts
+│   │   ├── auth.service.ts
+│   │   └── dto
+│   │       └── login.dto.ts
+│   ├── client
+│   │   ├── client.controller.ts
+│   │   ├── client.entity.ts
+│   │   ├── client.module.ts
+│   │   ├── client.service.ts
+│   │   └── dto
+│   │       ├── lista-inspeccion.dto.ts
+│   │       └── update-client.dto.ts
+│   ├── database
+│   │   └── database.module.ts
+│   ├── documentos
+│   │   ├── documentos.controller.ts
+│   │   ├── documentos.entity.ts
+│   │   ├── documentos.module.ts
+│   │   └── documentos.service.ts
+│   ├── especialidad
+│   │   ├── especialidad.controller.ts
+│   │   ├── especialidad.entity.ts
+│   │   ├── especialidad.module.ts
+│   │   └── especialidad.service.ts
+│   ├── facturacion
+│   │   ├── facturacion.controller.ts
+│   │   ├── facturacion.entity.ts
+│   │   ├── facturacion.module.ts
+│   │   └── facturacion.service.ts
+│   ├── inspection
+│   │   ├── dto
+│   │   │   ├── create-item.dto.ts
+│   │   │   ├── create-section.dto.ts
+│   │   │   ├── create-sub-item.dto.ts
+│   │   │   ├── update-sectiom.dto.ts
+│   │   │   └── update-section.dto.ts
+│   │   ├── entities
+│   │   │   ├── item.entity.ts
+│   │   │   ├── section.entity.ts
+│   │   │   └── sub-item.entity.ts
+│   │   ├── inspection.controller.ts
+│   │   ├── inspection.module.ts
+│   │   └── inspection.service.ts
+│   ├── locales
+│   │   ├── locales.controller.ts
+│   │   ├── locales.entity.ts
+│   │   ├── locales.module.ts
+│   │   └── locales.service.ts
+│   ├── main.ts
+│   ├── programacion
+│   │   ├── programacion.controller.ts
+│   │   ├── programacion.entity.ts
+│   │   ├── programacion.module.ts
+│   │   └── programacion.service.ts
+│   ├── regiones-comunas
+│   │   ├── entities
+│   │   │   ├── comuna.entity.ts
+│   │   │   ├── provincia.entity.ts
+│   │   │   └── region.entity.ts
+│   │   ├── regiones-comunas.controller.ts
+│   │   ├── regiones-comunas.module.ts
+│   │   └── regiones-comunas.service.ts
+│   ├── repuestos
+│   │   ├── repuestos.controller.ts
+│   │   ├── repuestos.entity.ts
+│   │   ├── repuestos.module.ts
+│   │   └── repuestos.service.ts
+│   ├── sectores-trabajo
+│   │   ├── sectores-trabajo.controller.ts
+│   │   ├── sectores-trabajo.entity.ts
+│   │   ├── sectores-trabajo.module.ts
+│   │   └── sectores-trabajo.service.ts
+│   ├── sectores-trabajo-default
+│   │   ├── sectores-trabajo-default.controller.ts
+│   │   ├── sectores-trabajo-default.entity.ts
+│   │   ├── sectores-trabajo-default.module.ts
+│   │   └── sectores-trabajo-default.service.ts
+│   ├── servicios
+│   │   ├── servicios.controller.ts
+│   │   ├── servicios.entity.ts
+│   │   ├── servicios.module.ts
+│   │   └── servicios.service.ts
+│   ├── servicios_realizados
+│   │   ├── servicios_realizados.controller.ts
+│   │   ├── servicios_realizados.entity.ts
+│   │   ├── servicios_realizados.module.ts
+│   │   └── servicios_realizados.service.ts
+│   ├── solicitar-visita
+│   │   ├── dto
+│   │   │   └── createSolicitarVisitaDto.ts
+│   │   ├── solicitar-visita.controller.ts
+│   │   ├── solicitar-visita.entity.ts
+│   │   ├── solicitar-visita.module.ts
+│   │   └── solicitar-visita.service.ts
+│   ├── solicitudes-aprobacion-correctiva
+│   │   ├── solicitudes-aprobacion-correctiva.controller.ts
+│   │   ├── solicitudes-aprobacion-correctiva.entity.ts
+│   │   ├── solicitudes-aprobacion-correctiva.module.ts
+│   │   └── solicitudes-aprobacion-correctiva.service.ts
+│   ├── tipo-documento
+│   │   ├── tipo-documento.controller.ts
+│   │   ├── tipo-documento.entity.ts
+│   │   ├── tipo-documento.module.ts
+│   │   └── tipo-documento.service.ts
+│   ├── tipo-servicio
+│   │   ├── tipo-servicio.controller.ts
+│   │   ├── tipo-servicio.entity.ts
+│   │   ├── tipo-servicio.module.ts
+│   │   └── tipo-servicio.service.ts
+│   ├── tipo_activo
+│   │   ├── tipo_activo.controller.ts
+│   │   ├── tipo_activo.entity.ts
+│   │   ├── tipo_activo.module.ts
+│   │   └── tipo_activo.service.ts
+│   ├── upload
+│   │   ├── upload.controller.ts
+│   │   ├── upload.module.ts
+│   │   └── upload.service.ts
+│   ├── upload-v2
+│   │   ├── upload-v2.controller.spec.ts
+│   │   ├── upload-v2.controller.ts
+│   │   ├── upload-v2.module.ts
+│   │   ├── upload-v2.service.spec.ts
+│   │   └── upload-v2.service.ts
+│   ├── users
+│   │   ├── dto
+│   │   │   └── create-user.dto.ts
+│   │   ├── users.controller.ts
+│   │   ├── users.entity.ts
+│   │   ├── users.module.ts
+│   │   ├── users.service.spec.ts
+│   │   └── users.service.ts
+│   └── vehiculos
+│       ├── vehiculos.controller.ts
+│       ├── vehiculos.entity.ts
+│       ├── vehiculos.module.ts
+│       └── vehiculos.service.ts
+├── tsconfig.build.json
+├── tsconfig.json
+└── uploads
+    ├── clientes
+    │   ├── 1733201364746-descarga (2).png
+    │   ├── 1733202047100-TMBCOT_ConsultaBoletaPdf.pdf
+    │   ├── 1733202145070-descarga.jpg
+    │   ├── 1733205916250-descarga.png
+    │   ├── 1733205936240-descarga.png
+    │   ├── 1733205958923-descarga (2).png
+    │   ├── 1733205968070-descarga.jpg
+    │   ├── 1733205976967-images.jpg
+    │   ├── 1733250678770-descarga (2).png
+    │   ├── 1733286297126-descarga (1).png
+    │   ├── 1733348834961-descarga (1).png
+    │   ├── 1733348841761-maicao.png
+    │   ├── 1733348853646-descarga (2).png
+    │   ├── 1733348862004-images.jpg
+    │   ├── 1733351417516-top-section-bg (1).jpeg
+    │   ├── 1733716626177-465578237_10232131264759419_9219849928377903393_n.jpg
+    │   ├── 1733716680845-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   ├── 1733716878296-top-section-bg.jpeg
+    │   ├── 1733717379274-top-section-bg (1).jpeg
+    │   ├── 1733717432388-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   ├── 1733717573180-465578237_10232131264759419_9219849928377903393_n.jpg
+    │   ├── 1733717810531-465578237_10232131264759419_9219849928377903393_n.jpg
+    │   ├── 1734370262910-chilectra-1.jpg
+    │   ├── 1734958485895-pengu-snapshot.png
+    │   ├── 1734964150537-site-logo.webp
+    │   └── 1734964222409-images.jpg
+    ├── solicitar_visita
+    │   ├── 1733287023274-descarga.png
+    │   ├── 1733287029838-gruman.png
+    │   ├── 1733287072089-descarga (1).png
+    │   ├── 1733287097654-descarga.png
+    │   ├── 1733287100505-gruman.png
+    │   ├── 1733347356019-images.jpg
+    │   ├── 1733347359215-descarga (2).png
+    │   ├── 1733348647001-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   ├── 1733348657444-465578237_10232131264759419_9219849928377903393_n.jpg
+    │   ├── 1733348892911-descarga (1).png
+    │   ├── 1733349084245-images.jpg
+    │   ├── 1733349090036-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   ├── 1733349115606-top-section-bg (1).jpeg
+    │   ├── 1733349130091-465578237_10232131264759419_9219849928377903393_n.jpg
+    │   ├── 1733349144295-top-section-bg (1).jpeg
+    │   ├── 1733349183558-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   ├── 1733349352397-top-section-bg (1).jpeg
+    │   ├── 1733350808742-top-section-bg (1).jpeg
+    │   ├── 1733350909673-top-section-bg.jpeg
+    │   ├── 1733354311591-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   ├── 1733354317527-top-section-bg.jpeg
+    │   ├── 1733354363886-top-section-bg.jpeg
+    │   ├── 1733354378837-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   ├── 1733354619729-top-section-bg (1).jpeg
+    │   ├── 1733354624526-465578237_10232131264759419_9219849928377903393_n.jpg
+    │   ├── 1733354742157-top-section-bg.jpeg
+    │   ├── 1733354798907-top-section-bg (1).jpeg
+    │   ├── 1733354836171-top-section-bg (1).jpeg
+    │   ├── 1733354840583-465578237_10232131264759419_9219849928377903393_n.jpg
+    │   ├── 1733354855745-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   ├── 1733355072072-top-section-bg (1).jpeg
+    │   ├── 1733355075282-465578237_10232131264759419_9219849928377903393_n.jpg
+    │   ├── 1733355078475-top-section-bg (1).jpeg
+    │   ├── 1733355085050-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   ├── 1733355156739-top-section-bg (1).jpeg
+    │   ├── 1733355161594-465578237_10232131264759419_9219849928377903393_n.jpg
+    │   ├── 1733355212260-top-section-bg.jpeg
+    │   ├── 1733355237750-top-section-bg.jpeg
+    │   ├── 1733355365131-top-section-bg.jpeg
+    │   ├── 1733355391385-top-section-bg.jpeg
+    │   ├── 1733355395749-pngtree-wolf-animals-images-wallpaper-for-pc-384x480-picture-image_3180467.jpg
+    │   └── 1733355459401-465578237_10232131264759419_9219849928377903393_n.jpg
+    ├── solicitud-aprobacion-correctiva
+    │   ├── 1733781206888-gruman.png
+    │   └── 1735241555340-pengu-snapshot.png
+    └── vehiculos
+        ├── 1
+        │   └── documentos
+        │       ├── gases
+        │       │   └── SECUGEN_WEB_SERVICE_API_DOC.pdf
+        │       ├── otros
+        │       │   └── TMBCOT_ConsultaBoletaPdf.pdf
+        │       ├── permiso_circulacion
+        │       │   └── revision_tecnica (2).pdf
+        │       ├── revision_tecnica
+        │       │   └── Liquidacion_C1-17A0003_septiembre 2024.pdf
+        │       └── seguro_obligatorio
+        │           └── Liquidacion_C1-17A0003_septiembre 2024.pdf
+        └── 2
+            └── documentos
+                ├── gases
+                │   └── 1 Estado de Situacion y Solicitud de productos [EDITABLE].pdf
+                ├── revision_tecnica
+                │   └── gases (4).pdf
+                └── seguro_obligatorio
+                    └── TMBCOT_ConsultaBoletaPdf.pdf
+
+51 directories, 202 files

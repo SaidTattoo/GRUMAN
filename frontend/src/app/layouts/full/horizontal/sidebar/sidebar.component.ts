@@ -4,23 +4,31 @@ import {
   Input,
   ChangeDetectorRef,
   OnChanges,
+  OnDestroy,
 } from '@angular/core';
 import { navItems } from './sidebar-data';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NavService } from '../../../../services/nav.service';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { AppHorizontalNavItemComponent } from './nav-item/nav-item.component';
 import { CommonModule } from '@angular/common';
+import { Subscription, interval } from 'rxjs';
+import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
+import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
   selector: 'app-horizontal-sidebar',
   standalone: true,
-  imports: [AppHorizontalNavItemComponent, CommonModule],
+  imports: [AppHorizontalNavItemComponent, CommonModule, RouterModule],
   templateUrl: './sidebar.component.html',
 })
-export class AppHorizontalSidebarComponent implements OnInit {
+export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
   navItems = navItems;
   parentActive = '';
+  hasPendingRequests = 0;
+  private subscription: Subscription;
+  private updateSubscription: Subscription;
+  private storageSubscription: Subscription;
 
   mobileQuery: MediaQueryList;
   private _mobileQueryListener: () => void;
@@ -29,7 +37,9 @@ export class AppHorizontalSidebarComponent implements OnInit {
     public navService: NavService,
     public router: Router,
     media: MediaMatcher,
-    changeDetectorRef: ChangeDetectorRef
+    changeDetectorRef: ChangeDetectorRef,
+    private solicitarVisitaService: SolicitarVisitaService,
+    private storage: StorageService
   ) {
     this.mobileQuery = media.matchMedia('(min-width: 1100px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
@@ -37,31 +47,28 @@ export class AppHorizontalSidebarComponent implements OnInit {
     this.router.events.subscribe(
       () => (this.parentActive = this.router.url.split('/')[1])
     );
+   
+
   }
 
   ngOnInit(): void {
-    const currentUserString = localStorage.getItem('currentUser');
-    let currentUser: any = null;
-  
-    if (currentUserString) {
-      try {
-        currentUser = JSON.parse(currentUserString);
-      } catch (error) {
-        console.error('Error parsing currentUser from localStorage', error);
+    this.storageSubscription = this.storage.user$.subscribe(user => {
+      if (user) {
+        this.updateNavItems(user);
       }
-    }
-  
+    });
+  }
+
+  updateNavItems(user: any): void {
     const hasGrumanCompany = (user: any): boolean => {
-      if (!user || !user.companies) {
+      if (!user?.selectedCompany) {
         return false;
       }
-      return user.companies.some(
-        (company: any) => company.nombre.toLowerCase() === 'gruman'.toLowerCase()
-      );
+      return user.selectedCompany.nombre.toLowerCase() === 'gruman'.toLowerCase();
     };
   
-    const showMantenedores = hasGrumanCompany(currentUser);
-    const showSolicitarVisita = !hasGrumanCompany(currentUser);
+    const showMantenedores = hasGrumanCompany(user);
+    const showSolicitarVisita = !hasGrumanCompany(user);
   
     this.navItems = [
       {
@@ -83,6 +90,40 @@ export class AppHorizontalSidebarComponent implements OnInit {
         route: 'dashboards/dashboard1',
         bgcolor: 'primary',
       },
+      ...(showMantenedores
+        ? [
+          {
+            displayName: 'Programación',
+            iconName: 'calendar',
+            children: [
+              {
+                displayName: 'Generar Programación',
+                iconName: 'home-shield',
+                bgcolor: 'primary',
+                route: 'generar-programacion',
+              },
+              {
+                displayName: 'Listado de Programación',
+                iconName: 'home-shield',
+                bgcolor: 'primary',
+                route: 'transacciones/listado-programacion',
+              },
+              {
+                displayName: 'Solicitud de aprobación de correctiva',
+                iconName: 'home-shield',
+                bgcolor: 'primary',
+                route: 'transacciones/solicitud-aprobacion-correctiva',
+              },
+              {
+                displayName: 'Listado de solicitudes de aprobación de correctiva',
+                iconName: 'home-shield',
+                bgcolor: 'primary',
+                route: 'transacciones/listado-solicitud-aprobacion-correctiva',
+              },
+            ],
+          },
+          ]
+        : []),
       ...(showSolicitarVisita
         ? [
             {
@@ -93,36 +134,8 @@ export class AppHorizontalSidebarComponent implements OnInit {
             },
           ]
         : []),
-      {
-        displayName: 'Programación',
-        iconName: 'calendar',
-        children: [
-          {
-            displayName: 'Generar Programación',
-            iconName: 'home-shield',
-            bgcolor: 'primary',
-            route: 'generar-programacion',
-          },
-          {
-            displayName: 'Listado de Programación',
-            iconName: 'home-shield',
-            bgcolor: 'primary',
-            route: 'transacciones/listado-programacion',
-          },
-          {
-            displayName: 'Solicitud de aprobación de correctiva',
-            iconName: 'home-shield',
-            bgcolor: 'primary',
-            route: 'transacciones/solicitud-aprobacion-correctiva',
-          },
-          {
-            displayName: 'Listado de solicitudes de aprobación de correctiva',
-            iconName: 'home-shield',
-            bgcolor: 'primary',
-            route: 'transacciones/listado-solicitud-aprobacion-correctiva',
-          },
-        ],
-      },
+        
+     
       {
         displayName: 'Servicios realizados',
         iconName: 'home-shield',
@@ -236,4 +249,18 @@ export class AppHorizontalSidebarComponent implements OnInit {
     ];
   }
   
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+    if (this.updateSubscription) {
+      this.updateSubscription.unsubscribe();
+    }
+    if (this.storageSubscription) {
+      this.storageSubscription.unsubscribe();
+    }
+    this.mobileQuery.removeListener(this._mobileQueryListener);
+  }
+
+
 }  

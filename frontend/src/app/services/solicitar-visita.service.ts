@@ -26,4 +26,7 @@ export class SolicitarVisitaService {
   rechazarSolicitudVisita(id: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}solicitar-visita/${id}/rechazar`, {});
   }
+  getPendientes(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}solicitar-visita/pendientes`);
+  }
 }

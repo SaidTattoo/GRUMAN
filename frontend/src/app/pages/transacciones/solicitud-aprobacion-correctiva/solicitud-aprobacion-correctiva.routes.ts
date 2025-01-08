@@ -1,4 +1,4 @@
-import { SolicitudAprobacionCorrectivaComponent } from "./solicitud-aprovacion-correctiva.component";
+import { SolicitudAprobacionCorrectivaComponent } from "./solicitud-aprobacion-correctiva.component";
 
 export const solicitudAprobacionCorrectivaRoutes = [
   {

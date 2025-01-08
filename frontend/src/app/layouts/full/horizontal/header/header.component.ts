@@ -16,6 +16,9 @@ import { BrandingComponent } from '../../vertical/sidebar/branding.component';
 import { navItems } from '../sidebar/sidebar-data';
 import { StorageService } from '../../../../services/storage.service';
 import { Subscription } from 'rxjs';
+import { ChangelogService } from 'src/app/services/changelog.service';
+import { ChangelogDialogComponent } from 'src/app/components/changelog-dialog/changelog-dialog.component';
+import { MatBadgeModule } from '@angular/material/badge';
 
 interface notifications {
   id: number;
@@ -60,6 +63,7 @@ interface quicklinks {
     MatMenuModule,
     MatButtonModule,
     BrandingComponent,
+    MatBadgeModule
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
@@ -119,13 +123,13 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
   userCompanies: any[] = [];
   selectedCompany: any | null = null;
   private userSub: Subscription;
-
+  unreadChanges = 0;
   constructor(
     private vsidenav: CoreService,
     public dialog: MatDialog,
     private translate: TranslateService,
     private authService: AuthService,
-    private storage: StorageService
+    private storage: StorageService ,private changelogService: ChangelogService
   ) {
     translate.setDefaultLang('en');
   }
@@ -150,9 +154,19 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
         this.userRole = user.profile;
         this.userEmail = user.email;
         this.userCompanies = user.companies || [];
-        this.selectedCompany = this.userCompanies.length === 1 ? this.userCompanies[0] : null;
+        this.selectedCompany = user.selectedCompany || 
+                             (this.userCompanies.length === 1 ? this.userCompanies[0] : null);
       }
     });
+
+    this.changelogService.unreadChanges$.subscribe(
+      count => {
+        this.unreadChanges = count;
+        console.log('Unread changes:', count);
+      }
+    );
+    
+    this.changelogService.refreshUnreadCount();
   }
 
   ngOnDestroy(): void {
@@ -160,11 +174,24 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
       this.userSub.unsubscribe();
     }
   }
+  openChangelog() {
+    const dialogRef = this.dialog.open(ChangelogDialogComponent, {
+      width: '600px',
+      maxHeight: '80vh'
+    });
 
+    dialogRef.afterClosed().subscribe(() => {
+      this.changelogService.refreshUnreadCount();
+    });
+  }
   onCompanySelect(company: any): void {
-    this.selectedCompany = company;
     const currentUser = this.storage.getItem('currentUser');
-    const updatedUser = { ...currentUser, companies: [company] };
+    const updatedUser = { 
+      ...currentUser,
+      selectedCompany: company,
+      companies: currentUser.companies
+    };
+    this.selectedCompany = company;
     this.storage.setItem('currentUser', updatedUser);
   }
 

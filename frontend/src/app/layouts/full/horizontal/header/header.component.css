@@ -37,3 +37,32 @@
   font-size: 16px;
   font-weight: bold;
 }
+
+.company-select-btn {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.company-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.company-menu {
+  min-width: 200px;
+}
+
+::ng-deep .company-menu .mat-menu-item {
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .company-menu .mat-menu-item img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 8px;
+}

@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors( { origin: '*' } );
   const config = new DocumentBuilder()
     .setTitle('API de Usuarios')
     .setDescription('La API de gestión de usuarios')

@@ -3,6 +3,7 @@ import { Vehiculo } from '../vehiculos/vehiculos.entity';
 import { Column, Entity,  ManyToOne,  PrimaryGeneratedColumn } from 'typeorm';
 import { Locales } from '../locales/locales.entity';
 import { Client } from 'src/client/client.entity';
+import { User } from 'src/users/users.entity';
 
 @Entity('programacion')
 export class Programacion {
@@ -27,8 +28,11 @@ export class Programacion {
     @ManyToOne(() => Client, client => client.programaciones)
     client: Client;
 
-    @ManyToOne(() => Vehiculo, vehiculo => vehiculo.programaciones)
-    vehiculo: Vehiculo;
+   /*  @ManyToOne(() => Vehiculo, vehiculo => vehiculo.programaciones)
+    vehiculo: Vehiculo; */
+
+    @ManyToOne(() => User, user => user.programaciones)
+    user: User;
 
     @ManyToOne(() => Locales, local => local.programaciones)
     local: Locales;

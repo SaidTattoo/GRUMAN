@@ -1,0 +1,101 @@
+{
+  "lastUpdate": "2024-03-21",
+  "versions": [
+    {
+      "version": "1.0.3",
+      "date": "2024-03-21",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Nuevo selector de perfil para usuarios con múltiples clientes"
+        },
+        {
+          "type": "feature",
+          "description": "Nuevo diseño del badge de actualizaciones"
+        },
+        {
+          "type": "improvement",
+          "description": "Optimización en la carga de imágenes de clientes"
+        },
+        {
+          "type": "feature",
+          "description": "Sistema de notificaciones mejorado"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido el problema de persistencia en las selecciones de clientes"
+        },
+        {
+          "type": "fix",
+          "description": "Solucionado error al editar usuarios y sus clientes asociados"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema con el badge de actualizaciones que no se mostraba"
+        }
+      ]
+    },
+    {
+      "version": "1.0.2",
+      "date": "2024-03-20",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Agregado sistema de changelog para ver actualizaciones"
+        },
+        {
+          "type": "improvement",
+          "description": "Nuevo diseño en la selección de clientes con grid de imágenes"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema al editar usuarios y sus clientes asociados"
+        },
+        {
+          "type": "fix",
+          "description": "Solucionado error en la ruta del changelog que redirigía al login"
+        }
+      ]
+    },
+    {
+      "version": "1.0.1",
+      "date": "2024-03-19",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Agregado sistema de edición de usuarios"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema con la selección de clientes"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la interfaz de selección de clientes"
+        },
+        {
+          "type": "fix",
+          "description": "Solucionado error que no mostraba los clientes seleccionados en edición"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema con el endpoint de actualización de usuarios"
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2024-03-15",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Lanzamiento inicial de la aplicación"
+        },
+        {
+          "type": "fix",
+          "description": "Correcciones iniciales de estabilidad"
+        }
+      ]
+    }
+  ]
+} 

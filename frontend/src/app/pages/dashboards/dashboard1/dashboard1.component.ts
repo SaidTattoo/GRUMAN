@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
+import { CommonModule } from '@angular/common';
 
 // components
 import { AppCongratulateCardComponent } from '../../../components/dashboard1/congratulate-card/congratulate-card.component';
@@ -11,11 +12,20 @@ import { AppTopProjectsComponent } from '../../../components/dashboard1/top-proj
 import { AppVisitUsaComponent } from '../../../components/dashboard1/visit-usa/visit-usa.component';
 import { AppLatestReviewsComponent } from '../../../components/dashboard1/latest-reviews/latest-reviews.component';
 import { MaterialModule } from 'src/app/material.module';
+import { DashboardService } from 'src/app/services/dashboard.service';
+enum TipoOrden {
+  PREVENTIVO = 2,
+  CORRECTIVO =7,
+  VISITA_TECNICA = 8,
+  REACTIVO = 1,
+}
 
 @Component({
   selector: 'app-dashboard1',
   standalone: true,
   imports: [
+    CommonModule,
+    MaterialModule,
     TablerIconsModule,
     AppCongratulateCardComponent,
     AppCustomersComponent,
@@ -26,7 +36,6 @@ import { MaterialModule } from 'src/app/material.module';
     AppVisitUsaComponent,
     AppProductsComponent,
     AppLatestReviewsComponent,
-    MaterialModule,
   ],
   templateUrl: './dashboard1.component.html',
   styles: [
@@ -69,27 +78,87 @@ import { MaterialModule } from 'src/app/material.module';
     `,
   ],
 })
-export class AppDashboard1Component {
-  constructor() {}
+export class AppDashboard1Component  implements OnInit{
+  constructor( private dashboardService: DashboardService ) { }
   cards = [
-    { title: '14 Reactivo Pendientes Autorización', content: '', icon: 'assignment_late' },
-    { title: '133 Correctivo Pendientes Autorización', content: '', icon: 'build' },
-    { title: '133 Servicios autorizados y pendientes de visita', content: '', icon: 'assignment_turned_in' },
-    { title: '3 Próxima Visita Preventiva', content: '', icon: 'event' },
-    { title: 'Servicios del día', content: '', icon: 'today' },
-    { title: 'Análisis de Causa Raíz', content: '', icon: 'search' },
-    { title: '101.28% Cumplimiento Preventivos', content: '', icon: 'check_circle' },
-    { title: 'Gastos Repuestos', content: '', icon: 'attach_money' },
-    { title: 'Performance Reactivos', content: '', icon: 'trending_up' },
-    { title: 'Gasto total Acumulado', content: '', icon: 'account_balance_wallet' },
-    { title: 'Servicios Reactivos', content: '', icon: 'build_circle' },
-    { title: 'Servicios Correctivos', content: '', icon: 'build' },
-    { title: 'Resumen Ejecutivo', content: '', icon: 'description' },
-    { title: 'Solicitud Correctiva', content: '', icon: 'assignment' },
-    { title: 'Solicitudes Realizadas', content: '', icon: 'done_all' },
-    { title: 'Reportes Técnicos', content: '', icon: 'report' }
+    { title: '14 Reactivo Pendientes Autorización', content: '', image: 'assets/images/cancel.png', icon: 'assignment_late' },
+    { title: '133 Correctivo Pendientes Autorización', content: '', image: 'assets/images/computer.png', icon: 'build' },
+    { title: '133 Servicios autorizados y pendientes de visita', content: '', image: 'assets/images/computer.png', icon: 'assignment_turned_in' },
+    { title: '3 Próxima Visita Preventiva', content: '', image: 'assets/images/location.png', icon: 'event' },
+    { title: 'Servicios del día', content: '', image: 'assets/images/computer.png', icon: 'today' },
+    { title: 'Análisis de Causa Raíz', content: '', image: 'assets/images/computer.png', icon: 'search' },
+    { title: '101.28% Cumplimiento Preventivos', content: '', image: 'assets/images/computer.png', icon: 'check_circle' },
+    { title: 'Gastos Repuestos', content: '', image: 'assets/images/settings.png', icon: 'attach_money' },
+    { title: 'Performance Reactivos', content: '', image: 'assets/images/computer.png', icon: 'trending_up' },
+    { title: 'Gasto total Acumulado', content: '', image: 'assets/images/computer.png', icon: 'account_balance_wallet' },
+    { title: 'Servicios Reactivos', content: '', image: 'assets/images/computer.png', icon: 'build_circle' },
+    { title: 'Servicios Correctivos', content: '', image: 'assets/images/computer.png', icon: 'build' },
+    { title: 'Resumen Ejecutivo', content: '', image: 'assets/images/computer.png', icon: 'description' },
+    { title: 'Solicitud Correctiva', content: '', image: 'assets/images/computer.png', icon: 'assignment' },
+    { title: 'Solicitudes Realizadas', content: '', image: 'assets/images/computer.png', icon: 'done_all' },
+    { title: 'Reportes Técnicos', content: '', image: 'assets/images/settings.png', icon: 'report' }
   ];
   onCardClick(card: any) {
     //console.log('Card clicked:', card);
   }
+
+
+  count_correctivos_pendientes_autorizacion = 133;
+  count_servicios_autorizados_pendientes_visita = 131;
+  count_proximas_visitas_preventivas = 3;
+  count_servicios_del_dia = 10;
+  count_analisis_causa_raiz = 10;
+  count_cumplimiento_preventivos = 101.28;
+  count_gastos_repostos = 10;
+  count_performance_reactivos = 10;
+  count_gasto_total_acumulado = 10;
+
+  count_reactivos_pendientes_autorizacion = 14;
+
+  getReactivosPendientesAutorizacion() {
+   
+  }
+
+    ngOnInit() {
+      this.dashboardService.getOrdenesServicio().subscribe((data: any) => {
+        console.log(data);
+      });
+
+      this.dashboardService.getOrdenesServicioPorEstado('esperando_aprobacion', TipoOrden.CORRECTIVO).subscribe((data: any) => {
+        this.count_correctivos_pendientes_autorizacion = data;
+      });
+      this.dashboardService.getOrdenesServicioPorEstado('esperando_aprobacion', TipoOrden.REACTIVO).subscribe((data: any) => {
+        this.count_reactivos_pendientes_autorizacion = data;
+      });
+
+      this.dashboardService.getServiciosAutorizadosPendientesVisita().subscribe((data: any) => {
+        this.count_servicios_autorizados_pendientes_visita = data;
+      });
+
+      this.dashboardService.getProximasVisitasPreventivas().subscribe((data: any) => {
+        this.count_proximas_visitas_preventivas = data;
+      });
+
+      this.dashboardService.getServiciosDelDia().subscribe((data: any) => {
+        this.count_servicios_del_dia = data;
+      });
+
+      this.dashboardService.getCumplimientoPreventivos().subscribe((data: any) => {
+        this.count_cumplimiento_preventivos = data;
+      });
+
+      this.dashboardService.getGastosRepuestos().subscribe((data: any) => {
+        this.count_gastos_repostos = data;
+      });
+
+      this.dashboardService.getPerformanceReactivos().subscribe((data: any) => {
+        this.count_performance_reactivos = data;
+      });
+
+      this.dashboardService.getGastoTotalAcumulado().subscribe((data: any) => {
+        this.count_gasto_total_acumulado = data;
+      });
+    }
 }
+
+

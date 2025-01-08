@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
@@ -78,5 +78,38 @@ export class UsersController {
     @ApiOperation({ summary: 'Obtener todos los tecnicos' })
     findAllTecnicos(): Promise<User[]> {
         return this.usersService.findAllTecnicos();
+    }
+
+    @Get('tecnicos/:id')
+    @ApiOperation({ summary: 'Obtener un tecnico por ID' })
+    @ApiParam({ name: 'id', type: Number, description: 'ID del tecnico' })
+    findOneTecnico(@Param('id') id: number): Promise<User | undefined> {
+        return this.usersService.findOneTecnico(id);
+    }
+
+    @Put(':id')
+    @ApiOperation({ summary: 'Actualizar un usuario' })
+    @ApiParam({ name: 'id', type: Number, description: 'ID del usuario' })
+    @ApiBody({
+        description: 'Datos del usuario a actualizar',
+        examples: {
+            ejemplo1: {
+                summary: 'Ejemplo de actualización de usuario',
+                value: {
+                    name: 'Juan Pérez',
+                    lastname: 'Pérez',
+                    email: 'juan@example.com',
+                    rut: '12345678-9',
+                    profile: 'user',
+                    clients: [1, 2, 3] // IDs de los clientes
+                }
+            }
+        }
+    })
+    async updateUser(
+        @Param('id') id: number,
+        @Body() updateUserDto: any
+    ) {
+        return this.usersService.updateUser(id, updateUserDto);
     }
 }

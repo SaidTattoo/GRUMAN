@@ -3,6 +3,8 @@ import { UsersComponent } from './admin/users/users.component'; // Importa el nu
 import { AuthGuard } from './guards/auth.guard';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
+import { EditarTecnicoComponent } from './pages/mantenedores/tecnicos/editar-tecnico/editar-tecnico.component';
+import { ChangelogTimelineComponent } from './components/changelog-timeline/changelog-timeline.component';
 
 export const routes: Routes = [
   {
@@ -21,13 +23,7 @@ export const routes: Routes = [
             (m) => m.LOCALES_ROUTES
           ),
       },
-      {
-        path: 'mantenedores/trabajadores',
-        loadChildren: () =>
-          import('./pages/mantenedores/trabajadores/trabajadores.routes').then(
-            (m) => m.TRABAJADORES_ROUTES
-          ),
-      },
+     
       {
         path: 'mantenedores/especialidades',
         loadChildren: () =>
@@ -169,7 +165,7 @@ export const routes: Routes = [
       {
         path: 'transacciones/solicitud-aprobacion-correctiva',
         loadChildren: () =>
-          import('./pages/transacciones/solicitud-aprovacion-correctiva/solicitud-aprobacion-correctiva.routes').then(
+          import('./pages/transacciones/solicitud-aprobacion-correctiva/solicitud-aprobacion-correctiva.routes').then(
             (m) => m.solicitudAprobacionCorrectivaRoutes
           ),
       },
@@ -250,6 +246,21 @@ export const routes: Routes = [
         component: UsersComponent,
         canActivate: [AuthGuard], // Protege la ruta con el guardia de autenticación
       },
+      {
+        path: 'mantenedores/tecnicos/editar/:id',
+        component: EditarTecnicoComponent
+      },
+      {
+        path: 'changelog',
+        component: ChangelogTimelineComponent,
+        data: { 
+          title: 'Historial de Actualizaciones',
+          urls: [
+            { title: 'Dashboard', url: '/dashboard' },
+            { title: 'Historial de Actualizaciones' }
+          ]
+        }
+      }
     ],
   },
   {
@@ -277,4 +288,9 @@ export const routes: Routes = [
     path: '**',
     redirectTo: 'auth/login', // Redirige a la ruta de login para rutas no encontradas
   },
+  {
+    path: 'changelog',
+    component: ChangelogTimelineComponent,
+    data: { title: 'Historial de Actualizaciones' }
+  }
 ];

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -18,6 +18,8 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { UploadDataService } from 'src/app/services/upload-data.service';
 import Swal from 'sweetalert2';
 import { ClientesService } from 'src/app/services/clientes.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-solicitar-visita',
@@ -37,7 +39,7 @@ import { ClientesService } from 'src/app/services/clientes.service';
   styleUrls: ['./solicitar-visita.component.scss'],
   providers: [provideNativeDateAdapter()],
 })
-export class SolicitarVisitaComponent implements OnInit {
+export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   selectedFiles: File[] = [];
   previewUrls: { [key: number]: SafeUrl } = {};
   locales: any[] = [];
@@ -46,9 +48,11 @@ export class SolicitarVisitaComponent implements OnInit {
   user: any;
   visitaForm: FormGroup;
   urlImage: string[] = []; // Cambiado a arreglo para almacenar las URLs
+  clientId: number;
+  private storageSubscription: Subscription;
 
   constructor(
-    private userService: UserService,
+   private userService: UserService,
     private localesService: LocalesService,
     private tipoServicioService: TipoServicioService,
     private sectoresService: SectoresService,
@@ -56,7 +60,8 @@ export class SolicitarVisitaComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private fb: FormBuilder,
     private uploadDataService: UploadDataService,
-    private clientesService: ClientesService
+    private clientesService: ClientesService,
+    private storage: StorageService
   ) {
     this.visitaForm = this.fb.group({
       tipoServicioId: [null, Validators.required],
@@ -69,15 +74,22 @@ export class SolicitarVisitaComponent implements OnInit {
       fechaIngreso: [null],
     });
   }
-  clientId: number;
+
   ngOnInit(): void {
-  
-    this.user = this.userService.getCurrentUser();
-    console.log(this.user);
-    this.clientId = this.user.companies[0].id;
-    this.getLocales();
-    this.getTipoServicio();
-    this.getSectoresTrabajo();
+    this.storageSubscription = this.storage.user$.subscribe(user => {
+      if (user && user.selectedCompany) {
+        this.clientId = user.selectedCompany.id;
+        this.getLocales();
+        this.getTipoServicio();
+        this.getSectoresTrabajo();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.storageSubscription) {
+      this.storageSubscription.unsubscribe();
+    }
   }
 
   async subirImagenes(visitaId: number): Promise<string[]> {

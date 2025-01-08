@@ -2,6 +2,7 @@ import {
   ApplicationConfig,
   provideZoneChangeDetection,
   importProvidersFrom,
+  LOCALE_ID,
 } from '@angular/core';
 import {
   HttpClient,
@@ -18,6 +19,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideClientHydration } from '@angular/platform-browser';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 
 // icons
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -32,6 +35,9 @@ import { MaterialModule } from './material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
+
+// Registrar el locale español
+registerLocaleData(localeEs, 'es');
 
 export function HttpLoaderFactory(http: HttpClient): any {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -75,5 +81,6 @@ export const appConfig: ApplicationConfig = {
         },
       })
     ),
+    { provide: LOCALE_ID, useValue: 'es' }
   ],
 };

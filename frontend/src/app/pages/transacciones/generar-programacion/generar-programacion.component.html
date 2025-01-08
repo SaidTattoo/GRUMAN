@@ -104,25 +104,25 @@
         </div>
       </div>
 
-      <div class="row">
+   <div class="row">
         <div class="col-sm-4 d-flex align-items-center">
-          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Vehículo *</mat-label>
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Técnico *</mat-label>
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="vehiculo" placeholder="Seleccionar Vehículo">
-              <mat-option *ngFor="let vehiculo of vehiculos" [value]="vehiculo.id">
-                {{ vehiculo.movil }}
+            <mat-select formControlName="user" placeholder="Seleccionar Técnico">
+              <mat-option *ngFor="let tecnico of tecnicos" [value]="tecnico.id">
+                {{ tecnico.name }}
               </mat-option>
             </mat-select>
-            @if (programacionForm.get('vehiculo')?.touched && programacionForm.get('vehiculo')?.invalid) {
+            @if (programacionForm.get('user')?.touched && programacionForm.get('user')?.invalid) {
             <mat-error>
-              {{ getErrorMessage('vehiculo') }}
+              {{ getErrorMessage('user') }}
             </mat-error>
             }
           </mat-form-field>
         </div>
-      </div>
+      </div> 
 
       <div class="row">
         <div class="col-sm-4 d-flex align-items-center">

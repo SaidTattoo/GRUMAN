@@ -1,49 +1,81 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardContent, MatCardHeader, MatCardModule } from '@angular/material/card';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MaterialModule } from 'src/app/material.module';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
-import { CrearTecnicoComponent } from '../crear-tecnico/crear-tecnico.component';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-editar-tecnico',
   standalone: true,
-  imports: [ CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatCardModule, MatCardHeader, MatCardContent ],
-  templateUrl: './editar-tecnico.component.html',
-  styleUrl: './editar-tecnico.component.scss'
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule],
+  templateUrl: './editar-tecnico.component.html'
 })
-export class EditarTecnicoComponent {
+export class EditarTecnicoComponent implements OnInit {
   form: FormGroup;
+  tecnicoId: number;
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<CrearTecnicoComponent>,
-    private tecnicosService: TecnicosService,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    private route: ActivatedRoute,
+    private router: Router,
+    private tecnicosService: TecnicosService
   ) {
-    //console.log(data);
     this.form = this.fb.group({
-      name: [data.tecnico.name, Validators.required],
-      lastname: [data.tecnico.lastname, Validators.required],
-      rut: [data.tecnico.rut, Validators.required],
-      email: [data.tecnico.email, [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      name: ['', Validators.required],
+      lastname: ['', Validators.required],
+      rut: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['']
+    });
+  }
+
+  ngOnInit() {
+    this.route.params.subscribe(params => {
+      this.tecnicoId = params['id'];
+      this.loadTecnico();
+    });
+  }
+
+  loadTecnico() {
+    this.tecnicosService.getTecnico(this.tecnicoId).subscribe({
+      next: (tecnico) => {
+        this.form.patchValue({
+        /*   name: tecnico.name,
+          lastname: tecnico.lastname,
+          rut: tecnico.rut,
+          email: tecnico.email */
+        });
+      },
+      error: (error) => {
+        console.error('Error cargando técnico:', error);
+        Swal.fire('Error', 'No se pudo cargar la información del técnico', 'error');
+      }
     });
   }
 
   onSubmit() {
     if (this.form.valid) {
-      this.tecnicosService.updateTecnico(this.data.tecnico.id, this.form.value).subscribe(() => {
-        this.dialogRef.close();
+      const formData = this.form.value;
+      if (!formData.password) {
+        delete formData.password; // No enviar password si está vacío
+      }
+
+      this.tecnicosService.updateTecnico(this.tecnicoId, formData).subscribe({
+        next: () => {
+          Swal.fire('Éxito', 'Técnico actualizado correctamente', 'success');
+          this.router.navigate(['/mantenedores/tecnicos']);
+        },
+        error: (error) => {
+          console.error('Error actualizando técnico:', error);
+          Swal.fire('Error', 'No se pudo actualizar el técnico', 'error');
+        }
       });
     }
   }
 
   onCancel() {
-    this.dialogRef.close();
+    this.router.navigate(['/mantenedores/tecnicos']);
   }
 }

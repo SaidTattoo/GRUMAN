@@ -39,11 +39,13 @@ export class SelectClientComponent implements OnInit, OnDestroy {
 
   selectCompany(selectedCompany: any): void {
     const currentUser = this.userService.getCurrentUser();
-    const updatedUser = { ...currentUser, companies: [selectedCompany] };
+    const updatedUser = {
+      ...currentUser,
+      selectedCompany: selectedCompany,
+      companies: currentUser.companies
+    };
     
-    // Usar el método del servicio para actualizar el usuario
     this.userService.updateCurrentUser(updatedUser);
-    
     this.router.navigate(['/dashboards/dashboard1']);
   }
 }

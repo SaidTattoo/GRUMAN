@@ -20,7 +20,7 @@ import Swal from 'sweetalert2';
 })
 export class ListadoProgramacionComponent implements OnInit {
   constructor(private programacionService: ProgramacionService, private router: Router, private clienteService: ClientesService) { }
-  displayedColumns: string[] = ['clienteId', 'local', 'sectorTrabajo', 'tipoServicio', 'fecha', 'observaciones', 'vehiculo', 'acciones'];
+  displayedColumns: string[] = ['clienteId', 'local', 'sectorTrabajo', 'tipoServicio', 'fecha', 'observaciones', 'tecnico', 'acciones'];
 
   dataSource: any;
 

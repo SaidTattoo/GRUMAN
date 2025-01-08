@@ -1,11 +1,14 @@
+import { Programacion } from 'src/programacion/programacion.entity';
 import { Client } from '../client/client.entity';
 import { Especialidad } from '../especialidad/especialidad.entity';
+import { OrdenServicio } from '../orden-servicio/orden-servicio.entity';
 import {
     Column,
     CreateDateColumn,
     Entity,
     JoinTable,
     ManyToMany,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
@@ -51,6 +54,18 @@ export class User {
         }
     })
     especialidades: Especialidad[];
+
+    @OneToMany(() => Programacion, programacion => programacion.user)
+    programaciones: Programacion[];
+
+    @OneToMany(() => OrdenServicio, ordenServicio => ordenServicio.tecnico)
+    ordenesServicioTecnico: OrdenServicio[];
+
+    @OneToMany(() => OrdenServicio, ordenServicio => ordenServicio.usuarioRechazo)
+    ordenesServicioRechazadas: OrdenServicio[];
+
+    @OneToMany(() => OrdenServicio, ordenServicio => ordenServicio.usuarioAprobacion)
+    ordenesServicioAprobadas: OrdenServicio[];
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;

@@ -25,6 +25,13 @@ export class ClientService {
         });
     }
 
+    async findAllClientsWithGruman(): Promise<Client[]> {
+        return this.clientRepository.find({ 
+            where: { deleted: false },
+            relations: ['tipoServicio', 'facturaciones'],
+        });
+    }
+
     /** FINDONECLIENT */
     async findOneClient(id: number): Promise<Client | undefined> {
         return this.clientRepository.findOne({ 
