@@ -23,8 +23,8 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <input matInput placeholder="Ingrese el apellido" formControlName="lastname">
-            @if (form.get('lastname')?.invalid) {
+            <input matInput placeholder="Ingrese el apellido" formControlName="lastName">
+            @if (form.get('lastName')?.invalid) {
               <mat-error>El apellido es requerido</mat-error>
             }
           </mat-form-field>

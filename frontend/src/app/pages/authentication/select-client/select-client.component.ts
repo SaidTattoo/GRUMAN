@@ -28,6 +28,11 @@ export class SelectClientComponent implements OnInit, OnDestroy {
     this.userSub = this.storage.user$.subscribe(user => {
       this.user = user;
       this.companies = user?.companies || [];
+      
+      // Si solo hay una compañía, seleccionarla automáticamente
+      if (this.companies.length === 1) {
+        this.selectCompany(this.companies[0]);
+      }
     });
   }
 
@@ -46,6 +51,6 @@ export class SelectClientComponent implements OnInit, OnDestroy {
     };
     
     this.userService.updateCurrentUser(updatedUser);
-    this.router.navigate(['/dashboards/dashboard1']);
+    this.router.navigate(['/dashboards']);
   }
 }

@@ -9,7 +9,7 @@ export const DashboardsRoutes: Routes = [
     path: '',
     children: [
       {
-        path: 'dashboard1',
+        path: '',
         component: AppDashboard1Component,
         data: {
           title: '',

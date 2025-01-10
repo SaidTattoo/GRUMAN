@@ -7,7 +7,7 @@ export const TECNICOS_ROUTES: Routes = [
     path: '',
     component: TecnicosComponent,
     data: {
-      title: 'Tecnicos',
+      title: 'Trabajadores',
     },
   },
   {

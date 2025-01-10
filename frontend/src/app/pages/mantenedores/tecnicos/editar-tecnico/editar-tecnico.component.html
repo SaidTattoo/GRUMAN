@@ -19,8 +19,8 @@
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Apellido</mat-label>
-            <input matInput formControlName="lastname">
-            @if (form.get('lastname')?.invalid && form.get('lastname')?.touched) {
+            <input matInput formControlName="lastName">
+            @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
               <mat-error>El apellido es requerido</mat-error>
             }
           </mat-form-field>

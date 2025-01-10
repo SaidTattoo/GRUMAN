@@ -256,7 +256,7 @@ export const routes: Routes = [
         data: { 
           title: 'Historial de Actualizaciones',
           urls: [
-            { title: 'Dashboard', url: '/dashboard' },
+            { title: 'Dashboard', url: '/dashboards/dashboard1' },
             { title: 'Historial de Actualizaciones' }
           ]
         }

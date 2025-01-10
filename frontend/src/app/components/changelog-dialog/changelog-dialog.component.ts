@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { ChangelogService } from '../../services/changelog.service';
+import { StorageService } from '../../services/storage.service';
 
 interface Change {
   type: 'feature' | 'fix' | 'improvement';
@@ -174,26 +175,35 @@ export class ChangelogDialogComponent implements OnInit {
   constructor(
     private changelogService: ChangelogService,
     private dialogRef: MatDialogRef<ChangelogDialogComponent>,
-    private router: Router
+    private router: Router,
+    private storageService: StorageService
   ) {}
 
   ngOnInit() {
     this.changelogService.getChangelog().subscribe({
       next: (data) => {
         this.lastUpdate = data.lastUpdate;
-        this.recentVersions = data.versions.slice(0, 3).map(version => ({
+        this.recentVersions = data.versions.slice(0, 3).map((version: Version) => ({
           version: version.version,
           date: version.date,
-          changes: version.changes.map(change => ({
+          changes: version.changes.map((change: Change) => ({
             type: change.type as 'feature' | 'fix' | 'improvement',
             description: change.description
           }))
         }));
+        
+        this.updateLastViewedDate();
       },
       error: (error) => {
         console.error('Error loading changelog:', error);
       }
     });
+  }
+
+  private updateLastViewedDate(): void {
+    const currentDate = new Date().toISOString();
+    localStorage.setItem('lastChangelogView', currentDate);
+    this.changelogService.markChangelogAsViewed();
   }
 
   getIconForType(type: string): string {

@@ -56,7 +56,8 @@ export class AppBoxedLoginComponent implements OnInit {
           
           const userWithCompanies = {
             ...response.user,
-            companies: response.user.clientes
+            companies: response.user.clientes,
+            selectedCompany: response.user.clientes[0]
           };
           delete userWithCompanies.clientes;
           

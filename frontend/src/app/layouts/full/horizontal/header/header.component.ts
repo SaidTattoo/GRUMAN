@@ -66,7 +66,48 @@ interface quicklinks {
     MatBadgeModule
   ],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css'],
+  styles: [`
+    .topbar {
+      height: auto !important;
+    }
+    .company-logo {
+      height: 60px !important;
+      width: auto !important;
+      object-fit: contain;
+      margin-right: 15px;
+    }
+    .profile-initials-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #1e88e5;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+    }
+    .profile-initials-circle-large {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #1e88e5;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      font-size: 1.2em;
+    }
+    ::ng-deep .company-menu {
+  max-height: none !important;
+}
+
+::ng-deep .company-menu .mat-menu-content {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+  `],
 })
 export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
   searchText: string = '';
@@ -124,6 +165,11 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
   selectedCompany: any | null = null;
   private userSub: Subscription;
   unreadChanges = 0;
+  user: any = null;
+  currentClient: any = null;
+
+  showBadge$ = this.changelogService.hasUnreadChanges$;
+
   constructor(
     private vsidenav: CoreService,
     public dialog: MatDialog,
@@ -159,14 +205,20 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.changelogService.unreadChanges$.subscribe(
-      count => {
-        this.unreadChanges = count;
-        console.log('Unread changes:', count);
+    this.changelogService.hasUnreadChanges$.subscribe(
+      hasUnread => {
+        this.unreadChanges = hasUnread ? 1 : 0;
+        console.log('Has unread changes:', hasUnread);
       }
     );
     
-    this.changelogService.refreshUnreadCount();
+    this.changelogService.checkUnreadChanges();
+
+    this.authService.currentUser.subscribe(user => {
+      this.user = user;
+    });
+
+    this.changelogService.checkUnreadChanges();
   }
 
   ngOnDestroy(): void {
@@ -181,7 +233,7 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(() => {
-      this.changelogService.refreshUnreadCount();
+      this.changelogService.checkUnreadChanges();
     });
   }
   onCompanySelect(company: any): void {
@@ -364,6 +416,17 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
       link: '/theme-pages/treeview',
     },
   ];
+
+  changeClient(client: any): void {
+    this.currentClient = client;
+    this.selectedCompany = client;
+    const currentUser = this.storage.getItem('currentUser');
+    const updatedUser = { 
+      ...currentUser,
+      selectedCompany: client
+    };
+    this.storage.setItem('currentUser', updatedUser);
+  }
 }
 
 @Component({

@@ -6,6 +6,13 @@ import { MaterialModule } from 'src/app/material.module';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
 import Swal from 'sweetalert2';
 
+interface Tecnico {
+  name: string;
+  lastName: string;
+  rut: string;
+  email: string;
+}
+
 @Component({
   selector: 'app-editar-tecnico',
   standalone: true,
@@ -24,7 +31,7 @@ export class EditarTecnicoComponent implements OnInit {
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
-      lastname: ['', Validators.required],
+      lastName: ['', Validators.required],
       rut: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['']
@@ -40,12 +47,12 @@ export class EditarTecnicoComponent implements OnInit {
 
   loadTecnico() {
     this.tecnicosService.getTecnico(this.tecnicoId).subscribe({
-      next: (tecnico) => {
+      next: (tecnico: any) => {
         this.form.patchValue({
-        /*   name: tecnico.name,
-          lastname: tecnico.lastname,
+          name: tecnico.name,
+          lastName: tecnico.lastName || tecnico.lastName,
           rut: tecnico.rut,
-          email: tecnico.email */
+          email: tecnico.email 
         });
       },
       error: (error) => {

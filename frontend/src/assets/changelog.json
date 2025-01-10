@@ -1,6 +1,88 @@
 {
-  "lastUpdate": "2024-03-21",
+  "lastUpdate": "2025-01-10",
   "versions": [
+    {
+      "version": "1.0.6",
+      "date": "2025-01-10",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Simplificada la URL del dashboard principal de /dashboards/dashboard1 a /dashboards"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error de visualización en el formulario de solicitud de visita cuando no hay cliente seleccionado"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la visualización del número de ticket mostrando el nombre del cliente actual"
+        },
+        {
+          "type": "fix",
+          "description": "Identificado error en la consulta SQL al editar clientes con campos listaInspeccion y tipoServicio"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error en el formato de envío de clientId al editar usuarios técnicos - Se requiere enviar array de IDs en lugar de objeto completo"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema de visualización y actualización del apellido en formularios de edición de técnicos y usuarios"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error al guardar tipos de servicio en la edición de clientes"
+        }
+      ]
+    },
+    {
+      "version": "1.0.5",
+      "date": "2025-01-10",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Simplificada la URL del dashboard principal de /dashboards/dashboard1 a /dashboards"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error de visualización en el formulario de solicitud de visita cuando no hay cliente seleccionado"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la visualización del número de ticket mostrando el nombre del cliente actual"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema de visualización de menús para usuarios con un solo cliente"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la selección automática de empresa para usuarios con cliente único"
+        }
+      ]
+    },
+    {
+      "version": "1.0.4",
+      "date": "2025-01-08",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Rediseño del menú de selección de empresas"
+        },
+        {
+          "type": "fix",
+          "description": "Eliminado el scroll innecesario en el menú de empresas"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejor alineación y espaciado de logos y nombres de empresas"
+        },
+        {
+          "type": "improvement",
+          "description": "Optimización visual en la presentación de empresas sin logo"
+        }
+      ]
+    },
     {
       "version": "1.0.3",
       "date": "2024-03-21",

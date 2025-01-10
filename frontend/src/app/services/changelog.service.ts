@@ -1,64 +1,40 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
-
-interface ChangelogEntry {
-  version: string;
-  date: string;
-  changes: {
-    type: 'feature' | 'fix' | 'improvement';
-    description: string;
-  }[];
-}
-
-interface Changelog {
-  lastUpdate: string;
-  versions: ChangelogEntry[];
-}
+import { tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChangelogService {
-  private readonly STORAGE_KEY = 'last_changelog_read';
-  private unreadChangesSubject = new BehaviorSubject<number>(0);
-  unreadChanges$ = this.unreadChangesSubject.asObservable();
+  private hasUnreadChanges = new BehaviorSubject<boolean>(false);
+  public hasUnreadChanges$ = this.hasUnreadChanges.asObservable();
 
   constructor(private http: HttpClient) {
     this.checkUnreadChanges();
   }
 
-  getChangelog(): Observable<Changelog> {
-    return this.http.get<Changelog>('assets/changelog.json');
+  getChangelog(): Observable<any> {
+    return this.http.get<any>('assets/changelog.json');
   }
 
-  private checkUnreadChanges() {
-    const lastReadDate = localStorage.getItem(this.STORAGE_KEY);
+  checkUnreadChanges(): void {
+    const lastViewedDate = localStorage.getItem('lastChangelogView');
     
     this.getChangelog().subscribe(changelog => {
-      if (!lastReadDate) {
-        const totalChanges = changelog.versions.reduce(
-          (total, version) => total + version.changes.length, 0
-        );
-        this.unreadChangesSubject.next(totalChanges);
+      if (!lastViewedDate) {
+        this.hasUnreadChanges.next(true);
         return;
       }
 
-      const unreadChanges = changelog.versions
-        .filter(version => new Date(version.date) > new Date(lastReadDate))
-        .reduce((total, version) => total + version.changes.length, 0);
-
-      this.unreadChangesSubject.next(unreadChanges);
+      const lastUpdate = new Date(changelog.lastUpdate);
+      const lastViewed = new Date(lastViewedDate);
+      
+      this.hasUnreadChanges.next(lastUpdate > lastViewed);
     });
   }
 
-  markChangesAsRead() {
-    const currentDate = new Date().toISOString();
-    localStorage.setItem(this.STORAGE_KEY, currentDate);
-    this.unreadChangesSubject.next(0);
-  }
-
-  refreshUnreadCount() {
-    this.checkUnreadChanges();
+  markChangelogAsViewed(): void {
+    this.hasUnreadChanges.next(false);
   }
 } 

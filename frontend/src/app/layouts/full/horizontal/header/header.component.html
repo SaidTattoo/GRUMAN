@@ -4,28 +4,31 @@
       <app-branding></app-branding>
     </div>
     
-    @if(userProfile?.companies?.length === 1) {
+    @if(userCompanies && userCompanies.length === 1) {
       <div>
-        <span class="f-s-14 mat-body-1">{{ userProfile.companies[0].nombre }}</span>
+        <div class="d-flex align-items-center">
+          @if (selectedCompany?.logo) {
+            <img [src]="selectedCompany.logo" alt="logo" class="company-logo me-4">
+          }
+          <span class="f-s-14 mat-body-1">{{ userCompanies[0].nombre }}</span>
+        </div>
       </div>
     }
     
-    @if(userProfile?.companies?.length > 1) {
-      <div class="m-l-auto">
-        <button mat-button [matMenuTriggerFor]="companyMenu" class="company-select-btn">
+    @if(userCompanies && userCompanies.length > 1) {
+      <div class="m-l-auto d-flex align-items-center justify-content-center">
+        <div class="d-flex align-items-center">
           @if (selectedCompany?.logo) {
-            <img [src]="selectedCompany.logo" alt="company logo" class="company-logo">
+            <img [src]="selectedCompany.logo" alt="logo" class="company-logo me-4">
           }
-          <span class="ms-2">{{ selectedCompany?.name || 'Seleccionar Cliente' }}</span>
-          <mat-icon>keyboard_arrow_down</mat-icon>
-        </button>
-      </div>
-    }
-
-    @if(selectedCompany) {
-      <div class="d-flex align-items-center m-l-8">
-        <img [src]="selectedCompany.logo" width="60" alt="{{ selectedCompany.nombre }}" />
-        <button mat-icon-button [matMenuTriggerFor]="companyMenu" class="ms-2" matTooltip="Cambiar Cliente">
+          <span class="me-2">{{ selectedCompany?.nombre || 'Seleccionar Cliente' }}</span>
+        </div>
+        <button 
+          mat-icon-button 
+          [matMenuTriggerFor]="companyMenu" 
+          class="ms-2" 
+          matTooltip="Cambiar Cliente"
+        >
           <mat-icon>swap_horiz</mat-icon>
         </button>
       </div>
@@ -83,17 +86,33 @@
   >
     <mat-icon>update</mat-icon>
   </button>
-    <mat-menu #companyMenu="matMenu" class="company-menu">
+    <mat-menu #companyMenu="matMenu">
       @for (company of userCompanies; track company.id) {
-        <button mat-menu-item (click)="onCompanySelect(company)">
-          @if (company.logo) {
-            <img [src]="company.logo" alt="company logo" class="company-logo">
-          }
-          <span class="ms-2">{{ company.nombre }}</span>
+        <button 
+          mat-menu-item 
+          (click)="onCompanySelect(company)"
+          [class.active]="company.id === selectedCompany?.id"
+          class="d-flex align-items-center"
+          style=" padding: 16px 24px;"
+        >
+          <div class="d-flex align-items-center">
+            @if (company.logo) {
+              <img 
+                [src]="company.logo" 
+                alt="logo" 
+                style="margin-right: 16px; width: 48px; height: 48px; object-fit: contain; border: 1px solid #eee;"
+              >
+            } @else {
+              <div style="margin-right: 16px; width: 48px; height: 48px; border: 1px solid #eee; display: flex; align-items: center; justify-content: center;">
+                <mat-icon style="font-size: 32px; opacity: 0.7;">business</mat-icon>
+              </div>
+            }
+            <div class="ms-4">
+              <span style="font-size: 14px; color: rgba(0,0,0,0.87);">{{company.nombre}}</span>
+            </div>
+          </div>
+         
         </button>
-      }
-      @empty {
-        <button mat-menu-item disabled>No hay compañías disponibles</button>
       }
     </mat-menu>
   </div>
