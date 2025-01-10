@@ -50,7 +50,7 @@ export class ClienteUsuariosComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       rut: ['', Validators.required],
       password: ['', Validators.required],
-      lastname: ['', Validators.required],
+      lastName: ['', Validators.required],
       repetirContrasena: ['', Validators.required],
       especialidades: [[]],
     }, { validators: this.passwordMatchValidator });
@@ -96,7 +96,7 @@ export class ClienteUsuariosComponent implements OnInit {
       rut: formValues.rut,
       password: formValues.password,
       repetirContrasena: formValues.repetirContrasena,
-      lastname: formValues.lastname,
+      lastName: formValues.lastName,
       especialidades: [],
     };
 

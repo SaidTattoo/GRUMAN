@@ -10,7 +10,7 @@ import Swal from 'sweetalert2';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-editar-tecnico-gruman',
@@ -24,18 +24,21 @@ export class EditarTecnicoGrumanComponent {
   tecnicoForm: FormGroup;
   especialidades: any[] = [];
   idClient: number = 0;
+  tecnicoId: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private especialidadService: EspecialidadesService,
     private router: Router,
+    private route: ActivatedRoute,
     private clientesService: ClientesService,
     private userServices: TecnicosService  ) {
     this.tecnicoForm = this.fb.group({
       name: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-      confirmPassword: ['', Validators.required],
+      /* password: ['', Validators.required],
+      confirmPassword: ['', Validators.required], */
       especialidades: [[], Validators.required],
       profile: ['tecnico'],
       rut: ['', Validators.required],
@@ -47,6 +50,13 @@ export class EditarTecnicoGrumanComponent {
   ngOnInit() {
     this.cargarEspecialidades();
     this.findIdClientByName('GRUMAN');
+    
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.tecnicoId = +params['id'];
+        this.cargarDatosTecnico(this.tecnicoId);
+      }
+    });
   }
 
   cargarEspecialidades() {
@@ -59,34 +69,65 @@ export class EditarTecnicoGrumanComponent {
       this.idClient = id;
     });
   }
+  cargarDatosTecnico(id: number) {
+    this.userServices.getTecnico(id).subscribe({
+      next: (tecnico: any) => {
+        this.tecnicoForm.patchValue({
+          name: tecnico.name,
+          lastName: tecnico.lastName,
+          email: tecnico.email,
+          rut: tecnico.rut,
+          especialidades: tecnico.especialidades.map((esp: any) => esp.id),
+        });
+        
+     /*    this.tecnicoForm.get('password')?.clearValidators();
+        this.tecnicoForm.get('confirmPassword')?.clearValidators(); */
+        this.tecnicoForm.get('password')?.updateValueAndValidity();
+        this.tecnicoForm.get('confirmPassword')?.updateValueAndValidity();
+      },
+      error: (error) => {
+        Swal.fire('Error', 'No se pudo cargar los datos del técnico', 'error');
+      }
+    });
+  }
   onSubmit() {
     if (this.tecnicoForm.valid) {
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: '¿Deseas crear un nuevo técnico?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Crear',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const userData = {
-                    ...this.tecnicoForm.value,
-                    clientId: this.idClient
-                };
-                delete userData.confirmPassword; // Eliminar confirmPassword
+      const mensaje = this.tecnicoId ? '¿Deseas actualizar el técnico?' : '¿Deseas crear un nuevo técnico?';
+      
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: mensaje,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: this.tecnicoId ? 'Actualizar' : 'Crear',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const userData = {
+            ...this.tecnicoForm.value,
+            clientId: this.idClient
+          };
+          delete userData.confirmPassword;
 
-                this.userServices.createTecnico(userData).subscribe({
-                    next: (response: any) => {
-                        Swal.fire('Éxito', 'Técnico creado correctamente', 'success');
-                        this.router.navigate(['/mantenedores/tecnicos-gruman']);
-                    },
-                    error: (error: any) => {
-                        Swal.fire('Error', 'No se pudo crear el técnico', 'error');
-                    }
-                });
+          if (!userData.password) {
+            delete userData.password;
+          }
+
+          const action = this.tecnicoId 
+            ? this.userServices.updateTecnicoGruman(this.tecnicoId, userData)
+            : this.userServices.createTecnico(userData);
+
+          action.subscribe({
+            next: (response: any) => {
+              Swal.fire('Éxito', `Técnico ${this.tecnicoId ? 'actualizado' : 'creado'} correctamente`, 'success');
+              this.router.navigate(['/mantenedores/tecnicos-gruman']);
+            },
+            error: (error: any) => {
+              Swal.fire('Error', `No se pudo ${this.tecnicoId ? 'actualizar' : 'crear'} el técnico`, 'error');
             }
-        });
+          });
+        }
+      });
     }
   }
   onCancel() {

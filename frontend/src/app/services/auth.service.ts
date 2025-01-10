@@ -38,6 +38,7 @@ export class AuthService {
           profile: decodedToken.profile,
           companies: decodedToken.clients, // Manejar array de compañías
           token: response.token,
+          selectedCompany: decodedToken.clients.length === 1 ? decodedToken.clients[0] : null,
           exp: decodedToken.exp // Añadir la fecha de expiración del token
         };
         localStorage.setItem('currentUser', JSON.stringify(user));

@@ -67,7 +67,7 @@ import Swal from 'sweetalert2';
             </div>
             <div class="col-sm-8">
               <mat-form-field appearance="outline" class="w-100">
-                <input matInput formControlName="lastname" placeholder="Ingrese Apellido">
+                <input matInput formControlName="lastName" placeholder="Ingrese Apellido">
               </mat-form-field>
             </div>
           </div>
@@ -139,7 +139,7 @@ export class EditarClienteUsuarioComponent implements OnInit {
     this.clienteUsuarioForm = this.fb.group({
       perfil: ['', Validators.required],
       name: ['', Validators.required],
-      lastname: ['', Validators.required],
+      lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       rut: ['', Validators.required]
     });
@@ -165,7 +165,7 @@ export class EditarClienteUsuarioComponent implements OnInit {
         this.clienteUsuarioForm.patchValue({
           perfil: usuario.profile,
           name: usuario.name,
-          lastname: usuario.lastname,
+          lastName: usuario.lastName,
           email: usuario.email,
           rut: usuario.rut
         });

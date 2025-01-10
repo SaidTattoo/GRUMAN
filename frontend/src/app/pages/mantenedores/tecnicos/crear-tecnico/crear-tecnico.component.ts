@@ -30,7 +30,7 @@ export class CrearTecnicoComponent implements OnInit {
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
-      lastname: ['', Validators.required],
+      lastName: ['', Validators.required],
       rut: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],

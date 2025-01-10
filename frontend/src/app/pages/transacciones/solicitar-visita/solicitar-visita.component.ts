@@ -21,6 +21,12 @@ import { ClientesService } from 'src/app/services/clientes.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 
+interface Client {
+  id: number;
+  nombre: string;
+  // ... otros campos necesariosa
+}
+
 @Component({
   selector: 'app-solicitar-visita',
   standalone: true,
@@ -50,6 +56,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   urlImage: string[] = []; // Cambiado a arreglo para almacenar las URLs
   clientId: number;
   private storageSubscription: Subscription;
+  client: Client | null = null;
 
   constructor(
    private userService: UserService,
@@ -73,12 +80,22 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       observaciones: [''],
       fechaIngreso: [null],
     });
+
+    // Obtener el cliente seleccionado del localStorage o de un servicio
+    const selectedClient = localStorage.getItem('selectedClient');
+    this.client = selectedClient ? JSON.parse(selectedClient) : null;
   }
 
   ngOnInit(): void {
     this.storageSubscription = this.storage.user$.subscribe(user => {
       if (user && user.selectedCompany) {
         this.clientId = user.selectedCompany.id;
+        // Obtener los datos del cliente
+        this.clientesService.getCliente(this.clientId).subscribe(
+          (clientData) => {
+            this.client = clientData;
+          }
+        );
         this.getLocales();
         this.getTipoServicio();
         this.getSectoresTrabajo();

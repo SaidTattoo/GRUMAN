@@ -24,6 +24,13 @@ export class TecnicosService {
         clients: data.clientId
     });
   }
+
+
+  updateTecnicoGruman(id: number, data: any) {
+    return this.http.put(`${this.apiUrl}users/${id}`, data);
+  }
+
+
   deleteTecnico(id: number) {
     return this.http.delete(`${this.apiUrl}users/tecnicos/${id}`);
   }

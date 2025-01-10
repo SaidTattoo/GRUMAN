@@ -151,29 +151,66 @@ export class UsersService {
     }
 
     async updateUser(id: number, updateUserDto: any): Promise<User> {
+        console.log('=== DEBUG UPDATE USER SERVICE ===');
+        console.log('Buscando usuario con ID:', id);
+        
         const user = await this.userRepository.findOne({
             where: { id },
-            relations: ['clients']
+            relations: ['clients', 'especialidades']
         });
 
         if (!user) {
+            console.log('Usuario no encontrado');
             throw new NotFoundException('Usuario no encontrado');
         }
+        console.log('Usuario encontrado:', JSON.stringify(user, null, 2));
 
-        // Actualizar los datos básicos del usuario
-        Object.assign(user, {
-            name: updateUserDto.name,
-            lastname: updateUserDto.lastname,
-            email: updateUserDto.email,
-            rut: updateUserDto.rut,
-            profile: updateUserDto.profile
-        });
+        try {
+            // Actualizar los datos básicos del usuario
+            const updateData = {
+                name: updateUserDto.name,
+                lastName: updateUserDto.lastName || updateUserDto.lastName,
+                email: updateUserDto.email,
+                rut: updateUserDto.rut,
+                profile: updateUserDto.perfil || updateUserDto.profile
+            };
+            console.log('Datos a actualizar:', JSON.stringify(updateData, null, 2));
 
-        // Si se proporcionan nuevos clientes, actualizar la relación
-        if (updateUserDto.clients) {
-            user.clients = await this.clientRepository.findByIds(updateUserDto.clients);
+            // Si hay especialidades, actualizarlas
+            if (updateUserDto.especialidades) {
+                console.log('Actualizando especialidades:', updateUserDto.especialidades);
+                const especialidades = await this.especialidadRepository.findByIds(
+                    updateUserDto.especialidades
+                );
+                user.especialidades = especialidades;
+            }
+
+            // Manejar la actualización de clientes
+            if (updateUserDto.clientId || updateUserDto.clients) {
+                const clientIds = updateUserDto.clientId || updateUserDto.clients;
+                console.log('Actualizando clientes:', clientIds);
+                
+                // Asegurarse de que tenemos un array de IDs
+                const ids = Array.isArray(clientIds) ? clientIds : [clientIds];
+                
+                const clients = await this.clientRepository.findByIds(ids);
+                if (clients.length === 0) {
+                    throw new NotFoundException('Clientes no encontrados');
+                }
+                user.clients = clients;
+            }
+
+            // Aplicar actualizaciones básicas
+            Object.assign(user, updateData);
+            
+            console.log('Usuario antes de guardar:', JSON.stringify(user, null, 2));
+            const savedUser = await this.userRepository.save(user);
+            console.log('Usuario guardado:', JSON.stringify(savedUser, null, 2));
+            
+            return savedUser;
+        } catch (error) {
+            console.error('Error al actualizar usuario:', error);
+            throw error;
         }
-
-        return this.userRepository.save(user);
     }
 }

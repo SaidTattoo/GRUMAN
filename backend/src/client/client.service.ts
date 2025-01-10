@@ -94,14 +94,15 @@ export class ClientService {
             if (updateClientDto.nombre) client.nombre = updateClientDto.nombre;
             if (updateClientDto.rut) client.rut = updateClientDto.rut;
             if (updateClientDto.razonSocial) client.razonSocial = updateClientDto.razonSocial;
+            if (updateClientDto.sobreprecio) client.sobreprecio = updateClientDto.sobreprecio;
+            if (updateClientDto.valorPorLocal) client.valorPorLocal = updateClientDto.valorPorLocal;
+            if (updateClientDto.logo) client.logo = updateClientDto.logo;
             
-            // Actualizar tipo de servicio si existe
-            if (updateClientDto.tipoServicio) {
-                const servicio = await this.tipoServicioRepository.findOne({
-                    where: { id: updateClientDto.tipoServicio.id }
-                });
-                if (servicio) {
-                    client.tipoServicio = [servicio];
+            // Actualizar tipos de servicio si existen
+            if (updateClientDto.tipoServicio && Array.isArray(updateClientDto.tipoServicio)) {
+                const servicios = await this.tipoServicioRepository.findByIds(updateClientDto.tipoServicio);
+                if (servicios.length > 0) {
+                    client.tipoServicio = servicios;
                 }
             }
 

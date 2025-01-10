@@ -97,7 +97,7 @@ export class UsersController {
                 summary: 'Ejemplo de actualización de usuario',
                 value: {
                     name: 'Juan Pérez',
-                    lastname: 'Pérez',
+                    lastName: 'Pérez',
                     email: 'juan@example.com',
                     rut: '12345678-9',
                     profile: 'user',
@@ -110,6 +110,17 @@ export class UsersController {
         @Param('id') id: number,
         @Body() updateUserDto: any
     ) {
-        return this.usersService.updateUser(id, updateUserDto);
+        console.log('=== DEBUG UPDATE USER CONTROLLER ===');
+        console.log('ID recibido:', id);
+        console.log('DTO recibido:', JSON.stringify(updateUserDto, null, 2));
+        
+        try {
+            const result = await this.usersService.updateUser(id, updateUserDto);
+            console.log('Resultado de actualización:', JSON.stringify(result, null, 2));
+            return result;
+        } catch (error) {
+            console.error('Error en controller:', error);
+            throw error;
+        }
     }
 }

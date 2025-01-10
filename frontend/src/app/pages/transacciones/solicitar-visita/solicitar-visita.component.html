@@ -73,15 +73,15 @@
         </div>
       </div>
 
-      <!-- Ticket Gruman -->
+      <!-- Ticket Cliente -->
       <div class="row">
         <div class="col-sm-4 d-flex align-items-center">
-          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Ticket Gruman</mat-label>
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Ticket {{client?.nombre || 'Cliente'}}</mat-label>
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
             <input matInput formControlName="ticketGruman" placeholder="Ingrese número de ticket">
-            <mat-hint>Corresponde al número de ticket interno de Gruman</mat-hint>
+            <mat-hint>Corresponde al número de ticket interno de {{client?.nombre}}</mat-hint>
           </mat-form-field>
         </div>
       </div>

@@ -41,7 +41,7 @@ export const ChartsRoutes: Routes = [
         data: {
           title: 'Column Chart',
           urls: [
-            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Dashboard', url: '/dashboards' },
             { title: 'Column Chart' },
           ],
         },
@@ -52,7 +52,7 @@ export const ChartsRoutes: Routes = [
         data: {
           title: 'Doughnut-Pie Chart',
           urls: [
-            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Dashboard', url: '/dashboards' },
             { title: 'Doughnut-Pie Chart' },
           ],
         },
@@ -63,7 +63,7 @@ export const ChartsRoutes: Routes = [
         data: {
           title: 'Gredient Chart',
           urls: [
-            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Dashboard', url: '/dashboards' },
             { title: 'Gredient Chart' },
           ],
         },
@@ -74,7 +74,7 @@ export const ChartsRoutes: Routes = [
         data: {
           title: 'Line Chart',
           urls: [
-            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Dashboard', url: '/dashboards' },
             { title: 'Line Chart' },
           ],
         },
@@ -85,7 +85,7 @@ export const ChartsRoutes: Routes = [
         data: {
           title: 'Radial-Radar Chart',
           urls: [
-            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Dashboard', url: '/dashboards' },
             { title: 'Radial-Radar Chart' },
           ],
         },
