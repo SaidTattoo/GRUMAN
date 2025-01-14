@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
@@ -14,7 +15,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-crear-sector',
   standalone: true,
-  imports: [ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatSelectModule, MatInputModule, MatButtonModule],
+  imports: [ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatSelectModule, MatInputModule, MatButtonModule, MatIconModule],
   templateUrl: './crear-sector.component.html',
   styleUrl: './crear-sector.component.scss'
 })
@@ -67,5 +68,9 @@ export class CrearSectorComponent implements OnInit {
         this.router.navigate(['/mantenedores/sectores-trabajo']);
       });
     }
+  }
+
+  volver(): void {
+    this.router.navigate(['/mantenedores/sectores-trabajo']);
   }
 }

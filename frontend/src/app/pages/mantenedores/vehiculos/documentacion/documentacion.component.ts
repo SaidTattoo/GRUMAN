@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatListModule } from '@angular/material/list';
@@ -10,10 +10,14 @@ import { UploadDataService } from 'src/app/services/upload-data.service';
 import { VehiculosService } from 'src/app/services/vehiculos.service';
 import Swal from 'sweetalert2';
 import { firstValueFrom } from 'rxjs';
-
+import { MatDialog } from '@angular/material/dialog';
+import { DocumentosService } from 'src/app/services/documentos.service';
+  
 interface Documento {
   fecha?: string;
   nombre?: string;
+  id?: number;
+  fechaVencimiento?: Date;
 }
 
 interface DocumentacionVehiculo {
@@ -22,7 +26,7 @@ interface DocumentacionVehiculo {
   seguro_obligatorio: Documento | null;
   gases: Documento | null;
   otros: Documento[];
-  [key: string]: Documento | null | Documento[] | undefined;
+  [key: string]: Documento | null | Documento[];
 }
 
 @Component({
@@ -36,6 +40,7 @@ interface DocumentacionVehiculo {
     MatButtonModule,
     MatTooltipModule
   ],
+  providers: [DocumentosService],
   templateUrl: './documentacion.component.html',
   styleUrls: ['./documentacion.component.scss']
 })
@@ -54,7 +59,9 @@ export class DocumentacionComponent implements OnInit {
     private uploadService: UploadDataService,
     private vehiculosService: VehiculosService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog,
+    private documentosService: DocumentosService
   ) {
     this.vehiculoId = this.route.snapshot.params['id'];
   }
@@ -85,17 +92,23 @@ export class DocumentacionComponent implements OnInit {
         const formData = new FormData();
         formData.append('file', file);
 
-        const path =
-          tipo === 'otros'
-            ? `vehiculos/${this.vehiculoId}/documentos/otros/${encodeURIComponent(nombreArchivo)}`
-            : `vehiculos/${this.vehiculoId}/documentos/${tipo}`;
+        const path = tipo === 'otros'
+          ? `vehiculos/${this.vehiculoId}/documentos/otros/${encodeURIComponent(nombreArchivo)}`
+          : `vehiculos/${this.vehiculoId}/documentos/${tipo}`;
 
         try {
           console.log(`Intentando subir archivo a ${path}`);
-          const response = await firstValueFrom(this.uploadService.uploadFile(formData, path));
-          console.log('Respuesta del servidor:', response);
+          const documento = await firstValueFrom(this.uploadService.uploadFile(formData, path));
+          console.log('Respuesta del servidor:', documento);
 
-          await this.cargarDocumentacion();
+          // Actualizar el documento en la estructura local
+          if (tipo === 'otros') {
+            this.documentacion.otros.push(documento);
+          } else {
+            this.documentacion[tipo] = documento;
+          }
+          
+          this.cdr.detectChanges();
           Swal.fire('Éxito', 'Documento subido correctamente', 'success');
         } catch (error) {
           console.error('Error al subir documento:', error);
@@ -104,7 +117,7 @@ export class DocumentacionComponent implements OnInit {
       }
     };
 
-    input.click(); 
+    input.click();
   }
 
   descargarDocumento(tipo: string, nombre?: string) {
@@ -203,5 +216,77 @@ export class DocumentacionComponent implements OnInit {
         Swal.fire('Error', 'No se pudo cargar la documentación', 'error');
       }
     });
+  }
+
+  async actualizarFechaVencimiento(tipo: string, nombre?: string) {
+    console.log('Actualizando fecha de vencimiento para:', tipo, nombre);
+    
+    // Obtener el documento actual
+    let doc: any = null;
+    if (tipo === 'otros' && nombre) {
+      doc = this.documentacion.otros.find(d => d.nombre === nombre) || null;
+    } else {
+      doc = this.documentacion[tipo];
+    }
+
+    if (!doc || !doc.id) {
+      console.error('No se encontró el ID del documento');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se encontró el documento'
+      });
+      return;
+    }
+
+    const { value: fechaVencimiento } = await Swal.fire({
+      title: 'Seleccionar fecha de vencimiento',
+      html: '<input type="date" id="fecha-vencimiento" class="swal2-input">',
+      didOpen: () => {
+        const input = document.getElementById('fecha-vencimiento') as HTMLInputElement;
+        if (doc.fechaVencimiento) {
+          input.value = new Date(doc.fechaVencimiento).toISOString().split('T')[0];
+        } else {
+          input.value = new Date().toISOString().split('T')[0];
+        }
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const input = document.getElementById('fecha-vencimiento') as HTMLInputElement;
+        return input.value ? new Date(input.value) : null;
+      }
+    });
+
+    if (fechaVencimiento) {
+      this.documentosService.actualizarFechaVencimiento(doc.id, fechaVencimiento).subscribe({
+        next: (response) => {
+          if (tipo === 'otros') {
+            const index = this.documentacion.otros.findIndex(d => d.nombre === nombre);
+            if (index !== -1) {
+              this.documentacion.otros[index] = response;
+            }
+          } else {
+            this.documentacion[tipo] = response;
+          }
+          this.cdr.detectChanges();
+          Swal.fire({
+            icon: 'success',
+            title: 'Fecha de vencimiento actualizada',
+            showConfirmButton: false,
+            timer: 1500
+          });
+        },
+        error: (error) => {
+          console.error('Error al actualizar fecha de vencimiento:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo actualizar la fecha de vencimiento'
+          });
+        }
+      });
+    }
   }
 }

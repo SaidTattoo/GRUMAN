@@ -58,7 +58,9 @@ export class CrearLocalComponent implements OnInit {
       nombre_encargado: ['', Validators.required],
       latitud: ['', Validators.required],
       longitud: ['', Validators.required],
-      numeroLocal: ['', Validators.required]
+      numeroLocal: ['', Validators.required],
+      sobreprecio: [0, [Validators.required, Validators.min(0)]],
+      valorPorLocal: [0, [Validators.required, Validators.min(0)]]
     });
     this.getClientes();
     this.cargarRegiones();

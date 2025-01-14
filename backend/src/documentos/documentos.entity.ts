@@ -12,6 +12,9 @@ export class Documentos {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fecha: Date;
 
+  @Column({ type: 'timestamp', nullable: true })
+  fechaVencimiento: Date;
+
   @Column()
   path: string;
 

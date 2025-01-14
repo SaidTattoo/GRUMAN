@@ -74,7 +74,29 @@
                 </mat-form-field>
               </div>
             </div>
-         
+            <div class="row">
+              <div class="col-sm-4 d-flex align-items-center">
+                <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Sobreprecio</mat-label>
+              </div>
+              <div class="col-sm-8">
+                <mat-form-field appearance="outline" class="w-100">
+                  <input matInput type="number" placeholder="Ingrese el sobreprecio" formControlName="sobreprecio" />
+                  <span matSuffix>%</span>
+                </mat-form-field>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-sm-4 d-flex align-items-center">
+                <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Valor por Local</mat-label>
+              </div>
+              <div class="col-sm-8">
+                <mat-form-field appearance="outline" class="w-100">
+                  <input matInput type="number" placeholder="Ingrese el valor por local" formControlName="valorPorLocal" />
+                  <span matPrefix>$</span>
+                </mat-form-field>
+              </div>
+            </div>
           </div>
           <div class="col-sm-6">
             <div class="row">

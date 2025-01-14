@@ -20,5 +20,16 @@ export class SectoresTrabajoDefaultService {
     async createSectores(sectorTrabajo: SectorTrabajoDefault): Promise<SectorTrabajoDefault> {
         return this.sectorTrabajoDefaultRepository.save(sectorTrabajo);
     }
+
+    async findOne(id: number): Promise<SectorTrabajoDefault> {
+        return this.sectorTrabajoDefaultRepository.findOne({ 
+            where: { id, deleted: false }
+        });
+    }
+
+    async updateSectorDefault(id: number, sector: SectorTrabajoDefault): Promise<SectorTrabajoDefault> {
+        await this.sectorTrabajoDefaultRepository.update(id, sector);
+        return this.sectorTrabajoDefaultRepository.findOne({ where: { id } });
+    }
     
 }

@@ -20,4 +20,10 @@ export class SectoresService {
   createSectorDefault(sector: any): Observable<any> {
     return this.http.post(`${this.apiUrl}sectores-trabajo-default`, sector);
   }
+  updateSectorDefault(id: number, sector: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}sectores-trabajo-default/${id}`, sector);
+  }
+  findOne(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}sectores-trabajo-default/${id}`);
+  }
 }
