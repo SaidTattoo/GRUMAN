@@ -21,7 +21,7 @@ import Swal from 'sweetalert2';
 })
 export class LocalesComponent implements OnInit, AfterViewInit {
   private map: any;
-  displayedColumns: string[] = ['cliente','nombre_local', 'direccion', 'comuna', 'region', 'zona', 'grupo', 'referencia', 'telefono', 'email_local', 'email_encargado', 'nombre_encargado', 'latitud', 'longitud', 'acciones'];
+  displayedColumns: string[] = ['cliente', 'nombre_local', 'direccion', 'comuna', 'region', 'sobreprecio', 'valorPorLocal', 'telefono', 'email_local', 'email_encargado', 'nombre_encargado', 'latitud', 'longitud', 'acciones'];
   dataSource = new MatTableDataSource<any>();
   constructor(private localesService: LocalesService, private dialog: MatDialog, private router: Router) {}
 

@@ -55,7 +55,7 @@ export class EditarLocalComponent implements OnInit{
       region: ['', Validators.required],
       provincia: [{value: '', disabled: true}, Validators.required],
       comuna: [{value: '', disabled: true}, Validators.required],
-      cliente: ['', Validators.required],
+      client: ['', Validators.required],
       zona: [''],
       grupo: ['', Validators.required],
       referencia: [''],
@@ -65,7 +65,9 @@ export class EditarLocalComponent implements OnInit{
       nombre_encargado: ['', Validators.required],
       latitud: ['', Validators.required],
       longitud: ['', Validators.required],
-      numeroLocal: ['', Validators.required]
+      numeroLocal: ['', Validators.required],
+      sobreprecio: [0, [Validators.required, Validators.min(0)]],
+      valorPorLocal: [0, [Validators.required, Validators.min(0)]]
     });
   }
 
@@ -100,7 +102,7 @@ export class EditarLocalComponent implements OnInit{
               comuna: local.comuna.comuna_id,
               nombre_local: local.nombre_local,
               direccion: local.direccion,
-              cliente: local.client.id,
+              client: local.client.id,
               zona: local.zona,
               grupo: local.grupo,
               referencia: local.referencia,
@@ -110,7 +112,9 @@ export class EditarLocalComponent implements OnInit{
               nombre_encargado: local.nombre_encargado,
               latitud: local.latitud,
               longitud: local.longitud,
-              numeroLocal: local.numeroLocal
+              numeroLocal: local.numeroLocal,
+              sobreprecio: local.sobreprecio,
+              valorPorLocal: local.valorPorLocal
             });
 
             // Forzar la detección de cambios
@@ -240,7 +244,7 @@ export class EditarLocalComponent implements OnInit{
   onClienteChange(event: any) {
     const clienteId = event.value;
     //console.log('Cliente seleccionado:', clienteId);
-    let nombreCliente = this.clientes.find(cliente => cliente.id === this.localForm.get('cliente')?.value)?.nombre;
+    let nombreCliente = this.clientes.find(cliente => cliente.id === this.localForm.get('client')?.value)?.nombre;
     const palabrasExcluidas = ['y', 'de', 'la', 'el', 'los', 'las', 'del', 'al', 'en', 'por', 'con', 'para'];
     if (nombreCliente) {
       const palabras = nombreCliente.split(' ').filter((palabra: string) => !palabrasExcluidas.includes(palabra.toLowerCase()));

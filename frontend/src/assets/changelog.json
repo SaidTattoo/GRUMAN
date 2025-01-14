@@ -1,6 +1,36 @@
 {
-  "lastUpdate": "2025-01-10",
+  "lastUpdate": "2025-01-14",
   "versions": [
+    {
+      "version": "1.0.7",
+      "date": "2025-01-14",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Corregido error en la actualización de sectores por defecto que no retornaba la entidad actualizada"
+        },
+        {
+          "type": "feature",
+          "description": "Agregado campo de fecha de vencimiento a los documentos"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error en la actualización de locales donde la propiedad 'cliente' no coincidía con 'client' en la entidad"
+        },
+        {
+          "type": "feature",
+          "description": "Agregada funcionalidad para establecer y modificar sobreprecio y valor por local en la creación y edición de locales"
+        },
+        {
+          "type": "improvement",
+          "description": "Actualizada la visualización del listado de locales: removidos campos Zona, Grupo y Referencia, agregados campos de Sobreprecio y Valor por Local"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorado el ancho de columnas en tablas para optimizar la visualización de datos"
+        }
+      ]
+    },
     {
       "version": "1.0.6",
       "date": "2025-01-10",

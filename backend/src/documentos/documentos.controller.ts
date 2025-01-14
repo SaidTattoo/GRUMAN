@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, UploadedFile, UseInterceptors, Patch } from '@nestjs/common';
 import { DocumentosService } from './documentos.service';
 import { Documentos } from './documentos.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -27,15 +27,19 @@ export class DocumentosController {
           throw new HttpException('No se recibió ningún archivo', HttpStatus.BAD_REQUEST);
         }
   
-        const result = await this.documentosService.guardarDocumento(vehiculoId, tipoDocumento, file);
-        return {
-          message: 'Documento subido correctamente',
-          path: result.path,
-        };
+        const documento = await this.documentosService.guardarDocumento(vehiculoId, tipoDocumento, file);
+        return documento;
       } catch (error) {
         console.error('Error al subir documento:', error);
         throw new HttpException('Error al subir el documento', HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
 
+    @Patch(':id/fecha-vencimiento')
+    async actualizarFechaVencimiento(
+      @Param('id') id: number,
+      @Body('fechaVencimiento') fechaVencimiento: Date
+    ) {
+      return this.documentosService.actualizarFechaVencimiento(id, fechaVencimiento);
+    }
 }

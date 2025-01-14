@@ -17,7 +17,12 @@
             <ng-container matColumnDef="acciones">
                 <mat-header-cell *matHeaderCellDef> Acciones </mat-header-cell>
                 <mat-cell *matCellDef="let element"> 
-                    <button mat-icon-button color="primary" (click)="editarSector(element.id)">
+                    <button 
+                        mat-icon-button 
+                        color="primary" 
+                        [routerLink]="['/mantenedores/sectores-trabajo/editar-default', element.id]"
+                        matTooltip="Editar sector"
+                    >
                         <mat-icon>edit</mat-icon>
                     </button>
                 </mat-cell>

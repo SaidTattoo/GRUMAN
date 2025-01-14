@@ -56,7 +56,11 @@ export class Locales {
 
   @Column({ type: 'decimal', precision: 10, scale: 8 })
   longitud: number;
+  @Column({   type: 'decimal', precision: 10, scale: 2, default: 0.0 })
+  sobreprecio: number;
 
+  @Column({  type: 'decimal', precision: 10, scale: 2, default: 0.0 })
+  valorPorLocal: number;
   @ManyToOne(() => Client, (client) => client.locales, { eager: false })
   @JoinColumn({ name: 'clientId' }) // Asegúrate de que la columna en la base de datos sea 'clientId'
   client: Client; // Cambia el nombre de la relación para que sea 'client'

@@ -1,13 +1,16 @@
-<mat-list>
+<mat-list class="documentacion-list">
   <div mat-subheader>Documentación del Vehículo</div>
   
   <mat-list-item>
     <mat-icon matListItemIcon>description</mat-icon>
-    <div matListItemTitle>Revisión Técnica</div>
-    <div matListItemLine>
-      {{ documentacion.revision_tecnica?.fecha ? (documentacion.revision_tecnica?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}
+    <div matListItemTitle class="documento-titulo">Revisión Técnica</div>
+    <div matListItemLine class="fecha-container">
+      <div>Fecha: {{ documentacion.revision_tecnica?.fecha ? (documentacion.revision_tecnica?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}</div>
+      <div class="text-muted">
+        Vence: {{ documentacion.revision_tecnica?.fechaVencimiento ? (documentacion.revision_tecnica?.fechaVencimiento | date:'dd/MM/yyyy') : 'Sin fecha de vencimiento' }}
+      </div>
     </div>
-    <div matListItemMeta>
+    <div matListItemMeta class="acciones-container">
       @if (documentacion.revision_tecnica) {
         <button mat-icon-button color="primary" 
                 (click)="descargarDocumento('revision_tecnica')" 
@@ -18,6 +21,11 @@
                 (click)="actualizarDocumento('revision_tecnica')" 
                 matTooltip="Actualizar">
           <mat-icon>update</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" 
+                (click)="actualizarFechaVencimiento('revision_tecnica')" 
+                matTooltip="Actualizar fecha de vencimiento">
+          <mat-icon>event</mat-icon>
         </button>
         <button mat-icon-button color="warn" 
                 (click)="eliminarDocumento('revision_tecnica')" 
@@ -38,7 +46,10 @@
     <mat-icon matListItemIcon>eco</mat-icon>
     <div matListItemTitle>Certificado de Gases</div>
     <div matListItemLine>
-      {{ documentacion.gases?.fecha ? (documentacion.gases?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}
+      <div>Fecha: {{ documentacion.gases?.fecha ? (documentacion.gases?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}</div>
+      <div class="text-muted">
+        Vence: {{ documentacion.gases?.fechaVencimiento ? (documentacion.gases?.fechaVencimiento | date:'dd/MM/yyyy') : 'Sin fecha de vencimiento' }}
+      </div>
     </div>
     <div matListItemMeta>
       @if (documentacion['gases']) {
@@ -49,6 +60,11 @@
                 (click)="actualizarDocumento('gases')" 
                 matTooltip="Actualizar">
           <mat-icon>update</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" 
+                (click)="actualizarFechaVencimiento('gases')" 
+                matTooltip="Actualizar fecha de vencimiento">
+          <mat-icon>event</mat-icon>
         </button>
         <button mat-icon-button color="warn" (click)="eliminarDocumento('gases')" matTooltip="Eliminar">
           <mat-icon>delete</mat-icon>
@@ -61,13 +77,14 @@
     </div>
   </mat-list-item>
 
-
-
   <mat-list-item>
     <mat-icon matListItemIcon>card_membership</mat-icon>
     <div matListItemTitle>Permiso de Circulación</div>
     <div matListItemLine>
-      {{ documentacion.permiso_circulacion?.fecha ? (documentacion.permiso_circulacion?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}
+      <div>Fecha: {{ documentacion.permiso_circulacion?.fecha ? (documentacion.permiso_circulacion?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}</div>
+      <div class="text-muted">
+        Vence: {{ documentacion.permiso_circulacion?.fechaVencimiento ? (documentacion.permiso_circulacion?.fechaVencimiento | date:'dd/MM/yyyy') : 'Sin fecha de vencimiento' }}
+      </div>
     </div>
     <div matListItemMeta>
       @if (documentacion['permiso_circulacion']) {
@@ -78,6 +95,11 @@
                 (click)="actualizarDocumento('permiso_circulacion')" 
                 matTooltip="Actualizar">
           <mat-icon>update</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" 
+                (click)="actualizarFechaVencimiento('permiso_circulacion')" 
+                matTooltip="Actualizar fecha de vencimiento">
+          <mat-icon>event</mat-icon>
         </button>
         <button mat-icon-button color="warn" (click)="eliminarDocumento('permiso_circulacion')" matTooltip="Eliminar">
           <mat-icon>delete</mat-icon>
@@ -94,7 +116,10 @@
     <mat-icon matListItemIcon>security</mat-icon>
     <div matListItemTitle>Seguro Obligatorio</div>
     <div matListItemLine>
-      {{ documentacion.seguro_obligatorio?.fecha ? (documentacion.seguro_obligatorio?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}
+      <div>Fecha: {{ documentacion.seguro_obligatorio?.fecha ? (documentacion.seguro_obligatorio?.fecha | date:'dd/MM/yyyy') : 'No registrada' }}</div>
+      <div class="text-muted">
+        Vence: {{ documentacion.seguro_obligatorio?.fechaVencimiento ? (documentacion.seguro_obligatorio?.fechaVencimiento | date:'dd/MM/yyyy') : 'Sin fecha de vencimiento' }}
+      </div>
     </div>
     <div matListItemMeta>
       @if (documentacion['seguro_obligatorio']) {
@@ -106,6 +131,11 @@
                 matTooltip="Actualizar">
           <mat-icon>update</mat-icon>
         </button>
+        <button mat-icon-button color="accent" 
+                (click)="actualizarFechaVencimiento('seguro_obligatorio')" 
+                matTooltip="Actualizar fecha de vencimiento">
+          <mat-icon>event</mat-icon>
+        </button>
         <button mat-icon-button color="warn" (click)="eliminarDocumento('seguro_obligatorio')" matTooltip="Eliminar">
           <mat-icon>delete</mat-icon>
         </button>
@@ -116,6 +146,7 @@
       }
     </div>
   </mat-list-item>
+
   <mat-divider></mat-divider>
   <!-- Otros Documentos -->
   <mat-list-item>
@@ -139,21 +170,29 @@
 
   <!-- Lista de otros documentos -->
   @if (documentacion && documentacion.otros.length) {
-    @for (doc of documentacion.otros; track doc.nombre) {
+    @for (doc of documentacion.otros; track $index) {
       <mat-list-item class="sub-item">
         <mat-icon matListItemIcon>description</mat-icon>
-        <div matListItemTitle>{{ doc.nombre }}</div>
+        <div matListItemTitle>{{ doc.nombre || 'Documento sin nombre' }}</div>
         <div matListItemLine>
-          {{ doc.fecha | date:'dd/MM/yyyy HH:mm' }}
+          <div>Fecha: {{ doc.fecha | date:'dd/MM/yyyy HH:mm' }}</div>
+          <div class="text-muted">
+            Vence: {{ doc.fechaVencimiento ? (doc.fechaVencimiento | date:'dd/MM/yyyy') : 'Sin fecha de vencimiento' }}
+          </div>
         </div>
         <div matListItemMeta>
           <button mat-icon-button color="primary" 
-                  (click)="descargarDocumento('otros', doc.nombre)" 
+                  (click)="descargarDocumento('otros', doc?.nombre)" 
                   matTooltip="Descargar">
             <mat-icon>download</mat-icon>
           </button>
+          <button mat-icon-button color="accent" 
+                  (click)="actualizarFechaVencimiento('otros', doc?.nombre)" 
+                  matTooltip="Actualizar fecha de vencimiento">
+            <mat-icon>event</mat-icon>
+          </button>
           <button mat-icon-button color="warn" 
-                  (click)="eliminarDocumento('otros', doc.nombre)" 
+                  (click)="eliminarDocumento('otros', doc?.nombre)" 
                   matTooltip="Eliminar">
             <mat-icon>delete</mat-icon>
           </button>

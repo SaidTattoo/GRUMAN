@@ -79,3 +79,27 @@ button[mat-icon-button] {
   font-size: 0.8em;
   color: rgba(0, 0, 0, 0.6);
 }
+
+.documentacion-list {
+  .mat-mdc-list-item {
+    height: auto;
+    padding: 16px 0;
+  }
+
+  .documento-titulo {
+    min-width: 150px;
+  }
+
+  .fecha-container {
+    flex: 1;
+    padding: 0 16px;
+    min-width: 250px;
+  }
+
+  .acciones-container {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    min-width: 160px;
+  }
+}
