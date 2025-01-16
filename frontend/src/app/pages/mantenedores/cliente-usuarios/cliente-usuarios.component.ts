@@ -108,7 +108,7 @@ export class ClienteUsuariosComponent implements OnInit {
           title: 'Usuario creado',
           text: 'El usuario ha sido creado exitosamente.',
         });
-        this.router.navigate(['/mantenedores/tecnicos']);
+        this.router.navigate(['/mantenedores/usuarios']);
       },
       error: (err) => {
         console.error('Error al crear usuario', err);
