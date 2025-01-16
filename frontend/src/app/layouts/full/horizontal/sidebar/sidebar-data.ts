@@ -49,7 +49,7 @@ export const navItems: NavItem[] = [
   {
     displayName: 'Escritorio',
     iconName: 'home',
-    route: 'dashboards/dashboard1',
+    route: 'dashboards',
     bgcolor: 'primary',
 
   },{

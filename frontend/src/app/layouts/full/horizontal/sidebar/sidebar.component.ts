@@ -87,7 +87,7 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
       {
         displayName: 'Escritorio',
         iconName: 'home',
-        route: 'dashboards/dashboard1',
+        route: 'dashboards',
         bgcolor: 'primary',
       },
       ...(showMantenedores

@@ -120,7 +120,7 @@ export class AppDashboard1Component  implements OnInit{
   }
 
     ngOnInit() {
-      this.dashboardService.getOrdenesServicio().subscribe((data: any) => {
+     /*  this.dashboardService.getOrdenesServicio().subscribe((data: any) => {
         console.log(data);
       });
 
@@ -157,7 +157,7 @@ export class AppDashboard1Component  implements OnInit{
 
       this.dashboardService.getGastoTotalAcumulado().subscribe((data: any) => {
         this.count_gasto_total_acumulado = data;
-      });
+      }); */
     }
 }
 
