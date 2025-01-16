@@ -181,7 +181,7 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 {
                   displayName: 'Trabajadores',
                   iconName: 'user',
-                  route: 'mantenedores/tecnicos',
+                  route: 'mantenedores/trabajadores',
                 },
                 {
                   displayName: 'Repuestos',

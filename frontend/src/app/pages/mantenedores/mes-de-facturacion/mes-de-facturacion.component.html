@@ -21,7 +21,14 @@
                         </button>
                     </ng-container>
                     <ng-template #mostrarCantidad>
-                        {{element.facturaciones.length}}
+                        <div class="date-range">
+                            <mat-icon class="date-icon">date_range</mat-icon>
+                            <span class="date-text">
+                                {{element.facturaciones[0].fecha_inicio | date:'dd/MM/yyyy' }}
+                                <mat-icon class="separator">arrow_forward</mat-icon>
+                                {{element.facturaciones[0].fecha_termino | date:'dd/MM/yyyy' }}
+                            </span>
+                        </div>
                     </ng-template>
                 </mat-cell>
             </ng-container>

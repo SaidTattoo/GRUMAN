@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Put, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
@@ -86,6 +86,18 @@ export class UsersController {
     findOneTecnico(@Param('id') id: number): Promise<User | undefined> {
         return this.usersService.findOneTecnico(id);
     }
+    @Post('login_tecnico')
+    @ApiOperation({ summary: 'Login de tecnico' })
+    @ApiBody({
+        description: 'Datos del usuario a actualizar',
+        examples: {
+            ejemplo1: { value: { rut: '12345678-9', password: 'password' } },
+        },
+    })
+
+    loginTecnico(@Body() loginDto: { rut: string, password: string }): Promise<User> {
+        return this.usersService.loginTecnico(loginDto.rut, loginDto.password);
+    }
 
     @Put(':id')
     @ApiOperation({ summary: 'Actualizar un usuario' })
@@ -106,6 +118,7 @@ export class UsersController {
             }
         }
     })
+   
     async updateUser(
         @Param('id') id: number,
         @Body() updateUserDto: any
@@ -122,5 +135,12 @@ export class UsersController {
             console.error('Error en controller:', error);
             throw error;
         }
+    }
+    
+    @Delete('tecnicos/:id')
+    @ApiOperation({ summary: 'Eliminar un técnico' })
+    @ApiParam({ name: 'id', type: Number, description: 'ID del técnico a eliminar' })
+    async deleteTecnico(@Param('id') id: number): Promise<void> {
+        return this.usersService.deleteTecnico(id);
     }
 }

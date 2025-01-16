@@ -37,6 +37,9 @@ export class FacturacionService {
         });
     }
 
+
+    
+
     async generarFacturacionMensual(cliente: Client, anio_inicio: number, anios: number) {
         const meses = [
             'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -95,10 +98,23 @@ export class FacturacionService {
             throw new Error('Cliente no encontrado');
         }
 
+        const mesActual = new Date().getMonth();
         const anioActual = new Date().getFullYear();
-        const ANIOS_FACTURACION = 2;
-        
-        await this.generarFacturacionMensual(cliente, anioActual, ANIOS_FACTURACION);
+        const meses = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+        ];
+
+        const fecha_inicio = new Date(anioActual, mesActual, 1);
+        const fecha_termino = new Date(anioActual, mesActual + 1, 0);
+
+        await this.crearFacturacion(
+            cliente, 
+            `${meses[mesActual]} ${anioActual}`, 
+            fecha_inicio, 
+            fecha_termino, 
+            0
+        );
         
         return cliente;
     }

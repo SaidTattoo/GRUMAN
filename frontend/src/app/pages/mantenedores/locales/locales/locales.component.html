@@ -66,7 +66,7 @@
 
           <!-- Sobreprecio Column -->
           <ng-container matColumnDef="sobreprecio">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 ">
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 min-w-100">
               Sobreprecio
             </th>
             <td mat-cell *matCellDef="let element">
@@ -76,8 +76,8 @@
 
           <!-- Valor por Local Column -->
           <ng-container matColumnDef="valorPorLocal">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 min-w-200">
-              Valor por  Local
+            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 min-w-100">
+              Valor Local
             </th>
             <td mat-cell *matCellDef="let element">
               ${{ element.valorPorLocal }}
