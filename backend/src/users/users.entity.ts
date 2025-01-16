@@ -21,7 +21,7 @@ export class User {
     @Column()
     name: string;
 
-    @Column()
+    @Column({ default:'', nullable: true })
     lastName: string;
 
     @Column({ unique: true })
@@ -75,5 +75,8 @@ export class User {
 
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt: Date;
+
+    @Column({ default: false })
+    disabled: boolean;
 }
   

@@ -46,7 +46,7 @@ export const routes: Routes = [
             (m) => m.TIPO_ACTIVO_ROUTES
           ),
       },{
-        path: 'mantenedores/tecnicos',
+        path: 'mantenedores/trabajadores',
         loadChildren: () =>
           import('./pages/mantenedores/tecnicos/tecnicos.routes').then(
             (m) => m.TECNICOS_ROUTES

@@ -20,35 +20,35 @@ export class UsersService {
 
     /** findAllUsers */
     findAllUsers(): Promise<User[]> {
-        return this.userRepository.find({ relations: ['clients'] });
+        return this.userRepository.find({ where: { disabled: false }, relations: ['clients'] });
     }
 
     findAllTecnicos(): Promise<User[]> {
-        return this.userRepository.find({ where: { profile: 'tecnico' }, relations: ['especialidades'] });
+        return this.userRepository.find({ where: { profile: 'tecnico', disabled: false }, relations: ['especialidades'] });
     }
 
     findOneTecnico(id: number): Promise<User | undefined> {
-        return this.userRepository.findOne({ where: { id }, relations: ['clients',  'especialidades'] });
+        return this.userRepository.findOne({ where: { id, disabled: false }, relations: ['clients',  'especialidades'] });
     }
 
     /** FINDALLUSERS WHERE CLIENTE  */
     findAllUsersByClient(clientId: number): Promise<User[]> {
-        return this.userRepository.find({ where: { clients: { id: clientId } }, relations: ['clients'] });
+        return this.userRepository.find({ where: { clients: { id: clientId }, disabled: false }, relations: ['clients'] });
     }
 
     /** FINDONEUSER */
     async findOneUser(rut: string): Promise<User | undefined> {
-        return this.userRepository.findOne({ where: { rut }, relations: ['clients'] });
+        return this.userRepository.findOne({ where: { rut, disabled: false }, relations: ['clients'] });
     }
     async findByEmail(email: string): Promise<User | undefined> {
-        return this.userRepository.findOne({ where: { email }, relations: ['clients'] });
+        return this.userRepository.findOne({ where: { email, disabled: false }, relations: ['clients'] });
     }
 
     /** CREATEUSER  and asign client */
     /**encode password */
     async createUser(createUserDto: CreateUserDto): Promise<User> {
         console.log(' createUserDto ------------->', createUserDto);
-        const { name, rut, email, password, profile, clientId, especialidades } = createUserDto;
+        const { name, lastName, rut, email, password, profile, clientId, especialidades } = createUserDto;
         //console.log('------------->', createUserDto);
         if (!createUserDto.clientId || !Array.isArray(createUserDto.clientId)) {
             throw new BadRequestException('clientId debe ser un array válido');
@@ -80,6 +80,7 @@ export class UsersService {
         const user = this.userRepository.create({
           rut,
           name,
+          lastName,
           email,
           profile,
           password: hashedPassword,
@@ -108,7 +109,7 @@ export class UsersService {
         const users: User[] = [];
 
         for (const createUserDto of createUsersDto) {
-            const { name, rut, email, password, profile, clientId, especialidades } = createUserDto;
+            const { name, lastName, rut, email, password, profile, clientId, especialidades } = createUserDto;
             //console.log('------------->',createUserDto);
 
             const existingUser = await this.userRepository.findOne({
@@ -136,6 +137,7 @@ export class UsersService {
             const user = this.userRepository.create({
                 rut,
                 name,
+                lastName,
                 email,
                 profile,
                 password: hashedPassword,
@@ -212,5 +214,20 @@ export class UsersService {
             console.error('Error al actualizar usuario:', error);
             throw error;
         }
+    }
+    async loginTecnico(rut: string, password: string): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { rut } });
+        if (!user) {
+            throw new NotFoundException('Usuario no encontrado');
+        }
+        return user;
+    }
+    async deleteTecnico(id: number): Promise<void> {
+        const user = await this.userRepository.findOne({ where: { id } });
+        if (!user) {
+            throw new NotFoundException('Usuario no encontrado');
+        }
+        user.disabled = true;
+        await this.userRepository.save(user);
     }
 }

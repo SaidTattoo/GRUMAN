@@ -6,6 +6,10 @@
       "date": "2025-01-16",
       "changes": [
         {
+          "type": "improvement",
+          "description": "Mejorado el diseño visual del rango de fechas en la tabla de mes de facturación"
+        },
+        {
           "type": "fix",
           "description": "Corregido problema de actualización del currentUser al editar clientes asignados"
         },

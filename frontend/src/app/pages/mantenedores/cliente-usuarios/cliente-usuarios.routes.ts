@@ -7,14 +7,14 @@ export const CLIENTE_USUARIOS_ROUTES: Routes = [
         path: '',
         component: ClienteUsuariosComponent,
         data: { 
-            title: 'Usuarios de Cliente'
+            title: 'Usuarios del sistema'
         }
     },
     {
         path: 'editar/:id',
         component: EditarClienteUsuarioComponent,
         data: {
-            title: 'Editar Usuario de Cliente'
+            title: 'Editar Usuario del sistema'
         }
     }
 ];

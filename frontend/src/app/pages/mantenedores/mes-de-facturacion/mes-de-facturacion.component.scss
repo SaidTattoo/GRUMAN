@@ -1,0 +1,27 @@
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-icon {
+    color: #666;
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
+}
+
+.date-text {
+    display: flex;
+    align-items: center;
+    color: #333;
+    font-size: 14px;
+}
+
+.separator {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+    margin: 0 4px;
+    color: #666;
+}

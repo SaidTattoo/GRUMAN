@@ -71,11 +71,17 @@ export class CrearTecnicoGrumanComponent implements OnInit {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
+                const formValues = this.tecnicoForm.value;
                 const userData = {
-                    ...this.tecnicoForm.value,
+                    name: formValues.name,
+                    lastName: formValues.lastName,
+                    email: formValues.email,
+                    password: formValues.password,
+                    rut: formValues.rut,
+                    profile: formValues.profile,
+                    especialidades: formValues.especialidades,
                     clientId: [this.idClient]
                 };
-                delete userData.confirmPassword; // Eliminar confirmPassword
 
                 this.userServices.createTecnico(userData).subscribe({
                     next: (response) => {
@@ -83,7 +89,6 @@ export class CrearTecnicoGrumanComponent implements OnInit {
                         this.router.navigate(['/mantenedores/tecnicos-gruman']);
                     },
                     error: (error) => {
-                      /* dejar la palabra rut y email en negrita */
                         Swal.fire('Error', `No se pudo crear el técnico por que el <strong>Rut</strong> o el <strong>Email</strong> ya existe`, 'error');
                     }
                 });
