@@ -266,6 +266,6 @@ export class EditarClienteUsuarioComponent implements OnInit {
   }
 
   onCancel() {
-    this.router.navigate(['/mantenedores/tecnicos']);
+    this.router.navigate(['/mantenedores/trabajadores']);
   }
 } 

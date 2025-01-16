@@ -179,7 +179,7 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                   route: 'mantenedores/tipo-activo',
                 },
                 {
-                  displayName: 'Trabajadores',
+                  displayName: 'Usuarios del sistema',
                   iconName: 'user',
                   route: 'mantenedores/trabajadores',
                 },
@@ -198,11 +198,11 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                   iconName: 'file-description',
                   route: 'mantenedores/lista-de-inspecciones',
                 },
-                {
+              /*   {
                   displayName: 'Cliente Usuarios',
                   iconName: 'home-shield',
                   route: 'mantenedores/cliente-usuarios',
-                },
+                }, */
                 {
                   displayName: 'Listado de Documentos',
                   iconName: 'file-description',

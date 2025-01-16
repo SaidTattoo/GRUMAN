@@ -101,7 +101,11 @@
         </div>
       </div>
       <div class="row justify-content-end">
-        <div class="col-sm-8">
+        <div class="col-sm-8 d-flex gap-2">
+          <button mat-button type="button" (click)="volver()">
+            <mat-icon>arrow_back</mat-icon>
+            Volver
+          </button>
           <button mat-button type="button" (click)="onCancel()">Cancelar</button>
           <button mat-flat-button color="primary" type="submit">Guardar</button>
         </div>

@@ -9,12 +9,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
 import Swal from 'sweetalert2';
+import { CommonModule, Location } from '@angular/common';
+import { MatIcon } from '@angular/material/icon';
+import { Router } from '@angular/router';
 
 
 @Component({
   selector: 'app-crear-tecnico',
   standalone: true,
-  imports: [MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, ReactiveFormsModule, MatSelectModule],
+  imports: [MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, ReactiveFormsModule, MatSelectModule, CommonModule, MatIcon],
   templateUrl: './crear-tecnico.component.html',
   styleUrls: ['./crear-tecnico.component.scss']
 })
@@ -26,7 +29,9 @@ export class CrearTecnicoComponent implements OnInit {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<CrearTecnicoComponent>,
     private tecnicosService: TecnicosService,
-    private especialidadService: EspecialidadesService
+    private especialidadService: EspecialidadesService,
+    private location: Location,
+    private router: Router
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
@@ -87,6 +92,10 @@ export class CrearTecnicoComponent implements OnInit {
   }
 
   onCancel() {
-    this.dialogRef.close(false);
+    this.router.navigate(['/mantenedores/trabajadores']);
+  }
+
+  volver() {
+    this.router.navigate(['/mantenedores/trabajadores']);
   }
 }
