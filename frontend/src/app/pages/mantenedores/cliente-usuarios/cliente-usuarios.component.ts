@@ -138,7 +138,7 @@ export class ClienteUsuariosComponent implements OnInit {
 
 
   onCancel() {
-    this.router.navigate(['/mantenedores/trabajadores']);
+    this.router.navigate(['/mantenedores/usuarios']);
   }
 
 

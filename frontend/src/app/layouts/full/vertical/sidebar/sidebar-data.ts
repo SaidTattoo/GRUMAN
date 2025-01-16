@@ -32,7 +32,7 @@ export const navItems: NavItem[] = [
     displayName: 'Trabajadores',
     iconName: 'home-shield',
     bgcolor: 'primary',
-    route: 'mantenedores/trabajadores',
+    route: 'mantenedores/usuarios',
   },
   {
     displayName: 'Dashboard 1',

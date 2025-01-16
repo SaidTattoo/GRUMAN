@@ -85,10 +85,10 @@ export class EditarTecnicoComponent implements OnInit {
   }
 
   onCancel() {
-    this.router.navigate(['/mantenedores/trabajadores']);
+    this.router.navigate(['/mantenedores/usuarios']);
   }
 
   volver() {
-    this.router.navigate(['/mantenedores/trabajadores']);
+    this.router.navigate(['/mantenedores/usuarios']);
   }
 }

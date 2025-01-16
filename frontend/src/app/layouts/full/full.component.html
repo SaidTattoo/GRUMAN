@@ -87,36 +87,37 @@
       (toggleMobileFilterNav)="filterNavRight.toggle()"></app-horizontal-header>
     } @if(options.horizontal) {
     <ng-container>
-      <app-horizontal-sidebar></app-horizontal-sidebar>
+      <!-- el menu queda sobre el scroll, no quiero eso  -->
+      <app-horizontal-sidebar style="position: fixed; top: 110px; left: 0; right: 15px; z-index: 995; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.08);"></app-horizontal-sidebar>
+      
+      <main class="pageWrapper" style="padding-top: 90px;" [ngClass]="{
+        maxWidth: options.boxed
+      }">
+        <!-- ============================================================== -->
+        <!-- VerticalHeader -->
+        <!-- ============================================================== -->
+        @if(!options.horizontal) {
+        <ng-container>
+          <app-header [showToggle]="!isOver" (toggleCollapsed)="toggleCollapsed()" (toggleMobileNav)="sidenav.toggle()"
+            (toggleMobileFilterNav)="filterNavRight.toggle()"></app-header>
+        </ng-container>
+        }
+
+        <div class="m-t-30" [ngClass]="{ 'p-l-24 p-r-24': options.horizontal }">
+          <app-breadcrumb></app-breadcrumb>
+          <!-- ============================================================== -->
+          <!-- Outlet -->
+          <!-- ============================================================== -->
+          <router-outlet></router-outlet>
+        </div>
+       <!--  <div class="customizerBtn">
+          <button mat-fab color="primary" (click)="customizerRight.toggle()">
+            <mat-icon>settings</mat-icon>
+          </button>
+        </div> -->
+      </main>
     </ng-container>
     }
-
-    <main class="pageWrapper" [ngClass]="{
-      maxWidth: options.boxed
-    }">
-      <!-- ============================================================== -->
-      <!-- VerticalHeader -->
-      <!-- ============================================================== -->
-      @if(!options.horizontal) {
-      <ng-container>
-        <app-header [showToggle]="!isOver" (toggleCollapsed)="toggleCollapsed()" (toggleMobileNav)="sidenav.toggle()"
-          (toggleMobileFilterNav)="filterNavRight.toggle()"></app-header>
-      </ng-container>
-      }
-
-      <div class="m-t-30" [ngClass]="{ 'p-l-24 p-r-24': options.horizontal }">
-        <app-breadcrumb></app-breadcrumb>
-        <!-- ============================================================== -->
-        <!-- Outlet -->
-        <!-- ============================================================== -->
-        <router-outlet></router-outlet>
-      </div>
-     <!--  <div class="customizerBtn">
-        <button mat-fab color="primary" (click)="customizerRight.toggle()">
-          <mat-icon>settings</mat-icon>
-        </button>
-      </div> -->
-    </main>
   </mat-sidenav-content>
  <!--  <mat-sidenav #customizerRight mode="over" position="end">
     <div class="p-x-16 p-y-20 d-flex align-items-center justify-content-between">

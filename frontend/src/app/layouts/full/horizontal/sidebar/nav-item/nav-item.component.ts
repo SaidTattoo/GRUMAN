@@ -14,6 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [TablerIconsModule, CommonModule, MatIconModule],
   templateUrl: './nav-item.component.html',
+
 })
 export class AppHorizontalNavItemComponent implements OnInit {
   @Input() depth: any;
