@@ -1,6 +1,28 @@
 {
-  "lastUpdate": "2025-01-14",
+  "lastUpdate": "2025-01-16",
   "versions": [
+    {
+      "version": "1.0.8",
+      "date": "2025-01-16",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Corregido problema de actualización del currentUser al editar clientes asignados"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la sincronización del localStorage y el estado de la aplicación"
+        },
+        {
+          "type": "improvement",
+          "description": "Actualizada la visualización del tipo de servicio mostrando el nombre en lugar del ID"
+        },
+        {
+          "type": "improvement",
+          "description": "Removida la obligatoriedad del campo especialidad en el formulario de solicitud de visita"
+        }
+      ]
+    },
     {
       "version": "1.0.7",
       "date": "2025-01-14",

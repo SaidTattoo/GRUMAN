@@ -200,8 +200,12 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
         this.userRole = user.profile;
         this.userEmail = user.email;
         this.userCompanies = user.companies || [];
-        this.selectedCompany = user.selectedCompany || 
-                             (this.userCompanies.length === 1 ? this.userCompanies[0] : null);
+        
+        if (!this.userCompanies.find(c => c.id === this.selectedCompany?.id)) {
+          this.selectedCompany = this.userCompanies.length === 1 ? 
+            this.userCompanies[0] : 
+            user.selectedCompany || null;
+        }
       }
     });
 
