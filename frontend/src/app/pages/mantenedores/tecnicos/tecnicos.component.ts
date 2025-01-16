@@ -100,4 +100,47 @@ export class TecnicosComponent implements OnInit {
     //console.log(tecnico);
     this.router.navigate(['/mantenedores/tecnicos/cambiar-password', { tecnico: tecnico.id }]);
   }
+  cargarClientes(tecnico: any) {
+    this.clientesDelTecnico = []; // Limpiar lista anterior
+    this.tecnicosService.getTecnicoClientes(tecnico.id).subscribe({
+        next: (clientes) => {
+            this.clientesDelTecnico = clientes;
+        },
+        error: (error) => {
+            console.error('Error al cargar clientes:', error);
+            this.clientesDelTecnico = [];
+        }
+    });
+}
+clientesDelTecnico: any[] = [];
+
+  verClientes(tecnico: any) {
+    this.tecnicosService.getTecnicoClientes(tecnico.id).subscribe({
+      next: (clientes) => {
+        const clientesList = clientes.map((cliente: any) => 
+          `<div class="cliente-item">
+             <img src="${cliente.logo}" alt="${cliente.nombre}" style="width: 30px; height: 30px; margin-right: 10px; border-radius: 50%;">
+             <span>${cliente.nombre}</span>
+           </div>`
+        ).join('');
+
+        Swal.fire({
+          title: `Clientes asignados a ${tecnico.name} ${tecnico.lastName}`,
+          html: clientes.length ? 
+            `<div class="clientes-grid">${clientesList}</div>` : 
+            '<p>No hay clientes asignados</p>',
+          customClass: {
+            container: 'clientes-modal'
+          }
+        });
+      },
+      error: (error) => {
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudieron cargar los clientes',
+          icon: 'error'
+        });
+      }
+    });
+  }
 }

@@ -133,6 +133,7 @@
         <!-- Botón de Enviar -->
         <div class="row">
           <div class="col-sm-12 text-right m-t-16">
+            <button mat-button type="button" (click)="onCancel()">Cancelar</button>
             <button mat-raised-button color="primary" 
                     [disabled]="!isFormValid()"
                     >

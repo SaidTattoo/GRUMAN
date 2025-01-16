@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from 'src/app/material.module';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
 import Swal from 'sweetalert2';
+import { Location } from '@angular/common';
 
 interface Tecnico {
   name: string;
@@ -27,7 +28,8 @@ export class EditarTecnicoComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private tecnicosService: TecnicosService
+    private tecnicosService: TecnicosService,
+    private location: Location
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
@@ -83,6 +85,10 @@ export class EditarTecnicoComponent implements OnInit {
   }
 
   onCancel() {
-    this.router.navigate(['/mantenedores/tecnicos']);
+    this.router.navigate(['/mantenedores/trabajadores']);
+  }
+
+  volver() {
+    this.router.navigate(['/mantenedores/trabajadores']);
   }
 }

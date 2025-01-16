@@ -143,4 +143,10 @@ export class UsersController {
     async deleteTecnico(@Param('id') id: number): Promise<void> {
         return this.usersService.deleteTecnico(id);
     }
+
+    @Get('tecnicos/:id/clientes')
+    @ApiOperation({ summary: 'Obtener clientes asignados a un técnico' })
+    async getTecnicoClientes(@Param('id') id: number) {
+        return this.usersService.getTecnicoClientes(id);
+    }
 }
