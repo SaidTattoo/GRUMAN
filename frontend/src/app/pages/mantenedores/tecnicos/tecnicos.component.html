@@ -61,7 +61,14 @@
             matTooltipPosition="above" (click)="eliminar(element)">
               <mat-icon>delete</mat-icon>
             </button>
-           <!--  <button mat-icon-button color="primary" [matTooltip]="'Agregar documento al técnico'" 
+            <button mat-icon-button color="primary" 
+                    [matTooltip]="'Ver clientes asignados'"
+                    [matMenuTriggerFor]="clientesMenu"
+                    matTooltipPosition="above" 
+                    (click)="cargarClientes(element)">
+              <mat-icon>business</mat-icon>
+            </button>
+          <!--   <button mat-icon-button color="primary" [matTooltip]="'Agregar documento al técnico'" 
             matTooltipPosition="above" (click)="agregarDocumento(element)">
               <mat-icon>add</mat-icon>
             </button> -->
@@ -78,3 +85,22 @@
     </div>
   </mat-card-content>
 </mat-card>
+
+<!-- Menú de clientes -->
+<mat-menu #clientesMenu="matMenu" class="clientes-menu">
+    <div class="clientes-container" (click)="$event.stopPropagation()">
+        <h4 class="menu-title">Clientes Asignados</h4>
+        <mat-divider></mat-divider>
+        <div class="clientes-list">
+            <div *ngFor="let cliente of clientesDelTecnico" class="cliente-item">
+                <img [src]="cliente.logo || 'assets/images/no-logo.png'" 
+                     [alt]="cliente.nombre"
+                     class="cliente-logo">
+                <span class="cliente-nombre">{{cliente.nombre}}</span>
+            </div>
+            <div *ngIf="!clientesDelTecnico?.length" class="no-clientes">
+                No hay clientes asignados
+            </div>
+        </div>
+    </div>
+</mat-menu>

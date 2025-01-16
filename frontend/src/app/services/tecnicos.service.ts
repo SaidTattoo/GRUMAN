@@ -38,4 +38,8 @@ export class TecnicosService {
   getTecnicosGruman(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}users/tecnicos-gruman`);
   }
+
+  getTecnicoClientes(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}users/tecnicos/${id}/clientes`);
+  }
 }

@@ -20,7 +20,7 @@ export class UsersService {
 
     /** findAllUsers */
     findAllUsers(): Promise<User[]> {
-        return this.userRepository.find({ where: { disabled: false }, relations: ['clients'] });
+        return this.userRepository.find({ where: { disabled: false , profile: 'user' }, relations: ['clients'] });
     }
 
     findAllTecnicos(): Promise<User[]> {
@@ -229,5 +229,44 @@ export class UsersService {
         }
         user.disabled = true;
         await this.userRepository.save(user);
+    }
+
+    async getTecnicoClientes(id: number) {
+        // Primero, busquemos al usuario sin restricciones para debug
+        const usuario = await this.userRepository.findOne({
+            where: { id: id },
+            relations: ['clients']
+        });
+
+        if (!usuario) {
+            throw new NotFoundException(`No existe ningún usuario con ID ${id}`);
+        }
+
+        // Log para debug
+        console.log('Usuario encontrado:', {
+            id: usuario.id,
+            profile: usuario.profile,
+            disabled: usuario.disabled,
+            clientsCount: usuario.clients?.length || 0
+        });
+
+        // Ahora verificamos si es técnico
+        if (usuario.profile === 'tecnico') {
+            throw new BadRequestException(`El usuario con ID ${id} es un técnico`);
+        }
+
+        // Verificamos si está deshabilitado
+        if (usuario.disabled) {
+            throw new BadRequestException(`El técnico con ID ${id} está deshabilitado`);
+        }
+
+        const clientes = usuario.clients || [];
+        
+        return clientes.map(client => ({
+            id: client.id,
+            nombre: client.nombre,
+            logo: client.logo || '',
+            rut: client.rut
+        }));
     }
 }
