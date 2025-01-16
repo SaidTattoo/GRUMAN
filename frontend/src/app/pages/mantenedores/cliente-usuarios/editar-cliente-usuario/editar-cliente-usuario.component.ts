@@ -250,11 +250,11 @@ export class EditarClienteUsuarioComponent implements OnInit {
               console.log('Usuario actualizado:', updatedCurrentUser); // Para debugging
 
               Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
-              this.router.navigate(['/mantenedores/tecnicos']);
+              this.router.navigate(['/mantenedores/usuarios']);
             });
           } else {
             Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
-            this.router.navigate(['/mantenedores/tecnicos']);
+            this.router.navigate(['/mantenedores/usuarios']);
           }
         },
         error: (error) => {
