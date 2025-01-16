@@ -9,6 +9,8 @@ import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.servic
 import Swal from 'sweetalert2';
 import { VerImagenesComponent } from '../ver-imagenes/ver-imagenes.component';
 import { MatDialog } from '@angular/material/dialog';
+import { TipoServicioService } from 'src/app/services/tipo-servicio.service';
+
 @Component({
   selector: 'app-ver-solicitud',
   standalone: true,
@@ -27,8 +29,9 @@ import { MatDialog } from '@angular/material/dialog';
 })
 export class VerSolicitudComponent implements OnInit {
   @Input() activity!: any;
-  
-  constructor(private route: ActivatedRoute, private solicitarVisitaService: SolicitarVisitaService, private router: Router, private dialog: MatDialog) {}
+  tiposServicio: any[] = [];
+
+  constructor(private route: ActivatedRoute, private solicitarVisitaService: SolicitarVisitaService, private router: Router, private dialog: MatDialog, private tipoServicioService: TipoServicioService) {}
 
   getStatusClass(): string {
     return `status-${this.activity.status.toLowerCase()}`;
@@ -39,6 +42,7 @@ export class VerSolicitudComponent implements OnInit {
       this.activity = data;
     });
     console.log(this.activity);
+    this.loadTiposServicio();
   }
   formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -93,5 +97,19 @@ export class VerSolicitudComponent implements OnInit {
   }
   goBack(): void {
     this.router.navigate(['/transacciones/solicitudes-de-visita']);
+  }
+  loadTiposServicio() {
+    this.tipoServicioService.findAll().subscribe({
+      next: (tipos) => {
+        this.tiposServicio = tipos;
+      },
+      error: (error) => {
+        console.error('Error cargando tipos de servicio:', error);
+      }
+    });
+  }
+  getTipoServicioNombre(id: number): string {
+    const tipoServicio = this.tiposServicio.find(tipo => tipo.id === id);
+    return tipoServicio ? tipoServicio.nombre : 'No especificado';
   }
 }

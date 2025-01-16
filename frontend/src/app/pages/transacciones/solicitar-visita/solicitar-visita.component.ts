@@ -75,7 +75,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       localId: [null, Validators.required],
       clientId: [null],
       sectorTrabajoId: [null, Validators.required],
-      especialidad: [null, [Validators.required, Validators.maxLength(50)]],
+      especialidad: [null],
       ticketGruman: [''],
       observaciones: [''],
       fechaIngreso: [null],

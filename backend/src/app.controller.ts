@@ -39,8 +39,8 @@ export class AppController {
     }
 
     const filename = file.filename;
-   const fileUrl = `http://138.255.103.35:3000/uploads/${path}/${filename}`;
-      //   const fileUrl = `http://localhost:3000/uploads/${path}/${filename}`;
+    const fileUrl = `http://138.255.103.35:3000/uploads/${path}/${filename}`;
+      //  const fileUrl = `http://localhost:3000/uploads/${path}/${filename}`;
 
   
     //console.log(`Uploading file to path: ${path}`);

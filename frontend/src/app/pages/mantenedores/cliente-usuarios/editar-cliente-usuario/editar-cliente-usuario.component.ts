@@ -12,6 +12,8 @@ import { MatListModule } from '@angular/material/list';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
 import Swal from 'sweetalert2';
+import { StorageService } from 'src/app/services/storage.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-editar-cliente-usuario',
@@ -134,7 +136,9 @@ export class EditarClienteUsuarioComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private clientesService: ClientesService,
-    private tecnicosService: TecnicosService
+    private tecnicosService: TecnicosService,
+    private storage: StorageService,
+    private authService: AuthService
   ) {
     this.clienteUsuarioForm = this.fb.group({
       perfil: ['', Validators.required],
@@ -200,9 +204,58 @@ export class EditarClienteUsuarioComponent implements OnInit {
       };
 
       this.tecnicosService.updateTecnico(this.userId, userData).subscribe({
-        next: () => {
-          Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
-          this.router.navigate(['/mantenedores/tecnicos']);
+        next: (updatedUser: any) => {
+          const currentUser = this.storage.getItem('currentUser');
+          console.log('Usuario actual:', currentUser); // Para debugging
+          console.log('Usuario actualizado:', updatedUser); // Para debugging
+          console.log('this.userId:', this.userId); // Para debugging
+          console.log('currentUser.id:', currentUser?.id); // Para debugging
+          console.log('Tipos de datos:', {
+            userId: typeof this.userId,
+            currentUserId: typeof currentUser?.id
+          }); // Para debugging
+
+          // Convertir ambos a número para la comparación
+          if (currentUser && Number(currentUser.id) === Number(this.userId)) {
+            console.log('Entrando a la actualización del usuario actual'); // Para debugging
+            // Obtener la lista completa de clientes actualizada
+            this.clientesService.getClientesWithGruman().subscribe((allClients: any[]) => {
+              // Filtrar solo los clientes seleccionados
+              const updatedCompanies = allClients.filter(client => 
+                this.selectedClientIds.includes(client.id)
+              );
+
+              // Crear el usuario actualizado manteniendo todos los datos existentes
+              const updatedCurrentUser = {
+                ...currentUser,
+                name: formValues.name,
+                lastName: formValues.lastName,
+                email: formValues.email,
+                rut: formValues.rut,
+                profile: formValues.perfil,
+                companies: updatedCompanies,
+                // Mantener la empresa seleccionada si aún está en la lista, si no, usar la primera
+                selectedCompany: updatedCompanies.find(c => 
+                  currentUser.selectedCompany?.id === c.id
+                ) || updatedCompanies[0]
+              };
+
+              // Actualizar localStorage
+              localStorage.setItem('currentUser', JSON.stringify(updatedCurrentUser));
+              
+              // Actualizar el storage service y emitir el cambio
+              this.storage.setItem('currentUser', updatedCurrentUser);
+              this.storage.updateUser(updatedCurrentUser);
+
+              console.log('Usuario actualizado:', updatedCurrentUser); // Para debugging
+
+              Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
+              this.router.navigate(['/mantenedores/tecnicos']);
+            });
+          } else {
+            Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
+            this.router.navigate(['/mantenedores/tecnicos']);
+          }
         },
         error: (error) => {
           console.error('Error actualizando usuario:', error);

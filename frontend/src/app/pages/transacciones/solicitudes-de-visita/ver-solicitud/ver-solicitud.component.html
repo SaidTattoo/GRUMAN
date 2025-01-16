@@ -48,7 +48,7 @@
           <div class="col-md-6">
             <p><strong>Fecha de Ingreso:</strong> {{ formatDate(activity.fechaIngreso) }}</p>
             <p><strong>Fecha de Alta:</strong> {{ formatDate(activity.fechaAlta) }}</p>
-            <p><strong>Tipo de Servicio:</strong> {{ activity.tipoServicioId }}</p>
+            <p><strong>Tipo de Servicio:</strong> {{ getTipoServicioNombre(activity.tipoServicioId) }}</p>
           </div>
           <div class="col-md-6">
             <p><strong>Sector de Trabajo:</strong> {{ activity.sectorTrabajoId }}</p>
