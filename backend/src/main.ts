@@ -11,7 +11,11 @@ async function bootstrap() {
     cert: fs.readFileSync('../server.cert'),
   };
   // Configuración de CORS
-  app.enableCors();
+  app.enableCors({
+    origin: ['https://localhost', 'http://138.255.103.35:3000'], // Agrega aquí todos los orígenes permitidos
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true, // Permitir cookies o encabezados de autenticación
+  });
 
   app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
