@@ -86,18 +86,7 @@ export class UsersController {
     findOneTecnico(@Param('id') id: number): Promise<User | undefined> {
         return this.usersService.findOneTecnico(id);
     }
-    @Post('login_tecnico')
-    @ApiOperation({ summary: 'Login de tecnico' })
-    @ApiBody({
-        description: 'Datos del usuario a actualizar',
-        examples: {
-            ejemplo1: { value: { rut: '12345678-9', password: 'password' } },
-        },
-    })
-
-    loginTecnico(@Body() loginDto: { rut: string, password: string }): Promise<User> {
-        return this.usersService.loginTecnico(loginDto.rut, loginDto.password);
-    }
+   
 
     @Put(':id')
     @ApiOperation({ summary: 'Actualizar un usuario' })

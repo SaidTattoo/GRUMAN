@@ -43,7 +43,9 @@ export class UsersService {
     async findByEmail(email: string): Promise<User | undefined> {
         return this.userRepository.findOne({ where: { email, disabled: false }, relations: ['clients'] });
     }
-
+    async findByRut(rut: string): Promise<User | undefined> {
+        return this.userRepository.findOne({ where: { rut, disabled: false }, relations: ['clients'] });
+    }
     /** CREATEUSER  and asign client */
     /**encode password */
     async createUser(createUserDto: CreateUserDto): Promise<User> {
