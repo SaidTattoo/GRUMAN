@@ -89,4 +89,9 @@ async create(@Body() createSolicitarVisitaDto: any) {
   async updateSolicitudVisita(@Param('id') id: number, @Body() solicitud: any) {
     return this.solicitarVisitaService.updateSolicitudVisita(id, solicitud);
   }
+
+  @Get('tecnico/:rut')
+  async getSolicitudesPorTecnico(@Param('rut') rut: string) {
+    return this.solicitarVisitaService.solicitudesPorTecnico(rut);
+  }
 }

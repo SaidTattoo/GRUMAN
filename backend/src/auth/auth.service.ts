@@ -56,5 +56,29 @@ export class AuthService {
         }
       }
 
+    /* hacer un login para tecnicos con las mismas validaciones que el login de usuarios solo que con el rut y password 
+    */
+    async loginTecnico(rut: string, password: string): Promise<{ token: string }> {
+             const user = await this.usersService.findByRut(  rut );
+             if (!user) {
+              throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+            }
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+              throw new HttpException('Invalid password', HttpStatus.UNAUTHORIZED);
+            }
+            const payload = {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              profile: user.profile,
+              clients: user.clients,
+            };
+          
+            return {
+              token: this.jwtService.sign(payload),
+            };
+       
+      }
       
 }

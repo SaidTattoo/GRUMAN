@@ -3,6 +3,7 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { LoginTecnicoDto } from './dto/loginTecnico.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -46,6 +47,17 @@ export class AuthController {
             clientes: user.clients, // Incluye las compañías en la respuesta
         },
         });
+    }
+
+    @ApiOperation({ summary: 'Iniciar sesión para tecnicos' })
+    @ApiBody({
+        description: 'Estructura del login para tecnicos',
+        type: LoginTecnicoDto,
+    })
+    @Post('login_tecnico')
+    async loginTecnico(@Body() loginTecnicoDto: LoginTecnicoDto, @Res() res: Response) {
+        const user = await this.authService.loginTecnico(loginTecnicoDto.rut, loginTecnicoDto.password);
+        return res.status(HttpStatus.OK).json(user);
     }
 
   

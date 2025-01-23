@@ -66,6 +66,16 @@ export class SolicitarVisitaService {
         return data;
     }
 
+
+    async solicitudesPorTecnico(rut: string): Promise<SolicitarVisita[]> {
+        const data = await this.solicitarVisitaRepository.find({ 
+            where: { tecnico_asignado: { rut } },
+            relations: ['local', 'client', 'tecnico_asignado'],
+            order: { fechaIngreso: 'DESC' }
+        });
+        return data;
+    }
+
     async getSolicitudesRechazadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { status: 'rechazado' },
