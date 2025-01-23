@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put } from '@nestjs/common';
 import { SolicitarVisitaService } from './solicitar-visita.service';
 
 import { SolicitarVisita } from './solicitar-visita.entity';
@@ -38,11 +38,42 @@ async create(@Body() createSolicitarVisitaDto: any) {
     return this.solicitarVisitaService.getSolicitudesVisita();
   }
 
+  @Get('aprobadas')
+  async getSolicitudesAprobadas() {
+    try {
+      const solicitudes = await this.solicitarVisitaService.getSolicitudesAprobadas();
+      return {
+        success: true,
+        data: solicitudes
+      };
+    } catch (error) {
+      throw new HttpException('Error al obtener solicitudes aprobadas', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('rechazadas')
+  async getSolicitudesRechazadas() {
+    try {
+      const solicitudes = await this.solicitarVisitaService.getSolicitudesRechazadas();
+      return {
+        success: true,
+        data: solicitudes
+      };
+    } catch (error) {
+      throw new HttpException('Error al obtener solicitudes rechazadas', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('pendientes')
+  async getPendientes() {
+    console.log('solicitudes pendientes');
+    return this.solicitarVisitaService.getPendientes();
+  }
+
   @Get(':id')
   async getSolicitudVisita(@Param('id') id: number) {
     return this.solicitarVisitaService.getSolicitudVisita(id);
   }
-
 
   @Post(':id/aprobar')
   async aprobarSolicitudVisita(@Param('id') id: number) {
@@ -54,9 +85,8 @@ async create(@Body() createSolicitarVisitaDto: any) {
     return this.solicitarVisitaService.rechazarSolicitudVisita(id);
   }
 
-  @Get('pendientes')
-  async getPendientes() {
-    console.log('solicitudes pendientes');
-    return this.solicitarVisitaService.getPendientes();
+  @Put(':id')
+  async updateSolicitudVisita(@Param('id') id: number, @Body() solicitud: any) {
+    return this.solicitarVisitaService.updateSolicitudVisita(id, solicitud);
   }
 }

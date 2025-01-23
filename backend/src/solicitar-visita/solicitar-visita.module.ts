@@ -7,9 +7,20 @@ import { Locales } from 'src/locales/locales.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
 import { Client } from 'src/client/client.entity';
+import { User } from 'src/users/users.entity';
+
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SolicitarVisita, Locales, SectorTrabajo, TipoServicio, Client])],
+  imports: [
+    TypeOrmModule.forFeature([
+      SolicitarVisita, 
+      Locales, 
+      SectorTrabajo, 
+      TipoServicio, 
+      Client,
+      User
+    ])
+  ],
   providers: [SolicitarVisitaService],
   controllers: [SolicitarVisitaController]
 })

@@ -2,7 +2,7 @@
 <div class="horizontal-sidebar p-y-8 b-t-1">
   <div class="container">
     <div>
-      <div class="horizontal-navbar sticky-top hstack align-items-center">
+      <div class="horizontal-navbar hstack align-items-center">
         @for(item of navItems; track item) {
           <app-horizontal-nav-item [item]="item" class="parentBox {{ item.ddType }}" [ngClass]="{
             pactive: item.route == parentActive ? 'pactive' : ''

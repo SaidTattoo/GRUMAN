@@ -154,6 +154,16 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             iconName: 'home-shield',
             route: 'transacciones/solicitudes-de-visita',
           },
+          {
+            displayName: 'Solicitudes de Visita Aprobadas',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita/aprobadas',
+          },
+          {
+            displayName: 'Solicitudes de Visita Rechazadas',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita/rechazadas',
+          },
             {
               displayName: 'Mantenedores',
               iconName: 'home-shield',
@@ -182,6 +192,11 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                   displayName: 'Usuarios del sistema',
                   iconName: 'user',
                   route: 'mantenedores/usuarios',
+                },
+                {
+                  displayName: 'Tecnicos Moviles',
+                  iconName: 'home-shield',
+                  route: 'mantenedores/tecnicos-moviles',
                 },
                 {
                   displayName: 'Repuestos',
