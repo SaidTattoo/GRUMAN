@@ -48,27 +48,90 @@
           <div class="col-md-6">
             <p><strong>Fecha de Ingreso:</strong> {{ formatDate(activity.fechaIngreso) }}</p>
             <p><strong>Fecha de Alta:</strong> {{ formatDate(activity.fechaAlta) }}</p>
-            <p><strong>Tipo de Servicio:</strong> {{ getTipoServicioNombre(activity.tipoServicioId) }}</p>
           </div>
           <div class="col-md-6">
-            <p><strong>Sector de Trabajo:</strong> {{ activity.sectorTrabajoId }}</p>
-            <p><strong>Especialidad:</strong> {{ activity.especialidad }}</p>
+            <div class="mb-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Tipo de Servicio</mat-label>
+                <mat-select [(ngModel)]="activity.tipoServicioId">
+                  @for (tipo of tiposServicio; track tipo.id) {
+                    <mat-option [value]="tipo.id">{{tipo.nombre}}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Sector de Trabajo</mat-label>
+                <mat-select [(ngModel)]="activity.sectorTrabajoId">
+                  @for (sector of sectores; track sector.id) {
+                    <mat-option [value]="sector.id">{{sector.nombre}}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Especialidad</mat-label>
+                <mat-select [(ngModel)]="activity.especialidad">
+                  @for (especialidad of especialidades; track especialidad.id) {
+                    <mat-option [value]="especialidad.nombre">{{especialidad.nombre}}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
           </div>
         </div>
+
         <div class="observaciones mt-2">
-          <strong>Observaciones:</strong>
-          <p class="observation-text">{{ activity.observaciones }}</p>
-        </div>
-      </div>
-      <div class="images-container">
-        <h3>Imágenes</h3>
-        <div class="image-grid">
-          <div *ngFor="let image of activity.imagenes" class="image-item">
-            <img [src]="image" 
-                 [alt]="'Activity image'" 
-                 (click)="openImageDialog(image)"
-                 class="thumbnail">
+          <div class="d-flex justify-content-between align-items-center">
+            <strong>Observaciones:</strong>
           </div>
+          <mat-form-field appearance="outline" class="w-100">
+            <textarea matInput [(ngModel)]="activity.observaciones" (blur)="guardarObservaciones()" rows="4"></textarea>
+          </mat-form-field>
+        </div>
+
+        <div class="images-container">
+          <h3>Imágenes</h3>
+          <div class="image-grid">
+            <div *ngFor="let image of activity.imagenes" class="image-item">
+              <img [src]="image" 
+                   [alt]="'Activity image'" 
+                   (click)="openImageDialog(image)"
+                   class="thumbnail">
+            </div>
+          </div>
+        </div>
+
+        <!-- Selector de Técnico -->
+        <div class="mt-4">
+          <strong>Técnico Asignado:</strong>
+          <mat-form-field appearance="outline" class="w-100 mt-2">
+            <mat-select 
+              [value]="activity.tecnico_asignado?.id"
+              (selectionChange)="asignarTecnico($event)"
+              placeholder="Seleccionar Técnico">
+              <mat-option>Ninguno</mat-option>
+              @for (tecnico of tecnicos; track tecnico.id; let i = $index) {
+                @if (i > 0 && hasMatchingSpecialty(tecnicos[i-1]) && !hasMatchingSpecialty(tecnico)) {
+                  <mat-divider class="my-2"></mat-divider>
+                }
+                <mat-option [value]="tecnico.id">
+                  {{tecnico.name}} {{tecnico.lastName}}
+                  @if (hasMatchingSpecialty(tecnico)) {
+                    <mat-icon class="ms-2" style="color: #28a745" 
+                             matTooltip="Cumple con la especialidad requerida">
+                      check_circle
+                    </mat-icon>
+                  } @else {
+                    <mat-icon class="ms-2" style="color: #ffc107"
+                             matTooltip="No cumple con la especialidad requerida">
+                      warning
+                    </mat-icon>
+                  }
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </div>
       </div>
     </mat-card-content>

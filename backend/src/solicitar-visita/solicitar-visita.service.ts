@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { Client } from 'src/client/client.entity';
 import { Locales } from 'src/locales/locales.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
+import { User } from 'src/users/users.entity';
+
 
 @Injectable()
 export class SolicitarVisitaService {
@@ -17,6 +19,8 @@ export class SolicitarVisitaService {
         private clientRepository: Repository<Client>,
         @InjectRepository(TipoServicio)
         private tipoServicioRepository: Repository<TipoServicio>,
+        @InjectRepository(User)
+        private userRepository: Repository<User>,
     ) {}
 
     async crearSolicitudVisita(solicitud: any): Promise<SolicitarVisita> {
@@ -38,20 +42,49 @@ export class SolicitarVisitaService {
     }
 
     getSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        return this.solicitarVisitaRepository.findOne({ where: { id }, relations: ['local'] });
+        return this.solicitarVisitaRepository.findOne({ 
+          where: { id }, 
+          relations: ['local', 'client', 'tecnico_asignado'] 
+        });
     }
 
+
     getSolicitudesVisita(): Promise<SolicitarVisita[]> {
-        return this.solicitarVisitaRepository.find({ relations: ['local', 'client'] });
+        return this.solicitarVisitaRepository.find({ 
+          relations: ['local', 'client', 'tecnico_asignado'],
+          order: { fechaIngreso: 'DESC' }
+        });
+    }
+
+    async getSolicitudesAprobadas(): Promise<SolicitarVisita[]> {
+        const data = await this.solicitarVisitaRepository.find({ 
+            where: { status: 'aprobado' },
+            relations: ['local', 'client', 'tecnico_asignado'],
+            order: { fechaIngreso: 'DESC' }
+        });
+        console.log('[Solicitudes Aprobadas]:', JSON.stringify(data, null, 2));
+        return data;
+    }
+
+    async getSolicitudesRechazadas(): Promise<SolicitarVisita[]> {
+        const data = await this.solicitarVisitaRepository.find({ 
+            where: { status: 'rechazado' },
+            relations: ['local', 'client', 'tecnico_asignado'],
+            order: { fechaIngreso: 'DESC' }
+        });
+        console.log('[Solicitudes Rechazadas]:', JSON.stringify(data, null, 2));
+        return data;
     }
 
     async aprovarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        await this.solicitarVisitaRepository.update(id, { status: 'aprobado' });
+       await this.solicitarVisitaRepository.update(id, { status: 'aprobado' });
+       
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 
     async rechazarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        await this.solicitarVisitaRepository.update(id, { status: 'rechazado' });
+         await this.solicitarVisitaRepository.update(id, { status: 'rechazado' });
+        
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 
@@ -66,5 +99,20 @@ export class SolicitarVisitaService {
             where: { status: 'pendiente' }
         });
         return pendientes;
+    }
+
+    async updateSolicitudVisita(id: number, solicitud: any): Promise<SolicitarVisita> {
+      if (solicitud.tecnico_asignado_id) {
+        const tecnico = await this.userRepository.findOne({ where: { id: solicitud.tecnico_asignado_id } });
+        if (!tecnico) {
+          throw new Error('Técnico no encontrado');
+        }
+        solicitud.tecnico_asignado = tecnico;
+      }
+      await this.solicitarVisitaRepository.update(id, solicitud);
+      return this.solicitarVisitaRepository.findOne({ 
+        where: { id },
+        relations: ['local', 'client', 'tecnico_asignado']
+      });
     }
 }

@@ -1,0 +1,115 @@
+<div class="container-fluid">
+  <mat-card class="cardWithShadow">
+    <mat-card-header>
+      <mat-card-title>Historial de Asignaciones</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="p-24">
+      <!-- Filtros -->
+      <form [formGroup]="filtroForm" class="row mb-4">
+        <div class="col-md-3">
+          <mat-form-field class="w-100">
+            <mat-label>Fecha Inicio</mat-label>
+            <input matInput [matDatepicker]="pickerInicio" formControlName="fechaInicio">
+            <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+            <mat-datepicker #pickerInicio></mat-datepicker>
+          </mat-form-field>
+        </div>
+        <div class="col-md-3">
+          <mat-form-field class="w-100">
+            <mat-label>Fecha Fin</mat-label>
+            <input matInput [matDatepicker]="pickerFin" formControlName="fechaFin">
+            <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
+            <mat-datepicker #pickerFin></mat-datepicker>
+          </mat-form-field>
+        </div>
+        <div class="col-md-3">
+          <mat-form-field class="w-100">
+            <mat-label>Buscar por técnico</mat-label>
+            <input matInput formControlName="tecnico" placeholder="Nombre del técnico">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+        <div class="col-md-3">
+          <mat-form-field class="w-100">
+            <mat-label>Buscar por patente</mat-label>
+            <input matInput formControlName="vehiculo" placeholder="Patente del vehículo">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+        <div class="col-12 text-end">
+          <button mat-button color="warn" (click)="limpiarFiltros()">
+            <mat-icon>clear</mat-icon>
+            Limpiar filtros
+          </button>
+        </div>
+      </form>
+
+      <!-- Tabla -->
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" class="w-100">
+          <!-- Técnico Column -->
+          <ng-container matColumnDef="tecnico">
+            <th mat-header-cell *matHeaderCellDef>Técnico</th>
+            <td mat-cell *matCellDef="let item">
+              {{item.user.name}} {{item.user.lastName}}
+            </td>
+          </ng-container>
+
+          <!-- Vehículo Column -->
+          <ng-container matColumnDef="vehiculo">
+            <th mat-header-cell *matHeaderCellDef>Vehículo</th>
+            <td mat-cell *matCellDef="let item">
+              {{item.vehiculo.patente}}
+            </td>
+          </ng-container>
+
+          <!-- Fecha Column -->
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef>Fecha Asignación</th>
+            <td mat-cell *matCellDef="let item">
+              {{item.fecha_utilizado | date:'dd/MM/yyyy HH:mm'}}
+            </td>
+          </ng-container>
+
+          <!-- Odómetro Inicio Column -->
+          <ng-container matColumnDef="odometro_inicio">
+            <th mat-header-cell *matHeaderCellDef>Odómetro Inicial</th>
+            <td mat-cell *matCellDef="let item">
+              {{item.odometro_inicio | number:'1.0-0'}} km
+            </td>
+          </ng-container>
+
+          <!-- Odómetro Fin Column -->
+          <ng-container matColumnDef="odometro_fin">
+            <th mat-header-cell *matHeaderCellDef>Odómetro Final</th>
+            <td mat-cell *matCellDef="let item">
+              {{item.odometro_fin ? (item.odometro_fin | number:'1.0-0') + ' km' : 'En uso'}}
+            </td>
+          </ng-container>
+
+          <!-- Kilometraje Column -->
+          <ng-container matColumnDef="kilometraje">
+            <th mat-header-cell *matHeaderCellDef>Kilometraje</th>
+            <td mat-cell *matCellDef="let item">
+              {{item.kilometraje ? (item.kilometraje | number:'1.0-0') + ' km' : '-'}}
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+          <!-- Row shown when there is no matching data. -->
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
+              <div class="d-flex flex-column align-items-center p-4">
+                <mat-icon class="mb-3" style="transform: scale(2); opacity: 0.7">assignment</mat-icon>
+                <h4 class="mb-2">No hay registros</h4>
+                <p class="text-muted">No se encontraron asignaciones que coincidan con los filtros</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div> 

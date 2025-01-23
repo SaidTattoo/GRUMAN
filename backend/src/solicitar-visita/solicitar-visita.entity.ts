@@ -3,6 +3,7 @@ import { Locales } from "../locales/locales.entity";
 import { SectorTrabajo } from "../sectores-trabajo/sectores-trabajo.entity";
 import { TipoServicio } from "../tipo-servicio/tipo-servicio.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "src/users/users.entity";
 
 @Entity('solicitar_visita')
 export class SolicitarVisita {
@@ -54,4 +55,15 @@ export class SolicitarVisita {
   // Fecha de creación
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fechaAlta: Date;
+
+  // Relación con la tabla User
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
+  @JoinColumn({ name: 'tecnico_asignado_id' })
+  tecnico_asignado: User;
+
+  @Column({ type: 'int', nullable: true })
+  tecnico_asignado_id: number;
+
+  @Column({ type: 'text', nullable: true })
+  observacion_rechazo: string;
 }

@@ -10,6 +10,10 @@ import {
   
   export class CreateSolicitarVisitaDto {
     @IsInt()
+    @IsNotEmpty({ message: 'El campo userId es obligatorio y debe ser un número.' })
+    userId: number;
+  
+    @IsInt()
     @IsNotEmpty({ message: 'El campo tipoServicioId es obligatorio y debe ser un número.' })
     tipoServicioId: number;
   

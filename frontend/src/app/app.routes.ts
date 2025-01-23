@@ -38,6 +38,12 @@ export const routes: Routes = [
           import('./pages/mantenedores/vehiculos/vehiculos.routes').then(
             (m) => m.VEHICULOS_ROUTES
           ),
+      },{
+        path: 'mantenedores/tecnicos-moviles',
+        loadChildren: () =>
+          import('./pages/mantenedores/tecnicos-moviles/tecnicos-moviles.routes').then(
+            (m) => m.TECHNICOS_MOVILES_ROUTES
+          ),
       },
       {
         path: 'mantenedores/tipo-activo',
@@ -118,6 +124,20 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/transacciones/solicitudes-de-visita/solicitudes-de-visita.routes').then(
             (m) => m.SOLICITUDES_DE_VISITA_ROUTES
+          ),
+      },
+      {
+        path: 'transacciones/solicitudes-de-visita/aprobadas',
+        loadChildren: () =>
+          import('./pages/transacciones/solicitudes-de-visita/solicitudes-aprobadas/solicitudes-aprobadas.routes').then(
+            (m) => m.SOLICITUDES_APROBADAS_ROUTES
+          ),
+      },
+      {
+        path: 'transacciones/solicitudes-de-visita/rechazadas',
+        loadChildren: () =>
+          import('./pages/transacciones/solicitudes-de-visita/solicitudes-rechazadas/solicitudes-rechazadas.routes').then(
+            (m) => m.SOLICITUDES_RECHAZADAS_ROUTES
           ),
       },
       {

@@ -1,5 +1,6 @@
 /* import { Programacion } from '../programacion/programacion.entity'; */
 import { Programacion } from 'src/programacion/programacion.entity';
+import { UserVehiculo } from 'src/user-vehiculo/user-vehiculo.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -63,6 +64,8 @@ export class Vehiculo {
   @Column({ nullable: true })
   user_id: number;
 
+  @OneToMany(() => UserVehiculo, userVehiculo => userVehiculo.vehiculo)
+  userAsignaciones: UserVehiculo[];
  /*  @OneToMany(() => Programacion, programacion => programacion.vehiculo)
   programaciones: Programacion[];  */
 }

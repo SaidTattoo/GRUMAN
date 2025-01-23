@@ -61,14 +61,18 @@
         </div>
       </div>
 
-      <!-- Especialidad del trabajo -->
+      <!-- Especialidad -->
       <div class="row">
         <div class="col-sm-4 d-flex align-items-center">
-          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Especialidad del trabajo</mat-label>
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Especialidad</mat-label>
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <input matInput formControlName="especialidad" placeholder="Ingrese especialidad">
+            <mat-select formControlName="especialidad">
+              @for (especialidad of especialidades; track especialidad.id) {
+                <mat-option [value]="especialidad.nombre">{{especialidad.nombre}}</mat-option>
+              }
+            </mat-select>
           </mat-form-field>
         </div>
       </div>

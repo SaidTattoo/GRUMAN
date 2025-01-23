@@ -2,6 +2,7 @@ import { Programacion } from 'src/programacion/programacion.entity';
 import { Client } from '../client/client.entity';
 import { Especialidad } from '../especialidad/especialidad.entity';
 import { OrdenServicio } from '../orden-servicio/orden-servicio.entity';
+import { UserVehiculo } from '../user-vehiculo/user-vehiculo.entity';
 import {
     Column,
     CreateDateColumn,
@@ -69,6 +70,9 @@ export class User {
 
     @OneToMany(() => OrdenServicio, ordenServicio => ordenServicio.usuarioAprobacion)
     ordenesServicioAprobadas: OrdenServicio[];
+
+    @OneToMany(() => UserVehiculo, userVehiculo => userVehiculo.user)
+    vehiculoAsignaciones: UserVehiculo[];
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;

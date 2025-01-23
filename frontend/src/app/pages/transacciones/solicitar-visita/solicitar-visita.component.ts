@@ -20,6 +20,7 @@ import Swal from 'sweetalert2';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
+import { EspecialidadesService } from 'src/app/services/especialidades.service';
 
 interface Client {
   id: number;
@@ -51,6 +52,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   locales: any[] = [];
   sectores: any[] = [];
   tipoServicio: any[] = [];
+  especialidades: any[] = [];
   user: any;
   visitaForm: FormGroup;
   urlImage: string[] = []; // Cambiado a arreglo para almacenar las URLs
@@ -68,7 +70,8 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     private fb: FormBuilder,
     private uploadDataService: UploadDataService,
     private clientesService: ClientesService,
-    private storage: StorageService
+    private storage: StorageService,
+    private especialidadesService: EspecialidadesService
   ) {
     this.visitaForm = this.fb.group({
       tipoServicioId: [null, Validators.required],
@@ -99,6 +102,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         this.getLocales();
         this.getTipoServicio();
         this.getSectoresTrabajo();
+        this.loadEspecialidades();
       }
     });
   }
@@ -195,6 +199,17 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     this.clientesService.getCliente(this.clientId)
     .subscribe((response) => {
       this.tipoServicio = response.tipoServicio;
+    });
+  }
+
+  loadEspecialidades() {
+    this.especialidadesService.findAll().subscribe({
+      next: (data) => {
+        this.especialidades = data;
+      },
+      error: (error) => {
+        console.error('Error cargando especialidades:', error);
+      }
     });
   }
 

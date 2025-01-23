@@ -1,0 +1,245 @@
+<div class="lists-container">
+  <div class="lists-grid">
+    <!-- Lista de Técnicos -->
+    <mat-card class="cardWithShadow">
+      <mat-card-header>
+        <mat-card-title>Técnicos Disponibles</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-24">
+        <!-- Buscador -->
+        <mat-form-field class="w-100 mb-3">
+          <mat-label>Buscar por nombre</mat-label>
+          <input matInput (keyup)="applyFilterTecnicos($event)" placeholder="Nombre del técnico" #inputTecnicos>
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="table-container">
+          <table mat-table [dataSource]="dataSourceTecnicos" class="w-100">
+            <!-- Checkbox Column -->
+            <ng-container matColumnDef="select">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row">
+                <mat-checkbox (click)="$event.stopPropagation()"
+                            (change)="toggleTecnicoSelection(row)"
+                            [checked]="selectionTecnicos.isSelected(row)">
+                </mat-checkbox>
+              </td>
+            </ng-container>
+
+            <!-- Nombre Column -->
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef>Nombre</th>
+              <td mat-cell *matCellDef="let tecnico">
+                {{tecnico.name}} {{tecnico.lastName}}
+              </td>
+            </ng-container>
+
+            <!-- Especialidades Column -->
+            <ng-container matColumnDef="especialidades">
+              <th mat-header-cell *matHeaderCellDef>Especialidades</th>
+              <td mat-cell *matCellDef="let tecnico">
+                <div class="d-flex gap-1 flex-wrap">
+                  <span *ngFor="let especialidad of tecnico.especialidades" 
+                        class="badge rounded-pill bg-light text-dark border">
+                    {{especialidad.nombre}}
+                  </span>
+                  <span *ngIf="!tecnico.especialidades?.length" class="text-muted">
+                    Sin especialidades
+                  </span>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumnsTecnicos; sticky: true" [hidden]="dataSourceTecnicos.data.length === 0"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumnsTecnicos;"></tr>
+
+            <!-- Row shown when there is no matching data. -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" [attr.colspan]="displayedColumnsTecnicos.length">
+                <div class="d-flex flex-column align-items-center p-4">
+                  <mat-icon class="mb-3" style="transform: scale(2); opacity: 0.7">engineering</mat-icon>
+                  <h4 class="mb-2">No hay técnicos disponibles</h4>
+                  <p class="text-muted">{{inputTecnicos.value ? 'No se encontraron técnicos que coincidan con la búsqueda' : 'Todos los técnicos están asignados el día de hoy'}}</p>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Lista de Vehículos -->
+    <mat-card class="cardWithShadow">
+      <mat-card-header>
+        <mat-card-title>Vehículos Disponibles</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="p-24">
+        <!-- Buscador de Vehículos -->
+        <mat-form-field class="w-100 mb-3">
+          <mat-label>Buscar por patente</mat-label>
+          <input matInput (keyup)="applyFilterVehiculos($event)" placeholder="Patente del vehículo" #inputVehiculos>
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="table-container">
+          <table mat-table [dataSource]="dataSourceVehiculos" class="w-100">
+            <!-- Checkbox Column -->
+            <ng-container matColumnDef="select">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row">
+                <mat-checkbox (click)="$event.stopPropagation()"
+                            (change)="$event ? toggleVehiculoSelection(row) : null"
+                            [checked]="selectionVehiculos.isSelected(row)">
+                </mat-checkbox>
+              </td>
+            </ng-container>
+
+            <!-- Patente Column -->
+            <ng-container matColumnDef="patente">
+              <th mat-header-cell *matHeaderCellDef>Patente</th>
+              <td mat-cell *matCellDef="let vehiculo">{{vehiculo.patente}}</td>
+            </ng-container>
+
+            <!-- Marca Column -->
+            <ng-container matColumnDef="marca">
+              <th mat-header-cell *matHeaderCellDef>Marca</th>
+              <td mat-cell *matCellDef="let vehiculo">{{vehiculo.marca}}</td>
+            </ng-container>
+
+            <!-- Modelo Column -->
+            <ng-container matColumnDef="modelo">
+              <th mat-header-cell *matHeaderCellDef>Modelo</th>
+              <td mat-cell *matCellDef="let vehiculo">{{vehiculo.modelo}}</td>
+            </ng-container>
+
+            <!-- Último Odómetro Column -->
+            <ng-container matColumnDef="ultimo_odometro">
+              <th mat-header-cell *matHeaderCellDef>Último Odómetro</th>
+              <td mat-cell *matCellDef="let vehiculo">
+                {{vehiculo.ultimo_odometro ? (vehiculo.ultimo_odometro | number:'1.0-0') + ' km' : 'Sin registros'}}
+              </td>
+            </ng-container>
+
+            <!-- Acciones Column -->
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let vehiculo">
+                <span [class.text-success]="!vehiculo.asignado" 
+                      [class.text-warning]="vehiculo.asignado">
+                  {{vehiculo.asignado ? 'En uso' : 'Disponible'}}
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumnsVehiculos; sticky: true" [hidden]="dataSourceVehiculos.data.length === 0"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumnsVehiculos;"></tr>
+
+            <!-- Row shown when there is no matching data. -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell text-center" [attr.colspan]="displayedColumnsVehiculos.length">
+                <div class="d-flex flex-column align-items-center p-4">
+                  <mat-icon class="mb-3" style="transform: scale(2); opacity: 0.7">directions_car_off</mat-icon>
+                  <h4 class="mb-2">No hay vehículos disponibles</h4>
+                  <p class="text-muted">{{inputVehiculos.value ? 'No se encontraron vehículos que coincidan con la patente' : 'Todos los vehículos están asignados el día de hoy'}}</p>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Botón de Asignar -->
+  <div class="action-buttons mt-4 text-center">
+    <button mat-flat-button color="primary" 
+            (click)="asignarSeleccionados()"
+            [disabled]="!selectionTecnicos.hasValue() || !selectionVehiculos.hasValue()">
+      <mat-icon>link</mat-icon>
+      Asignar Vehículos a Técnicos
+    </button>
+  </div>
+
+  <!-- Lista de Asignaciones -->
+  <mat-card class="cardWithShadow">
+    <mat-card-header class="d-flex justify-content-between align-items-center">
+      <mat-card-title>Asignaciones del día {{fechaHoy | date:'dd/MM/yyyy'}}</mat-card-title>
+      <button mat-raised-button color="primary" [routerLink]="['historial']">
+        <mat-icon>history</mat-icon>
+        Ver Historial
+      </button>
+    </mat-card-header>
+    <mat-card-content class="p-24">
+      <div class="table-container">
+        <table mat-table [dataSource]="asignaciones" class="w-100">
+          <!-- Técnico Column -->
+          <ng-container matColumnDef="tecnico">
+            <th mat-header-cell *matHeaderCellDef>Técnico</th>
+            <td mat-cell *matCellDef="let asignacion">
+              {{asignacion.user.name}} {{asignacion.user.lastName}}
+            </td>
+          </ng-container>
+
+          <!-- Vehículo Column -->
+          <ng-container matColumnDef="vehiculo">
+            <th mat-header-cell *matHeaderCellDef>Vehículo</th>
+            <td mat-cell *matCellDef="let asignacion">
+                {{asignacion.vehiculo.patente}} 
+            </td>
+          </ng-container>
+
+          <!-- Fecha Column -->
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef>Fecha Asignación</th>
+            <td mat-cell *matCellDef="let asignacion">
+              {{asignacion.fecha_utilizado | date:'dd/MM/yyyy HH:mm'}}
+            </td>
+          </ng-container>
+
+          <!-- Odómetro Inicio Column -->
+          <ng-container matColumnDef="odometro_inicio">
+            <th mat-header-cell *matHeaderCellDef>Odómetro Inicial</th>
+            <td mat-cell *matCellDef="let asignacion">
+              {{asignacion.odometro_inicio}} km
+            </td>
+          </ng-container>
+
+          <!-- Odómetro Fin Column -->
+          <ng-container matColumnDef="odometro_fin">
+            <th mat-header-cell *matHeaderCellDef>Odómetro Final</th>
+            <td mat-cell *matCellDef="let asignacion">
+              {{asignacion.odometro_fin ? asignacion.odometro_fin + ' km' : 'En uso'}}
+            </td>
+          </ng-container>
+
+          <!-- Acciones Column -->
+      <!--     <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let asignacion">
+              <button mat-icon-button color="primary" 
+                      [matTooltip]="'Finalizar asignación'"
+                      (click)="finalizarAsignacion(asignacion)"
+                      *ngIf="!asignacion.odometro_fin">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+            </td>
+          </ng-container> -->
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsAsignaciones" [hidden]="!asignaciones.length"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumnsAsignaciones;"></tr>
+
+          <!-- Row shown when there is no matching data. -->
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell text-center" [attr.colspan]="displayedColumnsAsignaciones.length">
+              <div class="d-flex flex-column align-items-center p-4">
+                <mat-icon class="mb-3" style="transform: scale(2); opacity: 0.7">assignment</mat-icon>
+                <h4 class="mb-2">No hay asignaciones</h4>
+                <p class="text-muted">No se encontraron asignaciones para este día</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
