@@ -7,6 +7,16 @@ import { CreateSolicitarVisitaDto } from './dto/createSolicitarVisitaDto';
 export class SolicitarVisitaController {
   constructor(private readonly solicitarVisitaService: SolicitarVisitaService) {}
 
+  @Post('iniciar-servicio/:id')
+  async iniciarServicio(@Param('id') id: number) {
+    return this.solicitarVisitaService.iniciarServicio(id);
+  }
+
+  @Post('finalizar-servicio/:id')
+  async finalizarServicio(@Param('id') id: number) {
+    return this.solicitarVisitaService.finalizarServicio(id);
+  }
+
   @Post()
 async create(@Body() createSolicitarVisitaDto: any) {
   console.log('Valor de clientId:', createSolicitarVisitaDto.clientId);
