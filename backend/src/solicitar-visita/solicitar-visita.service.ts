@@ -125,4 +125,15 @@ export class SolicitarVisitaService {
         relations: ['local', 'client', 'tecnico_asignado']
       });
     }
+    /* agregar fecha_hora_inicio_servicio  */
+    async iniciarServicio(id: number): Promise<SolicitarVisita> {
+        await this.solicitarVisitaRepository.update(id, { status: 'en_servicio', fecha_hora_inicio_servicio: new Date() });
+        return this.solicitarVisitaRepository.findOne({ where: { id } });
+    }
+/* agregar fecha_hora_fin_servicio */
+    async finalizarServicio(id: number): Promise<SolicitarVisita> {
+
+        await this.solicitarVisitaRepository.update(id, { status: 'finalizada', fecha_hora_fin_servicio: new Date() });
+        return this.solicitarVisitaRepository.findOne({ where: { id } });
+    }
 }

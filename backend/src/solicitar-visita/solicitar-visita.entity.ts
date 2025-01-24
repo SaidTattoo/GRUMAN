@@ -66,4 +66,10 @@ export class SolicitarVisita {
 
   @Column({ type: 'text', nullable: true })
   observacion_rechazo: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  fecha_hora_inicio_servicio: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  fecha_hora_fin_servicio: Date;
 }
