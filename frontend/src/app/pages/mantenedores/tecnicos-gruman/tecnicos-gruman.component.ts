@@ -8,6 +8,7 @@ import { Router, RouterModule } from '@angular/router';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
 import { UsersService } from 'src/app/services/users.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-tecnicos-gruman',
@@ -26,7 +27,7 @@ import { UsersService } from 'src/app/services/users.service';
 })
 export class TecnicosGrumanComponent implements OnInit {
 
-  constructor(private usersService: UsersService, private router: Router){}
+  constructor(private usersService: UsersService, private router: Router, private tecnicosService: TecnicosService){}
   tecnicos: any[] = [];
   dataSource: any[] = [];
   displayedColumns: string[] = [ 'name', 'especialidades', 'acciones'];
@@ -47,5 +48,57 @@ export class TecnicosGrumanComponent implements OnInit {
   }
   editTecnicoGruman(tecnico: any) {
     this.router.navigate(['/mantenedores/tecnicos-gruman/editar-tecnico-gruman', tecnico.id]);
+  }
+  deleteTecnicoGruman(tecnico: any) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `¿Deseas eliminar al técnico ${tecnico.name} ${tecnico.lastName}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.tecnicosService.deleteTecnico(tecnico.id).subscribe({
+          next: () => {
+            Swal.fire(
+              '¡Eliminado!',
+              'El técnico ha sido eliminado correctamente.',
+              'success'
+            );
+            this.loadTecnicos();
+          },
+          error: (error) => {
+            Swal.fire(
+              'Error',
+              'No se pudo eliminar el técnico.',
+              'error'
+            );
+            console.error('Error al eliminar técnico:', error);
+          }
+        });
+      }
+    });
+  }
+  private loadTecnicos() {
+    this.usersService.getAllTecnicos().subscribe({
+      next: (tecnicos: any) => {
+        this.tecnicos = tecnicos;
+        this.dataSource = this.tecnicos;
+      },
+      error: (error) => {
+        console.error('Error al cargar técnicos:', error);
+        Swal.fire(
+          'Error',
+          'No se pudieron cargar los técnicos.',
+          'error'
+        );
+      }
+    });
+  }
+  cambiarPassword(tecnico: any) {
+    this.router.navigate(['/mantenedores/usuarios/cambiar-password', { tecnico: tecnico.id }]);
   }
 }

@@ -97,8 +97,7 @@ export class TecnicosComponent implements OnInit {
     }]);
   }
   cambiarPassword(tecnico: any) {
-    //console.log(tecnico);
-    this.router.navigate(['/mantenedores/tecnicos/cambiar-password', { tecnico: tecnico.id }]);
+    this.router.navigate(['/mantenedores/usuarios/cambiar-password', { tecnico: tecnico.id }]);
   }
   cargarClientes(tecnico: any) {
     this.clientesDelTecnico = []; // Limpiar lista anterior

@@ -6,7 +6,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { AuthService } from 'src/app/services/auth.service';
+import { TecnicosService } from 'src/app/services/tecnicos.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -21,14 +23,16 @@ export class CambiarPasswordComponent implements OnInit {
   tecnico: any;
   password: string = '';
   password2: string = '';
-
+  tecnicoProfile: any;
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private tecnicosService: TecnicosService
   ) {
     this.form = this.fb.group({
+      username: [''],
       password: ['', Validators.required],
       password2: ['', Validators.required]
     }, { validator: this.passwordsMatchValidator });
@@ -38,17 +42,24 @@ export class CambiarPasswordComponent implements OnInit {
 
   ngOnInit() {
     this.tecnico = this.route.snapshot.params['tecnico'];
-
+    this.tecnicosService.getTecnico(this.tecnico).subscribe((tecnico: any) => {
+      this.tecnicoProfile = tecnico.profile;
+    });
   }
   passwordsMatchValidator(form: FormGroup) {
     return form.get('password')?.value === form.get('password2')?.value ? null : { mismatch: true };
   }
   onCancel() {
-    this.router.navigate(['/mantenedores/tecnicos']);
+    if(this.tecnicoProfile === 'tecnico'){
+      this.router.navigate(['/mantenedores/tecnicos-gruman']);
+    }else{
+      this.router.navigate(['/mantenedores/usuarios']);
+    }
   }
   cambiarPassword() {
     if (this.form.valid) {
       const password = this.form.get('password')?.value;
+     
       this.authService.changePassword(this.tecnico, password).subscribe(() => {
         Swal.fire({
           icon: 'success',
@@ -56,7 +67,11 @@ export class CambiarPasswordComponent implements OnInit {
           showConfirmButton: false,
           timer: 1500
         });
-        this.router.navigate(['/mantenedores/tecnicos']);
+        if(this.tecnicoProfile === 'tecnico'){
+          this.router.navigate(['/mantenedores/tecnicos-gruman']);
+        }else{
+          this.router.navigate(['/mantenedores/usuarios']);
+        }
       });
     } else {
       Swal.fire({
