@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { SolicitarVisita } from './solicitar-visita.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -6,6 +6,8 @@ import { Client } from 'src/client/client.entity';
 import { Locales } from 'src/locales/locales.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
 import { User } from 'src/users/users.entity';
+import { ItemRepuesto } from 'src/inspection/entities/item-repuesto.entity';
+import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
 
 
 @Injectable()
@@ -21,6 +23,8 @@ export class SolicitarVisitaService {
         private tipoServicioRepository: Repository<TipoServicio>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        @InjectRepository(ItemRepuesto)
+        private itemRepuestoRepository: Repository<ItemRepuesto>,
     ) {}
 
     async crearSolicitudVisita(solicitud: any): Promise<SolicitarVisita> {
@@ -136,12 +140,36 @@ export class SolicitarVisitaService {
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 /* agregar fecha_hora_fin_servicio */
-    async finalizarServicio(id: number, firma_cliente: string): Promise<SolicitarVisita> {
-        await this.solicitarVisitaRepository.update(id, {
-            status: 'finalizado',
-            fecha_hora_fin_servicio: new Date(),
-            firma_cliente: firma_cliente
+    async finalizarServicio(id: number, data: FinalizarServicioDto): Promise<SolicitarVisita> {
+        const visita = await this.solicitarVisitaRepository.findOne({ 
+            where: { id },
+            relations: ['itemRepuestos']
         });
-        return this.solicitarVisitaRepository.findOne({ where: { id } });
+
+        if (!visita) {
+            throw new NotFoundException(`Visita con ID ${id} no encontrada`);
+        }
+
+        // Guardar firma
+        visita.firma_cliente = data.firma_cliente;
+        visita.status = 'finalizado';
+        visita.fecha_hora_fin_servicio = new Date();
+
+        // Guardar repuestos
+        if (data.repuestos) {
+            for (const key in data.repuestos) {
+                const repuestosArray = data.repuestos[key];
+                for (const repuestoData of repuestosArray) {
+                    const itemRepuesto = new ItemRepuesto();
+                    itemRepuesto.cantidad = repuestoData.cantidad;
+                    itemRepuesto.comentario = repuestoData.comentario;
+                    itemRepuesto.repuesto = repuestoData.repuesto;
+                    itemRepuesto.visita = visita;
+                    await this.itemRepuestoRepository.save(itemRepuesto);
+                }
+            }
+        }
+
+        return await this.solicitarVisitaRepository.save(visita);
     }
 }
