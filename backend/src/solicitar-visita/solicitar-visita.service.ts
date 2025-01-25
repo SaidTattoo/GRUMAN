@@ -157,14 +157,15 @@ export class SolicitarVisitaService {
 
         // Guardar repuestos
         if (data.repuestos) {
-            for (const key in data.repuestos) {
-                const repuestosArray = data.repuestos[key];
+            for (const itemId in data.repuestos) {
+                const repuestosArray = data.repuestos[itemId];
                 for (const repuestoData of repuestosArray) {
                     const itemRepuesto = new ItemRepuesto();
                     itemRepuesto.cantidad = repuestoData.cantidad;
                     itemRepuesto.comentario = repuestoData.comentario;
                     itemRepuesto.repuesto = repuestoData.repuesto;
-                    itemRepuesto.visita = visita;
+                    itemRepuesto.solicitarVisita = visita;
+                    itemRepuesto.itemId = parseInt(itemId);
                     await this.itemRepuestoRepository.save(itemRepuesto);
                 }
             }

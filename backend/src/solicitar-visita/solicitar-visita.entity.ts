@@ -83,6 +83,6 @@ export class SolicitarVisita {
   @Column({ type: 'text', nullable: true })
   longitud_movil: string; 
 
-  @OneToMany(() => ItemRepuesto, itemRepuesto => itemRepuesto.visita)
+  @OneToMany(() => ItemRepuesto, itemRepuesto => itemRepuesto.solicitarVisita)
   itemRepuestos: ItemRepuesto[];
 }

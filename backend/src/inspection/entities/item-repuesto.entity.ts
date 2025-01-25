@@ -8,14 +8,20 @@ export class ItemRepuesto {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ nullable: true })
+  itemId: number;
+
   @ManyToOne(() => Item, item => item.itemRepuestos)
   item: Item;
 
   @ManyToOne(() => Repuesto)
   repuesto: Repuesto;
 
-  @ManyToOne(() => SolicitarVisita)
-  visita: SolicitarVisita;
+  @Column({ nullable: true })
+  solicitarVisitaId: number;
+
+  @ManyToOne(() => SolicitarVisita, solicitarVisita => solicitarVisita.itemRepuestos)
+  solicitarVisita: SolicitarVisita;
 
   @Column({ type: 'text', nullable: true })
   comentario: string;
