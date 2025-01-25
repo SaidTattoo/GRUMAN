@@ -9,6 +9,9 @@ import { CreateSectionDto } from './dto/create-section.dto';
 import { CreateSubItemDto } from './dto/create-sub-item.dto';
 import { UpdateSectionDto } from './dto/update-section.dto';
 import { Client } from 'src/client/client.entity';
+import { AddRepuestoDto } from './dto/add-repuesto.dto';
+import { ItemRepuesto } from './entities/item-repuesto.entity';
+import { Repuesto } from '../repuestos/repuestos.entity';
 
 
 @Injectable()
@@ -21,7 +24,11 @@ export class InspectionService {
         @InjectRepository(SubItem)
         private subItemRepository: Repository<SubItem>,
         @InjectRepository(Client)
-        private clientRepository: Repository<Client>
+        private clientRepository: Repository<Client>,
+        @InjectRepository(ItemRepuesto)
+        private itemRepuestoRepository: Repository<ItemRepuesto>,
+        @InjectRepository(Repuesto)
+        private repuestoRepository: Repository<Repuesto>
     ) {}
 
     async createSection(createSectionDto: CreateSectionDto) {
@@ -175,5 +182,68 @@ export class InspectionService {
             }
         }
     }
-    
+
+    async addRepuestoToItem(
+        sectionId: number,
+        itemId: number,
+        addRepuestoDto: AddRepuestoDto
+    ) {
+        const item = await this.itemRepository.findOne({
+            where: { id: itemId },
+            relations: ['section']
+        });
+
+        if (!item || item.section.id !== sectionId) {
+            throw new NotFoundException(`Item not found or does not belong to section`);
+        }
+
+        const repuesto = await this.repuestoRepository.findOne({
+            where: { id: addRepuestoDto.repuestoId }
+        });
+
+        if (!repuesto) {
+            throw new NotFoundException(`Repuesto not found`);
+        }
+
+        const itemRepuesto = this.itemRepuestoRepository.create({
+            item,
+            repuesto,
+            comentario: addRepuestoDto.comentario,
+            cantidad: addRepuestoDto.cantidad || 1
+        });
+
+        return await this.itemRepuestoRepository.save(itemRepuesto);
+    }
+
+    async getRepuestosFromItem(sectionId: number, itemId: number) {
+        const item = await this.itemRepository.findOne({
+            where: { id: itemId },
+            relations: ['section', 'itemRepuestos', 'itemRepuestos.repuesto']
+        });
+
+        if (!item || item.section.id !== sectionId) {
+            throw new NotFoundException(`Item not found or does not belong to section`);
+        }
+
+        return item.itemRepuestos;
+    }
+
+    async removeRepuestoFromItem(
+        sectionId: number,
+        itemId: number,
+        repuestoId: number
+    ) {
+        const itemRepuesto = await this.itemRepuestoRepository.findOne({
+            where: {
+                item: { id: itemId, section: { id: sectionId } },
+                repuesto: { id: repuestoId }
+            }
+        });
+
+        if (!itemRepuesto) {
+            throw new NotFoundException(`Repuesto not found in item`);
+        }
+
+        await this.itemRepuestoRepository.remove(itemRepuesto);
+    }
 } 

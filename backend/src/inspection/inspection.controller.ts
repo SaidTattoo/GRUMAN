@@ -4,6 +4,7 @@ import { CreateSectionDto } from './dto/create-section.dto';
 import { CreateItemDto } from './dto/create-item.dto';
 import { CreateSubItemDto } from './dto/create-sub-item.dto';
 import { UpdateSectionDto } from './dto/update-section.dto';
+import { AddRepuestoDto } from './dto/add-repuesto.dto';
 
 
 @Controller('inspection')
@@ -87,5 +88,39 @@ export class InspectionController {
         @Param('subItemId') subItemId: string
     ) {
         return this.inspectionService.removeSubItem(+sectionId, +itemId, +subItemId);
+    }
+
+    @Post('sections/:sectionId/items/:itemId/repuestos')
+    addRepuestoToItem(
+        @Param('sectionId') sectionId: string,
+        @Param('itemId') itemId: string,
+        @Body() addRepuestoDto: AddRepuestoDto
+    ) {
+        return this.inspectionService.addRepuestoToItem(
+            +sectionId,
+            +itemId,
+            addRepuestoDto
+        );
+    }
+
+    @Get('sections/:sectionId/items/:itemId/repuestos')
+    getRepuestosFromItem(
+        @Param('sectionId') sectionId: string,
+        @Param('itemId') itemId: string
+    ) {
+        return this.inspectionService.getRepuestosFromItem(+sectionId, +itemId);
+    }
+
+    @Delete('sections/:sectionId/items/:itemId/repuestos/:repuestoId')
+    removeRepuestoFromItem(
+        @Param('sectionId') sectionId: string,
+        @Param('itemId') itemId: string,
+        @Param('repuestoId') repuestoId: string
+    ) {
+        return this.inspectionService.removeRepuestoFromItem(
+            +sectionId,
+            +itemId,
+            +repuestoId
+        );
     }
 } 
