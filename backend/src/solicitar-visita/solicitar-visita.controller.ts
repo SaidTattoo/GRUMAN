@@ -3,6 +3,7 @@ import { SolicitarVisitaService } from './solicitar-visita.service';
 
 import { SolicitarVisita } from './solicitar-visita.entity';
 import { CreateSolicitarVisitaDto } from './dto/createSolicitarVisitaDto';
+import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
 @Controller('solicitar-visita')
 export class SolicitarVisitaController {
   constructor(private readonly solicitarVisitaService: SolicitarVisitaService) {}
@@ -22,9 +23,9 @@ export class SolicitarVisitaController {
   @Post('finalizar-servicio/:id')
   async finalizarServicio(
     @Param('id') id: number,
-    @Body() data: { firma_cliente: string }
+    @Body() data: FinalizarServicioDto
   ): Promise<SolicitarVisita> {
-    return this.solicitarVisitaService.finalizarServicio(id, data.firma_cliente);
+    return this.solicitarVisitaService.finalizarServicio(id, data);
   }
 
   @Post()
