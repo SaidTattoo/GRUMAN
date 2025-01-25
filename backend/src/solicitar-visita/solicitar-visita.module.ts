@@ -8,7 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
 import { Client } from 'src/client/client.entity';
 import { User } from 'src/users/users.entity';
-
+import { ItemRepuesto } from '../inspection/entities/item-repuesto.entity';
 
 @Module({
   imports: [
@@ -18,7 +18,8 @@ import { User } from 'src/users/users.entity';
       SectorTrabajo, 
       TipoServicio, 
       Client,
-      User
+      User,
+      ItemRepuesto
     ])
   ],
   providers: [SolicitarVisitaService],
