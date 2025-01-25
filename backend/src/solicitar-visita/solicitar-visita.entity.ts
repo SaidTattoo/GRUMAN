@@ -72,4 +72,14 @@ export class SolicitarVisita {
 
   @Column({ type: 'timestamp', nullable: true })
   fecha_hora_fin_servicio: Date;
+
+  @Column({ type: 'text', nullable: true })
+  firma_cliente: string;
+
+  @Column({ type: 'text', nullable: true })
+  latitud_movil: string; 
+
+  @Column({ type: 'text', nullable: true })
+  longitud_movil: string; 
+
 }
