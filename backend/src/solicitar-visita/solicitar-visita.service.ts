@@ -127,7 +127,12 @@ export class SolicitarVisitaService {
     }
     /* agregar fecha_hora_inicio_servicio  */
     async iniciarServicio(id: number, latitud: string, longitud: string): Promise<SolicitarVisita> {
-        await this.solicitarVisitaRepository.update(id, { status: 'en_servicio', fecha_hora_inicio_servicio: new Date(), latitud_movil: latitud, longitud_movil: longitud });
+        await this.solicitarVisitaRepository.update(id, { 
+            status: 'en_servicio', 
+            fecha_hora_inicio_servicio: new Date(), 
+            latitud_movil: latitud,
+            longitud_movil: longitud
+        });
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 /* agregar fecha_hora_fin_servicio */
