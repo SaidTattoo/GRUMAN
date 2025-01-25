@@ -136,9 +136,12 @@ export class SolicitarVisitaService {
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 /* agregar fecha_hora_fin_servicio */
-    async finalizarServicio(id: number): Promise<SolicitarVisita> {
-
-        await this.solicitarVisitaRepository.update(id, { status: 'finalizada', fecha_hora_fin_servicio: new Date() });
+    async finalizarServicio(id: number, firma_cliente: string): Promise<SolicitarVisita> {
+        await this.solicitarVisitaRepository.update(id, {
+            status: 'finalizado',
+            fecha_hora_fin_servicio: new Date(),
+            firma_cliente: firma_cliente
+        });
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 }

@@ -20,8 +20,11 @@ export class SolicitarVisitaController {
   }
 
   @Post('finalizar-servicio/:id')
-  async finalizarServicio(@Param('id') id: number) {
-    return this.solicitarVisitaService.finalizarServicio(id);
+  async finalizarServicio(
+    @Param('id') id: number,
+    @Body() data: { firma_cliente: string }
+  ): Promise<SolicitarVisita> {
+    return this.solicitarVisitaService.finalizarServicio(id, data.firma_cliente);
   }
 
   @Post()
