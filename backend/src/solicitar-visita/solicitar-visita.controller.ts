@@ -8,8 +8,8 @@ export class SolicitarVisitaController {
   constructor(private readonly solicitarVisitaService: SolicitarVisitaService) {}
 
   @Post('iniciar-servicio/:id')
-  async iniciarServicio(@Param('id') id: number) {
-    return this.solicitarVisitaService.iniciarServicio(id);
+  async iniciarServicio(@Param('id') id: number, @Body() latitud: string, @Body() longitud: string) {
+    return this.solicitarVisitaService.iniciarServicio(id, latitud, longitud);
   }
 
   @Post('finalizar-servicio/:id')
