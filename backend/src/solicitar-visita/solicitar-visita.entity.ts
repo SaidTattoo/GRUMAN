@@ -2,8 +2,9 @@ import { Client } from "src/client/client.entity";
 import { Locales } from "../locales/locales.entity";
 import { SectorTrabajo } from "../sectores-trabajo/sectores-trabajo.entity";
 import { TipoServicio } from "../tipo-servicio/tipo-servicio.entity";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "src/users/users.entity";
+import { ItemRepuesto } from "src/inspection/entities/item-repuesto.entity";
 
 @Entity('solicitar_visita')
 export class SolicitarVisita {
@@ -82,4 +83,6 @@ export class SolicitarVisita {
   @Column({ type: 'text', nullable: true })
   longitud_movil: string; 
 
+  @OneToMany(() => ItemRepuesto, itemRepuesto => itemRepuesto.visita)
+  itemRepuestos: ItemRepuesto[];
 }
