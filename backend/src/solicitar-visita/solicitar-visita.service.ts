@@ -155,6 +155,9 @@ export class SolicitarVisitaService {
         visita.status = 'finalizado';
         visita.fecha_hora_fin_servicio = new Date();
 
+        // Primero guardamos la visita para asegurarnos de tener el ID
+        const visitaGuardada = await this.solicitarVisitaRepository.save(visita);
+
         // Guardar repuestos
         if (data.repuestos) {
             for (const itemId in data.repuestos) {
@@ -164,13 +167,13 @@ export class SolicitarVisitaService {
                     itemRepuesto.cantidad = repuestoData.cantidad;
                     itemRepuesto.comentario = repuestoData.comentario;
                     itemRepuesto.repuesto = repuestoData.repuesto;
-                    itemRepuesto.solicitarVisita = visita;
+                    itemRepuesto.solicitarVisitaId = visitaGuardada.id; // Establecemos explícitamente el ID
                     itemRepuesto.itemId = parseInt(itemId);
                     await this.itemRepuestoRepository.save(itemRepuesto);
                 }
             }
         }
 
-        return await this.solicitarVisitaRepository.save(visita);
+        return visitaGuardada;
     }
 }
