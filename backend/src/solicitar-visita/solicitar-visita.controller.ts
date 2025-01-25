@@ -7,7 +7,7 @@ import { CreateSolicitarVisitaDto } from './dto/createSolicitarVisitaDto';
 export class SolicitarVisitaController {
   constructor(private readonly solicitarVisitaService: SolicitarVisitaService) {}
 
-  @Put('iniciar-servicio/:id')
+  @Post('iniciar-servicio/:id')
   async iniciarServicio(
     @Param('id') id: number,
     @Body() coords: { latitud_movil: string, longitud_movil: string }
