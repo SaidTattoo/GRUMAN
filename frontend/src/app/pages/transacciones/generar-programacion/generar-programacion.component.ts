@@ -21,6 +21,7 @@ import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
 import { UsersService } from 'src/app/services/users.service';
 import { OrdenServicioService } from 'src/app/services/orden-servicio.service';
+import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
 const MY_DATE_FORMAT = {
   parse: {
     dateInput: 'DD/MM/YYYY', // this is how your date will be parsed from Input
@@ -54,6 +55,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   loading = false;
   tecnicos: any[] = [];
   private destroy$ = new Subject<void>();
+  currentUser: any;
 
   constructor(
     private localesService: LocalesService,
@@ -64,23 +66,24 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     private dateAdapter: DateAdapter <Date>,
     private router: Router,
     private usersService: UsersService,
-    private ordenServicioService: OrdenServicioService
+    private ordenServicioService: OrdenServicioService,
+    private solicitarVisitaService: SolicitarVisitaService
   ) {
     this.initForm();
     registerLocaleData(localeEnGb); 
     this.dateAdapter.setLocale('en-GB'); // Establece el idioma como 'en-GB' para formato dd/MM/yyyy
-
-
+    this.getCurrentUser(); // Obtener el usuario actual
   }
 
   private initForm(): void {
     this.programacionForm = new FormGroup({
       clientId: new FormControl('', [Validators.required]),
       local: new FormControl({ value: '', disabled: true }, [Validators.required]),
-      tipoServicio: new FormControl('', [Validators.required]),
-      sectorTrabajo: new FormControl('', [Validators.required]),
-      fecha: new FormControl('', [Validators.required, this.fechaValidator]),
-      user: new FormControl('', [Validators.required]),
+      tipoServicioId: new FormControl('', [Validators.required]),
+      sectorTrabajoId: new FormControl('', [Validators.required]),
+      status: new FormControl('programada', [Validators.required]),
+      fechaIngreso: new FormControl('', [Validators.required, this.fechaValidator]),
+      tecnico_asignado_id: new FormControl('', [Validators.required]),
       observaciones: new FormControl('', [Validators.maxLength(500)])
     });
   }
@@ -249,6 +252,13 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       });
   }
 
+  private getCurrentUser(): void {
+    const userString = localStorage.getItem('currentUser');
+    if (userString) {
+      this.currentUser = JSON.parse(userString);
+    }
+  }
+
   onSubmit(): void {
     if (this.programacionForm.invalid) {
       this.markFormGroupTouched(this.programacionForm);
@@ -270,42 +280,28 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
         this.loading = true;
         const formData = this.programacionForm.value;
         
-        // Asegurarnos de que el campo user esté correctamente asignado
+        // Agregamos el ID del usuario actual como aprobada_por
         const programacionData = {
           ...formData,
-          userId: formData.user // Asegurarnos de que el ID del usuario se envíe correctamente
+          aprobada_por_id: this.currentUser?.id, // ID del usuario loggeado
+          status: 'aprobada' // Aseguramos que el estado sea 'aprobada'
         };
         
-
-
-        this.ordenServicioService.crearOrdenServicioGenerarProgramacion(programacionData)
+        this.solicitarVisitaService.crearSolicitudVisita(programacionData)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (res: any) => {
-            console.log('Orden de servicio creada:', res);
+            console.log('Solicitud de visita creada:', res);
+            this.router.navigate(['/transacciones/listado-programacion']);
           },
           error: (error) => {
-            console.error('Error al crear la orden de servicio:', error);
+            console.error('Error al crear la solicitud de visita:', error);
+            this.showErrorMessage('Error al crear la solicitud de visita');
+          },
+          complete: () => {
+            this.loading = false;
           }
         });
-
-
-        this.programacionService.createProgramacion(programacionData)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: (res: any) => {
-              this.showSuccessMessage('Programación creada exitosamente');
-              this.programacionForm.reset();
-              this.router.navigate(['/transacciones/listado-programacion']);
-            },
-            error: (error) => {
-              this.showErrorMessage('Error al crear la programación');
-              console.error('Error:', error);
-            },
-            complete: () => {
-              this.loading = false;
-            }
-          });
       }
     });
   }

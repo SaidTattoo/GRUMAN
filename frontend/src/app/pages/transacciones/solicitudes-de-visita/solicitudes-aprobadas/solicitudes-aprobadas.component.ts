@@ -5,7 +5,7 @@ import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatCardModule } from '@angular/material/card';
@@ -25,7 +25,8 @@ import { MatInputModule } from '@angular/material/input';
     MatChipsModule,
     MatCardModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    RouterModule,
   ],
   template: `
     <mat-card class="cardWithShadow">
@@ -101,6 +102,16 @@ import { MatInputModule } from '@angular/material/input';
               </td>
             </ng-container>
 
+            <!-- Acciones Column -->
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef>Acciones</th>
+              <td mat-cell *matCellDef="let row">
+                <button mat-icon-button (click)="verDetalle(row.id)" color="primary">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
@@ -157,7 +168,8 @@ export class SolicitudesAprobadasComponent implements OnInit {
     'fechaIngreso',
     'especialidad',
     'observaciones',
-    'tecnico'
+    'tecnico',
+    'acciones'
   ];
 
   dataSource: MatTableDataSource<any>;
@@ -212,7 +224,7 @@ export class SolicitudesAprobadasComponent implements OnInit {
   }
 
   verDetalle(id: number) {
-    this.router.navigate(['/transacciones/solicitudes-de-visita', id]);
+    this.router.navigate(['transacciones/solicitudes-de-visita/ver-solicitud', id]);
   }
 
   applyFilter(event: Event) {

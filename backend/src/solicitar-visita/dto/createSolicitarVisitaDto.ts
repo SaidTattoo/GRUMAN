@@ -49,5 +49,17 @@ import {
     @IsDateString({}, { message: 'El campo fechaIngreso debe ser una fecha válida en formato ISO 8601.' })
     @IsNotEmpty({ message: 'El campo fechaIngreso es obligatorio.' })
     fechaIngreso: string;
+  
+    @IsString()
+    @IsOptional()
+    status?: string;
+  
+    @IsInt()
+    @IsOptional()
+    aprobada_por_id?: number;
+  
+    @IsInt()
+    @IsOptional()
+    tecnico_asignado_id?: number;
   }
   

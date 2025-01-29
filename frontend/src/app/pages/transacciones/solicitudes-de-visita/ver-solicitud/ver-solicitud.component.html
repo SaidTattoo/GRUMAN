@@ -1,15 +1,15 @@
 <mat-card class="cardWithShadow">
     <mat-card-content class="p-24">
     
-        <mat-card-header>
+        @if (activity) {
+          <mat-card-header>
             <mat-card-title class="d-flex justify-content-between align-items-center">
-              <span>Ticket: {{ activity.ticketGruman }}</span>
+              <span>Ticket: {{ activity.ticketGruman || 'Sin ticket' }}</span>
               <span class="badge rounded-pill ms-auto" 
                     [ngStyle]="{
-                      'background-color': activity.status === 'aprobado' ? '#28a745' :
-                                          activity.status === 'pendiente' ? '#ffc107' :
-                                          activity.status === 'rechazado' ? '#dc3545' : '',
-                      'color': activity.status === 'pendiente' ? '#000' : '#fff',
+                      'background-color': activity.status === 'validada' ? '#28a745' :
+                                        activity.status === 'reabierta' ? '#ffc107' : '#6c757d',
+                      'color': '#fff',
                       'font-size': '12px',
                       'padding': '6px 12px'
                     }">
@@ -17,157 +17,81 @@
               </span>
             </mat-card-title>
             <mat-card-subtitle>
-              ID: {{ activity.id }} | Especialidad: {{ activity.especialidad }}
+              ID: {{ activity.id }} | Especialidad: {{ activity.especialidad || 'No especificada' }}
             </mat-card-subtitle>
           </mat-card-header>
   
-    <mat-card-content>
-      <div class="location-info mb-3">
-        <h3 class="mb-2">
-          <mat-icon class="align-middle me-2">store</mat-icon>
-          {{ activity.local.nombre_local }}
-        </h3>
-        <div class="ms-4">
-          <p class="mb-1">
-            <mat-icon class="align-middle me-2">location_on</mat-icon>
-            {{ activity.local.direccion }}
-          </p>
-          <p class="mb-1">
-            <mat-icon class="align-middle me-2">phone</mat-icon>
-            {{ activity.local.telefono }}
-          </p>
-          <p class="mb-1">
-            <mat-icon class="align-middle me-2">email</mat-icon>
-            {{ activity.local.email_local }}
-          </p>
-        </div>
-      </div>
-      <div class="details-container mb-3">
-        <h3>Detalles de la Actividad</h3>
-        <div class="row">
-          <div class="col-md-6">
-            <p><strong>Fecha de Ingreso:</strong> {{ formatDate(activity.fechaIngreso) }}</p>
-            <p><strong>Fecha de Alta:</strong> {{ formatDate(activity.fechaAlta) }}</p>
-          </div>
-          <div class="col-md-6">
-            <div class="mb-3">
-              <mat-form-field appearance="outline" class="w-100">
-                <mat-label>Tipo de Servicio</mat-label>
-                <mat-select [(ngModel)]="activity.tipoServicioId">
-                  @for (tipo of tiposServicio; track tipo.id) {
-                    <mat-option [value]="tipo.id">{{tipo.nombre}}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="w-100">
-                <mat-label>Sector de Trabajo</mat-label>
-                <mat-select [(ngModel)]="activity.sectorTrabajoId">
-                  @for (sector of sectores; track sector.id) {
-                    <mat-option [value]="sector.id">{{sector.nombre}}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="w-100">
-                <mat-label>Especialidad</mat-label>
-                <mat-select [(ngModel)]="activity.especialidad">
-                  @for (especialidad of especialidades; track especialidad.id) {
-                    <mat-option [value]="especialidad.nombre">{{especialidad.nombre}}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
+          <div class="location-info mb-3">
+            <h3 class="mb-2">
+              <mat-icon class="align-middle me-2">store</mat-icon>
+              {{ activity.local?.nombre_local || 'Local no especificado' }}
+            </h3>
+            <div class="ms-4">
+              <p class="mb-1">
+                <mat-icon class="align-middle me-2">location_on</mat-icon>
+                {{ activity.local?.direccion || 'Dirección no especificada' }}
+              </p>
+              <p class="mb-1">
+                <mat-icon class="align-middle me-2">phone</mat-icon>
+                {{ activity.local?.telefono || 'Teléfono no especificado' }}
+              </p>
+              <p class="mb-1">
+                <mat-icon class="align-middle me-2">email</mat-icon>
+                {{ activity.local?.email_local || 'Email no especificado' }}
+              </p>
             </div>
           </div>
-        </div>
 
-        <div class="observaciones mt-2">
-          <div class="d-flex justify-content-between align-items-center">
-            <strong>Observaciones:</strong>
-          </div>
-          <mat-form-field appearance="outline" class="w-100">
-            <textarea matInput [(ngModel)]="activity.observaciones" (blur)="guardarObservaciones()" rows="4"></textarea>
-          </mat-form-field>
-        </div>
-
-        <div class="images-container">
-          <h3>Imágenes</h3>
-          <div class="image-grid">
-            <div *ngFor="let image of activity.imagenes" class="image-item">
-              <img [src]="image" 
-                   [alt]="'Activity image'" 
-                   (click)="openImageDialog(image)"
-                   class="thumbnail">
+          <div class="details-container mb-3">
+            <h3>Detalles de la Solicitud</h3>
+            <div class="row">
+              <div class="col-md-6">
+                <p><strong>Fecha de Ingreso:</strong> {{ formatDate(activity.fechaIngreso) }}</p>
+                <p><strong>Técnico Asignado:</strong> {{ activity.tecnico_asignado?.name }} {{ activity.tecnico_asignado?.lastName || 'No asignado' }}</p>
+                <p><strong>Cliente:</strong> {{ activity.client?.nombre || 'No especificado' }}</p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Tipo de Servicio:</strong> {{ getTipoServicioNombre(activity.tipoServicioId) }}</p>
+                <p><strong>Sector de Trabajo:</strong> {{ getSectorNombre(activity.sectorTrabajoId) }}</p>
+                <p><strong>Especialidad:</strong> {{ activity.especialidad || 'No especificada' }}</p>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Selector de Técnico -->
-        <div class="mt-4">
-          <strong>Técnico Asignado:</strong>
-          <mat-form-field appearance="outline" class="w-100 mt-2">
-            <mat-select 
-              [value]="activity.tecnico_asignado?.id"
-              (selectionChange)="asignarTecnico($event)"
-              placeholder="Seleccionar Técnico">
-              <mat-option>Ninguno</mat-option>
-              @for (tecnico of tecnicos; track tecnico.id; let i = $index) {
-                @if (i > 0 && hasMatchingSpecialty(tecnicos[i-1]) && !hasMatchingSpecialty(tecnico)) {
-                  <mat-divider class="my-2"></mat-divider>
-                }
-                <mat-option [value]="tecnico.id">
-                  {{tecnico.name}} {{tecnico.lastName}}
-                  @if (hasMatchingSpecialty(tecnico)) {
-                    <mat-icon class="ms-2" style="color: #28a745" 
-                             matTooltip="Cumple con la especialidad requerida">
-                      check_circle
-                    </mat-icon>
-                  } @else {
-                    <mat-icon class="ms-2" style="color: #ffc107"
-                             matTooltip="No cumple con la especialidad requerida">
-                      warning
-                    </mat-icon>
+            <div class="observaciones mt-4">
+              <h3>Observaciones</h3>
+              <p>{{ activity.observaciones || 'Sin observaciones' }}</p>
+            </div>
+
+            @if (activity.imagenes?.length) {
+              <div class="images-container mt-4">
+                <h3>Imágenes</h3>
+                <div class="image-grid">
+                  @for (image of activity.imagenes; track image) {
+                    <div class="image-item">
+                      <img [src]="image" 
+                           [alt]="'Imagen de la solicitud'" 
+                           (click)="openImageDialog(image)"
+                           class="thumbnail">
+                    </div>
                   }
-                </mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="text-center mt-4">
+            <button mat-raised-button 
+                    color="primary" 
+                    class="btn-back" 
+                    (click)="goBack()">
+              <mat-icon>arrow_back</mat-icon> Volver
+            </button>
+          </div>
+        } @else {
+          <div class="text-center p-5">
+            <mat-spinner diameter="50" class="mx-auto mb-3"></mat-spinner>
+            <p>Cargando solicitud...</p>
+          </div>
+        }
     </mat-card-content>
-  
-    <!-- <mat-card-actions class="d-flex justify-content-center mt-3">
-      <button mat-raised-button color="primary">
-        <mat-icon>edit</mat-icon> Editar
-      </button>
-      <button mat-raised-button color="warn">
-        <mat-icon>delete</mat-icon> Eliminar
-      </button>
-    </mat-card-actions> -->
-  
-    <div class="approval-actions text-center mt-4">
-        @if(activity.status === 'pendiente') {
-      <button mat-raised-button 
-              color="primary" 
-              class="btn-approve" 
-              (click)="approveActivity()">
-        <mat-icon>check</mat-icon> Aprobar
-      </button>
-      <button mat-raised-button 
-              color="warn" 
-              class="btn-reject" 
-              (click)="rejectActivity()">
-        <mat-icon>close</mat-icon> Rechazar
-      </button>
-      }
-      <!-- volver -->
-      <button mat-raised-button 
-              color="primary" 
-              class="btn-back" 
-              (click)="goBack()">
-        <mat-icon>arrow_back</mat-icon> Volver
-      </button>
-    </div>
- 
-  </mat-card-content>
 </mat-card>

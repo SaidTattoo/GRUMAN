@@ -150,115 +150,131 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
       },
       ...(showMantenedores
         ? [{
-            displayName: 'Solicitudes de Visita',
-            iconName: 'home-shield',
-            route: 'transacciones/solicitudes-de-visita',
+            displayName: 'Solicitudes',
+            iconName: 'clipboard-list',
+            children: [
+              {
+                displayName: 'Solicitudes de Visita Pendiente',
+                iconName: 'home-shield',
+                route: 'transacciones/solicitudes-de-visita',
+              },
+              {
+                displayName: 'Solicitudes de Visita Aprobadas',
+                iconName: 'home-shield',
+                route: 'transacciones/solicitudes-de-visita/aprobadas',
+              },
+              {
+                displayName: 'Solicitudes de Visita Rechazadas',
+                iconName: 'home-shield',
+                route: 'transacciones/solicitudes-de-visita/rechazadas',
+              },
+              {
+                displayName: 'Solicitudes de Visita Finalizadas',
+                iconName: 'home-shield',
+                route: 'transacciones/solicitudes-de-visita/finalizadas',
+              },
+              {
+                displayName: 'Solicitudes de Visita Validadas',
+                iconName: 'home-shield',
+                route: 'transacciones/solicitudes-de-visita/validadas',
+              }
+            ],
           },
           {
-            displayName: 'Solicitudes de Visita Aprobadas',
+            displayName: 'Mantenedores',
             iconName: 'home-shield',
-            route: 'transacciones/solicitudes-de-visita/aprobadas',
-          },
-          {
-            displayName: 'Solicitudes de Visita Rechazadas',
-            iconName: 'home-shield',
-            route: 'transacciones/solicitudes-de-visita/rechazadas',
-          },
-            {
-              displayName: 'Mantenedores',
-              iconName: 'home-shield',
-              route: 'mantenedores',
-              children: [
-                {
-                  displayName: 'Locales',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/locales',
-                },
-                {
-                  displayName: 'Moviles',
-                  iconName: 'car',
-                  route: 'mantenedores/vehiculos',
-                },{
-                  displayName: 'Tecnicos Gruman',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/tecnicos-gruman',
-                },
-                {
-                  displayName: 'Tipo Activo',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/tipo-activo',
-                },
-                {
-                  displayName: 'Usuarios del sistema',
-                  iconName: 'user',
-                  route: 'mantenedores/usuarios',
-                },
-                {
-                  displayName: 'Tecnicos Moviles',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/tecnicos-moviles',
-                },
-                {
-                  displayName: 'Repuestos',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/repuestos',
-                },
-                {
-                  displayName: 'Clientes',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/clientes',
-                },  
-                {
-                  displayName: 'Inspecciones',
-                  iconName: 'file-description',
-                  route: 'mantenedores/lista-de-inspecciones',
-                },
+            route: 'mantenedores',
+            children: [
+              {
+                displayName: 'Locales',
+                iconName: 'home-shield',
+                route: 'mantenedores/locales',
+              },
+              {
+                displayName: 'Moviles',
+                iconName: 'car',
+                route: 'mantenedores/vehiculos',
+              },{
+                displayName: 'Tecnicos Gruman',
+                iconName: 'home-shield',
+                route: 'mantenedores/tecnicos-gruman',
+              },
+              {
+                displayName: 'Tipo Activo',
+                iconName: 'home-shield',
+                route: 'mantenedores/tipo-activo',
+              },
+              {
+                displayName: 'Usuarios del sistema',
+                iconName: 'user',
+                route: 'mantenedores/usuarios',
+              },
+              {
+                displayName: 'Tecnicos Moviles',
+                iconName: 'home-shield',
+                route: 'mantenedores/tecnicos-moviles',
+              },
+              {
+                displayName: 'Repuestos',
+                iconName: 'home-shield',
+                route: 'mantenedores/repuestos',
+              },
+              {
+                displayName: 'Clientes',
+                iconName: 'home-shield',
+                route: 'mantenedores/clientes',
+              },  
+              {
+                displayName: 'Inspecciones',
+                iconName: 'file-description',
+                route: 'mantenedores/lista-de-inspecciones',
+              },
               /*   {
                   displayName: 'Cliente Usuarios',
                   iconName: 'home-shield',
                   route: 'mantenedores/cliente-usuarios',
                 }, */
-                {
-                  displayName: 'Listado de Documentos',
-                  iconName: 'file-description',
-                  route: 'mantenedores/documentos',
-                },
-                {
-                  displayName: 'Tipo Documento',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/documentos/tipo-documento',
-                },
-                {
-                  displayName: 'Tipo Servicio',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/tipo-servicio',
-                },
-                {
-                  displayName: 'Sectores de Trabajo',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/sectores-trabajo',
-                },
-                {
-                  displayName: 'Servicios',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/servicios',
-                },
-                {
-                  displayName: 'Activo Fijo Local',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/activo-fijo-local',
-                },{
-                  displayName: 'Especialidades',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/especialidades',
-                } ,
-                {
-                  displayName: 'Mes de Facturación',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/mes-de-facturacion',
-                }
-              ],
-            },
+              {
+                displayName: 'Listado de Documentos',
+                iconName: 'file-description',
+                route: 'mantenedores/documentos',
+              },
+              {
+                displayName: 'Tipo Documento',
+                iconName: 'home-shield',
+                route: 'mantenedores/documentos/tipo-documento',
+              },
+              {
+                displayName: 'Tipo Servicio',
+                iconName: 'home-shield',
+                route: 'mantenedores/tipo-servicio',
+              },
+              {
+                displayName: 'Sectores de Trabajo',
+                iconName: 'home-shield',
+                route: 'mantenedores/sectores-trabajo',
+              },
+              {
+                displayName: 'Servicios',
+                iconName: 'home-shield',
+                route: 'mantenedores/servicios',
+              },
+              {
+                displayName: 'Activo Fijo Local',
+                iconName: 'home-shield',
+                route: 'mantenedores/activo-fijo-local',
+              },{
+                displayName: 'Especialidades',
+                iconName: 'home-shield',
+                route: 'mantenedores/especialidades',
+              } ,
+              {
+                displayName: 'Mes de Facturación',
+                iconName: 'home-shield',
+                route: 'mantenedores/mes-de-facturacion',
+              }
+            ],
+          },
           ]
         : []),
     ];

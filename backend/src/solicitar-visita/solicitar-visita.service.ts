@@ -8,6 +8,7 @@ import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
 import { User } from 'src/users/users.entity';
 import { ItemRepuesto } from 'src/inspection/entities/item-repuesto.entity';
 import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
+import { In } from 'typeorm';
 
 
 @Injectable()
@@ -41,6 +42,22 @@ export class SolicitarVisitaService {
         solicitudVisita.observaciones = solicitud.observaciones;
         solicitudVisita.fechaIngreso = solicitud.fechaIngreso;
         solicitudVisita.imagenes = solicitud.imagenes;
+        
+        // Asignar el técnico
+        if (solicitud.tecnico_asignado_id) {
+            solicitudVisita.tecnico_asignado = await this.userRepository.findOne({ 
+                where: { id: solicitud.tecnico_asignado_id } 
+            });
+        }
+        
+        // Asignar el status y el aprobador
+        if (solicitud.status === 'aprobada' && solicitud.aprobada_por_id) {
+            solicitudVisita.status = 'aprobada';
+            solicitudVisita.aprobada_por = await this.userRepository.findOne({ 
+                where: { id: solicitud.aprobada_por_id } 
+            });
+            solicitudVisita.aprobada_por_id = solicitud.aprobada_por_id;
+        }
       
         return await this.solicitarVisitaRepository.save(solicitudVisita);
     }
@@ -48,7 +65,7 @@ export class SolicitarVisitaService {
     getSolicitudVisita(id: number): Promise<SolicitarVisita> {
         return this.solicitarVisitaRepository.findOne({ 
           where: { id }, 
-          relations: ['local', 'client', 'tecnico_asignado'] 
+          relations: ['local', 'client', 'tecnico_asignado','itemRepuestos'] 
         });
     }
 
@@ -90,6 +107,37 @@ export class SolicitarVisitaService {
         return data;
     }
 
+
+  async getSolicitudByIdItems(id: number): Promise<SolicitarVisita> {
+    return this.solicitarVisitaRepository.findOne({ 
+      where: { id },
+      relations: ['itemRepuestos','local','client','tecnico_asignado']
+    });
+  }
+
+
+
+
+    async getSolicitudesFinalizadas(): Promise<SolicitarVisita[]> {
+        const data = await this.solicitarVisitaRepository.find({ 
+            where: { 
+                status:'finalizada'
+            },
+            relations: ['local', 'client', 'tecnico_asignado'],
+            order: { fechaIngreso: 'DESC' }
+        });
+        return data;
+    }
+    
+    async getSolicitudesValidadas(): Promise<SolicitarVisita[]> {
+        const data = await this.solicitarVisitaRepository.find({ 
+            where: { status: In(['validada', 'reabierta']) },
+            relations: ['local', 'client', 'tecnico_asignado'],
+            order: { fechaIngreso: 'DESC' }
+        });
+        return data;
+    }
+
     async aprovarSolicitudVisita(id: number): Promise<SolicitarVisita> {
        await this.solicitarVisitaRepository.update(id, { status: 'aprobado' });
        
@@ -116,14 +164,20 @@ export class SolicitarVisitaService {
     }
 
     async updateSolicitudVisita(id: number, solicitud: any): Promise<SolicitarVisita> {
-      if (solicitud.tecnico_asignado_id) {
-        const tecnico = await this.userRepository.findOne({ where: { id: solicitud.tecnico_asignado_id } });
-        if (!tecnico) {
-          throw new Error('Técnico no encontrado');
-        }
-        solicitud.tecnico_asignado = tecnico;
+      const visita = await this.solicitarVisitaRepository.findOne({ 
+        where: { id }
+      });
+
+      if (!visita) {
+        throw new NotFoundException(`Visita con ID ${id} no encontrada`);
       }
-      await this.solicitarVisitaRepository.update(id, solicitud);
+
+      await this.solicitarVisitaRepository.update(id, {
+        ...solicitud,
+        fecha_hora_validacion: new Date()
+       
+      });
+
       return this.solicitarVisitaRepository.findOne({ 
         where: { id },
         relations: ['local', 'client', 'tecnico_asignado']
@@ -175,5 +229,55 @@ export class SolicitarVisitaService {
         }
 
         return visitaGuardada;
+    }
+
+    async reabrirSolicitud(id: number): Promise<SolicitarVisita> {
+        const visita = await this.solicitarVisitaRepository.findOne({ 
+            where: { id }
+        });
+
+        if (!visita) {
+            throw new NotFoundException(`Visita con ID ${id} no encontrada`);
+        }
+
+        // Actualizar el estado a reabierta
+        visita.status = 'reabierta';
+        
+        return this.solicitarVisitaRepository.save(visita);
+    }
+
+
+    async validarSolicitud(id: number, validada_por_id: number): Promise<SolicitarVisita> {
+        const visita = await this.solicitarVisitaRepository.findOne({ 
+            where: { id }
+        });
+
+        if (!visita) {
+            throw new NotFoundException(`Visita con ID ${id} no encontrada`);
+        }
+
+        // Combinar los datos de validación con los datos actualizados del formulario
+        const updateData = { 
+            ...visita, // mantener los datos existentes
+            status: 'validada', 
+            validada_por_id: validada_por_id,
+            fecha_hora_validacion: new Date(),
+            // Actualizar los campos editables del formulario
+            especialidad: visita.especialidad,
+            ticketGruman: visita.ticketGruman,
+            observaciones: visita.observaciones,
+            longitud_movil: visita.longitud_movil,
+            latitud_movil: visita.latitud_movil,
+          
+        };
+        
+        // Actualizar la entidad con todos los cambios
+        await this.solicitarVisitaRepository.update(id, updateData);
+        
+        // Retornar la entidad actualizada con sus relaciones
+        return this.solicitarVisitaRepository.findOne({ 
+            where: { id },
+            relations: ['local', 'client', 'tecnico_asignado']
+        });
     }
 }

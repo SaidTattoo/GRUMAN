@@ -47,7 +47,7 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="tipoServicio" placeholder="Seleccionar Tipo de Servicio" 
+            <mat-select formControlName="tipoServicioId" placeholder="Seleccionar Tipo de Servicio" 
                       [disabled]="!programacionForm.get('clientId')?.value || !tiposServicio.length">
               @if (!programacionForm.get('clientId')?.value) {
                 <mat-option disabled>Primero seleccione un cliente</mat-option>
@@ -59,9 +59,9 @@
                 <mat-option disabled>No hay tipos de servicio disponibles para este cliente</mat-option>
               }
             </mat-select>
-            @if (programacionForm.get('tipoServicio')?.touched && programacionForm.get('tipoServicio')?.invalid) {
+            @if (programacionForm.get('tipoServicioId')?.touched && programacionForm.get('tipoServicioId')?.invalid) {
             <mat-error>
-              {{ getErrorMessage('tipoServicio') }}
+              {{ getErrorMessage('tipoServicioId') }}
             </mat-error>
             }
           </mat-form-field>
@@ -74,14 +74,14 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="sectorTrabajo" placeholder="Seleccionar Sector">
+            <mat-select formControlName="sectorTrabajoId" placeholder="Seleccionar Sector">
               <mat-option *ngFor="let sector of sectores" [value]="sector.id">
                 {{ sector.nombre }}
               </mat-option>
             </mat-select>
-            @if (programacionForm.get('sectorTrabajo')?.touched && programacionForm.get('sectorTrabajo')?.invalid) {
+            @if (programacionForm.get('sectorTrabajoId')?.touched && programacionForm.get('sectorTrabajoId')?.invalid) {
             <mat-error>
-              {{ getErrorMessage('sectorTrabajo') }}
+              {{ getErrorMessage('sectorTrabajoId') }}
             </mat-error>
             }
           </mat-form-field>
@@ -94,11 +94,11 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Seleccionar día">
+            <input matInput [matDatepicker]="picker" formControlName="fechaIngreso" placeholder="Seleccionar día">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
-            <mat-error *ngIf="programacionForm.get('fecha')?.touched && programacionForm.get('fecha')?.invalid">
-              {{ getErrorMessage('fecha') }}
+            <mat-error *ngIf="programacionForm.get('fechaIngreso')?.touched && programacionForm.get('fechaIngreso')?.invalid">
+              {{ getErrorMessage('fechaIngreso') }}
             </mat-error>
           </mat-form-field>
         </div>
@@ -110,14 +110,14 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="user" placeholder="Seleccionar Técnico">
+            <mat-select formControlName="tecnico_asignado_id" placeholder="Seleccionar Técnico">
               <mat-option *ngFor="let tecnico of tecnicos" [value]="tecnico.id">
                 {{ tecnico.name }}
               </mat-option>
             </mat-select>
-            @if (programacionForm.get('user')?.touched && programacionForm.get('user')?.invalid) {
+            @if (programacionForm.get('tecnico_asignado_id')?.touched && programacionForm.get('tecnico_asignado_id')?.invalid) {
             <mat-error>
-              {{ getErrorMessage('user') }}
+              {{ getErrorMessage('tecnico_asignado_id') }}
             </mat-error>
             }
           </mat-form-field>
