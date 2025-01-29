@@ -108,9 +108,9 @@ export class VerSolicitudComponent implements OnInit {
       });
   
   }
-  rejectActivity(): void {
+  rejectActivity() {
     Swal.fire({
-      title: '¿Estás seguro de rechazar esta solicitud?',
+      title: '¿Está seguro de rechazar esta solicitud?',
       input: 'textarea',
       inputLabel: 'Motivo del rechazo',
       inputPlaceholder: 'Ingrese el motivo del rechazo...',
@@ -119,7 +119,7 @@ export class VerSolicitudComponent implements OnInit {
       },
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Rechazar',
+      confirmButtonText: 'Sí, rechazar',
       cancelButtonText: 'Cancelar',
       inputValidator: (value) => {
         if (!value) {
@@ -138,7 +138,7 @@ export class VerSolicitudComponent implements OnInit {
           next: (response) => {
             this.activity = response;
             Swal.fire('Éxito', 'Solicitud rechazada correctamente', 'success');
-            this.router.navigate(['/transacciones/solicitudes-de-visita']);
+            this.router.navigate(['/transacciones/solicitudes-de-visita/rechazadas']);
           },
           error: (error) => {
             console.error('Error al rechazar la solicitud:', error);
@@ -190,24 +190,26 @@ export class VerSolicitudComponent implements OnInit {
       return;
     }
 
-    const updateData = {
-      status: 'aprobado',
-      especialidad: this.activity.especialidad,
-      sectorTrabajoId: this.activity.sectorTrabajoId,
-      tipoServicioId: this.activity.tipoServicioId,
-      observaciones: this.activity.observaciones,
-      tecnico_asignado_id: this.activity.tecnico_asignado_id
-    };
-
-    this.solicitarVisitaService.updateSolicitudVisita(this.activity.id, updateData).subscribe({
-      next: (response) => {
-        this.activity = response;
-        Swal.fire('Éxito', 'Solicitud aprobada correctamente', 'success');
-        this.router.navigate(['/transacciones/solicitudes-de-visita']);
-      },
-      error: (error) => {
-        console.error('Error al aprobar la solicitud:', error);
-        Swal.fire('Error', 'No se pudo aprobar la solicitud', 'error');
+    Swal.fire({
+      title: '¿Está seguro de aprobar esta solicitud?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, aprobar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.solicitarVisitaService.aprobarSolicitudVisita(this.activity.id).subscribe({
+          next: (response) => {
+            this.activity = response;
+            Swal.fire('Éxito', 'Solicitud aprobada correctamente', 'success');
+            this.router.navigate(['/transacciones/solicitudes-de-visita/aprobadas']);
+          },
+          error: (error) => {
+            console.error('Error al aprobar la solicitud:', error);
+            Swal.fire('Error', 'No se pudo aprobar la solicitud', 'error');
+          }
+        });
       }
     });
   }

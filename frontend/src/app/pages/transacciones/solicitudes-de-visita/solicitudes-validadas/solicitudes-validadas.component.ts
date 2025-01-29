@@ -156,7 +156,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
             <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="verDetalle(row.id)"></tr>
           </table>
 
-          <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Seleccionar página"></mat-paginator>
+          <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
+                        [pageSize]="10"
+                        aria-label="Seleccionar página">
+          </mat-paginator>
         </div>
       </mat-card-content>
     </mat-card>
