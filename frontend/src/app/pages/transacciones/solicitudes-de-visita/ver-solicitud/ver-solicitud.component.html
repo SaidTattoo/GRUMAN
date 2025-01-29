@@ -8,8 +8,9 @@
               <span class="badge rounded-pill ms-auto" 
                     [ngStyle]="{
                       'background-color': activity.status === 'validada' ? '#28a745' :
+                                        activity.status === 'pendiente' ? '#ffc107' :
                                         activity.status === 'reabierta' ? '#ffc107' : '#6c757d',
-                      'color': '#fff',
+                      'color': activity.status === 'pendiente' ? '#000' : '#fff',
                       'font-size': '12px',
                       'padding': '6px 12px'
                     }">
@@ -49,6 +50,15 @@
                 <p><strong>Fecha de Ingreso:</strong> {{ formatDate(activity.fechaIngreso) }}</p>
                 <p><strong>Técnico Asignado:</strong> {{ activity.tecnico_asignado?.name }} {{ activity.tecnico_asignado?.lastName || 'No asignado' }}</p>
                 <p><strong>Cliente:</strong> {{ activity.client?.nombre || 'No especificado' }}</p>
+                <p><strong>Tipo de Mantenimiento:</strong> 
+                  <span [ngClass]="{
+                    'badge bg-danger': activity.tipo_mantenimiento === 'reactivo',
+                    'badge bg-success': activity.tipo_mantenimiento === 'preventivo',
+                    'badge bg-primary': activity.tipo_mantenimiento === 'programado'
+                  }">
+                    {{ activity.tipo_mantenimiento | titlecase }}
+                  </span>
+                </p>
               </div>
               <div class="col-md-6">
                 <p><strong>Tipo de Servicio:</strong> {{ getTipoServicioNombre(activity.tipoServicioId) }}</p>
@@ -80,6 +90,22 @@
           </div>
 
           <div class="text-center mt-4">
+            @if (activity.status === 'pendiente') {
+                <button mat-raised-button 
+                        color="primary" 
+                        class="me-2"
+                        (click)="approveActivity()">
+                    <mat-icon>check</mat-icon>
+                    Aprobar
+                </button>
+                <button mat-raised-button 
+                        color="warn"
+                        class="me-2"
+                        (click)="rejectActivity()">
+                    <mat-icon>close</mat-icon>
+                    Rechazar
+                </button>
+            }
             <button mat-raised-button 
                     color="primary" 
                     class="btn-back" 

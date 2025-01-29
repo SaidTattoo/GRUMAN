@@ -11,6 +11,10 @@ export class SolicitarVisita {
   @PrimaryGeneratedColumn()
   id: number;
 
+  // Tipo de mantenimiento (reactivo, preventivo, programado)
+  @Column({default: null, nullable: true })
+  tipo_mantenimiento: string;
+
   // Relación con TipoServicio (si es relevante)
   @Column({ type: 'int', nullable: true })
   tipoServicioId: number;

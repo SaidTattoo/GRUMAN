@@ -56,6 +56,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   tecnicos: any[] = [];
   private destroy$ = new Subject<void>();
   currentUser: any;
+  minDate: Date = new Date();
 
   constructor(
     private localesService: LocalesService,
@@ -81,10 +82,11 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       local: new FormControl({ value: '', disabled: true }, [Validators.required]),
       tipoServicioId: new FormControl('', [Validators.required]),
       sectorTrabajoId: new FormControl('', [Validators.required]),
-      status: new FormControl('programada', [Validators.required]),
-      fechaIngreso: new FormControl('', [Validators.required, this.fechaValidator]),
+      status: new FormControl('aprobada', [Validators.required]),
+      fechaIngreso: new FormControl('', [Validators.required]),
       tecnico_asignado_id: new FormControl('', [Validators.required]),
-      observaciones: new FormControl('', [Validators.maxLength(500)])
+      observaciones: new FormControl('', [Validators.maxLength(500)]),
+      tipo_mantenimiento: new FormControl('programado', [Validators.required])
     });
   }
 
@@ -124,31 +126,6 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
           this.tiposServicio = [];
         }
       });
-  }
-
-  fechaValidator(control: FormControl): { [key: string]: any } | null {
-    const fecha = new Date(control.value);
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-
-    if (fecha < hoy) {
-      return { 'fechaPasada': true };
-    }
-    return null;
-  }
-
-  getErrorMessage(controlName: string): string {
-    const control = this.programacionForm.get(controlName);
-    if (control?.hasError('required')) {
-      return 'Este campo es requerido';
-    }
-    if (control?.hasError('maxlength')) {
-      return 'Máximo 500 caracteres permitidos';
-    }
-    if (control?.hasError('fechaPasada')) {
-      return 'La fecha no puede ser anterior a hoy';
-    }
-    return '';
   }
 
   getLocales(): void {
@@ -280,11 +257,10 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
         this.loading = true;
         const formData = this.programacionForm.value;
         
-        // Agregamos el ID del usuario actual como aprobada_por
+        // Mantener el status original del formulario ('programada')
         const programacionData = {
           ...formData,
-          aprobada_por_id: this.currentUser?.id, // ID del usuario loggeado
-          status: 'aprobada' // Aseguramos que el estado sea 'aprobada'
+          aprobada_por_id: this.currentUser?.id
         };
         
         this.solicitarVisitaService.crearSolicitudVisita(programacionData)
@@ -328,9 +304,20 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   private showErrorMessage(message: string): void {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
+      title: '¡Error!',
       text: message
     });
+  }
+
+  getErrorMessage(field: string): string {
+    const control = this.programacionForm.get(field);
+    if (control?.hasError('required')) {
+      return 'Este campo es requerido';
+    }
+    if (control?.hasError('maxlength')) {
+      return 'El texto es demasiado largo';
+    }
+    return '';
   }
 
   ngOnDestroy(): void {

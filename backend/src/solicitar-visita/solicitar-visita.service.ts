@@ -42,6 +42,7 @@ export class SolicitarVisitaService {
         solicitudVisita.observaciones = solicitud.observaciones;
         solicitudVisita.fechaIngreso = solicitud.fechaIngreso;
         solicitudVisita.imagenes = solicitud.imagenes;
+        solicitudVisita.tipo_mantenimiento = solicitud.tipo_mantenimiento ;
         
         // Asignar el técnico
         if (solicitud.tecnico_asignado_id) {
@@ -79,7 +80,7 @@ export class SolicitarVisitaService {
 
     async getSolicitudesAprobadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
-            where: { status: 'aprobado' },
+            where: { status: In(['aprobada', 'aprobado']) },
             relations: ['local', 'client', 'tecnico_asignado'],
             order: { fechaIngreso: 'DESC' }
         });
