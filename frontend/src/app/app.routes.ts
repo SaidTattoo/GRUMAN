@@ -5,6 +5,7 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { EditarTecnicoComponent } from './pages/mantenedores/tecnicos/editar-tecnico/editar-tecnico.component';
 import { ChangelogTimelineComponent } from './components/changelog-timeline/changelog-timeline.component';
+import { SolicitudesDeVisitaRoutes } from './pages/transacciones/solicitudes-de-visita/solicitudes-de-visita.routes';
 
 export const routes: Routes = [
   {
@@ -121,10 +122,7 @@ export const routes: Routes = [
       },
       {
         path: 'transacciones/solicitudes-de-visita',
-        loadChildren: () =>
-          import('./pages/transacciones/solicitudes-de-visita/solicitudes-de-visita.routes').then(
-            (m) => m.SOLICITUDES_DE_VISITA_ROUTES
-          ),
+        children: SolicitudesDeVisitaRoutes
       },
       {
         path: 'transacciones/solicitudes-de-visita/aprobadas',

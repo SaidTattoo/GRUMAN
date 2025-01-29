@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-solicitudes-de-visita',
@@ -24,7 +24,8 @@ import { Router } from '@angular/router';
     MatPaginatorModule,
     MatSortModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    RouterModule,
   ],
   templateUrl: './solicitudes-de-visita.component.html',
   styles: [`
@@ -104,8 +105,8 @@ export class SolicitudesDeVisitaComponent implements OnInit {
     });
   }
 
-  verSolicitud(solicitud: any) {
-    this.router.navigate(['/transacciones/solicitudes-de-visita', solicitud.id]);
+  verSolicitud(element: any) {
+    this.router.navigate(['/transacciones/solicitudes-de-visita/ver-solicitud', element.id]);
   }
 
   onImageError(event: any) {

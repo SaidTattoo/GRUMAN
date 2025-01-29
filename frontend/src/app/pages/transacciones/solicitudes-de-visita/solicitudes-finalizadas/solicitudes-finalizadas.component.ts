@@ -1,20 +1,19 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
 @Component({
-  selector: 'app-solicitudes-rechazadas',
+  selector: 'app-solicitudes-finalizadas',
   standalone: true,
   imports: [
     CommonModule,
@@ -24,11 +23,9 @@ import { MatInputModule } from '@angular/material/input';
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    MatTooltipModule,
     MatCardModule,
     MatFormFieldModule,
-    MatInputModule,
-    RouterModule
+    MatInputModule
   ],
   template: `
     <mat-card class="cardWithShadow">
@@ -96,11 +93,11 @@ import { MatInputModule } from '@angular/material/input';
               </td>
             </ng-container>
 
-            <!-- Motivo Rechazo Column -->
-            <ng-container matColumnDef="motivo_rechazo">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Motivo Rechazo</th>
-              <td mat-cell *matCellDef="let row" class="motivo-rechazo-cell">
-                {{row.observacion_rechazo || 'Sin motivo especificado'}}
+            <!-- Técnico Column -->
+            <ng-container matColumnDef="tecnico">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Técnico</th>
+              <td mat-cell *matCellDef="let row">
+                {{row.tecnico_asignado ? row.tecnico_asignado.name + ' ' + row.tecnico_asignado.lastName : 'No asignado'}}
               </td>
             </ng-container>
 
@@ -108,8 +105,9 @@ import { MatInputModule } from '@angular/material/input';
             <ng-container matColumnDef="acciones">
               <th mat-header-cell *matHeaderCellDef>Acciones</th>
               <td mat-cell *matCellDef="let row">
-                <button mat-icon-button (click)="verDetalle(row.id)" color="primary">
-                  <mat-icon>visibility</mat-icon>
+                <button mat-raised-button color="primary" (click)="finalizarSolicitud(row)">
+                  <mat-icon>check_circle</mat-icon>
+                  Finalizar
                 </button>
               </td>
             </ng-container>
@@ -134,21 +132,6 @@ import { MatInputModule } from '@angular/material/input';
       width: 100px;
       text-align: center;
     }
-    .mat-column-motivo_rechazo {
-      min-width: 200px;
-      max-width: 300px;
-      padding-right: 16px;
-    }
-    .motivo-rechazo-cell {
-      white-space: normal;
-      word-wrap: break-word;
-    }
-    .mat-mdc-row:hover {
-      background-color: #f5f5f5;
-    }
-    .mat-mdc-cell {
-      padding: 8px 16px;
-    }
     .mat-column-logo {
       width: 60px;
       padding: 8px;
@@ -162,6 +145,12 @@ import { MatInputModule } from '@angular/material/input';
       border-radius: 4px;
       object-fit: contain;
     }
+    .mat-mdc-row:hover {
+      background-color: #f5f5f5;
+    }
+    .mat-mdc-cell {
+      padding: 8px 16px;
+    }
     .mat-column-ticketGruman {
       min-width: 100px;
     }
@@ -170,19 +159,19 @@ import { MatInputModule } from '@angular/material/input';
     }
   `]
 })
-export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit {
+export class SolicitudesFinalizadasComponent implements OnInit {
+  dataSource: MatTableDataSource<any>;
   displayedColumns: string[] = [
     'logo',
     'cliente',
     'local',
-    'ticketGruman',
     'fechaIngreso',
     'especialidad',
+    'ticketGruman',
     'observaciones',
-    'motivo_rechazo',
+    'tecnico',
     'acciones'
   ];
-  dataSource: MatTableDataSource<any>;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -194,11 +183,8 @@ export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit {
     this.dataSource = new MatTableDataSource();
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadSolicitudes();
-    this.dataSource.filterPredicate = (data: any, filter: string) => {
-      return data.ticketGruman?.toLowerCase().includes(filter);
-    };
   }
 
   ngAfterViewInit() {
@@ -207,34 +193,30 @@ export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit {
   }
 
   loadSolicitudes() {
-    this.solicitarVisitaService.getSolicitudesRechazadas().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.dataSource.data = response.data;
-        }
+    this.solicitarVisitaService.getSolicitudesFinalizadas().subscribe({
+      next: (data) => {
+        this.dataSource.data = data;
       },
       error: (error) => {
-        console.error('Error cargando solicitudes rechazadas:', error);
+        console.error('Error cargando solicitudes:', error);
       }
     });
+  }
+
+  finalizarSolicitud(solicitud: any) {
+    this.router.navigate(['/transacciones/solicitudes-de-visita/modificar', solicitud.id]);
   }
 
   formatDate(date: string) {
     return new Date(date).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
   }
 
-  verDetalle(id: number) {
-    this.router.navigate(['transacciones/solicitudes-de-visita/ver-solicitud', id]);
-  }
-
   onImageError(event: any) {
-    event.target.src = 'assets/images/no-image.png'; // Imagen por defecto si falla la carga
+    event.target.src = 'assets/images/no-image.png';
   }
 
   applyFilter(event: Event) {

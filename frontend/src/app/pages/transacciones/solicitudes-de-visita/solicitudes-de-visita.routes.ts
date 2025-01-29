@@ -1,10 +1,16 @@
 import { Routes } from '@angular/router';
 import { SolicitudesDeVisitaComponent } from './solicitudes-de-visita.component';
-import { VerSolicitudComponent } from './ver-solicitud/ver-solicitud.component';
-import { SolicitudesAprobadasComponent } from './solicitudes-aprobadas/solicitudes-aprobadas.component';
-import { SolicitudesRechazadasComponent } from './solicitudes-rechazadas/solicitudes-rechazadas.component';
 
-export const SOLICITUDES_DE_VISITA_ROUTES: Routes = [
+import { SolicitudesFinalizadasRoutes } from './solicitudes-finalizadas/solicitudes-finalizadas.routes';
+import { SolicitudesValidadasRoutes } from './solicitudes-validadas/solicitudes-validadas.routes';
+import { SolicitudesRechazadasComponent } from './solicitudes-rechazadas/solicitudes-rechazadas.component';
+import { SolicitudesAprobadasComponent } from './solicitudes-aprobadas/solicitudes-aprobadas.component';
+import { SolicitudesFinalizadasComponent } from './solicitudes-finalizadas/solicitudes-finalizadas.component';
+import { SolicitudesValidadasComponent } from './solicitudes-validadas/solicitudes-validadas.component';
+import { ModificarSolicitudComponent } from './modificar-solicitud/modificar-solicitud.component';
+import { VerSolicitudComponent } from './ver-solicitud/ver-solicitud.component';
+
+export const SolicitudesDeVisitaRoutes: Routes = [
   {
     path: '',
     component: SolicitudesDeVisitaComponent,
@@ -27,7 +33,31 @@ export const SOLICITUDES_DE_VISITA_ROUTES: Routes = [
     }
   },
   {
-    path: ':id',
-    component: VerSolicitudComponent
+    path: 'finalizadas',
+    component: SolicitudesFinalizadasComponent,
+    data: {
+      title: 'Solicitudes Finalizadas'
+    }
+  },
+  {
+    path: 'validadas',
+    component: SolicitudesValidadasComponent,
+    data: {
+      title: 'Solicitudes Validadas'
+    }
+  },
+  {
+    path: 'modificar/:id',
+    component: ModificarSolicitudComponent,
+    data: {
+      title: 'Modificar Solicitud'
+    }
+  },
+  {
+    path: 'ver-solicitud/:id',
+    component: VerSolicitudComponent,
+    data: {
+      title: 'Ver Solicitud'
+    }
   }
 ];

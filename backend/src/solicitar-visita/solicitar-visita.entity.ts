@@ -85,4 +85,48 @@ export class SolicitarVisita {
 
   @OneToMany(() => ItemRepuesto, itemRepuesto => itemRepuesto.solicitarVisita)
   itemRepuestos: ItemRepuesto[];
+
+  // Relación con User para aprobada_por
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
+  @JoinColumn({ name: 'aprobada_por_id' })
+  aprobada_por: User;
+
+  @Column({ type: 'int', nullable: true })
+  aprobada_por_id: number;
+
+  // Relación con User para rechazada_por
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
+  @JoinColumn({ name: 'rechazada_por_id' })
+  rechazada_por: User;
+
+  @Column({ type: 'int', nullable: true })
+  rechazada_por_id: number;
+
+  // Relación con User para validada_por
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
+  @JoinColumn({ name: 'validada_por_id' })
+  validada_por: User;
+
+  @Column({ type: 'int', nullable: true })
+  validada_por_id: number;
+
+  // Relación con User para reabierta_por
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
+  @JoinColumn({ name: 'reabierta_por_id' })
+  reabierta_por: User;
+
+  @Column({ type: 'int', nullable: true })
+  reabierta_por_id: number;
+
+  // Relación con User para generada_por
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
+  @JoinColumn({ name: 'generada_por_id' })
+  generada_por: User;
+
+  @Column({ type: 'int', nullable: true })
+  generada_por_id: number;
+
+  @Column({ type: 'timestamp', nullable: true })
+  fecha_hora_validacion: Date;
 }
+ 

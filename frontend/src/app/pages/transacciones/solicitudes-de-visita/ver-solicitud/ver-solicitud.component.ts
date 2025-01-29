@@ -19,6 +19,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatInputModule } from '@angular/material/input';
 import { SectoresService } from 'src/app/services/sectores.service';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-ver-solicitud',
@@ -35,6 +36,7 @@ import { EspecialidadesService } from 'src/app/services/especialidades.service';
     MatTooltipModule,
     MatDividerModule,
     MatInputModule,
+    MatProgressSpinnerModule
   /*   ActivityImagesComponent,
     ActivityLocationComponent,
     ActivityDetailsComponent */
@@ -71,12 +73,20 @@ export class VerSolicitudComponent implements OnInit {
   }
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];
-    this.solicitarVisitaService.getSolicitudVisita(id).subscribe((data: any) => {
-      this.activity = data;
-      this.loadTiposServicio();
-      this.loadTecnicos();
-      this.loadSectores();
-      this.loadEspecialidades();
+    this.solicitarVisitaService.getSolicitudVisita(id).subscribe({
+      next: (data: any) => {
+        console.log('Solicitud cargada:', data);
+        this.activity = data;
+        this.loadTiposServicio();
+        this.loadTecnicos();
+        this.loadSectores();
+        this.loadEspecialidades();
+      },
+      error: (error) => {
+        console.error('Error cargando la solicitud:', error);
+        Swal.fire('Error', 'No se pudo cargar la solicitud', 'error');
+        this.router.navigate(['/transacciones/solicitudes-de-visita/validadas']);
+      }
     });
   }
   formatDate(dateString: string): string {
@@ -139,7 +149,7 @@ export class VerSolicitudComponent implements OnInit {
     });
   }
   goBack(): void {
-    this.router.navigate(['/transacciones/solicitudes-de-visita']);
+    this.router.navigate(['/transacciones/solicitudes-de-visita/validadas']);
   }
   loadTiposServicio() {
     this.tipoServicioService.findAll().subscribe({
