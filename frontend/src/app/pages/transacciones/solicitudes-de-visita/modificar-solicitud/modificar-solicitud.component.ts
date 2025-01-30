@@ -465,10 +465,30 @@ export class ModificarSolicitudComponent implements OnInit {
     if (!repuestos || repuestos.length === 0) return 0;
     
     return repuestos.reduce((total, repuesto) => {
+      // Si el repuesto está marcado para eliminar, no lo incluimos en el total
+      if (repuesto.pendingDelete) return total;
+      
       const precio = repuesto.repuesto?.precio || 0;
       const cantidad = repuesto.cantidad || 0;
       return total + (precio * cantidad);
     }, 0);
+  }
+
+  calculateFinalTotal(): number {
+    let finalTotal = 0;
+    
+    this.listaInspeccion.forEach(lista => {
+      lista.items.forEach((item: any) => {
+        item.subItems.forEach((subItem: any) => {
+          if (subItem.repuestos) {
+            // Usamos el mismo método que ya excluye los repuestos marcados para eliminar
+            finalTotal += this.calculateSubItemTotal(subItem.repuestos);
+          }
+        });
+      });
+    });
+    
+    return finalTotal;
   }
 
   private updateListaInspeccion() {
