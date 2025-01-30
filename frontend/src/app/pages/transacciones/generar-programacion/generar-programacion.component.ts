@@ -79,7 +79,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   private initForm(): void {
     this.programacionForm = new FormGroup({
       clientId: new FormControl('', [Validators.required]),
-      local: new FormControl({ value: '', disabled: true }, [Validators.required]),
+      localId: new FormControl({ value: '', disabled: true }, [Validators.required]),
       tipoServicioId: new FormControl('', [Validators.required]),
       sectorTrabajoId: new FormControl('', [Validators.required]),
       status: new FormControl('aprobada', [Validators.required]),
@@ -115,13 +115,13 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((clienteId) => {
         if (clienteId) {
-          this.programacionForm.get('local')?.enable();
+          this.programacionForm.get('localId')?.enable();
           this.getLocales();
-          this.programacionForm.get('local')?.reset();
+          this.programacionForm.get('localId')?.reset();
           this.programacionForm.get('tipoServicio')?.reset();
           this.getTiposServicio();
         } else {
-          this.programacionForm.get('local')?.disable();
+          this.programacionForm.get('localId')?.disable();
           this.locales = [];
           this.tiposServicio = [];
         }
@@ -138,7 +138,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
           next: (res: any) => {
             this.locales = res;
             //console.log('Locales cargados:', this.locales);
-            this.programacionForm.get('local')?.enable(); // Asegúrate de habilitar el campo
+            this.programacionForm.get('localId')?.enable(); // Asegúrate de habilitar el campo
           },
           error: (error) => {
             this.showErrorMessage('Error al cargar los locales');

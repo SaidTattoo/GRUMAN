@@ -158,7 +158,7 @@ export class SolicitarVisitaService {
     }
 
     async finalizarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        await this.solicitarVisitaRepository.update(id, { status: 'finalizada' });
+        await this.solicitarVisitaRepository.update(id, { status: 'finalizado' });
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 
