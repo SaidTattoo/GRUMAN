@@ -12,7 +12,7 @@ export enum EstadoServicio {
   ESPERANDO_APROBACION = 'esperando_aprobacion',
   APROBADO = 'aprobado',
   RECHAZADO = 'rechazado',
-  FINALIZADO = 'finalizado',
+  FINALIZADO = 'finalizada',
 }
 
 export enum TipoOrden {

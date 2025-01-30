@@ -158,7 +158,7 @@ export class SolicitarVisitaService {
     }
 
     async finalizarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        await this.solicitarVisitaRepository.update(id, { status: 'finalizado' });
+        await this.solicitarVisitaRepository.update(id, { status: 'finalizada' });
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 
@@ -213,7 +213,7 @@ export class SolicitarVisitaService {
 
         // Guardar firma
         visita.firma_cliente = data.firma_cliente;
-        visita.status = 'finalizado';
+        visita.status = 'finalizada';
         visita.fecha_hora_fin_servicio = new Date();
 
         // Primero guardamos la visita para asegurarnos de tener el ID
