@@ -123,4 +123,30 @@ export class InspectionController {
             +repuestoId
         );
     }
+
+    @Post('repuestos/bulk')
+    async addMultipleRepuestos(@Body() repuestosMap: { [key: string]: any[] }) {
+        return this.inspectionService.addMultipleRepuestosToSubItems(repuestosMap);
+    }
+
+    @Post('items/:itemId/repuestos')
+    insertRepuestoInItem(
+        @Param('itemId') itemId: string,
+        @Body() addRepuestoDto: AddRepuestoDto
+    ) {
+        return this.inspectionService.insertRepuestoInItem(
+            itemId,
+            addRepuestoDto.repuestoId,
+            addRepuestoDto.cantidad,
+            addRepuestoDto.comentario,
+            addRepuestoDto.solicitarVisitaId
+        );
+    }
+
+    @Delete('items/:itemId')
+    deleteRepuestoFromItem(
+        @Param('itemId') itemId: string
+    ) {
+        return this.inspectionService.deleteRepuestoFromItem(itemId);
+    }
 } 

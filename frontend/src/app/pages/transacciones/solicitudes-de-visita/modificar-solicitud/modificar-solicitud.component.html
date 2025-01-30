@@ -113,44 +113,119 @@
       <img [src]="solicitud.firma_cliente" alt="Firma del cliente" class="signature-image">
     </div>
 
-    <!-- Item Repuestos -->
-    <div class="section-title">Repuestos Utilizados</div>
-    <div class="table-container mat-elevation-z2">
-      <table mat-table [dataSource]="itemRepuestos" class="full-width">
-        <!-- ID Column -->
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let element">{{element.id}}</td>
-        </ng-container>
+    <!-- Lista de Inspección -->
+    <div class="section-title mt-4">Repuestos utilizados en la inspección</div>
+    <div class="lista-container">
+      @for (lista of listaInspeccion; track lista.id) {
+        <div class="lista-seccion">
+          <div class="seccion-header">{{ lista.name }}</div>
+          <ul class="lista-items">
+            @for (item of lista.items; track item.id) {
+              <li>
+                {{ item.name }}
+                <ul class="lista-subitems">
+                  @for (subItem of item.subItems; track subItem.id) {
+                    <li [class.deshabilitado]="subItem.disabled">
+                      {{ subItem.name }}
+                      <div class="subitem-actions">
+                        <button mat-mini-fab color="primary" 
+                                (click)="toggleAddRepuestoForm(subItem.id)"
+                                matTooltip="Agregar repuesto">
+                          <mat-icon>add</mat-icon>
+                        </button>
+                      </div>
 
-        <!-- Item ID Column -->
-        <ng-container matColumnDef="itemId">
-          <th mat-header-cell *matHeaderCellDef>Item ID</th>
-          <td mat-cell *matCellDef="let element">{{element.itemId}}</td>
-        </ng-container>
+                      @if (showAddRepuestoForm[subItem.id]) {
+                        <div class="add-repuesto-form mat-elevation-z2">
+                          <mat-form-field appearance="fill">
+                            <mat-label>Seleccionar Repuesto</mat-label>
+                            <mat-select [(ngModel)]="selectedRepuesto" [ngModelOptions]="{standalone: true}">
+                              @for (repuesto of repuestos; track repuesto.id) {
+                                <mat-option [value]="repuesto.id">
+                                  {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ repuesto.precio.toLocaleString('es-CL') }}
+                                </mat-option>
+                              }
+                            </mat-select>
+                          </mat-form-field>
 
-        <!-- Comentario Column -->
-        <ng-container matColumnDef="comentario">
-          <th mat-header-cell *matHeaderCellDef>Comentario</th>
-          <td mat-cell *matCellDef="let element">{{element.comentario}}</td>
-        </ng-container>
+                          <mat-form-field appearance="fill">
+                            <mat-label>Cantidad</mat-label>
+                            <input matInput type="number" [(ngModel)]="newRepuestoCantidad" [ngModelOptions]="{standalone: true}" min="1">
+                          </mat-form-field>
 
-        <!-- Cantidad Column -->
-        <ng-container matColumnDef="cantidad">
-          <th mat-header-cell *matHeaderCellDef>Cantidad</th>
-          <td mat-cell *matCellDef="let element">{{element.cantidad}}</td>
-        </ng-container>
+                          <div class="form-actions">
+                            <button mat-button (click)="toggleAddRepuestoForm(subItem.id)">
+                              Cancelar
+                            </button>
+                            <button mat-raised-button color="primary" 
+                                    (click)="addRepuestoToSubItem(subItem.id)">
+                              Agregar
+                            </button>
+                          </div>
+                        </div>
+                      }
 
-        <!-- Fecha Agregado Column -->
-        <ng-container matColumnDef="fechaAgregado">
-          <th mat-header-cell *matHeaderCellDef>Fecha Agregado</th>
-          <td mat-cell *matCellDef="let element">{{element.fechaAgregado | date:'medium'}}</td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
+                      @if (subItem.repuestos?.length) {
+                        <ul class="repuestos-list">
+                          @for (repuesto of subItem.repuestos; track $index) {
+                            <li class="repuesto-item" [class.temporal]="!repuesto.id" [class.pending-delete]="isRepuestoPendingDelete(subItem.id, repuesto)">
+                              <div class="repuesto-info">
+                                @if (!repuesto.id) {
+                                  <div class="temporal-badge">
+                                    Pendiente de guardar
+                                  </div>
+                                }
+                                @if (isRepuestoPendingDelete(subItem.id, repuesto)) {
+                                  <div class="pending-delete-badge">
+                                    Pendiente de eliminar
+                                  </div>
+                                }
+                                <div class="repuesto-detail">
+                                  <strong>Artículo:</strong> 
+                                  <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
+                                </div>
+                                <div class="repuesto-detail">
+                                  <strong>Marca:</strong> 
+                                  <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
+                                </div>
+                                <div class="repuesto-detail">
+                                  <strong>Cantidad:</strong> 
+                                  <span>{{ repuesto.cantidad }}</span>
+                                </div>
+                                <div class="repuesto-detail">
+                                  <strong>Precio:</strong> 
+                                  <span>${{ repuesto.repuesto?.precio?.toLocaleString('es-CL') || 'N/A' }}</span>
+                                </div>
+                                <div class="repuesto-detail">
+                                  <strong>Total:</strong> 
+                                  <span>${{ (repuesto.cantidad * repuesto.repuesto?.precio)?.toLocaleString('es-CL') || 'N/A' }}</span>
+                                </div>
+                                <button class="delete-button" 
+                                        matTooltip="Eliminar repuesto"
+                                        (click)="deleteRepuesto(subItem.id, repuesto, $index)">
+                                  <mat-icon>delete</mat-icon>
+                                </button>
+                              </div>
+                            </li>
+                          }
+                        </ul>
+                        <div class="total-section">
+                          <div class="total-amount">
+                            <strong>Total General:</strong>
+                            <span>${{ calculateSubItemTotal(subItem.repuestos)?.toLocaleString('es-CL') || '0' }}</span>
+                          </div>
+                        </div>
+                      }
+                    </li>
+                  }
+                </ul>
+              </li>
+            }
+          </ul>
+        </div>
+      }
     </div>
+
 
     <div class="actions">
       <button mat-button (click)="onCancel()">Cancelar</button>
@@ -196,6 +271,214 @@ td.mat-cell {
 
 .mat-header-row {
   background-color: #f0f0f0;
+}
+
+.lista-container {
+  padding: 1rem;
+}
+
+.lista-seccion {
+  margin-bottom: 2rem;
+}
+
+.seccion-header {
+  background-color: #f0f2f5;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #1a1f36;
+  font-size: 16px;
+  margin-bottom: 1rem;
+}
+
+.lista-items {
+  margin: 0;
+  padding-left: 2rem;
+  list-style: none;
+}
+
+.lista-items li {
+  position: relative;
+  padding: 8px 0;
+  color: #1a1f36;
+  font-weight: 500;
+}
+
+.lista-items li::before {
+  content: "•";
+  position: absolute;
+  left: -1rem;
+  color: #3498db;
+}
+
+.lista-subitems {
+  margin: 0.5rem 0 0.5rem 1rem;
+  padding-left: 1rem;
+  list-style: none;
+}
+
+.lista-subitems li {
+  padding: 4px 0;
+  color: #4a5568;
+  font-weight: normal;
+}
+
+.lista-subitems li.deshabilitado {
+  color: #a0aec0;
+  text-decoration: line-through;
+}
+
+.repuestos-list {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style: none;
+  font-size: 0.9em;
+}
+
+.repuesto-item {
+  position: relative;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #3498db;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.repuesto-item.temporal {
+  border-left: 3px solid #f39c12;
+  background-color: #fff9e6;
+}
+
+.repuesto-item.pending-delete {
+  border-left: 3px solid #e74c3c;
+  background-color: #fee2e2;
+}
+
+.repuesto-info {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+.repuesto-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+}
+
+.repuesto-detail strong {
+  color: #2c3e50;
+  min-width: 65px;
+  font-size: 0.9em;
+}
+
+.repuesto-detail span {
+  color: #34495e;
+  font-size: 0.9em;
+}
+
+.repuesto-item::before {
+  display: none;
+}
+
+.delete-button {
+  color: #e74c3c;
+  cursor: pointer;
+  padding: 4px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.delete-button:hover {
+  background-color: #fee2e2;
+}
+
+.subitem-actions {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.subitem-actions .mat-mini-fab {
+  transform: scale(0.8);
+}
+
+.add-repuesto-form {
+  margin: 12px 0;
+  padding: 16px;
+  background-color: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mat-mini-fab {
+  box-shadow: none;
+}
+
+.temporal-badge {
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  background-color: #f39c12;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.pending-delete-badge {
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  background-color: #e74c3c;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.total-section {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #2ecc71;
+}
+
+.total-amount {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  font-size: 1.1em;
+}
+
+.total-amount strong {
+  color: #2c3e50;
+}
+
+.total-amount span {
+  color: #2ecc71;
+  font-weight: 500;
 }
 </style>
 

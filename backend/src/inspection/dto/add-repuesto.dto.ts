@@ -13,4 +13,9 @@ export class AddRepuestoDto {
   @Min(1)
   @IsOptional()
   cantidad?: number;
+  
+
+  @IsNotEmpty()
+  @IsNumber()
+  solicitarVisitaId: number;
 } 
