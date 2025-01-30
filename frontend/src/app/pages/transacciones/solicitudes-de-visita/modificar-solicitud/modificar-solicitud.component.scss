@@ -38,4 +38,50 @@
     padding-top: 1rem;
     border-top: 1px solid #eee;
   }
+}
+
+.inspection-list {
+  margin: 20px 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.nested-panel {
+  margin: 8px 16px;
+}
+
+.sub-item-row {
+  padding: 12px 24px;
+  border-bottom: 1px solid #eee;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 24px 0 16px;
+  color: #333;
+}
+
+.mt-4 {
+  margin-top: 24px;
+}
+
+::ng-deep {
+  .mat-expansion-panel {
+    &.nested-panel {
+      background-color: #f8f9fa;
+    }
+  }
+  
+  .mat-expansion-panel-header {
+    height: 48px !important;
+  }
+  
+  .mat-expansion-panel-body {
+    padding: 0 !important;
+  }
 } 

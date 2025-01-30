@@ -48,12 +48,6 @@ export class VerSolicitudComponent implements OnInit {
   @Input() activity!: any;
   tiposServicio: any[] = [];
   tecnicos: any[] = [];
-  editingObservaciones = false;
-  tempObservaciones = '';
-  editingFields = false;
-  tempEspecialidad = '';
-  tempSectorTrabajoId: number | null = null;
-  tempTipoServicioId: number | null = null;
   sectores: any[] = [];
   especialidades: any[] = [];
 
@@ -166,21 +160,24 @@ export class VerSolicitudComponent implements OnInit {
     return tipoServicio ? tipoServicio.nombre : 'No especificado';
   }
   loadTecnicos() {
-    if (!this.activity?.especialidad) return;
-    
     this.usersService.getAllTecnicos().subscribe({
       next: (data: any[]) => {
-        // Separar técnicos en dos grupos y ordenar por nombre
-        const matching = data.filter(t => this.hasMatchingSpecialty(t))
-          .sort((a, b) => a.name.localeCompare(b.name));
-        const nonMatching = data.filter(t => !this.hasMatchingSpecialty(t))
-          .sort((a, b) => a.name.localeCompare(b.name));
+        console.log('Técnicos cargados:', data);
         
-        // Combinar los grupos
+        const matching = data.filter(t => this.hasMatchingSpecialty(t))
+          .sort((a, b) => (a.name + ' ' + a.lastName)
+            .localeCompare(b.name + ' ' + b.lastName));
+            
+        const nonMatching = data.filter(t => !this.hasMatchingSpecialty(t))
+          .sort((a, b) => (a.name + ' ' + a.lastName)
+            .localeCompare(b.name + ' ' + b.lastName));
+        
         this.tecnicos = [...matching, ...nonMatching];
+        console.log('Técnicos ordenados:', this.tecnicos);
       },
       error: (error) => {
         console.error('Error cargando técnicos:', error);
+        Swal.fire('Error', 'No se pudieron cargar los técnicos', 'error');
       }
     });
   }
@@ -199,49 +196,41 @@ export class VerSolicitudComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.solicitarVisitaService.aprobarSolicitudVisita(this.activity.id).subscribe({
-          next: (response) => {
-            this.activity = response;
-            Swal.fire('Éxito', 'Solicitud aprobada correctamente', 'success');
-            this.router.navigate(['/transacciones/solicitudes-de-visita/aprobadas']);
+        this.solicitarVisitaService.updateSolicitudVisita(this.activity.id, {
+          especialidad: this.activity.especialidad,
+          sectorTrabajoId: this.activity.sectorTrabajoId,
+          tipoServicioId: this.activity.tipoServicioId,
+          tecnico_asignado_id: this.activity.tecnico_asignado_id,
+          observaciones: this.activity.observaciones
+        }).subscribe({
+          next: () => {
+            this.solicitarVisitaService.aprobarSolicitudVisita(this.activity.id).subscribe({
+              next: (response) => {
+                this.activity = response;
+                Swal.fire('Éxito', 'Solicitud aprobada correctamente', 'success');
+                this.router.navigate(['/transacciones/solicitudes-de-visita/aprobadas']);
+              },
+              error: (error) => {
+                console.error('Error al aprobar la solicitud:', error);
+                Swal.fire('Error', 'No se pudo aprobar la solicitud', 'error');
+              }
+            });
           },
           error: (error) => {
-            console.error('Error al aprobar la solicitud:', error);
-            Swal.fire('Error', 'No se pudo aprobar la solicitud', 'error');
+            console.error('Error al actualizar los campos:', error);
+            Swal.fire('Error', 'No se pudieron actualizar los campos', 'error');
           }
         });
       }
     });
   }
   hasMatchingSpecialty(tecnico: any): boolean {
+    if (!this.activity?.especialidad) return false;
+    
     return tecnico.especialidades?.some(
       (esp: any) => esp.nombre?.toLowerCase() === this.activity?.especialidad?.toLowerCase()
-    );
+    ) || false;
   }
-  editarObservaciones() {
-    this.tempObservaciones = this.activity.observaciones;
-    this.editingObservaciones = true;
-  }
-
-  guardarObservaciones() {
-    this.solicitarVisitaService.updateSolicitudVisita(this.activity.id, {
-      observaciones: this.activity.observaciones
-    }).subscribe({
-      next: (response) => {
-        this.activity = response;
-      },
-      error: (error) => {
-        console.error('Error al actualizar observaciones:', error);
-        Swal.fire('Error', 'No se pudieron actualizar las observaciones', 'error');
-      }
-    });
-  }
-
-  cancelarEdicion() {
-    this.editingObservaciones = false;
-    this.tempObservaciones = '';
-  }
-
   loadSectores() {
     this.sectoresService.getSectores().subscribe({
       next: (data) => {
@@ -252,43 +241,10 @@ export class VerSolicitudComponent implements OnInit {
       }
     });
   }
-
-  editarCampos() {
-    this.tempEspecialidad = this.activity.especialidad || '';
-    this.tempSectorTrabajoId = this.activity.sectorTrabajoId || null;
-    this.tempTipoServicioId = this.activity.tipoServicioId || null;
-    this.editingFields = true;
-  }
-
-  guardarCampos() {
-    this.solicitarVisitaService.updateSolicitudVisita(this.activity.id, {
-      especialidad: this.activity.especialidad,
-      sectorTrabajoId: this.activity.sectorTrabajoId,
-      tipoServicioId: this.activity.tipoServicioId
-    }).subscribe({
-      next: (response) => {
-        this.activity = response;
-        this.loadTecnicos(); // Recargar técnicos para actualizar coincidencias
-      },
-      error: (error) => {
-        console.error('Error al actualizar campos:', error);
-        Swal.fire('Error', 'No se pudieron actualizar los campos', 'error');
-      }
-    });
-  }
-
-  cancelarEdicionCampos() {
-    this.editingFields = false;
-    this.tempEspecialidad = '';
-    this.tempSectorTrabajoId = null;
-    this.tempTipoServicioId = null;
-  }
-
   getSectorNombre(id: number): string {
     const sector = this.sectores.find(s => s.id === id);
     return sector ? sector.nombre : 'No especificado';
   }
-
   loadEspecialidades() {
     this.especialidadesService.findAll().subscribe({
       next: (data) => {
@@ -299,18 +255,20 @@ export class VerSolicitudComponent implements OnInit {
       }
     });
   }
-
-  // Add new method for technician assignment
   asignarTecnico(event: any) {
     const tecnicoId = event.value;
-    
     if (!tecnicoId) {
-      return;
+      this.activity.tecnico_asignado_id = null;
+    } else {
+      this.activity.tecnico_asignado_id = tecnicoId;
     }
+  }
+  getSelectedTecnicoName(): string {
+    const tecnico = this.getTecnicoById(this.activity.tecnico_asignado_id);
+    return tecnico ? `${tecnico.name} ${tecnico.lastName}` : '';
+  }
 
-    // Actualizar localmente primero
-    this.activity.tecnico_asignado_id = tecnicoId;
-
-   
+  getTecnicoById(id: number): any {
+    return this.tecnicos.find(t => t.id === id);
   }
 }

@@ -66,7 +66,13 @@ export class SolicitarVisitaService {
     getSolicitudVisita(id: number): Promise<SolicitarVisita> {
         return this.solicitarVisitaRepository.findOne({ 
           where: { id }, 
-          relations: ['local', 'client', 'tecnico_asignado','itemRepuestos'] 
+          relations: [
+            'local', 
+            'client', 
+            'tecnico_asignado',
+            'itemRepuestos',
+            'itemRepuestos.repuesto'
+          ] 
         });
     }
 
@@ -257,19 +263,20 @@ export class SolicitarVisitaService {
             throw new NotFoundException(`Visita con ID ${id} no encontrada`);
         }
 
+        // Guardar los repuestos temporales
+        
+        console.log('visita', visita);
         // Combinar los datos de validación con los datos actualizados del formulario
         const updateData = { 
-            ...visita, // mantener los datos existentes
+            ...visita,
             status: 'validada', 
             validada_por_id: validada_por_id,
             fecha_hora_validacion: new Date(),
-            // Actualizar los campos editables del formulario
             especialidad: visita.especialidad,
             ticketGruman: visita.ticketGruman,
             observaciones: visita.observaciones,
             longitud_movil: visita.longitud_movil,
             latitud_movil: visita.latitud_movil,
-          
         };
         
         // Actualizar la entidad con todos los cambios
@@ -278,7 +285,7 @@ export class SolicitarVisitaService {
         // Retornar la entidad actualizada con sus relaciones
         return this.solicitarVisitaRepository.findOne({ 
             where: { id },
-            relations: ['local', 'client', 'tecnico_asignado']
+            relations: ['local', 'client', 'tecnico_asignado', 'itemRepuestos', 'itemRepuestos.repuesto']
         });
     }
 }

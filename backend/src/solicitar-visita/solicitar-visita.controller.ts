@@ -164,7 +164,8 @@ export class SolicitarVisitaController {
         ticketGruman?: string,
         observaciones?: string,
         longitud_movil?: string,
-        latitud_movil?: string
+        latitud_movil?: string,
+        repuestos?: { [key: string]: any[] }
     }
   ) {
     console.log('Controller: Validando solicitud:', { id, data });
@@ -175,7 +176,8 @@ export class SolicitarVisitaController {
             ticketGruman: data.ticketGruman,
             observaciones: data.observaciones,
             longitud_movil: data.longitud_movil,
-            latitud_movil: data.latitud_movil
+            latitud_movil: data.latitud_movil,
+            repuestos: data.repuestos
         });
 
         // Luego validamos la solicitud

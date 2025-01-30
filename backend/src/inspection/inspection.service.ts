@@ -246,4 +246,89 @@ export class InspectionService {
 
         await this.itemRepuestoRepository.remove(itemRepuesto);
     }
+
+    async addMultipleRepuestosToSubItems(repuestosMap: { [key: string]: any[] }) {
+        const savedRepuestos = [];
+        
+        for (const subItemId in repuestosMap) {
+            const repuestos = repuestosMap[subItemId];
+            const subItem = await this.subItemRepository.findOne({
+                where: { id: parseInt(subItemId) },
+                relations: ['item', 'item.section']
+            });
+
+            if (!subItem) {
+                throw new NotFoundException(`SubItem with ID ${subItemId} not found`);
+            }
+
+            for (const repuestoData of repuestos) {
+                const repuesto = await this.repuestoRepository.findOne({
+                    where: { id: repuestoData.repuesto.id }
+                });
+
+                if (!repuesto) {
+                    throw new NotFoundException(`Repuesto not found`);
+                }
+
+                const itemRepuesto = this.itemRepuestoRepository.create({
+                    itemId: parseInt(subItemId),
+                    repuesto,
+                    cantidad: repuestoData.cantidad,
+                    comentario: repuestoData.comentario || '',
+                    solicitarVisitaId: repuestoData.solicitarVisitaId
+                });
+
+                const savedRepuesto = await this.itemRepuestoRepository.save(itemRepuesto);
+                savedRepuestos.push(savedRepuesto);
+            }
+        }
+
+        return savedRepuestos;
+    }
+
+
+ 
+    async insertRepuestoInItem(itemId: string, repuestoId: number, cantidad: number, comentario: string, solicitarVisitaId:number) {
+        const item = await this.itemRepository.findOne({
+            where: { id: parseInt(itemId) },
+            relations: ['section']
+        });
+
+        if (!item) {
+            throw new NotFoundException(`Item not found`);
+        }
+
+        const repuesto = await this.repuestoRepository.findOne({
+            where: { id: repuestoId }
+        });
+
+        if (!repuesto) {
+            throw new NotFoundException(`Repuesto not found`);
+        }
+
+        const itemRepuesto = this.itemRepuestoRepository.create({
+            item,
+            repuesto,
+            cantidad,
+            solicitarVisitaId,
+            comentario
+        });
+
+        return await this.itemRepuestoRepository.save(itemRepuesto);
+    }
+
+    async deleteRepuestoFromItem(itemId: string) {
+        const itemRepuesto = await this.itemRepuestoRepository.findOne({
+            where: {
+                id: parseInt(itemId),
+            }
+        });
+
+        if (!itemRepuesto) {
+            throw new NotFoundException(`Repuesto not found in item`);
+        }
+
+        await this.itemRepuestoRepository.remove(itemRepuesto);
+        return { success: true };
+    }
 } 

@@ -48,7 +48,45 @@
             <div class="row">
               <div class="col-md-6">
                 <p><strong>Fecha de Ingreso:</strong> {{ formatDate(activity.fechaIngreso) }}</p>
-                <p><strong>Técnico Asignado:</strong> {{ activity.tecnico_asignado?.name }} {{ activity.tecnico_asignado?.lastName || 'No asignado' }}</p>
+                <p>
+                  <strong>Técnico Asignado:</strong>
+                  @if (activity.status === 'pendiente') {
+                    <mat-form-field class="w-100">
+                      <mat-select [(ngModel)]="activity.tecnico_asignado_id" (selectionChange)="asignarTecnico($event)">
+                        <mat-select-trigger>
+                          @if (activity.tecnico_asignado_id) {
+                            <div class="d-flex align-items-center justify-content-between">
+                              <span>{{ getSelectedTecnicoName() }}</span>
+                              @if (hasMatchingSpecialty(getTecnicoById(activity.tecnico_asignado_id))) {
+                                <mat-icon class="text-success">check_circle</mat-icon>
+                              } @else {
+                                <mat-icon class="text-warning">warning</mat-icon>
+                              }
+                            </div>
+                          } @else {
+                            Seleccionar técnico
+                          }
+                        </mat-select-trigger>
+                        
+                        <mat-option [value]="null">Seleccionar técnico</mat-option>
+                        @for (tecnico of tecnicos; track tecnico.id) {
+                          <mat-option [value]="tecnico.id">
+                            <div class="d-flex align-items-center justify-content-between">
+                              <span>{{ tecnico.name }} {{ tecnico.lastName }}</span>
+                              @if (hasMatchingSpecialty(tecnico)) {
+                                <mat-icon class="text-success">check_circle</mat-icon>
+                              } @else {
+                                <mat-icon class="text-warning">warning</mat-icon>
+                              }
+                            </div>
+                          </mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  } @else {
+                    {{ activity.tecnico_asignado?.name }} {{ activity.tecnico_asignado?.lastName || 'No asignado' }}
+                  }
+                </p>
                 <p><strong>Cliente:</strong> {{ activity.client?.nombre || 'No especificado' }}</p>
                 <p><strong>Tipo de Mantenimiento:</strong> 
                   <span [ngClass]="{
@@ -61,15 +99,55 @@
                 </p>
               </div>
               <div class="col-md-6">
-                <p><strong>Tipo de Servicio:</strong> {{ getTipoServicioNombre(activity.tipoServicioId) }}</p>
-                <p><strong>Sector de Trabajo:</strong> {{ getSectorNombre(activity.sectorTrabajoId) }}</p>
-                <p><strong>Especialidad:</strong> {{ activity.especialidad || 'No especificada' }}</p>
+                @if (activity.status === 'pendiente') {
+                  <mat-form-field class="w-100">
+                    <mat-label>Tipo de Servicio</mat-label>
+                    <mat-select [(ngModel)]="activity.tipoServicioId">
+                      @for (tipo of tiposServicio; track tipo.id) {
+                        <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field class="w-100">
+                    <mat-label>Sector de Trabajo</mat-label>
+                    <mat-select [(ngModel)]="activity.sectorTrabajoId">
+                      @for (sector of sectores; track sector.id) {
+                        <mat-option [value]="sector.id">{{ sector.nombre }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field class="w-100">
+                    <mat-label>Especialidad</mat-label>
+                    <mat-select [(ngModel)]="activity.especialidad">
+                      @for (especialidad of especialidades; track especialidad.id) {
+                        <mat-option [value]="especialidad.nombre">{{ especialidad.nombre }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                } @else {
+                  <p><strong>Tipo de Servicio:</strong> {{ getTipoServicioNombre(activity.tipoServicioId) }}</p>
+                  <p><strong>Sector de Trabajo:</strong> {{ getSectorNombre(activity.sectorTrabajoId) }}</p>
+                  <p><strong>Especialidad:</strong> {{ activity.especialidad || 'No especificada' }}</p>
+                }
               </div>
             </div>
 
             <div class="observaciones mt-4">
               <h3>Observaciones</h3>
-              <p>{{ activity.observaciones || 'Sin observaciones' }}</p>
+              @if (activity.status === 'pendiente') {
+                <mat-form-field class="w-100">
+                  <textarea 
+                    matInput 
+                    [(ngModel)]="activity.observaciones" 
+                    rows="4"
+                    placeholder="Ingrese las observaciones aquí...">
+                  </textarea>
+                </mat-form-field>
+              } @else {
+                <p>{{ activity.observaciones || 'Sin observaciones' }}</p>
+              }
             </div>
 
             @if (activity.imagenes?.length) {
