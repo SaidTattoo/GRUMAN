@@ -27,14 +27,14 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="local" placeholder="Seleccionar Local">
+            <mat-select formControlName="localId" placeholder="Seleccionar Local">
               <mat-option *ngFor="let local of locales" [value]="local.id">
                 {{ local.nombre_local }}
               </mat-option>
             </mat-select>
-              @if (programacionForm.get('local')?.touched && programacionForm.get('local')?.invalid) {
+              @if (programacionForm.get('localId')?.touched && programacionForm.get('localId')?.invalid) {
             <mat-error>
-              {{ getErrorMessage('local') }}
+              {{ getErrorMessage('localId') }}
             </mat-error>
             }
           </mat-form-field>
