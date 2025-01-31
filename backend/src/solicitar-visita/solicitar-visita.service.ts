@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { SolicitarVisita } from './solicitar-visita.entity';
+import { SolicitarVisita, SolicitudStatus } from './solicitar-visita.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Client } from 'src/client/client.entity';
@@ -10,7 +10,6 @@ import { ItemRepuesto } from 'src/inspection/entities/item-repuesto.entity';
 import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
 import { In, Between } from 'typeorm';
 import { FacturacionService } from 'src/facturacion/facturacion.service';
-
 
 @Injectable()
 export class SolicitarVisitaService {
@@ -62,40 +61,42 @@ export class SolicitarVisitaService {
                 where: { id: solicitud.tecnico_asignado_id } 
             });
         }
-
+        if(solicitudVisita.tipo_mantenimiento === 'programado'){
+        
+        
         // Valida que no exista otra solicitud para el mismo cliente en el período específico
         const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
         const fechaIngreso = new Date(solicitudVisita.fechaIngreso);
         
         // Busca si la fecha de ingreso está dentro de algún período de facturación
-        const periodoCorrespondiente = facturacion.find(periodo => {
-            const fechaInicio = new Date(periodo.fecha_inicio);
-            const fechaTermino = new Date(periodo.fecha_termino);
-            return fechaIngreso >= fechaInicio && fechaIngreso <= fechaTermino;
-        });
+                const periodoCorrespondiente = facturacion.find(periodo => {
+                    const fechaInicio = new Date(periodo.fecha_inicio);
+                    const fechaTermino = new Date(periodo.fecha_termino);
+                    return fechaIngreso >= fechaInicio && fechaIngreso <= fechaTermino;
+                });
 
-        if (!periodoCorrespondiente) {
-            throw new BadRequestException('La fecha de ingreso no corresponde a ningún período de facturación válido');
+                if (!periodoCorrespondiente) {
+                    throw new BadRequestException('La fecha de ingreso no corresponde a ningún período de facturación válido');
+                }
+
+                // Busca solicitudes existentes en el mismo período específico
+                const solicitudesExistentes = await this.solicitarVisitaRepository.find({
+                    where: {
+                        client: { id: solicitudVisita.client.id },
+                        fechaIngreso: Between(
+                            new Date(periodoCorrespondiente.fecha_inicio),
+                            new Date(periodoCorrespondiente.fecha_termino)
+                        )
+                    }
+                });
+
+                if (solicitudesExistentes.length > 0) {
+                    throw new BadRequestException('Ya existe una solicitud de visita programada para este cliente en el período seleccionado');
         }
-
-        // Busca solicitudes existentes en el mismo período específico
-        const solicitudesExistentes = await this.solicitarVisitaRepository.find({
-            where: {
-                client: { id: solicitudVisita.client.id },
-                fechaIngreso: Between(
-                    new Date(periodoCorrespondiente.fecha_inicio),
-                    new Date(periodoCorrespondiente.fecha_termino)
-                )
-            }
-        });
-
-        if (solicitudesExistentes.length > 0) {
-            throw new BadRequestException('Ya existe una solicitud de visita programada para este cliente en el período seleccionado');
-        }
-
+         }
         // Si la solicitud está aprobada, asigna el aprobador
         if (solicitud.status === 'aprobada' && solicitud.aprobada_por_id) {
-            solicitudVisita.status = 'aprobada';
+            solicitudVisita.status = SolicitudStatus.APROBADA;
             solicitudVisita.aprobada_por = await this.userRepository.findOne({ 
                 where: { id: solicitud.aprobada_por_id } 
             });
@@ -131,7 +132,7 @@ export class SolicitarVisitaService {
 
     async getSolicitudesAprobadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
-            where: { status: In(['aprobada', 'aprobado']) },
+            where: { status: In([SolicitudStatus.APROBADA, SolicitudStatus.APROBADA]) },
             relations: ['local', 'client', 'tecnico_asignado'],
             order: { fechaIngreso: 'DESC' }
         });
@@ -151,7 +152,7 @@ export class SolicitarVisitaService {
 
     async getSolicitudesRechazadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
-            where: { status: 'rechazado' },
+            where: { status: SolicitudStatus.RECHAZADA },
             relations: ['local', 'client', 'tecnico_asignado'],
             order: { fechaIngreso: 'DESC' }
         });
@@ -172,7 +173,7 @@ export class SolicitarVisitaService {
 
     async getSolicitudesFinalizadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
-            where: { status: In(['finalizado', 'finalizada']) },
+            where: { status: In([SolicitudStatus.FINALIZADA, SolicitudStatus.FINALIZADA]) },
             relations: ['local', 'client', 'tecnico_asignado'],
             order: { fechaIngreso: 'DESC' }
         });
@@ -181,7 +182,7 @@ export class SolicitarVisitaService {
     
     async getSolicitudesValidadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
-            where: { status: In(['validada', 'reabierta']) },
+            where: { status: In([SolicitudStatus.VALIDADA, SolicitudStatus.REABIERTA]) },
             relations: ['local', 'client', 'tecnico_asignado'],
             order: { fechaIngreso: 'DESC' }
         });
@@ -189,26 +190,26 @@ export class SolicitarVisitaService {
     }
 
     async aprovarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-       await this.solicitarVisitaRepository.update(id, { status: 'aprobado' });
+       await this.solicitarVisitaRepository.update(id, { status: SolicitudStatus.APROBADA });
        
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 
     async rechazarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-         await this.solicitarVisitaRepository.update(id, { status: 'rechazado' });
+         await this.solicitarVisitaRepository.update(id, { status: SolicitudStatus.RECHAZADA });
         
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 
     async finalizarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        await this.solicitarVisitaRepository.update(id, { status: 'finalizada' });
+        await this.solicitarVisitaRepository.update(id, { status: SolicitudStatus.FINALIZADA });
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 
     //quiero obtener la cantidad de solicitudes pendientes
     async getPendientes(): Promise<number> {
         const pendientes = await this.solicitarVisitaRepository.count({
-            where: { status: 'pendiente' }
+            where: { status: SolicitudStatus.PENDIENTE }
         });
         return pendientes;
     }
@@ -236,7 +237,7 @@ export class SolicitarVisitaService {
     /* agregar fecha_hora_inicio_servicio  */
     async iniciarServicio(id: number, latitud: string, longitud: string): Promise<SolicitarVisita> {
         await this.solicitarVisitaRepository.update(id, { 
-            status: 'en_servicio', 
+            status: SolicitudStatus.EN_SERVICIO, 
             fecha_hora_inicio_servicio: new Date(), 
             latitud_movil: latitud,
             longitud_movil: longitud
@@ -256,7 +257,7 @@ export class SolicitarVisitaService {
 
         // Guardar firma
         visita.firma_cliente = data.firma_cliente;
-        visita.status = 'finalizada';
+        visita.status = SolicitudStatus.FINALIZADA;
         visita.fecha_hora_fin_servicio = new Date();
 
         // Primero guardamos la visita para asegurarnos de tener el ID
@@ -291,7 +292,7 @@ export class SolicitarVisitaService {
         }
 
         // Actualizar el estado a reabierta
-        visita.status = 'reabierta';
+        visita.status = SolicitudStatus.REABIERTA;
         
         return this.solicitarVisitaRepository.save(visita);
     }
@@ -312,7 +313,7 @@ export class SolicitarVisitaService {
         // Combinar los datos de validación con los datos actualizados del formulario
         const updateData = { 
             ...visita,
-            status: 'validada', 
+            status: SolicitudStatus.VALIDADA, 
             validada_por_id: validada_por_id,
             fecha_hora_validacion: new Date(),
             especialidad: visita.especialidad,
@@ -331,4 +332,6 @@ export class SolicitarVisitaService {
             relations: ['local', 'client', 'tecnico_asignado', 'itemRepuestos', 'itemRepuestos.repuesto']
         });
     }
+
+    
 }

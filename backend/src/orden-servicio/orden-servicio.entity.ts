@@ -48,8 +48,12 @@ export class OrdenServicio {
   @Column({ type: 'enum', enum: TipoOrden })
   tipoOrden: TipoOrden;
 
-  @Column({ type: 'enum', enum: EstadoServicio })
-  estado: EstadoServicio;
+  @Column({
+    type: 'varchar',
+    length: 100,
+    name: 'estado'
+  })
+  estado: string;
 
   @ManyToOne(() => Locales, (local) => local.id, { nullable: true })
   @JoinColumn({ name: 'localId', referencedColumnName: 'id' })
