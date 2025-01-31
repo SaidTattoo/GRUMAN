@@ -103,6 +103,25 @@ export class SolicitarVisitaController {
     return this.solicitarVisitaService.getPendientes();
   }
 
+  @Get('solicitudes-del-dia')
+  async getSolicitudesDelDia() {
+    console.log('[Controller] Iniciando getSolicitudesDelDia');
+    try {
+        const result = await this.solicitarVisitaService.getSolicitudesDelDia();
+        console.log('[Controller] Solicitudes encontradas:', result?.length || 0);
+        return {
+            success: true,
+            data: result
+        };
+    } catch (error) {
+        console.error('[Controller] Error en getSolicitudesDelDia:', error);
+        throw new HttpException(
+            'Error al obtener las solicitudes del día',
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+  }
+
   @Get(':id')
   async getSolicitudVisita(@Param('id') id: number) {
     return this.solicitarVisitaService.getSolicitudVisita(id);
@@ -199,4 +218,5 @@ export class SolicitarVisitaController {
         );
     }
   }
+
 }

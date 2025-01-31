@@ -29,6 +29,10 @@ export class SolicitarVisita {
   @Column({ type: 'int', nullable: true })
   tipoServicioId: number;
 
+  @ManyToOne(() => TipoServicio)
+  @JoinColumn({ name: 'tipoServicioId' })
+  tipoServicio: TipoServicio;
+
   // Relación con la tabla Locales
   @ManyToOne(() => Locales, (local) => local.id, { nullable: true })
   @JoinColumn({ name: 'localId', referencedColumnName: 'id' })

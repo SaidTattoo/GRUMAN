@@ -74,6 +74,7 @@ export const navItems: NavItem[] = [
         bgcolor: 'primary',
         route: 'transacciones/solicitud-aprobacion-correctiva',
       },
+     
       {
         displayName: 'Listado de solicitudes de aprobación de correctiva',
         iconName: 'home-shield',
@@ -86,6 +87,11 @@ export const navItems: NavItem[] = [
     iconName: 'home-shield',
     bgcolor: 'primary',
     route: 'transacciones/servicios-realizados',
+  }, {
+    displayName: 'Solicitudes del día',
+    iconName: 'calendar-day',
+    bgcolor: 'primary',
+    route: 'transacciones/solicitudes-del-dia',
   },
   ...(showMantenedores
     ? [

@@ -64,7 +64,7 @@ export class SolicitarVisitaService {
         if(solicitudVisita.tipo_mantenimiento === 'programado'){
         
         
-        // Valida que no exista otra solicitud para el mismo cliente en el período específico
+        // Valida que no exista otra solicitud para el mismo local en el período específico
         const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
         const fechaIngreso = new Date(solicitudVisita.fechaIngreso);
         
@@ -79,19 +79,20 @@ export class SolicitarVisitaService {
                     throw new BadRequestException('La fecha de ingreso no corresponde a ningún período de facturación válido');
                 }
 
-                // Busca solicitudes existentes en el mismo período específico
+                // Busca solicitudes existentes en el mismo período específico para el mismo local
                 const solicitudesExistentes = await this.solicitarVisitaRepository.find({
                     where: {
-                        client: { id: solicitudVisita.client.id },
+                        local: { id: solicitudVisita.local.id },
                         fechaIngreso: Between(
                             new Date(periodoCorrespondiente.fecha_inicio),
                             new Date(periodoCorrespondiente.fecha_termino)
-                        )
+                        ),
+                        tipo_mantenimiento: 'programado'
                     }
                 });
 
                 if (solicitudesExistentes.length > 0) {
-                    throw new BadRequestException('Ya existe una solicitud de visita programada para este cliente en el período seleccionado');
+                    throw new BadRequestException('Ya existe una solicitud de visita programada para este local en el período seleccionado');
         }
          }
         // Si la solicitud está aprobada, asigna el aprobador
@@ -333,5 +334,69 @@ export class SolicitarVisitaService {
         });
     }
 
-    
+    async getSolicitudesDelDia(): Promise<SolicitarVisita[]> {
+        console.log('[Service] Iniciando getSolicitudesDelDia');
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of day
+        
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
+        
+        console.log('[Service] Parámetros de búsqueda:', {
+            today: today.toISOString(),
+            tomorrow: tomorrow.toISOString(),
+            statuses: [
+                SolicitudStatus.VALIDADA, 
+                SolicitudStatus.REABIERTA,
+                SolicitudStatus.EN_SERVICIO,
+                SolicitudStatus.FINALIZADA,
+                SolicitudStatus.APROBADA,
+                SolicitudStatus.RECHAZADA,
+                SolicitudStatus.PENDIENTE
+            ]
+        });
+
+        try {
+            const data = await this.solicitarVisitaRepository.find({ 
+                select: {
+                    id: true,
+                    fechaIngreso: true,
+                    status: true,
+                    tipoServicioId: true,
+                    tipo_mantenimiento: true
+                },
+                where: { 
+                    status: In([
+                        SolicitudStatus.VALIDADA, 
+                        SolicitudStatus.REABIERTA,
+                        SolicitudStatus.EN_SERVICIO,
+                        SolicitudStatus.FINALIZADA,
+                        SolicitudStatus.APROBADA,
+                        SolicitudStatus.RECHAZADA,
+                        SolicitudStatus.PENDIENTE
+                    ]),
+                    fechaIngreso: Between(today, tomorrow)
+                },
+                relations: ['local', 'client', 'tecnico_asignado', 'tipoServicio'],
+                order: { fechaIngreso: 'DESC' }
+            });
+
+            console.log('[Service] Query ejecutada exitosamente');
+            console.log('[Service] Resultados:', {
+                totalRegistros: data.length,
+                primerRegistro: data[0] ? {
+                    id: data[0].id,
+                    fechaIngreso: data[0].fechaIngreso,
+                    status: data[0].status,
+                    tipoServicioId: data[0].tipoServicioId  // Usando el nombre correcto de la propiedad
+                } : null
+            });
+
+            return data || [];
+        } catch (error) {
+            console.error('[Service] Error al ejecutar la consulta:', error);
+            throw error;
+        }
+    }
 }
