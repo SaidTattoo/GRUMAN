@@ -125,6 +125,13 @@ export const routes: Routes = [
         children: SolicitudesDeVisitaRoutes
       },
       {
+        path: 'transacciones/solicitudes-del-dia',
+        loadChildren: () =>
+          import('./pages/transacciones/solicitudes-del-dia/solicitudes-del-dia.routes').then(
+            (m) => m.SOLICITUDES_DEL_DIA_ROUTES
+          ),
+      },
+      {
         path: 'transacciones/solicitudes-de-visita/aprobadas',
         loadChildren: () =>
           import('./pages/transacciones/solicitudes-de-visita/solicitudes-aprobadas/solicitudes-aprobadas.routes').then(

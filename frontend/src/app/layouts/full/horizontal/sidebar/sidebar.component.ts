@@ -68,8 +68,18 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
     };
   
     const showMantenedores = hasGrumanCompany(user);
+    console.log('showMantenedores:', showMantenedores);
+    console.log('selectedCompany:', user?.selectedCompany);
     const showSolicitarVisita = !hasGrumanCompany(user);
   
+    // Agregar formato de fecha
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('es-CL', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
     this.navItems = [
       {
         navCap: 'Admin',
@@ -108,6 +118,7 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 bgcolor: 'primary',
                 route: 'transacciones/listado-programacion',
               },
+             
               {
                 displayName: 'Solicitud de aprobación de correctiva',
                 iconName: 'home-shield',
@@ -149,7 +160,12 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
         route: 'transacciones/lista-servicios-realizados',
       }, */
       ...(showMantenedores
-        ? [{
+        ? [ {
+          displayName: `Servicios del día ${formattedDate}`,
+          iconName: 'clipboard-list',
+          bgcolor: 'primary',
+          route: 'transacciones/solicitudes-del-dia',
+        },{
             displayName: 'Solicitudes',
             iconName: 'clipboard-list',
             children: [

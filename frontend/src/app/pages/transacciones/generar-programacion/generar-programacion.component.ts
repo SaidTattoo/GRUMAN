@@ -33,6 +33,17 @@ const MY_DATE_FORMAT = {
     monthYearA11yLabel: 'MMMM YYYY'
   }
 };
+export enum SolicitudStatus {
+  PENDIENTE = 'pendiente',
+  APROBADA = 'aprobada',
+  RECHAZADA = 'rechazada',
+  EN_SERVICIO = 'en_servicio',
+  FINALIZADA = 'finalizada',
+  VALIDADA = 'validada',
+  REABIERTA = 'reabierta',
+  PROGRAMADO = 'programado'
+}
+
 @Component({
   selector: 'app-generar-programacion',
   standalone: true,
@@ -45,6 +56,7 @@ const MY_DATE_FORMAT = {
     { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMAT } // Configura los formatos personalizados
   ]
 })
+
 export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   programacionForm: FormGroup;
   locales: any[] = [];
@@ -82,11 +94,11 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       localId: new FormControl({ value: '', disabled: true }, [Validators.required]),
       tipoServicioId: new FormControl('', [Validators.required]),
       sectorTrabajoId: new FormControl('', [Validators.required]),
-      status: new FormControl('aprobada', [Validators.required]),
+      status: new FormControl(SolicitudStatus.APROBADA, [Validators.required]),
       fechaIngreso: new FormControl('', [Validators.required]),
       tecnico_asignado_id: new FormControl('', [Validators.required]),
       observaciones: new FormControl('', [Validators.maxLength(500)]),
-      tipo_mantenimiento: new FormControl('programado', [Validators.required])
+      tipo_mantenimiento: new FormControl(SolicitudStatus.PROGRAMADO, [Validators.required])
     });
   }
 
