@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { EstadoServicio, OrdenServicio, TipoOrden } from './orden-servicio.entity';
@@ -7,6 +7,7 @@ import { Locales } from '../locales/locales.entity';
 import { User } from '../users/users.entity';
 import { SectorTrabajo } from '../sectores-trabajo/sectores-trabajo.entity';
 import { TipoServicio } from '../tipo-servicio/tipo-servicio.entity';
+
 
 @Injectable()
 export class OrdenServicioService {
@@ -179,6 +180,37 @@ export class OrdenServicioService {
       afecta: data.afecta,
       tiempoEstimado: data.tiempoEstimado
     };
+
+    return this.ordenServicioRepository.save(orden);
+  }
+
+  async create(createOrdenServicioDto: any): Promise<OrdenServicio> {
+    // Add validation
+    if (createOrdenServicioDto.estado && createOrdenServicioDto.estado.length > 100) {
+        throw new BadRequestException('Estado value exceeds maximum length of 100 characters');
+    }
+    
+    const orden = new OrdenServicio();
+    
+    // Buscar las entidades relacionadas
+    const client = await this.clientRepository.findOne({ where: { id: createOrdenServicioDto.clientId } });
+    const local = await this.localesRepository.findOne({ where: { id: createOrdenServicioDto.local } });
+    const tecnico = await this.userRepository.findOne({ where: { id: createOrdenServicioDto.userId } });
+    const sectorTrabajo = await this.sectorTrabajoRepository.findOne({ where: { id: createOrdenServicioDto.sectorTrabajo } });
+    const tipoServicio = await this.tipoServicioRepository.findOne({ where: { id: createOrdenServicioDto.tipoServicio } });
+
+    // Asignar las relaciones
+    orden.client = client;
+    orden.local = local;
+    orden.tecnico = tecnico;
+    orden.sectorTrabajo = sectorTrabajo;
+    orden.tipoServicio = tipoServicio;
+    
+    // Asignar otros campos
+    orden.fechaProgramada = createOrdenServicioDto.fecha;
+    orden.observaciones = createOrdenServicioDto.observaciones;
+    orden.estado = createOrdenServicioDto.estado as EstadoServicio;
+    orden.tipoOrden = createOrdenServicioDto.tipoOrden as TipoOrden;
 
     return this.ordenServicioRepository.save(orden);
   }

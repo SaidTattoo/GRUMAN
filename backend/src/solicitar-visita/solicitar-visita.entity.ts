@@ -146,5 +146,14 @@ export class SolicitarVisita {
 
   @Column({ type: 'timestamp', nullable: true })
   fecha_hora_validacion: Date;
+
+  @Column({
+    type: 'varchar',
+    length: 100,  // Increased length
+    name: 'estado',
+    nullable: true,
+    default:null
+  })
+  estado: string;
 }
  

@@ -142,12 +142,12 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
         bgcolor: 'primary',
         route: 'transacciones/servicios-realizados',
       },
-      {
+     /*  {
         displayName: 'Lista de Servicios Realizados',
         iconName: 'home-shield',
         bgcolor: 'primary',
         route: 'transacciones/lista-servicios-realizados',
-      },
+      }, */
       ...(showMantenedores
         ? [{
             displayName: 'Solicitudes',

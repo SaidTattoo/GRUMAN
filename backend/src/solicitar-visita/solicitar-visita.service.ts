@@ -11,7 +11,6 @@ import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
 import { In, Between } from 'typeorm';
 import { FacturacionService } from 'src/facturacion/facturacion.service';
 
-
 @Injectable()
 export class SolicitarVisitaService {
     constructor(
@@ -333,4 +332,6 @@ export class SolicitarVisitaService {
             relations: ['local', 'client', 'tecnico_asignado', 'itemRepuestos', 'itemRepuestos.repuesto']
         });
     }
+
+    
 }
