@@ -6,6 +6,16 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { User } from "src/users/users.entity";
 import { ItemRepuesto } from "src/inspection/entities/item-repuesto.entity";
 
+export enum SolicitudStatus {
+    PENDIENTE = 'pendiente',
+    APROBADA = 'aprobada',
+    RECHAZADA = 'rechazada',
+    EN_SERVICIO = 'en_servicio',
+    FINALIZADA = 'finalizada',
+    VALIDADA = 'validada',
+    REABIERTA = 'reabierta'
+}
+
 @Entity('solicitar_visita')
 export class SolicitarVisita {
   @PrimaryGeneratedColumn()
@@ -50,8 +60,12 @@ export class SolicitarVisita {
   observaciones: string;
 
   // Estado del ticket
-  @Column({ type: 'varchar', length: 20, default: 'pendiente' })
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: SolicitudStatus,
+    default: SolicitudStatus.PENDIENTE
+  })
+  status: SolicitudStatus;
 
   // Imagenes como un arreglo de strings
   @Column('simple-array', { nullable: true })
