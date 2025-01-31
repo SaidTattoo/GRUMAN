@@ -272,7 +272,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Error al crear la solicitud de visita:', error);
-            this.showErrorMessage('Error al crear la solicitud de visita');
+            this.showErrorMessage('El cliente ya tiene una solicitud de visita programada en este mes');
+            this.loading = false;
           },
           complete: () => {
             this.loading = false;
