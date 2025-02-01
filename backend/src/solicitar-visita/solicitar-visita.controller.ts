@@ -1,9 +1,10 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query } from '@nestjs/common';
 import { SolicitarVisitaService } from './solicitar-visita.service';
 
 import { SolicitarVisita } from './solicitar-visita.entity';
 import { CreateSolicitarVisitaDto } from './dto/createSolicitarVisitaDto';
 import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
+
 @Controller('solicitar-visita')
 export class SolicitarVisitaController {
   constructor(private readonly solicitarVisitaService: SolicitarVisitaService) {}
@@ -32,7 +33,6 @@ export class SolicitarVisitaController {
   async create(@Body() createSolicitarVisitaDto: any) {
     console.log('Datos recibidos:', createSolicitarVisitaDto);
 
-    // Verificar que clientId sea un número válido
     if (!createSolicitarVisitaDto.clientId || isNaN(Number(createSolicitarVisitaDto.clientId))) {
       throw new HttpException(
         'El campo clientId es obligatorio y debe ser un número válido.',
@@ -40,7 +40,6 @@ export class SolicitarVisitaController {
       );
     }
 
-    // Procesar la solicitud
     const solicitud = {
       ...createSolicitarVisitaDto,
       clientId: Number(createSolicitarVisitaDto.clientId),
@@ -104,10 +103,56 @@ export class SolicitarVisitaController {
   }
 
   @Get('solicitudes-del-dia')
+  
   async getSolicitudesDelDia() {
     console.log('[Controller] Iniciando getSolicitudesDelDia');
     try {
         const result = await this.solicitarVisitaService.getSolicitudesDelDia();
+        console.log('[Controller] Solicitudes encontradas:', result?.length || 0);
+        return {
+            success: true,
+            data: result
+        };
+    } catch (error) {
+        console.error('[Controller] Error en getSolicitudesDelDia:', error);
+        throw new HttpException(
+            'Error al obtener las solicitudes del día',
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+  }
+  @Get('servicios-realizados')
+  async getSolicitudesDelDia2(
+    @Query('clientId') clientId?: string,
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+    @Query('mesFacturacion') mesFacturacion?: string,
+    @Query('tipoServicio') tipoServicio?: string,
+    @Query('tipoBusqueda') tipoBusqueda?: string,
+    @Query('tipoSolicitud') tipoSolicitud?: string
+  ) {
+    console.log( clientId, fechaInicio, fechaFin, mesFacturacion, tipoServicio, tipoBusqueda, tipoSolicitud );
+    try {
+        const result = await this.solicitarVisitaService.getSolicitudesDelDia2(clientId, fechaInicio, fechaFin, mesFacturacion, tipoServicio, tipoBusqueda, tipoSolicitud);
+        console.log('[Controller] Solicitudes encontradas:', result?.length || 0);
+        return {
+            success: true,
+            data: result
+        };
+    } catch (error) {
+        console.error('[Controller] Error en getSolicitudesDelDia:', error);
+        throw new HttpException(
+            'Error al obtener las solicitudes del día',
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+  }
+
+  @Get('solicitudes-del-dia/:clientId')
+  async getSolicitudesDelDiaPorCliente(@Param('clientId') clientId: number) {
+    console.log('[Controller] Iniciando getSolicitudesDelDiaPorCliente');
+    try {
+        const result = await this.solicitarVisitaService.getSolicitudDelDiaPorCliente(clientId);
         console.log('[Controller] Solicitudes encontradas:', result?.length || 0);
         return {
             success: true,
@@ -189,7 +234,6 @@ export class SolicitarVisitaController {
   ) {
     console.log('Controller: Validando solicitud:', { id, data });
     try {
-        // Primero actualizamos los datos del formulario
         await this.solicitarVisitaService.updateSolicitudVisita(id, {
             especialidad: data.especialidad,
             ticketGruman: data.ticketGruman,
@@ -199,7 +243,6 @@ export class SolicitarVisitaController {
             repuestos: data.repuestos
         });
 
-        // Luego validamos la solicitud
         const result = await this.solicitarVisitaService.validarSolicitud(
             id, 
             data.validada_por_id
@@ -219,4 +262,49 @@ export class SolicitarVisitaController {
     }
   }
 
+ /*  @Get('servicios-realizados')
+  async getServiciosRealizados(
+    @Query('clientId') clientId?: string,
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+    @Query('mesFacturacion') mesFacturacion?: string,
+    @Query('tipoServicio') tipoServicio?: string,
+    @Query('tipoBusqueda') tipoBusqueda?: string,
+    @Query('tipoSolicitud') tipoSolicitud?: string
+  ) {
+    try {
+        console.log('[Controller] getServiciosRealizados - Received params:', {
+            clientId, 
+            fechaInicio, 
+            fechaFin, 
+            mesFacturacion, 
+            tipoServicio,
+            tipoBusqueda,
+            tipoSolicitud
+        });
+        
+        const result = await this.solicitarVisitaService.getServiciosRealizados({
+            tipoBusqueda,
+            fechaInicio,
+            fechaFin,
+            clientId: clientId ? parseInt(clientId) : undefined,
+            mesFacturacion,
+            tipoServicio,
+            tipoSolicitud
+        });
+
+        console.log('[Controller] getServiciosRealizados - Result count:', result?.length || 0);
+        
+        return {
+            success: true,
+            data: result
+        };
+    } catch (error) {
+        console.error('[Controller] getServiciosRealizados - Error:', error);
+        throw new HttpException(
+            'Error al obtener servicios realizados',
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+  } */
 }

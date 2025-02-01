@@ -10,18 +10,14 @@ export class FacturacionController {
         private readonly clientesService: ClientService,
     ) {}
 
-  @Post(':id_cliente')
-  async crearFacturacion(
-    @Param('id_cliente') id_cliente: number,
-    @Body() body: { mes: string; fecha_inicio: Date; fecha_termino: Date; hh: number },
-  ) {
-    const cliente = await this.clientesService.findOneClient(id_cliente);
+  @Post()
+  async create(@Body() body: any) {
     return this.facturacionService.crearFacturacion(
-      cliente,
+      body.cliente,
       body.mes,
-      new Date(body.fecha_inicio),
-      new Date(body.fecha_termino),
-      body.hh,
+      body.fecha_inicio,
+      body.fecha_termino,
+      body.hh
     );
   }
 
@@ -65,5 +61,10 @@ export class FacturacionController {
   ) {
     console.log('--------1', id_cliente, anio_inicio, anios);
     return this.facturacionService.generarFacturacionMensualAutomatica(id_cliente, anio_inicio, anios);
+  }
+
+  @Post('generar-facturacion-manual')
+  async generarFacturacionManual() {
+    return await this.facturacionService.generarFacturacionMensualParaTodosLosClientes();
   }
 }

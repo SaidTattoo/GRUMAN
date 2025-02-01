@@ -71,7 +71,8 @@
                     @for (item of section.items; track item.id; let j = $index) {
                       <mat-step>
                         <ng-template matStepLabel>
-                          <div class="d-flex gap-2 align-items-center justify-content-between w-100">
+                          <div class="d-flex gap-2 align-items-center justify-content-between w-100"
+                              (click)="onPanelExpanded(item.id)">
                             <div class="d-flex gap-2 align-items-center">
                               <span class="item-number">{{i + 1}}.{{j + 1}}</span>
                               <span>{{ item.name }}</span>
@@ -87,7 +88,7 @@
                           </div>
                         </ng-template>
 
-                        <ng-template matStepContent>
+                        <ng-template matStepContent [expanded]="isPanelExpanded(item.id)">
                           <div class="step-content">
                             @if (item.subItems.length === 0) {
                               <div class="empty-state">

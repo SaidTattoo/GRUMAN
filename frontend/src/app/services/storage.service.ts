@@ -53,4 +53,12 @@ export class StorageService {
   getCurrentUser(): any {
     return this.userSubject.value;
   }
+
+  getCurrentUserWithCompany(): any {
+    const user = this.getItem('currentUser');
+    if (user && user.selectedCompany) {
+      return user;
+    }
+    return null;
+  }
 } 

@@ -280,6 +280,17 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (res: any) => {
             console.log('Solicitud de visita creada:', res);
+            Swal.fire({
+              title: 'Éxito',
+              html: `
+                <div style="text-align: left">
+                  <p><strong>Solicitud de visita generada correctamente</strong></p>
+                  <p><strong>N° Requerimiento:</strong> ${res.data.id}</p>
+                  <p><strong>Fecha:</strong> ${this.formatDate(res.data.fechaVisita)}</p>
+                </div>
+              `,
+              icon: 'success'
+            });
             this.router.navigate(['/transacciones/listado-programacion']);
           },
           error: (error) => {
@@ -294,7 +305,17 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       }
     });
   }
-
+  formatDate(date: string) {
+    return new Date(date).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    
+    });
+  }
   private markFormGroupTouched(formGroup: FormGroup) {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();

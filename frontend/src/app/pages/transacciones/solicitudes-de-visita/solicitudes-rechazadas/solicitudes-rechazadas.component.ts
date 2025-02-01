@@ -48,7 +48,7 @@ import { MatInputModule } from '@angular/material/input';
           <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
             <!-- Logo Column -->
             <ng-container matColumnDef="logo">
-              <th mat-header-cell *matHeaderCellDef></th>
+              <th mat-header-cell *matHeaderCellDef>Logo</th>
               <td mat-cell *matCellDef="let row" class="logo-cell">
                 <img 
                   [src]="row.client?.logo || 'assets/images/no-image.png'" 
@@ -172,11 +172,12 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = [
+   
+    'fechaIngreso',
     'logo',
     'cliente',
     'local',
     'ticketGruman',
-    'fechaIngreso',
     'especialidad',
     'observaciones',
     'motivo_rechazo',
@@ -224,8 +225,7 @@ export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    
     });
   }
 

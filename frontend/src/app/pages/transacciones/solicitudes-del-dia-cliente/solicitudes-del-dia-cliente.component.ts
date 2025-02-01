@@ -7,9 +7,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
+import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
-  selector: 'app-solicitudes-del-dia',
+  selector: 'app-solicitudes-del-dia-cliente',
   standalone: true,
   imports: [
     CommonModule,
@@ -20,7 +21,7 @@ import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.servic
     MatFormFieldModule,
     MatInputModule
   ],
-  templateUrl: './solicitudes-del-dia.component.html',
+  templateUrl: './solicitudes-del-dia-cliente.component.html',
   styles: [`
     .badge {
       padding: 6px 12px;
@@ -46,37 +47,42 @@ import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.servic
     }
   `]
 })
-export class SolicitudesDelDiaComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'cliente', 'local', 'tipoServicio',  'estado', 'tecnico' ];
+export class SolicitudesDelDiaClienteComponent implements OnInit {
+  displayedColumns: string[] = ['id', 'local', 'tipoServicio', 'observaciones', 'estado' ];
   dataSource: any[] = [];
 
-  constructor(private solicitarVisitaService: SolicitarVisitaService) {}
+  constructor(
+    private solicitarVisitaService: SolicitarVisitaService,
+    private storageService: StorageService
+  ) {}
 
   ngOnInit() {
+    const user = this.storageService.getItem('currentUser');
+    if (!user?.selectedCompany?.id) {
+      console.warn('No hay una compañía seleccionada');
+      return;
+    }
     this.cargarSolicitudesDelDia();
   }
 
   cargarSolicitudesDelDia() {
-    console.log('[Component] Iniciando carga de solicitudes del día');
-    this.solicitarVisitaService.getSolicitudesDelDia().subscribe({
-      next: (response: any) => {
-        console.log('[Component] Datos recibidos:', response);
-        // Verificamos si la respuesta tiene la estructura esperada
-        if (response && response.success) {
-          this.dataSource = response.data || [];
-        } else if (Array.isArray(response)) {
-          // Si la respuesta es directamente un array
-          this.dataSource = response;
-        } else {
-          console.warn('[Component] Formato de respuesta inesperado:', response);
+    const user = this.storageService.getCurrentUserWithCompany();
+    if (user?.selectedCompany?.id) {
+      this.solicitarVisitaService.getSolicitudesDelDiaPorCliente(user.selectedCompany.id).subscribe({
+        next: (response: any) => {
+          if (response && response.success) {
+            this.dataSource = response.data || [];
+          } else {
+            console.warn('[Component] Formato de respuesta inesperado:', response);
+            this.dataSource = [];
+          }
+        },
+        error: (error) => {
+          console.error('[Component] Error al cargar solicitudes:', error);
           this.dataSource = [];
         }
-      },
-      error: (error) => {
-        console.error('[Component] Error al cargar solicitudes:', error);
-        this.dataSource = [];
-      }
-    });
+      });
+    }
   }
 
   applyFilter(event: Event) {

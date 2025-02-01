@@ -11,38 +11,173 @@ import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
+import { ClientesService } from 'src/app/services/clientes.service';
 import { ServiciosRealizadosService } from 'src/app/services/servicios-realizados.service';
 import { ServiciosService } from 'src/app/services/servicios.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TipoServicioService } from 'src/app/services/tipo-servicio.service';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
   selector: 'app-servicios-realizados',
   standalone: true,
-  imports: [  CommonModule, MatCardModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule,
-     FormsModule, MatSelectModule, MatDatepickerModule, MatNativeDateModule, MatRadioModule, MatButtonModule 
-    ],
+  imports: [  
+    CommonModule, 
+    MatCardModule, 
+    MatFormFieldModule, 
+    MatInputModule, 
+    ReactiveFormsModule,
+    FormsModule, 
+    MatSelectModule, 
+    MatDatepickerModule, 
+    MatNativeDateModule, 
+    MatRadioModule, 
+    MatButtonModule,
+    MatTableModule,
+    MatExpansionModule
+  ],
   templateUrl: './servicios-realizados.component.html',
-  styleUrl: './servicios-realizados.component.scss'
+  styleUrls: ['./servicios-realizados.component.scss'],
+  styles: [`
+    .mb-4 {
+      margin-bottom: 1.5rem;
+    }
+    .mat-mdc-card-header {
+      padding: 16px 16px 0;
+    }
+    .mat-mdc-card-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .mat-mdc-card-subtitle {
+      color: rgba(0, 0, 0, 0.6);
+    }
+    .table-container {
+      position: relative;
+      min-height: 200px;
+      max-height: 600px;
+      overflow: auto;
+    }
+  `]
 })
 export class ServiciosRealizadosComponent implements OnInit {
   programacionForm: FormGroup;
   tiposServicio: any[] = [];
-  tiposSolicitud: any[] = [
-    {id: 1, nombre: 'Todos'},
-    {id: 2, nombre: 'Normal'},
-    {id: 3, nombre: 'Urgente'},
-    {id: 4, nombre: 'Critico'},
-    {id: 5, nombre: 'Programación'},
+  tiposSolicitud = [
+    { id: 'todos', nombre: 'Todos' },
+    { id: 'normal', nombre: 'Normal' },
+    { id: 'urgente', nombre: 'Urgente' },
+    { id: 'critico', nombre: 'Crítico' },
+    { id: 'programado', nombre: 'Programado' }
   ];
   meses: any[] = [];
-  constructor(private fb: FormBuilder, private serviciosService: ServiciosService, private serviciosRealizadosService: ServiciosRealizadosService, private router: Router) {
+  isGruman: boolean = false;
+  clientes: any[] = [];
+  selectedCompany: any;
+  serviciosRealizados: any[] = [];
+  displayedColumns: string[] = [
+    'id','local',
+   
+    'tipo_mantenimiento',
+    'tipoServicio',
+    
+  
+    'tecnico',
+    'status',
+    'observaciones' ,'fechaIngreso',
+  ];
+  panelOpenState = true; // Controla el estado del panel de búsqueda
+
+  constructor(
+    private fb: FormBuilder, 
+    private serviciosService: ServiciosService,
+    private tipoServicioService: TipoServicioService,
+    private serviciosRealizadosService: ServiciosRealizadosService,
+    private clientesService: ClientesService,
+    private storageService: StorageService,
+    private router: Router
+  ) {
+    const userData = this.storageService.getCurrentUserWithCompany();
+    if (userData && userData.selectedCompany) {
+      this.selectedCompany = userData.selectedCompany;
+      this.isGruman = this.selectedCompany.nombre === 'GRUMAN';
+    }
+
+    this.initForm();
+  }
+
+  private initForm() {
     this.programacionForm = this.fb.group({
-      tipoServicio: [null, Validators.required],
-      tipoSolicitud: [null, Validators.required],
-      diaSeleccionadoInicio: [null, Validators.required],
-      diaSeleccionadoTermino: [null, Validators.required],
-      mesFacturacion: [null, Validators.required],
-      tipoBusqueda: [null, Validators.required],
-    }, { validators: this.fechaTerminoMayorQueInicio });
+      clientId: [''],
+      tipoServicio: ['todos'],
+      tipo_mantenimiento: ['todos'],
+      diaSeleccionadoInicio: [null],
+      diaSeleccionadoTermino: [null],
+      mesFacturacion: [null],
+      tipoBusqueda: ['', Validators.required]
+    });
+
+    // Si no es Gruman, usar el ID de la compañía seleccionada
+    if (!this.isGruman && this.selectedCompany?.id) {
+      this.programacionForm.patchValue({ clientId: this.selectedCompany.id });
+      this.programacionForm.get('clientId')?.disable();
+      // Cargar tipos de servicio para la compañía seleccionada
+      this.loadTiposServicio(this.selectedCompany.id);
+    }
+
+    // Si es Gruman, escuchar cambios en el selector de cliente
+    if (this.isGruman) {
+      this.programacionForm.get('clientId')?.valueChanges.subscribe(clientId => {
+        if (clientId) {
+          this.loadTiposServicio(clientId);
+        } else {
+          this.tiposServicio = [];
+        }
+        // Resetear el tipo de servicio cuando cambia el cliente
+        this.programacionForm.get('tipoServicio')?.reset();
+      });
+    }
+
+    this.programacionForm.get('tipoBusqueda')?.valueChanges.subscribe(value => {
+      const diaInicioControl = this.programacionForm.get('diaSeleccionadoInicio');
+      const diaTerminoControl = this.programacionForm.get('diaSeleccionadoTermino');
+      const mesFacturacionControl = this.programacionForm.get('mesFacturacion');
+      
+      if (value === 'rangoFechas') {
+        diaInicioControl?.setValidators([Validators.required]);
+        diaTerminoControl?.setValidators([Validators.required]);
+        mesFacturacionControl?.clearValidators();
+        mesFacturacionControl?.setValue(null);
+      } else if (value === 'mesFacturacion') {
+        mesFacturacionControl?.setValidators([Validators.required]);
+        diaInicioControl?.clearValidators();
+        diaTerminoControl?.clearValidators();
+        diaInicioControl?.setValue(null);
+        diaTerminoControl?.setValue(null);
+      }
+      
+      diaInicioControl?.updateValueAndValidity();
+      diaTerminoControl?.updateValueAndValidity();
+      mesFacturacionControl?.updateValueAndValidity();
+    });
+  }
+
+  loadTiposServicio(clientId: number) {
+    const cliente = this.clientes.find(c => c.id === clientId);
+    if (cliente) {
+      // Filtrar servicios activos y no eliminados
+      this.tiposServicio = cliente.tipoServicio.filter(
+        (servicio: any) => servicio.activo && !servicio.deleted
+      );
+      console.log('Tipos de servicio cargados:', this.tiposServicio);
+    } else if (!this.isGruman) {
+      // Si no es Gruman, buscar en la compañía seleccionada
+      this.tiposServicio = this.selectedCompany.tipoServicio?.filter(
+        (servicio: any) => servicio.activo && !servicio.deleted
+      ) || [];
+    }
   }
 
   fechaTerminoMayorQueInicio(control: AbstractControl): ValidationErrors | null {
@@ -56,48 +191,102 @@ export class ServiciosRealizadosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
-    this.getTiposServicio();
-    this.getTiposSolicitud();
+    if (this.isGruman) {
+      this.loadClientes();
+    } else {
+      this.loadTiposServicio(this.selectedCompany.id);
+    }
+    
+  
     this.getMeses();
+  }
+
+  loadClientes() {
+    this.clientesService.getClientes().subscribe({
+      next: (clientes: any[]) => {
+        this.clientes = clientes;
+        console.log('Clientes cargados:', this.clientes.length);
+      },
+      error: (error) => {
+        console.error('Error al cargar clientes:', error);
+        this.clientes = [];
+      }
+    });
   }
 
   onSubmit() {
     if (this.programacionForm.invalid) {
-      //console.log('Formulario inválido');
       return;
     }
+
     const formData = this.programacionForm.value;
-    formData.diaSeleccionadoInicio = new Date(formData.diaSeleccionadoInicio).toISOString().split('T')[0];
-    formData.diaSeleccionadoTermino = new Date(formData.diaSeleccionadoTermino).toISOString().split('T')[0];
-    this.serviciosRealizadosService.create(formData).subscribe((data: any) => {
-      this.router.navigate(['/transacciones/lista-servicios-realizados']);
+    const params: any = {
+      tipoBusqueda: formData.tipoBusqueda,
+      clientId: this.isGruman ? formData.clientId : this.selectedCompany.id
+    };
+
+    // Agregar parámetros opcionales solo si tienen un valor diferente a 'todos'
+    if (formData.tipoServicio && formData.tipoServicio !== 'todos') {
+      params.tipoServicio = formData.tipoServicio;
+    }
+
+    if (formData.tipo_mantenimiento && formData.tipo_mantenimiento !== 'todos') {
+      params.tipo_mantenimiento = formData.tipo_mantenimiento;
+    }
+
+    if (formData.tipoBusqueda === 'rangoFechas') {
+      if (formData.diaSeleccionadoInicio) {
+        params.fechaInicio = this.formatDate(formData.diaSeleccionadoInicio);
+      }
+      if (formData.diaSeleccionadoTermino) {
+        params.fechaFin = this.formatDate(formData.diaSeleccionadoTermino);
+      }
+    } else if (formData.tipoBusqueda === 'mesFacturacion' && formData.mesFacturacion) {
+      params.mesFacturacion = formData.mesFacturacion;
+    }
+
+    console.log('[Component] Calling service with params:', params);
+    this.serviciosRealizadosService.getAll(params).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.serviciosRealizados = response.data;
+          this.panelOpenState = false; // Cierra el panel después de la búsqueda
+          console.log('[Component] Servicios realizados:', this.serviciosRealizados);
+        }
+      },
+      error: (error) => console.error('[Component] Error:', error)
     });
   }
-  getMeses(){
-    /* los meses deben ser rango de el mes actual hasta 10 años atras quiero visualizar mes y año */
-    /* ejemplo Noviembre 2024  */
-    /**
-     * en orden descendente
-     */
+
+  getMeses() {
     const fechaActual = new Date();
     const fecha10AnosAtras = new Date(fechaActual.getFullYear() - 10, fechaActual.getMonth(), 1);
     const meses = [];
-    for (let mes = fechaActual; mes >= fecha10AnosAtras; mes.setMonth(mes.getMonth() - 1)) {
-      meses.push({ id: mes.getMonth() + 1, nombre: mes.toLocaleString('default', { month: 'long' }) + ' ' + mes.getFullYear() });
+    const iterador = new Date(fechaActual.getTime());
+    while (iterador >= fecha10AnosAtras) {
+        const nombreMes = iterador.toLocaleString('default', { month: 'long' });
+        const año = iterador.getFullYear();
+        meses.push({ 
+            nombre: `${nombreMes} ${año}`,  // Ejemplo: "febrero 2025"
+            valor: `${nombreMes} ${año}`    // Usamos el mismo formato para el valor
+        });
+        iterador.setMonth(iterador.getMonth() - 1);
     }
     this.meses = meses;
-  } 
-
-  getTiposServicio() {
-    this.serviciosService.getAllServicios().subscribe((data: any) => {
-      this.tiposServicio = data;
-    });
   }
 
-  getTiposSolicitud() {
-
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('es-CL');
   }
 
-  
+  private checkIfGruman(): boolean {
+    if (!this.selectedCompany || !this.selectedCompany.nombre) {
+        return false;
+    }
+    const companyName = this.selectedCompany.nombre.trim().toUpperCase();
+    const isGruman = companyName === 'GRUMAN';
+    console.log('Company name:', companyName);
+    console.log('Is Gruman check:', isGruman);
+    return isGruman;
+  }
 }

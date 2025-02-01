@@ -54,4 +54,36 @@ export class MesDeFacturacionComponent {
             }
         });
     }
+
+    generarFacturacionManual() {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¿Deseas generar la facturación mensual para todos los clientes?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Generar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.facturacionService.generarFacturacionMensualManual().subscribe({
+                    next: () => {
+                        Swal.fire(
+                            '¡Éxito!',
+                            'La facturación mensual se ha generado correctamente',
+                            'success'
+                        );
+                        this.getClientes(); // Actualizar la lista
+                    },
+                    error: (error) => {
+                        Swal.fire(
+                            'Error',
+                            'Hubo un error al generar la facturación mensual',
+                            'error'
+                        );
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        });
+    }
 }
