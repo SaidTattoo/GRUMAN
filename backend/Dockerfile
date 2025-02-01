@@ -1,17 +1,14 @@
-# Etapa de construcción
-FROM node:18
+# Usa una versión más completa de Node.js
+FROM node:18-bullseye
 
-# Crear directorio de la aplicación
+# Crear el directorio de la aplicación
 WORKDIR /app
 
-# Copiar el archivo package.json y package-lock.json
+# Copiar los archivos de dependencias
 COPY package*.json ./
 
-# Instalar las dependencias de la aplicación
+# Instalar las dependencias
 RUN npm install
-
-# Instalar nodemon y ts-node globalmente
-RUN npm install -g nodemon ts-node typescript
 
 # Copiar el resto de la aplicación
 COPY . .
