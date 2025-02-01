@@ -14,7 +14,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Genera la build optimizada de Angular
-RUN npm run build --prod
+RUN npm run build --configuration=production
 
 # Usa una imagen de Nginx para servir los archivos estáticos
 FROM nginx:alpine
