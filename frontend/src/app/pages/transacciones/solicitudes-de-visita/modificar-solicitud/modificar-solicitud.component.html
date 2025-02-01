@@ -212,7 +212,7 @@
                         <div class="total-section">
                           <div class="total-amount">
                             <strong>Total General:</strong>
-                            <span>${{ calculateSubItemTotal(subItem.repuestos)?.toLocaleString('es-CL') || '0' }}</span>
+                            <span>${{ calculateSubItemTotal(subItem.repuestos).toLocaleString('es-CL') || '0' }}</span>
                           </div>
                         </div>
                       }
@@ -230,7 +230,7 @@
     <div class="final-total-section">
       <div class="final-total-amount">
         <strong>Total Final:</strong>
-        <span>${{ calculateFinalTotal()?.toLocaleString('es-CL') || '0' }}</span>
+        <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
       </div>
     </div>
 
