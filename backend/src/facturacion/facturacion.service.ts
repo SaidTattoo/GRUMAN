@@ -3,7 +3,6 @@ import { Facturacion } from './facturacion.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Client } from '../client/client.entity';
-import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class FacturacionService {
@@ -45,9 +44,6 @@ export class FacturacionService {
             relations: ['cliente'],
         });
     }
-
-
-    
 
     async generarFacturacionMensual(cliente: Client, anio_inicio: number, anios: number) {
         // Validar que el año de inicio sea válido
@@ -118,7 +114,6 @@ export class FacturacionService {
         return cliente;
     }
 
-    @Cron('59 23 28-31 * *') // Se ejecuta a las 23:59 los días 28-31 de cada mes
     async generarFacturacionMensualParaTodosLosClientes() {
         // Verificar si es el último día del mes
         const hoy = new Date();
