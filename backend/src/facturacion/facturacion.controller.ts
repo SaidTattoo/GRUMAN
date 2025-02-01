@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { FacturacionService } from './facturacion.service';
 import { ClientService } from '../client/client.service';
 
@@ -6,6 +6,7 @@ import { ClientService } from '../client/client.service';
 export class FacturacionController {
     constructor(
         private readonly facturacionService: FacturacionService,
+        @Inject(forwardRef(() => ClientService))
         private readonly clientesService: ClientService
     ) {}
 
