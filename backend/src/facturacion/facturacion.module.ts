@@ -4,10 +4,12 @@ import { Facturacion } from './facturacion.entity';
 import { FacturacionController } from './facturacion.controller';
 import { FacturacionService } from './facturacion.service';
 import { Client } from '../client/client.entity';
+import { ClientModule } from '../client/client.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Facturacion, Client])
+    TypeOrmModule.forFeature([Facturacion, Client]),
+    ClientModule
   ],
   controllers: [FacturacionController],
   providers: [FacturacionService],
