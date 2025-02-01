@@ -1,5 +1,5 @@
 # Usa una versión más completa de Node.js
-FROM node:18-bullseye
+FROM node:20
 
 # Crear el directorio de la aplicación
 WORKDIR /app
