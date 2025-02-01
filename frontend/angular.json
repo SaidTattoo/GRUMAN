@@ -19,7 +19,10 @@
           "options": {
             "allowedCommonJsDependencies": [
               "apexcharts",
-              "bezier-easing"
+              "bezier-easing",
+              "sweetalert2",
+              "leaflet",
+              "moment"
             ],
             "outputPath": "dist/Spike",
             "index": "src/index.html",

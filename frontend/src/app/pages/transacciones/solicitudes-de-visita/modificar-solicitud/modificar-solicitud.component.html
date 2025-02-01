@@ -198,7 +198,7 @@
                                 </div>
                                 <div class="repuesto-detail">
                                   <strong>Total:</strong> 
-                                  <span>${{ (repuesto.cantidad * repuesto.repuesto?.precio)?.toLocaleString('es-CL') || 'N/A' }}</span>
+                                  <span>${{ (repuesto.cantidad * repuesto.repuesto.precio).toLocaleString('es-CL') || 'N/A' }}</span>
                                 </div>
                                 <button class="delete-button" 
                                         matTooltip="Eliminar repuesto"
