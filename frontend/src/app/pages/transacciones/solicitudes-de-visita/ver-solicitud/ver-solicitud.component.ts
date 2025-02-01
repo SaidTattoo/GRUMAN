@@ -20,6 +20,9 @@ import { MatInputModule } from '@angular/material/input';
 import { SectoresService } from 'src/app/services/sectores.service';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-ver-solicitud',
@@ -36,7 +39,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatTooltipModule,
     MatDividerModule,
     MatInputModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDatepickerModule,
+    MatNativeDateModule 
+    ,
   /*   ActivityImagesComponent,
     ActivityLocationComponent,
     ActivityDetailsComponent */
@@ -50,6 +56,7 @@ export class VerSolicitudComponent implements OnInit {
   tecnicos: any[] = [];
   sectores: any[] = [];
   especialidades: any[] = [];
+  minDate = new Date(); // Fecha mínima será hoy
 
   constructor(
     private route: ActivatedRoute, 
@@ -59,7 +66,8 @@ export class VerSolicitudComponent implements OnInit {
     private tipoServicioService: TipoServicioService,
     private usersService: UsersService,
     private sectoresService: SectoresService,
-    private especialidadesService: EspecialidadesService
+    private especialidadesService: EspecialidadesService,
+    private snackBar: MatSnackBar
   ) {}
 
   getStatusClass(): string {
@@ -201,7 +209,8 @@ export class VerSolicitudComponent implements OnInit {
           sectorTrabajoId: this.activity.sectorTrabajoId,
           tipoServicioId: this.activity.tipoServicioId,
           tecnico_asignado_id: this.activity.tecnico_asignado_id,
-          observaciones: this.activity.observaciones
+          observaciones: this.activity.observaciones,
+          fechaVisita: this.activity.fechaVisita
         }).subscribe({
           next: () => {
             this.solicitarVisitaService.aprobarSolicitudVisita(this.activity.id).subscribe({
@@ -270,5 +279,11 @@ export class VerSolicitudComponent implements OnInit {
 
   getTecnicoById(id: number): any {
     return this.tecnicos.find(t => t.id === id);
+  }
+
+  onFechaVisitaChange(event: any) {
+    if (this.activity) {
+      this.activity.fechaVisita = event.value;
+    }
   }
 }

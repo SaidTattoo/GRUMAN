@@ -1,6 +1,14 @@
 <mat-card class="cardWithShadow">
     <mat-card-content class="p-24">
-       
+        <!-- Agregar botón en la parte superior -->
+        <div class="mb-4 d-flex justify-content-end">
+            <button mat-raised-button color="primary" 
+                    (click)="generarFacturacionManual()"
+                    [matTooltip]="'Generar facturación mensual para todos los clientes'">
+                <mat-icon>add_circle</mat-icon>
+                Generar Facturación Mensual
+            </button>
+        </div>
       
         <mat-table [dataSource]="dataSource">
             <!-- Definición de la columna 'nombre' -->

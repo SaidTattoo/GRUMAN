@@ -26,12 +26,15 @@ export class SolicitarVisita {
   tipo_mantenimiento: string;
 
   // Relación con TipoServicio (si es relevante)
-  @Column({ type: 'int', nullable: true })
-  tipoServicioId: number;
-
   @ManyToOne(() => TipoServicio)
   @JoinColumn({ name: 'tipoServicioId' })
   tipoServicio: TipoServicio;
+
+  @Column({ nullable: true })
+  tipoServicioId: number;
+
+  @Column({ nullable: true })
+  tipoSolicitud: string;
 
   // Relación con la tabla Locales
   @ManyToOne(() => Locales, (local) => local.id, { nullable: true })
@@ -52,7 +55,7 @@ export class SolicitarVisita {
   especialidad: string;
 
   // Fecha de ingreso
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fechaIngreso: Date;
 
   // Ticket Gruman
@@ -77,7 +80,7 @@ export class SolicitarVisita {
 
   // Fecha de creación
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  fechaAlta: Date;
+  fechaVisita: Date;
 
   // Relación con la tabla User
   @ManyToOne(() => User, (user) => user.id, { nullable: true })

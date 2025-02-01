@@ -11,6 +11,16 @@ import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
 import { In, Between } from 'typeorm';
 import { FacturacionService } from 'src/facturacion/facturacion.service';
 
+interface ServiciosRealizadosParams {
+  tipoBusqueda: string;
+  clientId?: number;
+  fechaInicio?: string;
+  fechaFin?: string;
+  mesFacturacion?: string;
+  tipoServicio?: string;
+  tipoSolicitud?: string;
+}
+
 @Injectable()
 export class SolicitarVisitaService {
     constructor(
@@ -61,40 +71,41 @@ export class SolicitarVisitaService {
                 where: { id: solicitud.tecnico_asignado_id } 
             });
         }
-        if(solicitudVisita.tipo_mantenimiento === 'programado'){
-        
-        
-        // Valida que no exista otra solicitud para el mismo local en el período específico
-        const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
-        const fechaIngreso = new Date(solicitudVisita.fechaIngreso);
-        
-        // Busca si la fecha de ingreso está dentro de algún período de facturación
-                const periodoCorrespondiente = facturacion.find(periodo => {
-                    const fechaInicio = new Date(periodo.fecha_inicio);
-                    const fechaTermino = new Date(periodo.fecha_termino);
-                    return fechaIngreso >= fechaInicio && fechaIngreso <= fechaTermino;
-                });
+        if(solicitudVisita.tipo_mantenimiento === 'programado') {
+            // Obtener las facturaciones del cliente
+            const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
+            
+            // Obtener el mes y año de la fecha de ingreso
+            const fechaIngreso = new Date(solicitudVisita.fechaIngreso);
+            const mesFormateado = `${this.getMesNombre(fechaIngreso.getMonth())} ${fechaIngreso.getFullYear()}`;
+            
+            // Buscar el período de facturación por el mes formateado
+            const periodoCorrespondiente = facturacion.find(periodo => 
+                periodo.mes === mesFormateado
+            );
 
-                if (!periodoCorrespondiente) {
-                    throw new BadRequestException('La fecha de ingreso no corresponde a ningún período de facturación válido');
+            if (!periodoCorrespondiente) {
+                throw new BadRequestException(`No existe un período de facturación para ${mesFormateado}`);
+            }
+
+            // Buscar solicitudes programadas existentes para el mismo local en el mismo mes
+            const solicitudesExistentes = await this.solicitarVisitaRepository.find({
+                where: {
+                    local: { id: solicitudVisita.local.id },
+                    tipo_mantenimiento: 'programado',
+                    fechaIngreso: Between(
+                        new Date(periodoCorrespondiente.fecha_inicio),
+                        new Date(periodoCorrespondiente.fecha_termino)
+                    )
                 }
+            });
 
-                // Busca solicitudes existentes en el mismo período específico para el mismo local
-                const solicitudesExistentes = await this.solicitarVisitaRepository.find({
-                    where: {
-                        local: { id: solicitudVisita.local.id },
-                        fechaIngreso: Between(
-                            new Date(periodoCorrespondiente.fecha_inicio),
-                            new Date(periodoCorrespondiente.fecha_termino)
-                        ),
-                        tipo_mantenimiento: 'programado'
-                    }
-                });
-
-                if (solicitudesExistentes.length > 0) {
-                    throw new BadRequestException('Ya existe una solicitud de visita programada para este local en el período seleccionado');
+            if (solicitudesExistentes.length > 0) {
+                throw new BadRequestException(
+                    `Ya existe una solicitud de visita programada para este local en ${mesFormateado}`
+                );
+            }
         }
-         }
         // Si la solicitud está aprobada, asigna el aprobador
         if (solicitud.status === 'aprobada' && solicitud.aprobada_por_id) {
             solicitudVisita.status = SolicitudStatus.APROBADA;
@@ -141,12 +152,24 @@ export class SolicitarVisitaService {
         return data;
     }
 
+//filtrar por fecha que sea la misma del dia actual con la de fechaVisita pero solo dia mes y año no hora min segundos
 
     async solicitudesPorTecnico(rut: string): Promise<SolicitarVisita[]> {
+        // Create date objects for start and end of current day
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of day
+        
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
+
         const data = await this.solicitarVisitaRepository.find({ 
-            where: { tecnico_asignado: { rut } },
+            where: { 
+                tecnico_asignado: { rut },
+                fechaVisita: Between(today, tomorrow),
+                status: SolicitudStatus.APROBADA
+            },
             relations: ['local', 'client', 'tecnico_asignado'],
-            order: { fechaIngreso: 'DESC' }
+            order: { fechaVisita: 'DESC' }
         });
         return data;
     }
@@ -359,13 +382,7 @@ export class SolicitarVisitaService {
 
         try {
             const data = await this.solicitarVisitaRepository.find({ 
-                select: {
-                    id: true,
-                    fechaIngreso: true,
-                    status: true,
-                    tipoServicioId: true,
-                    tipo_mantenimiento: true
-                },
+               
                 where: { 
                     status: In([
                         SolicitudStatus.VALIDADA, 
@@ -389,6 +406,183 @@ export class SolicitarVisitaService {
                     id: data[0].id,
                     fechaIngreso: data[0].fechaIngreso,
                     status: data[0].status,
+                    tipoServicioId: data[0].tipoServicioId  // Usando el nombre correcto de la propiedad
+                } : null
+            });
+
+            return data || [];
+        } catch (error) {
+            console.error('[Service] Error al ejecutar la consulta:', error);
+            throw error;
+        }
+    }
+
+    async getSolicitudesDelDia2(
+        clientId: string, 
+        fechaInicio: string, 
+        fechaFin: string, 
+        mesFacturacion: string, 
+        tipoServicio: string, 
+        tipoBusqueda: string, 
+        tipo_mantenimiento: string
+    ): Promise<SolicitarVisita[]> {
+        console.log('[Service] Iniciando getSolicitudesDelDia con params:', {
+            clientId, fechaInicio, fechaFin, mesFacturacion, tipoServicio, tipoBusqueda, tipo_mantenimiento
+        });
+        
+        try {
+            const whereClause: any = {
+                status: In([
+                    SolicitudStatus.VALIDADA, 
+                    SolicitudStatus.REABIERTA,
+                    SolicitudStatus.EN_SERVICIO,
+                    SolicitudStatus.FINALIZADA,
+                    SolicitudStatus.APROBADA,
+                    SolicitudStatus.RECHAZADA,
+                    SolicitudStatus.PENDIENTE
+                ])
+            };
+
+            // Add client filter if provided
+            if (clientId) {
+                whereClause.client = { id: parseInt(clientId) };
+            }
+
+            // Add tipo servicio filter if provided
+            if (tipoServicio && tipoServicio !== 'todos') {
+                whereClause.tipoServicioId = parseInt(tipoServicio);
+            }
+
+            // Add date filters with proper date handling
+            if (tipoBusqueda === 'rangoFechas' && fechaInicio && fechaFin) {
+                // Convertir las fechas al formato correcto y ajustar las horas
+                const startDate = new Date(this.parseFecha(fechaInicio));
+                startDate.setHours(0, 0, 0, 0);
+                
+                const endDate = new Date(this.parseFecha(fechaFin));
+                endDate.setHours(23, 59, 59, 999);
+
+                console.log('Fechas procesadas:', { startDate, endDate });
+                whereClause.fechaIngreso = Between(startDate, endDate);
+            } else if (tipoBusqueda === 'mesFacturacion' && mesFacturacion) {
+                const [mes, año] = mesFacturacion.split(' ');
+                console.log('Mes y año recibidos:', { mes, año });
+                
+                const mesNumero = this.getMesNumero(mes);
+                console.log('Número de mes:', mesNumero);
+                
+                const primerDia = new Date(Date.UTC(parseInt(año), mesNumero, 1));
+                primerDia.setUTCHours(0, 0, 0, 0);
+                
+                const ultimoDia = new Date(Date.UTC(parseInt(año), mesNumero + 1, 0));
+                ultimoDia.setUTCHours(23, 59, 59, 999);
+
+                console.log('Rango de fechas calculado:', {
+                    primerDia: primerDia.toISOString(),
+                    ultimoDia: ultimoDia.toISOString(),
+                    mesNumero,
+                    año
+                });
+                
+                whereClause.fechaIngreso = Between(primerDia, ultimoDia);
+            }
+
+            // Add tipo_mantenimiento filter if provided
+            if (tipo_mantenimiento && tipo_mantenimiento !== 'todos') {
+                whereClause.tipo_mantenimiento = tipo_mantenimiento;
+            }
+
+            console.log('Where clause final:', whereClause);
+
+            const data = await this.solicitarVisitaRepository.find({ 
+                where: whereClause,
+                relations: ['local', 'client', 'tecnico_asignado', 'tipoServicio'],
+                order: { fechaIngreso: 'DESC' }
+            });
+
+            console.log(`Se encontraron ${data.length} registros`);
+            return data || [];
+        } catch (error) {
+            console.error('[Service] Error al ejecutar la consulta:', error);
+            throw error;
+        }
+    }
+
+    // Método auxiliar para parsear fechas en formato DD-MM-YYYY
+    private parseFecha(fecha: string): Date {
+        const [dia, mes, año] = fecha.split('-').map(num => parseInt(num));
+        return new Date(año, mes - 1, dia);
+    }
+
+    // Método auxiliar para convertir nombre del mes a número (0-11)
+    private getMesNumero(mes: string): number {
+        const meses = {
+            'Enero': 0, 'Febrero': 1, 'Marzo': 2, 'Abril': 3,
+            'Mayo': 4, 'Junio': 5, 'Julio': 6, 'Agosto': 7,
+            'Septiembre': 8, 'Octubre': 9, 'Noviembre': 10, 'Diciembre': 11
+        };
+        return meses[mes] || 0;
+    }
+
+    private getMesNombre(mes: number): string {
+        const meses = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+        return meses[mes];
+    }
+
+    async getSolicitudDelDiaPorCliente(clientId: number): Promise<SolicitarVisita[]> {
+        console.log('[Service] Iniciando getSolicitudDelDiaPorCliente');
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of day
+        
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
+        
+        console.log('[Service] Parámetros de búsqueda:', {
+            today: today.toISOString(),
+            tomorrow: tomorrow.toISOString(),
+            statuses: [
+                SolicitudStatus.VALIDADA, 
+                SolicitudStatus.REABIERTA,
+                SolicitudStatus.EN_SERVICIO,
+                SolicitudStatus.FINALIZADA,
+                SolicitudStatus.APROBADA,
+                SolicitudStatus.RECHAZADA,
+                SolicitudStatus.PENDIENTE
+            ]
+        });
+
+        try {
+            const data = await this.solicitarVisitaRepository.find({ 
+                
+                where: { 
+                    client: { id: clientId },
+                    status: In([
+                        SolicitudStatus.VALIDADA, 
+                        SolicitudStatus.REABIERTA,
+                        SolicitudStatus.EN_SERVICIO,
+                        SolicitudStatus.FINALIZADA,
+                        SolicitudStatus.APROBADA,
+                        SolicitudStatus.RECHAZADA,
+                        SolicitudStatus.PENDIENTE
+                    ]),
+                    fechaIngreso: Between(today, tomorrow)
+                },
+                relations: ['local', 'client', 'tecnico_asignado', 'tipoServicio'],
+                order: { fechaIngreso: 'DESC' }
+            });
+
+            console.log('[Service] Query ejecutada exitosamente');
+            console.log('[Service] Resultados:', {
+                totalRegistros: data.length,
+                primerRegistro: data[0] ? {
+                    id: data[0].id,
+                    fechaIngreso: data[0].fechaIngreso,
+                    status: data[0].status,
+                    observaciones: data[0].observaciones,
                     tipoServicioId: data[0].tipoServicioId  // Usando el nombre correcto de la propiedad
                 } : null
             });

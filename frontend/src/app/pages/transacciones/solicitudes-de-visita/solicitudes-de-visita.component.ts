@@ -62,6 +62,7 @@ import { Router, RouterModule } from '@angular/router';
 export class SolicitudesDeVisitaComponent implements OnInit {
   dataSource: MatTableDataSource<any>;
   displayedColumns: string[] = [
+    'fechaIngreso',	
     'logo',
     'cliente',
     'local',
@@ -87,6 +88,14 @@ export class SolicitudesDeVisitaComponent implements OnInit {
     this.dataSource.filterPredicate = (data: any, filter: string) => {
       return data.ticketGruman?.toLowerCase().includes(filter);
     };
+  }
+  formatDate(date: string) {
+    return new Date(date).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    
+    });
   }
 
   ngAfterViewInit() {

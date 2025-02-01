@@ -26,7 +26,6 @@ import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 import { DocumentosModule } from './documentos/documentos.module';
 import { ServiciosModule } from './servicios/servicios.module';
 import { SolicitudesAprobacionCorrectivaModule } from './solicitudes-aprobacion-correctiva/solicitudes-aprobacion-correctiva.module';
-import { ServiciosRealizadosModule } from './servicios_realizados/servicios_realizados.module';
 import { ActivoFijoLocalModule } from './activo-fijo-local/activo-fijo-local.module';
 import { UploadV2Module } from './upload-v2/upload-v2.module';
 import { SolicitarVisitaModule } from './solicitar-visita/solicitar-visita.module';
@@ -70,11 +69,12 @@ import { UserVehiculoModule } from './user-vehiculo/user-vehiculo.module';
       rootPath: join(__dirname, '..', 'uploads'), // Asegúrate de que esta ruta es correcta
       serveRoot: '/uploads', // Esto asegura que las rutas comiencen con /uploads
     }),
-    ServiciosRealizadosModule,
+    
     ActivoFijoLocalModule,
     UploadV2Module,
     SolicitarVisitaModule,
-    EspecialidadModule,InspectionModule, FacturacionModule, OrdenServicioModule, UserVehiculoModule
+    EspecialidadModule,InspectionModule, FacturacionModule, OrdenServicioModule, UserVehiculoModule,
+  
 /*     LocalesModule,
     SectoresTrabajoModule,
     ProgramacionModule */

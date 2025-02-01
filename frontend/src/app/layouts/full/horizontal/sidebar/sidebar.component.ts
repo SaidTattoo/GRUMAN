@@ -143,12 +143,16 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
               route: 'transacciones/solicitar-visita',
               bgcolor: 'primary',
             },
+            {
+              displayName: `Servicios del día ${formattedDate}`,
+              iconName: 'home-shield',
+              bgcolor: 'primary',
+              route: 'transacciones/solicitudes-del-dia-cliente',
+            },
           ]
         : []),
-        
-     
       {
-        displayName: 'Servicios realizados',
+        displayName: 'Servicios realizados ',
         iconName: 'home-shield',
         bgcolor: 'primary',
         route: 'transacciones/servicios-realizados',

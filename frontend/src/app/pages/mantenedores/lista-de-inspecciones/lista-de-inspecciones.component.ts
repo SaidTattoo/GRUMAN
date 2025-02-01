@@ -106,16 +106,25 @@ export class ListaDeInspeccionesComponent implements OnInit {
       if (result) {
         this.inspectionService.createItem(section.id, { name: result }).subscribe({
           next: (newItem) => {
+            // Recargar las secciones para asegurar datos frescos
             this.loadSections();
+
             setTimeout(() => {
               const sectionIndex = this.sections.findIndex(s => s.id === section.id);
               if (sectionIndex !== -1) {
                 this.selectedSectionIndex = sectionIndex;
                 if (this.stepper) {
                   this.stepper.selectedIndex = sectionIndex;
+                  // Expandir el nuevo item
+                  if (this.sections[sectionIndex].items?.length > 0) {
+                    const lastItemId = this.sections[sectionIndex].items[
+                      this.sections[sectionIndex].items.length - 1
+                    ].id;
+                    this.expandedItems.add(lastItemId);
+                  }
                 }
               }
-            });
+            }, 100);
           },
           error: (error) => {
             console.error('Error creating item:', error);

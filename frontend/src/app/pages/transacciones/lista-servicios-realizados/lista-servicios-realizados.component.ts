@@ -16,8 +16,8 @@ export class ListaServiciosRealizadosComponent implements OnInit {
   displayedColumns: string[] = ['id', 'tipoServicio', 'tipoSolicitud', 'diaSeleccionadoInicio', 'diaSeleccionadoTermino', 'mesFacturacion','tipoBusqueda'];
   dataSource: any[] = [];
   ngOnInit(): void {
-    this.serviciosRealizadosService.getAll().subscribe((data: any) => {
+  /*   this.serviciosRealizadosService.getAll().subscribe((data: any) => {
       this.dataSource = data;
-    });
+    }); */
   }
 }

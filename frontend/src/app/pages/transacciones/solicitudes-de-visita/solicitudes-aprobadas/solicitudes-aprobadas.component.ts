@@ -45,8 +45,16 @@ import { MatInputModule } from '@angular/material/input';
         <div class="table-responsive m-t-30">
           <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
             <!-- Logo Column -->
+
+            
+            <!-- Fecha Column -->
+            <ng-container matColumnDef="fechaIngreso">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
+              <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
+            </ng-container>
+
             <ng-container matColumnDef="logo">
-              <th mat-header-cell *matHeaderCellDef></th>
+              <th mat-header-cell *matHeaderCellDef>Logo</th>
               <td mat-cell *matCellDef="let row" class="logo-cell">
                 <img 
                   [src]="row.client?.logo || 'assets/images/no-image.png'" 
@@ -68,11 +76,6 @@ import { MatInputModule } from '@angular/material/input';
               <td mat-cell *matCellDef="let row">{{row.local?.nombre_local || 'No asignado'}}</td>
             </ng-container>
 
-            <!-- Fecha Column -->
-            <ng-container matColumnDef="fechaIngreso">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
-              <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
-            </ng-container>
 
             <!-- Especialidad Column -->
             <ng-container matColumnDef="especialidad">
@@ -161,11 +164,12 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class SolicitudesAprobadasComponent implements OnInit {
   displayedColumns: string[] = [
+    
+    'fechaIngreso',
     'logo',
     'cliente',
     'local',
     'ticketGruman',
-    'fechaIngreso',
     'especialidad',
     'observaciones',
     'tecnico',
@@ -218,8 +222,7 @@ export class SolicitudesAprobadasComponent implements OnInit {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    
     });
   }
 

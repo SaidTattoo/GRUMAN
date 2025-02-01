@@ -91,4 +91,15 @@ export class SolicitarVisitaService {
         })
     );
   }
+
+  getSolicitudesDelDiaPorCliente(clientId: number): Observable<any> {
+    console.log('[Frontend Service] Solicitando solicitudes del día...');
+    return this.http.get(`${this.apiUrl}solicitar-visita/solicitudes-del-dia/${clientId}`).pipe(
+        tap(response => console.log('[Frontend Service] Respuesta recibida:', response)),
+        catchError(error => {
+            console.error('[Frontend Service] Error al obtener solicitudes:', error);
+            throw error;
+        })
+    );
+  }
 }

@@ -158,11 +158,17 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
 
           try {
             await this.subirImagenes(response.data.id);
-            Swal.fire(
-              'Éxito',
-              'Visita e imágenes guardadas correctamente',
-              'success'
-            );
+            Swal.fire({
+              title: 'Éxito',
+              html: `
+                <div style="text-align: left">
+                  <p><strong>Solicitud de visita generada correctamente</strong></p>
+                  <p><strong>N° Requerimiento:</strong> ${response.data.id}</p>
+                  <p><strong>Fecha:</strong> ${this.formatDate(response.data.fechaVisita)}</p>
+                </div>
+              `,
+              icon: 'success'
+            });
           } catch (error) {
             console.error('Error al subir imágenes:', error);
             Swal.fire(
@@ -181,7 +187,17 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       Swal.fire('Error', 'Debe completar todos los campos requeridos', 'error');
     }
   }
-
+  formatDate(date: string) {
+    return new Date(date).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    
+    });
+  }
   getLocales() {
   
     this.localesService.getLocalesByCliente(this.clientId).subscribe((response) => {

@@ -18,4 +18,9 @@ export class FacturacionService {
   generarFacturacionMensualAutomatica(id_cliente: number, anio_inicio: number, anios: number) {
     return this.http.get(`${this.apiUrl}/generar-facturacion/${id_cliente}/${anio_inicio}/${anios}`);
   }
+
+  // Nuevo método para ejecutar manualmente
+  generarFacturacionMensualManual() {
+    return this.http.post(`${this.apiUrl}/generar-facturacion-manual`, {});
+  }
 }
