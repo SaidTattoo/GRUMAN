@@ -40,10 +40,14 @@ export class InspectionService {
         return await this.sectionRepository
             .createQueryBuilder('section')
             .leftJoinAndSelect('section.items', 'items')
-            .leftJoinAndSelect('items.subItems', 'subItems')
+            .leftJoinAndSelect(
+                'items.subItems', 
+                'subItems', 
+                'subItems.disabled = :subItemDisabled',
+                { subItemDisabled: false }
+            )
             .where('section.disabled = :disabled', { disabled: false })
-            .andWhere('(items.disabled = :itemDisabled OR items.disabled IS NULL)', { itemDisabled: false })
-            .andWhere('(subItems.disabled = :subItemDisabled OR subItems.disabled IS NULL)', { subItemDisabled: false })
+            .andWhere('items.disabled = :itemDisabled', { itemDisabled: false })
             .orderBy('section.id', 'ASC')
             .addOrderBy('items.id', 'ASC')
             .addOrderBy('subItems.id', 'ASC')
