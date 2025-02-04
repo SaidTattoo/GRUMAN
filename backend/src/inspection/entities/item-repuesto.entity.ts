@@ -29,6 +29,13 @@ export class ItemRepuesto {
   @Column({ default: 1 })
   cantidad: number;
 
+  
+  @Column({ type: 'enum', enum: ['conforme', 'no_conforme', 'no_aplica'], default: 'no_aplica' })
+  estado: string;
+
+  @Column('simple-array', { nullable: true })
+  fotos: string[];
+
   @CreateDateColumn()
   fechaAgregado: Date;
 } 
