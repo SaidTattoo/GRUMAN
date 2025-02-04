@@ -39,7 +39,12 @@ export class InspectionService {
     async findAllSections() {
         return await this.sectionRepository
             .createQueryBuilder('section')
-            .leftJoinAndSelect('section.items', 'items')
+            .leftJoinAndSelect(
+                'section.items', 
+                'items', 
+                'items.disabled = :itemDisabled',
+                { itemDisabled: false }
+            )
             .leftJoinAndSelect(
                 'items.subItems', 
                 'subItems', 
@@ -47,7 +52,6 @@ export class InspectionService {
                 { subItemDisabled: false }
             )
             .where('section.disabled = :disabled', { disabled: false })
-            .andWhere('items.disabled = :itemDisabled', { itemDisabled: false })
             .orderBy('section.id', 'ASC')
             .addOrderBy('items.id', 'ASC')
             .addOrderBy('subItems.id', 'ASC')
