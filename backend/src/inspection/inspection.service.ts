@@ -37,18 +37,17 @@ export class InspectionService {
     }
 
     async findAllSections() {
-        return await this.sectionRepository.find({
-            relations: ['items', 'items.subItems'],
-            where: { 
-                disabled: false,
-                items: {
-                    disabled: false,
-                    subItems: {
-                        disabled: false
-                    }
-                }
-            }
-        });
+        return await this.sectionRepository
+            .createQueryBuilder('section')
+            .leftJoinAndSelect('section.items', 'items')
+            .leftJoinAndSelect('items.subItems', 'subItems')
+            .where('section.disabled = :disabled', { disabled: false })
+            .andWhere('(items.disabled = :itemDisabled OR items.disabled IS NULL)', { itemDisabled: false })
+            .andWhere('(subItems.disabled = :subItemDisabled OR subItems.disabled IS NULL)', { subItemDisabled: false })
+            .orderBy('section.id', 'ASC')
+            .addOrderBy('items.id', 'ASC')
+            .addOrderBy('subItems.id', 'ASC')
+            .getMany();
     }
 
     async createItem(sectionId: number, createItemDto: CreateItemDto) {
