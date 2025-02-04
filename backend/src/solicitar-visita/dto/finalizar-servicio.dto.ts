@@ -5,6 +5,8 @@ export class FinalizarServicioDto {
       id: number;
       cantidad: number;
       comentario: string;
+      estado: string;
+      fotos?: string[];  // Array opcional de URLs o base64 de las fotos
       repuesto: {
         id: number;
         familia: string;

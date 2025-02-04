@@ -39,7 +39,15 @@ export class InspectionService {
     async findAllSections() {
         return await this.sectionRepository.find({
             relations: ['items', 'items.subItems'],
-            where: { disabled: false }
+            where: { 
+                disabled: false,
+                items: {
+                    disabled: false,
+                    subItems: {
+                        disabled: false
+                    }
+                }
+            }
         });
     }
 

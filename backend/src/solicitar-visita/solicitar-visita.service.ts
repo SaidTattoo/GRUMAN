@@ -166,7 +166,7 @@ export class SolicitarVisitaService {
             where: { 
                 tecnico_asignado: { rut },
                 fechaVisita: Between(today, tomorrow),
-                status: SolicitudStatus.APROBADA
+                status: In([SolicitudStatus.APROBADA, SolicitudStatus.EN_SERVICIO]) 
             },
             relations: ['local', 'client', 'tecnico_asignado'],
             order: { fechaVisita: 'DESC' }
@@ -294,15 +294,19 @@ export class SolicitarVisitaService {
                 for (const repuestoData of repuestosArray) {
                     const itemRepuesto = new ItemRepuesto();
                     itemRepuesto.cantidad = repuestoData.cantidad;
+                    itemRepuesto.estado = repuestoData.estado;
                     itemRepuesto.comentario = repuestoData.comentario;
                     itemRepuesto.repuesto = repuestoData.repuesto;
-                    itemRepuesto.solicitarVisitaId = visitaGuardada.id; // Establecemos explícitamente el ID
+                    itemRepuesto.solicitarVisitaId = visitaGuardada.id;
                     itemRepuesto.itemId = parseInt(itemId);
+                    if (repuestoData.fotos && repuestoData.fotos.length > 0) {
+                        itemRepuesto.fotos = repuestoData.fotos;
+                    }
                     await this.itemRepuestoRepository.save(itemRepuesto);
                 }
             }
         }
-
+        console.log('visitaGuardada', visitaGuardada);
         return visitaGuardada;
     }
 
