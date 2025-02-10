@@ -18,18 +18,19 @@ export class UploadDataService {
    * @returns Observable con la respuesta del servidor.
    */
   uploadFile(formData: FormData, path: string): Observable<any> {
-    console.log('Subiendo archivo...');
-    console.log('Ruta del servidor:', `${this.apiUrl}upload/${path}`);
-    const file = formData.get('file') as File;
-
-    if (file) {
-      console.log('Archivo detectado en FormData:', file.name, file.size, file.type);
-      formData.append('originalname', file.name);
-    } else {
-      console.warn('No se encontró ningún archivo en FormData');
+    console.log('Subiendo archivo a:', `${this.apiUrl}upload/${path}`);
+    
+    // Asegurarse de que el FormData tenga el archivo con el nombre 'file'
+    const file = formData.get('file');
+    if (!file) {
+      console.warn('No se encontró el archivo en FormData');
+      throw new Error('No se encontró el archivo');
     }
 
+    // Construir la URL completa
     const url = `${this.apiUrl}upload/${path}`;
+    
+    // Realizar la petición POST
     return this.http.post(url, formData);
   }
 
@@ -58,5 +59,25 @@ export class UploadDataService {
 
     const url = `${this.apiUrl}upload/${path}`;
     return this.http.delete(url);
+  }
+
+  /**
+   * Subir un archivo específicamente para una solicitud.
+   * @param formData - FormData que contiene el archivo.
+   * @param solicitudId - ID de la solicitud
+   * @param itemId - ID del item
+   * @returns Observable con la respuesta del servidor.
+   */
+  uploadSolicitudFile(formData: FormData, solicitudId: number, itemId: number): Observable<any> {
+    console.log('Subiendo archivo de solicitud...');
+    
+    const file = formData.get('file');
+    if (!file) {
+      console.warn('No se encontró el archivo en FormData');
+      throw new Error('No se encontró el archivo');
+    }
+
+    const url = `${this.apiUrl}upload/solicitudes/${solicitudId}/${itemId}`;
+    return this.http.post(url, formData);
   }
 }

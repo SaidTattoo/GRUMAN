@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InspectionService } from './inspection.service';
 import { CreateSectionDto } from './dto/create-section.dto';
 import { CreateItemDto } from './dto/create-item.dto';
@@ -53,12 +53,33 @@ export class InspectionController {
         return this.inspectionService.updateItem(+sectionId, +itemId, updateItemDto);
     }
 
-    @Delete('sections/:sectionId/items/:itemId')
-    removeItem(
-        @Param('sectionId') sectionId: string,
-        @Param('itemId') itemId: string
-    ) {
-        return this.inspectionService.removeItem(+sectionId, +itemId);
+    @Delete('items/:id')
+    async deleteItem(@Param('id') id: string) {
+        try {
+            // Primero intentar eliminar como repuesto
+            try {
+                return await this.inspectionService.deleteRepuestoFromItem(id);
+            } catch (error) {
+                if (!(error instanceof NotFoundException)) {
+                    throw error;
+                }
+                // Si no es un repuesto, intentar eliminar como item
+                const item = await this.inspectionService.findItemById(+id);
+                if (!item) {
+                    throw new NotFoundException(`Item with ID ${id} not found`);
+                }
+                await this.inspectionService.removeItem(item.section.id, +id);
+                return {
+                    statusCode: 200,
+                    message: 'Item deleted successfully'
+                };
+            }
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
+            throw new InternalServerErrorException('Error deleting item');
+        }
     }
 
     // SubItems

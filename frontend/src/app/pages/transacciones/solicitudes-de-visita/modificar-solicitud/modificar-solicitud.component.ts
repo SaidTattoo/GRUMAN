@@ -12,15 +12,19 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
 import { TipoServicioService } from '../../../../services/tipo-servicio.service';
 import { SectoresService } from '../../../../services/sectores.service';
-import { MatCardContent, MatCardModule } from '@angular/material/card';
+import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { AuthService } from 'src/app/services/auth.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RepuestosService } from 'src/app/services/repuestos.service';
 import { InspectionService } from 'src/app/services/inspection.service';
+import { DialogPhotoViewerComponent } from '../../../../components/dialog-photo-viewer/dialog-photo-viewer.component';
+import { forkJoin } from 'rxjs';
+
+
 
 interface Repuesto {
   id: number;
@@ -28,6 +32,21 @@ interface Repuesto {
   articulo: string;
   marca: string;
   precio: number;
+}
+
+interface SubItem {
+  id: number;
+  name: string;
+  disabled?: boolean;
+  fotos?: string[];
+  repuestos?: any[];
+}
+
+interface Item {
+  id: number;
+  name: string;
+  estado?: string;
+  subItems: SubItem[];
 }
 
 @Component({
@@ -43,17 +62,54 @@ interface Repuesto {
     FormsModule,
     ReactiveFormsModule,
     MatCardModule,
-    MatCardContent,
     MatTableModule,
     MatExpansionModule,
     MatIconModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatDialogModule,
+    DialogPhotoViewerComponent
   ],
   providers: [
     provideNativeDateAdapter()
   ],
   templateUrl: './modificar-solicitud.component.html',
-  styleUrls: ['./modificar-solicitud.component.scss']
+  styleUrls: ['./modificar-solicitud.component.scss'],
+  styles: [`
+    .badge {
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-weight: 500;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    .badge-success {
+      background-color: rgba(76, 175, 80, 0.2);  /* Verde más suave */
+      color: #2e7d32;  /* Verde oscuro para el texto */
+      border: 1px solid #4caf50;
+    }
+
+    .badge-warning {
+      background-color: rgba(255, 193, 7, 0.2);  /* Amarillo más suave */
+      color: #f57c00;  /* Naranja oscuro para el texto */
+      border: 1px solid #ffc107;
+    }
+
+    .badge-danger {
+      background-color: rgba(244, 67, 54, 0.2);  /* Rojo más suave */
+      color: #d32f2f;  /* Rojo oscuro para el texto */
+      border: 1px solid #f44336;
+    }
+
+    .badge:hover {
+      opacity: 0.9;
+      transform: scale(1.05);
+      transition: all 0.2s ease;
+    }
+  `]
 })
 export class ModificarSolicitudComponent implements OnInit {
   solicitudId: string;
@@ -92,6 +148,8 @@ export class ModificarSolicitudComponent implements OnInit {
   showAddRepuestoForm: { [key: number]: boolean } = {};
   temporaryRepuestos: {[key: number]: any[]} = {};
   temporaryDeletedRepuestos: {[key: number]: any[]} = {};
+  tiposServicio: any[] = [];
+  sectoresTrabajos: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -104,7 +162,8 @@ export class ModificarSolicitudComponent implements OnInit {
     private authService: AuthService,
     private dialog: MatDialog,
     private repuestosService: RepuestosService,
-    private inspectionService: InspectionService
+    private inspectionService: InspectionService,
+    private sectorTrabajoService: SectoresService
   ) {
     this.solicitudForm = this.fb.group({
       tipoServicioId: [{value: '', disabled: true}],
@@ -123,14 +182,51 @@ export class ModificarSolicitudComponent implements OnInit {
       'local.nombre_local': [{value: '', disabled: true}],
       'local.direccion': [{value: '', disabled: true}],
       'client.nombre': [{value: '', disabled: true}],
-      'tecnico_asignado.name': [{value: '', disabled: true}]
+      'tecnico_asignado.name': [{value: '', disabled: true}],
+      'tipoServicio': [{value: '', disabled: true}],
+      'sectorTrabajo': [{value: '', disabled: true}]
     });
+    this.temporaryRepuestos = {};
+    this.temporaryDeletedRepuestos = {};
   }
 
   ngOnInit() {
     this.solicitudId = this.route.snapshot.params['id'];
-    this.loadRepuestos();
-    this.loadSolicitud();
+    // Primero cargamos los catálogos y luego la solicitud
+    this.loadCatalogos().then(() => {
+      this.loadSolicitud();
+    });
+  }
+
+  loadCatalogos(): Promise<void> {
+    return new Promise((resolve) => {
+      // Usamos forkJoin para cargar todos los catálogos simultáneamente
+      forkJoin({
+        tiposServicio: this.tipoServicioService.findAll(),
+        sectoresTrabajos: this.sectorTrabajoService.getSectores(),
+        repuestos: this.repuestosService.getRepuestos()
+      }).subscribe({
+        next: (result) => {
+          this.tiposServicio = result.tiposServicio;
+          this.sectoresTrabajos = result.sectoresTrabajos;
+          this.repuestos = result.repuestos;
+          
+          console.log('Catálogos cargados:', { 
+            tiposServicio: this.tiposServicio, 
+            sectoresTrabajos: this.sectoresTrabajos,
+            repuestos: this.repuestos
+          });
+          resolve();
+        },
+        error: (error: any) => {
+          console.error('Error loading catálogos:', error);
+          this.snackBar.open('Error al cargar los catálogos', 'Cerrar', {
+            duration: 3000
+          });
+          resolve(); // Resolvemos igual para continuar con la carga
+        }
+      });
+    });
   }
 
   loadRepuestos() {
@@ -149,90 +245,76 @@ export class ModificarSolicitudComponent implements OnInit {
 
   loadSolicitud() {
     this.loading = true;
-    console.log('Loading solicitud...');
     this.solicitarVisitaService.getSolicitudVisita(Number(this.solicitudId)).subscribe({
       next: (data) => {
-        console.log('Solicitud data received:', data);
         this.solicitud = data;
         this.itemRepuestos = data.itemRepuestos || [];
-        
-        // Procesar lista de inspección y asignar repuestos a cada subitem
+
+        // Encontrar los nombres de tipo servicio y sector trabajo
+        const tipoServicio = this.tiposServicio.find(t => t.id === data.tipoServicioId);
+        const sectorTrabajo = this.sectoresTrabajos.find(s => s.id === data.sectorTrabajoId);
+
+        // Actualizar el formulario con los datos
+        this.solicitudForm.patchValue({
+          'client.nombre': data.client?.nombre || '',
+          'local.nombre_local': data.local?.nombre_local || '',
+          'local.direccion': data.local?.direccion || '',
+          'tecnico_asignado.name': data.tecnico_asignado?.name || '',
+          'tipoServicio': tipoServicio?.nombre || `Tipo Servicio ID: ${data.tipoServicioId}`,
+          'sectorTrabajo': sectorTrabajo?.nombre || `Sector Trabajo ID: ${data.sectorTrabajoId}`,
+          'especialidad': data.especialidad || '',
+          'fechaIngreso': data.fechaIngreso ? new Date(data.fechaIngreso) : null,
+          'ticketGruman': data.ticketGruman || '',
+          'status': data.status || '',
+          'observaciones': data.observaciones || '',
+          'fecha_hora_inicio_servicio': data.fecha_hora_inicio_servicio || '',
+          'fecha_hora_fin_servicio': data.fecha_hora_fin_servicio || '',
+          'longitud_movil': data.longitud_movil || '',
+          'latitud_movil': data.latitud_movil || ''
+        });
+
+        // Procesar lista de inspección
         if (data.client?.listaInspeccion) {
           this.listaInspeccion = data.client.listaInspeccion.map((lista: any) => ({
             ...lista,
             items: lista.items.map((item: any) => ({
               ...item,
-              subItems: item.subItems.map((subItem: any) => ({
-                ...subItem,
-                repuestos: this.itemRepuestos.filter((repuesto: any) => repuesto.itemId === subItem.id)
-              }))
+              subItems: item.subItems.map((subItem: any) => {
+                // Filtrar los repuestos para este subItem
+                const subItemRepuestos = this.itemRepuestos.filter(
+                  repuesto => repuesto.itemId === subItem.id
+                );
+
+                // Obtener el último repuesto para determinar el estado
+                const lastRepuesto = subItemRepuestos
+                  .sort((a, b) => new Date(b.fechaAgregado).getTime() - new Date(a.fechaAgregado).getTime())[0];
+
+                const fotos = subItemRepuestos.reduce((acc: string[], repuesto: any) => {
+                  if (repuesto.fotos && Array.isArray(repuesto.fotos)) {
+                    return [...acc, ...repuesto.fotos];
+                  }
+                  return acc;
+                }, []);
+
+                return {
+                  ...subItem,
+                  estado: lastRepuesto?.estado || 'no_conforme',
+                  fotos: fotos,
+                  repuestos: subItemRepuestos
+                };
+              })
             }))
           }));
         }
-        console.log('Lista de inspección:', this.listaInspeccion);
-        // Get tipo servicio name
-        this.tipoServicioService.findById(data.tipoServicioId).subscribe({
-          next: (tipoServicio) => {
-            this.tipoServicio = tipoServicio;
-            this.solicitudForm.patchValue({
-              tipoServicioId: tipoServicio.nombre
-            });
-          },
-          error: (error) => {
-            console.error('Error al cargar el tipo de servicio:', error);
-          }
-        });
 
-        // Get sector trabajo name
-        this.sectoresService.findOne(data.sectorTrabajoId).subscribe({
-          next: (sector) => {
-            this.sectorTrabajo = sector;
-            this.solicitudForm.patchValue({
-              sectorTrabajoId: sector.nombre
-            });
-          },
-          error: (error) => {
-            console.error('Error al cargar el sector de trabajo:', error);
-          }
-        });
-
-        // Ensure especialidad is in the list of valid options
-        if (data.especialidad && !this.especialidades.includes(data.especialidad)) {
-          console.warn('Especialidad value not in list:', data.especialidad);
-          this.especialidades.push(data.especialidad);
-        }
-        
-        // Update rest of the form
-        const formValues = {
-          especialidad: data.especialidad || '',
-          fechaIngreso: new Date(data.fechaIngreso),
-          ticketGruman: data.ticketGruman,
-          observaciones: data.observaciones,
-          status: data.status,
-          tecnico_asignado_id: data.tecnico_asignado_id,
-          fecha_hora_inicio_servicio: data.fecha_hora_inicio_servicio ? new Date(data.fecha_hora_inicio_servicio) : null,
-          fecha_hora_fin_servicio: data.fecha_hora_fin_servicio ? new Date(data.fecha_hora_fin_servicio) : null,
-          longitud_movil: data.longitud_movil || '',
-          latitud_movil: data.latitud_movil || '',
-          'local.nombre_local': data.local?.nombre_local,
-          'local.direccion': data.local?.direccion,
-          'client.nombre': data.client?.nombre,
-          'tecnico_asignado.name': data.tecnico_asignado?.name
-        };
-        
-        console.log('Form values to patch:', formValues);
-        this.solicitudForm.patchValue(formValues);
-        console.log('Form values after patch:', this.solicitudForm.value);
-        console.log('Especialidad control value:', this.solicitudForm.get('especialidad')?.value);
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Error al cargar la solicitud:', error);
+        console.error('Error loading solicitud:', error);
+        this.loading = false;
         this.snackBar.open('Error al cargar la solicitud', 'Cerrar', {
           duration: 3000
         });
-      },
-      complete: () => {
-        this.loading = false;
       }
     });
   }
@@ -250,7 +332,7 @@ export class ModificarSolicitudComponent implements OnInit {
         });
         return;
       }
-
+      console.log('this.temporaryDeletedRepuestos', this.temporaryDeletedRepuestos);
       // Primero eliminamos los repuestos marcados para eliminar
       for (const subItemId in this.temporaryDeletedRepuestos) {
         for (const repuesto of this.temporaryDeletedRepuestos[subItemId]) {
@@ -274,7 +356,15 @@ export class ModificarSolicitudComponent implements OnInit {
         observaciones: formValues.observaciones,
         longitud_movil: formValues.longitud_movil,
         latitud_movil: formValues.latitud_movil,
-       // repuestos: this.temporaryRepuestos // Incluir los repuestos temporales
+        listaInspeccion: this.listaInspeccion.map(lista => ({
+          ...lista,
+          items: lista.items.map((item: any) => ({
+            ...item,
+            subItems: item.subItems.map((subItem: any) => ({
+              ...subItem
+            }))
+          }))
+        }))
       };
 
       //agregar los items aca de temporalRepuestos
@@ -291,7 +381,6 @@ export class ModificarSolicitudComponent implements OnInit {
           });
         }
       }
-
 
       // Actualizar primero los datos del formulario
       this.solicitarVisitaService.updateSolicitudVisita(Number(this.solicitudId), updateData)
@@ -356,6 +445,11 @@ export class ModificarSolicitudComponent implements OnInit {
       return;
     }
 
+    // Inicializar el array temporal si no existe
+    if (!this.temporaryRepuestos[subItemId]) {
+      this.temporaryRepuestos[subItemId] = [];
+    }
+
     const newItemRepuesto = {
       itemId: subItemId,
       solicitarVisitaId: Number(this.solicitudId),
@@ -365,95 +459,125 @@ export class ModificarSolicitudComponent implements OnInit {
       fechaAgregado: new Date()
     };
 
-    // Agregar al almacenamiento temporal
-    if (!this.temporaryRepuestos[subItemId]) {
-      this.temporaryRepuestos[subItemId] = [];
-    }
+    // Agregar al array temporal
     this.temporaryRepuestos[subItemId].push(newItemRepuesto);
+    console.log('Repuesto temporal agregado:', this.temporaryRepuestos);
+
+    // Limpiar el formulario
+    this.selectedRepuesto = null;
+    this.newRepuestoCantidad = 1;
+    this.showAddRepuestoForm[subItemId] = false;
 
     // Actualizar la vista
     this.updateListaInspeccion();
-
-    // Ocultar el formulario
-    this.showAddRepuestoForm[subItemId] = false;
-
-    // Reset form values
-    this.selectedRepuesto = null;
-    this.newRepuestoCantidad = 1;
-
-    this.snackBar.open('Repuesto agregado temporalmente', 'Cerrar', {
-      duration: 3000
-    });
   }
 
-  addRepuestoToItem(itemId: number) {
-    // Reuse the same logic as addRepuestoToSubItem
+  addRepuestoToItem(subItemId: number) {
     if (!this.selectedRepuesto || this.newRepuestoCantidad <= 0) {
-      this.snackBar.open('Por favor seleccione un repuesto y una cantidad válida', 'Cerrar', {
-        duration: 3000
-      });
-      return;
+        this.snackBar.open('Por favor seleccione un repuesto y una cantidad válida', 'Cerrar', {
+            duration: 3000
+        });
+        return;
     }
 
     const repuesto = this.repuestos.find(r => r.id === this.selectedRepuesto);
     if (!repuesto) {
-      this.snackBar.open('Repuesto no encontrado', 'Cerrar', {
-        duration: 3000
-      });
-      return;
+        this.snackBar.open('Repuesto no encontrado', 'Cerrar', {
+            duration: 3000
+        });
+        return;
     }
 
+    // Inicializar el array temporal si no existe
+    if (!this.temporaryRepuestos[subItemId]) {
+        this.temporaryRepuestos[subItemId] = [];
+    }
+
+    // Obtener el estado y fotos del último repuesto existente
+    const existingRepuestos = this.itemRepuestos.filter(r => r.itemId === subItemId);
+    const lastRepuesto = existingRepuestos.length > 0 ? 
+        existingRepuestos[existingRepuestos.length - 1] : null;
+
     const newItemRepuesto = {
-      itemId: itemId,
-      solicitarVisitaId: Number(this.solicitudId),
-      repuesto: repuesto,
-      cantidad: this.newRepuestoCantidad,
-      comentario: '',
-      fechaAgregado: new Date()
+        itemId: subItemId,
+        solicitarVisitaId: Number(this.solicitudId),
+        repuesto: repuesto,
+        cantidad: this.newRepuestoCantidad,
+        comentario: '',
+        fechaAgregado: new Date(),
+        estado: lastRepuesto?.estado || 'Pendiente',
+        fotos: lastRepuesto?.fotos || []
     };
 
-    this.itemRepuestos.push(newItemRepuesto);
-    this.updateListaInspeccion();
-    this.showAddRepuestoForm[itemId] = false;
+    // Agregar al array temporal
+    this.temporaryRepuestos[subItemId].push(newItemRepuesto);
+    console.log('Repuesto temporal agregado:', this.temporaryRepuestos);
+
+    // Limpiar el formulario
     this.selectedRepuesto = null;
     this.newRepuestoCantidad = 1;
+    this.showAddRepuestoForm[subItemId] = false;
 
-    this.snackBar.open('Repuesto agregado correctamente', 'Cerrar', {
-      duration: 3000
+    // Actualizar la vista
+    this.updateListaInspeccion();
+
+    this.snackBar.open('Repuesto agregado temporalmente', 'Cerrar', {
+        duration: 3000
     });
   }
 
-  deleteRepuesto(subItemId: number, repuesto: any, index: number) {
-    if (!repuesto.id) { // Si es un repuesto temporal
-      // Eliminar del array temporal
-      this.temporaryRepuestos[subItemId] = this.temporaryRepuestos[subItemId].filter(
-        (r, i) => i !== index
-      );
-      
-      // Si el array queda vacío, eliminar la propiedad
-      if (this.temporaryRepuestos[subItemId].length === 0) {
-        delete this.temporaryRepuestos[subItemId];
-      }
-    } else { // Si es un repuesto existente
-      // Agregar a temporaryDeletedRepuestos
-      if (!this.temporaryDeletedRepuestos[subItemId]) {
+  deleteRepuesto(subItemId: number, repuesto: any) {
+    // Inicializar el array de repuestos eliminados si no existe
+    if (!this.temporaryDeletedRepuestos[subItemId]) {
         this.temporaryDeletedRepuestos[subItemId] = [];
-      }
-      this.temporaryDeletedRepuestos[subItemId].push(repuesto);
+    }
 
-      // Marcar como pendiente de eliminar en la vista
-      repuesto.pendingDelete = true;
-      console.log(' this.temporaryDeletedRepuestos',  this.temporaryDeletedRepuestos);
+    // Marcar el repuesto como pendiente de eliminar
+    if (repuesto.id) {
+        // Para repuestos existentes
+        this.temporaryDeletedRepuestos[subItemId].push(repuesto);
+        repuesto.pendingDelete = true;
+    } else {
+        // Para repuestos temporales
+        if (this.temporaryRepuestos[subItemId]) {
+            const repuestoTemp = this.temporaryRepuestos[subItemId].find(
+                r => r.repuesto.id === repuesto.repuesto.id
+            );
+            if (repuestoTemp) {
+                repuestoTemp.pendingDelete = true;
+            }
+        }
     }
 
     // Actualizar la vista
     this.updateListaInspeccion();
     
     this.snackBar.open(
-      repuesto.id ? 'Repuesto marcado para eliminar' : 'Repuesto temporal eliminado', 
-      'Cerrar', 
-      { duration: 3000 }
-    );
+        'Repuesto marcado para eliminar', 
+        'Deshacer', 
+        { 
+            duration: 3000,
+            horizontalPosition: 'end',
+            verticalPosition: 'bottom'
+        }
+    ).onAction().subscribe(() => {  // Cambiado a onAction()
+        // Deshacer la eliminación solo cuando se hace clic en "Deshacer"
+        if (repuesto.id) {
+            this.temporaryDeletedRepuestos[subItemId] = this.temporaryDeletedRepuestos[subItemId]
+                .filter(r => r.id !== repuesto.id);
+            repuesto.pendingDelete = false;
+        } else {
+            if (this.temporaryRepuestos[subItemId]) {
+                const repuestoTemp = this.temporaryRepuestos[subItemId].find(
+                    r => r.repuesto.id === repuesto.repuesto.id
+                );
+                if (repuestoTemp) {
+                    repuestoTemp.pendingDelete = false;
+                }
+            }
+        }
+        this.updateListaInspeccion();
+    });
   }
 
   // Método para verificar si un repuesto está pendiente de eliminar
@@ -474,6 +598,10 @@ export class ModificarSolicitudComponent implements OnInit {
     }, 0);
   }
 
+  calculateItemTotal(repuestos: any[]): number {
+    return this.calculateSubItemTotal(repuestos);
+  }
+
   calculateFinalTotal(): number {
     let finalTotal = 0;
     
@@ -492,22 +620,90 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   private updateListaInspeccion() {
+    if (!this.listaInspeccion || !this.itemRepuestos) return;
+
     this.listaInspeccion = this.listaInspeccion.map(lista => ({
-      ...lista,
-      items: lista.items.map((item: any) => ({
-        ...item,
-        subItems: item.subItems.map((subItem: any) => {
-          // Obtener los repuestos existentes del itemRepuestos
-          const existingRepuestos = this.itemRepuestos.filter((repuesto: any) => repuesto.itemId === subItem.id);
-          // Obtener los repuestos temporales
-          const tempRepuestos = this.temporaryRepuestos[subItem.id] || [];
-          // Combinar ambos arrays, poniendo los temporales primero
-          return {
-            ...subItem,
-            repuestos: [...tempRepuestos, ...existingRepuestos]
-          };
-        })
-      }))
+        ...lista,
+        items: lista.items.map((item: any) => ({
+            ...item,
+            subItems: item.subItems.map((subItem: any) => {
+                // Obtener repuestos existentes
+                const existingRepuestos = this.itemRepuestos.filter(
+                    repuesto => repuesto.itemId === subItem.id
+                );
+
+                // Obtener repuestos temporales para este subItem
+                const tempRepuestos = this.temporaryRepuestos[subItem.id] || [];
+
+                // Combinar repuestos existentes y temporales
+                const allRepuestos = [
+                    ...existingRepuestos,
+                    ...tempRepuestos
+                ].map(repuesto => ({
+                    ...repuesto,
+                    pendingDelete: this.temporaryDeletedRepuestos[subItem.id]?.some(
+                        deletedRepuesto => deletedRepuesto.id === repuesto.id
+                    ) || repuesto.pendingDelete
+                }));
+
+                return {
+                    ...subItem,
+                    // Mantener el estado original del subItem
+                    estado: subItem.estado || 'no_conforme',
+                    fotos: subItem.fotos || [],
+                    repuestos: allRepuestos
+                };
+            })
+        }))
     }));
+
+    console.log('Lista actualizada:', this.listaInspeccion);
+  }
+
+  openPhotoViewer(imageUrls: string[]): void {
+    console.log('Opening photo viewer with URLs:', imageUrls); // Para debugging
+    
+    if (!imageUrls || imageUrls.length === 0) {
+      this.snackBar.open('No hay imágenes disponibles', 'Cerrar', {
+        duration: 3000
+      });
+      return;
+    }
+    
+    const dialogRef = this.dialog.open(DialogPhotoViewerComponent, {
+      data: { imageUrls },
+      maxWidth: '90vw',
+      maxHeight: '90vh'
+    });
+  }
+
+  getEstadoLabel(estado: string | null): string {
+    if (!estado) return '';
+    
+    switch (estado.toLowerCase()) {
+      case 'conforme':
+        return '✅ Conforme';
+      case 'no_aplica':
+        return '⚠️ No Aplica';
+      case 'no_conforme':
+        return '❌ No Conforme';
+      default:
+        return estado;
+    }
+  }
+
+  getEstadoClass(estado: string | null): string {
+    if (!estado) return '';
+    
+    switch (estado.toLowerCase()) {
+      case 'conforme':
+        return 'badge-success';
+      case 'no_aplica':
+        return 'badge-warning';
+      case 'no_conforme':
+        return 'badge-danger';
+      default:
+        return '';
+    }
   }
 } 

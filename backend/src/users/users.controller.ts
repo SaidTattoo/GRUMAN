@@ -138,4 +138,10 @@ export class UsersController {
     async getTecnicoClientes(@Param('id') id: number) {
         return this.usersService.getTecnicoClientes(id);
     }
+
+    @Get('tecnicos/:id/vehiculo-actual')
+    @ApiOperation({ summary: 'Obtener vehículo asignado a un técnico' })
+    async getTecnicoVehiculo(@Param('id') id: number) {
+        return this.usersService.findVehiculoByTecnicoId(id);
+    }
 }

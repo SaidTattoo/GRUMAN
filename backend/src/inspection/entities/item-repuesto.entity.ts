@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn } from 'typeorm';
 import { Item } from './item.entity';
 import { Repuesto } from '../../repuestos/repuestos.entity';
 import { SolicitarVisita } from '../../solicitar-visita/solicitar-visita.entity';
@@ -8,29 +8,33 @@ export class ItemRepuesto {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'bigint' })
   itemId: number;
 
   @ManyToOne(() => Item, item => item.itemRepuestos)
   item: Item;
 
   @ManyToOne(() => Repuesto)
+  @JoinColumn({ name: 'repuestoId' })
   repuesto: Repuesto;
 
-  @Column({ nullable: true })
+  @Column({ type: 'bigint' })
+  repuestoId: number;
+
+  @Column({ type: 'bigint', nullable: false })
   solicitarVisitaId: number;
 
   @ManyToOne(() => SolicitarVisita, solicitarVisita => solicitarVisita.itemRepuestos)
+  @JoinColumn({ name: 'solicitarVisitaId' })
   solicitarVisita: SolicitarVisita;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ nullable: true })
   comentario: string;
 
-  @Column({ default: 1 })
+  @Column()
   cantidad: number;
 
-  
-  @Column({ type: 'enum', enum: ['conforme', 'no_conforme', 'no_aplica'], default: 'no_aplica' })
+  @Column({ nullable: true })
   estado: string;
 
   @Column('simple-array', { nullable: true })

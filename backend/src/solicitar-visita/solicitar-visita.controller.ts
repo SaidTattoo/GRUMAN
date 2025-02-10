@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { SolicitarVisitaService } from './solicitar-visita.service';
 
 import { SolicitarVisita } from './solicitar-visita.entity';
@@ -183,21 +183,36 @@ export class SolicitarVisitaController {
   }
 
   @Put(':id')
-  async updateSolicitudVisita(
-    @Param('id') id: number, 
-    @Body() solicitud: any
-  ) {
+  async update(@Param('id') id: string, @Body() updateSolicitudVisitaDto: any) {
     try {
-      const result = await this.solicitarVisitaService.updateSolicitudVisita(id, solicitud);
-      return {
-        success: true,
-        data: result
-      };
+      // Validar que la solicitud existe
+      const solicitud = await this.solicitarVisitaService.getSolicitudVisita(+id);
+      if (!solicitud) {
+        throw new NotFoundException(`Solicitud with ID ${id} not found`);
+      }
+
+      // Procesar los repuestos pendientes de eliminar
+      if (updateSolicitudVisitaDto.listaInspeccion) {
+        updateSolicitudVisitaDto.listaInspeccion = updateSolicitudVisitaDto.listaInspeccion.map((lista: any) => ({
+          ...lista,
+          items: lista.items.map((item: any) => ({
+            ...item,
+            subItems: item.subItems.map((subItem: any) => ({
+              ...subItem,
+              repuestos: (subItem.repuestos || []).filter((repuesto: any) => !repuesto.pendingDelete)
+            }))
+          }))
+        }));
+      }
+
+      // Actualizar la solicitud
+      const result = await this.solicitarVisitaService.update(+id, updateSolicitudVisitaDto);
+      return result;
     } catch (error) {
-      throw new HttpException(
-        'Error al actualizar la solicitud', 
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error updating solicitud');
     }
   }
 

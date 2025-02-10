@@ -17,7 +17,7 @@ export class VehiculosService {
 
   findAll(): Promise<Vehiculo[]> {
     /* order by id desc */
-    return this.vehiculosRepository.find({ order: { id: 'DESC' } });
+    return this.vehiculosRepository.find({ order: { id: 'DESC' }, where: { deleted: false } });
   }
 
   async findOne(id: number): Promise<Vehiculo> {
