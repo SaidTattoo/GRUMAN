@@ -8,7 +8,7 @@ export class ItemRepuesto {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'bigint' })
+  @Column({ type: 'int' })
   itemId: number;
 
   @ManyToOne(() => Item, item => item.itemRepuestos)
@@ -18,10 +18,10 @@ export class ItemRepuesto {
   @JoinColumn({ name: 'repuestoId' })
   repuesto: Repuesto;
 
-  @Column({ type: 'bigint' })
+  @Column({ type: 'int' })
   repuestoId: number;
 
-  @Column({ type: 'bigint', nullable: false })
+  @Column({ type: 'int', nullable: false })
   solicitarVisitaId: number;
 
   @ManyToOne(() => SolicitarVisita, solicitarVisita => solicitarVisita.itemRepuestos)
