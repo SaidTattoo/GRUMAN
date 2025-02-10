@@ -11,6 +11,7 @@ import { User } from 'src/users/users.entity';
 import { ItemRepuesto } from '../inspection/entities/item-repuesto.entity';
 import { Facturacion } from 'src/facturacion/facturacion.entity';
 import { FacturacionModule } from 'src/facturacion/facturacion.module';
+import { Repuesto } from 'src/repuestos/repuestos.entity';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { FacturacionModule } from 'src/facturacion/facturacion.module';
       Client,
       User,
       ItemRepuesto,
+      Repuesto,
       Facturacion
     ]),
     FacturacionModule

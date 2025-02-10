@@ -1,24 +1,30 @@
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+
 export class FinalizarServicioDto {
+  @IsNotEmpty()
+  @IsString()
   firma_cliente: string;
+
+  @IsNotEmpty()
   repuestos: {
     [key: string]: {
-      id: number;
-      cantidad: number;
-      comentario: string;
       estado: string;
-      fotos?: string[];  // Array opcional de URLs o base64 de las fotos
-      repuesto: {
-        id: number;
-        familia: string;
-        articulo: string;
-        marca: string;
-        codigoBarra: string;
-        precio: number;
-        precioNetoCompra: number;
-        sobreprecio: number;
-        precioIva: number;
-        precioBruto: number;
-      }
-    }[]
+      comentario: string;
+      fotos: string[];
+      repuestos: Array<{
+        cantidad: number;
+        comentario: string;
+        repuesto: {
+          id: number;
+          articulo: string;
+          familia: string;
+          marca: string;
+        };
+      }>;
+    };
   };
-} 
+
+  @IsOptional()
+  @IsString()
+  observaciones?: string;
+}

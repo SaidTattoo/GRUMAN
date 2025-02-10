@@ -1,4 +1,5 @@
 import { TipoDocumento } from "../tipo-documento/tipo-documento.entity";
+import { Vehiculo } from "../vehiculos/vehiculos.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('documentos')
@@ -35,9 +36,16 @@ export class Documentos {
   @Column({default: null})
   repuestoId: number;
 
-  @Column({default: null})
+  @ManyToOne(() => Vehiculo, vehiculo => vehiculo.documentos)
+  @JoinColumn({ name: 'vehiculoId' })
+  vehiculo: Vehiculo;
+
+  @Column({ type: 'int', nullable: true })
   vehiculoId: number;
 
   @Column({ default: true })
   activo: boolean;
+
+  @Column({ default: false })
+  deleted: boolean;
 }

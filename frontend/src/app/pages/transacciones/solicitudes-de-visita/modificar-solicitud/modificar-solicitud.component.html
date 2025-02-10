@@ -133,6 +133,38 @@
                                 matTooltip="Agregar repuesto">
                           <mat-icon>add</mat-icon>
                         </button>
+                        <button mat-mini-fab 
+                                [color]="subItem.fotos?.length ? 'primary' : 'basic'"
+                                (click)="openPhotoViewer(subItem.fotos)"
+                                [matTooltip]="subItem.fotos?.length ? 'Ver imágenes de inspección' : 'No hay imágenes disponibles'">
+                          <mat-icon>photo_library</mat-icon>
+                        </button>
+                        @if (subItem.fotos?.length) {
+                          <span class="photo-count">{{ subItem.fotos.length }} foto(s)</span>
+                        }
+                      </div>
+
+                      <!-- Miniaturas de fotos -->
+                   <!--    <div class="photos-container" *ngIf="subItem.fotos && subItem.fotos.length > 0">
+                        <div class="photo-grid">
+                          <div class="photo-item" *ngFor="let foto of subItem.fotos">
+                            <img [src]="foto" 
+                                 (click)="openPhotoViewer([foto])" 
+                                 [alt]="'Foto de ' + subItem.name"
+                                 class="inspection-photo">
+                          </div>
+                        </div>
+                      </div> -->
+
+                      <!-- Estado después de las fotos -->
+                      <div class="estado-container">
+                        <span class="badge" [ngClass]="{
+                          'badge-success': subItem.estado === 'conforme',
+                          'badge-warning': subItem.estado === 'no_aplica',
+                          'badge-danger': subItem.estado === 'no_conforme'
+                        }">
+                          {{ getEstadoLabel(subItem.estado) }}
+                        </span>
                       </div>
 
                       @if (showAddRepuestoForm[subItem.id]) {
@@ -148,17 +180,17 @@
                             </mat-select>
                           </mat-form-field>
 
-                          <mat-form-field appearance="fill">
-                            <mat-label>Cantidad</mat-label>
-                            <input matInput type="number" [(ngModel)]="newRepuestoCantidad" [ngModelOptions]="{standalone: true}" min="1">
-                          </mat-form-field>
+                    <mat-form-field appearance="fill">
+                      <mat-label>Cantidad</mat-label>
+                      <input matInput type="number" [(ngModel)]="newRepuestoCantidad" [ngModelOptions]="{standalone: true}" min="1">
+                    </mat-form-field>
 
                           <div class="form-actions">
                             <button mat-button (click)="toggleAddRepuestoForm(subItem.id)">
                               Cancelar
                             </button>
                             <button mat-raised-button color="primary" 
-                                    (click)="addRepuestoToSubItem(subItem.id)">
+                                    (click)="addRepuestoToItem(subItem.id)">
                               Agregar
                             </button>
                           </div>
@@ -180,31 +212,40 @@
                                     Pendiente de eliminar
                                   </div>
                                 }
-                                <div class="repuesto-detail">
-                                  <strong>Artículo:</strong> 
-                                  <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
+                                @if (repuesto.repuesto) {
+                                  <div class="repuesto-detail">
+                                    <strong>Artículo:</strong> 
+                                    <span>{{ repuesto.repuesto.articulo }}</span>
+                                  </div>
+                                  <div class="repuesto-detail">
+                                    <strong>Marca:</strong> 
+                                    <span>{{ repuesto.repuesto.marca }}</span>
+                                  </div>
+                                  <div class="repuesto-detail">
+                                    <strong>Familia:</strong> 
+                                    <span>{{ repuesto.repuesto.familia }}</span>
+                                  </div>
+                                  <div class="repuesto-detail">
+                                    <strong>Cantidad:</strong> 
+                                    <span>{{ repuesto.cantidad }}</span>
+                                  </div>
+                                  <div class="repuesto-detail">
+                                    <strong>Precio:</strong> 
+                                    <span>${{ repuesto.repuesto.precio?.toLocaleString('es-CL') }}</span>
+                                  </div>
+                                  <div class="repuesto-detail">
+                                    <strong>Total:</strong> 
+                                    <span>${{ (repuesto.cantidad * repuesto.repuesto.precio)?.toLocaleString('es-CL') }}</span>
+                                  </div>
+                                }
+                                
+                                <div class="actions-container">
+                                  <button class="delete-button" 
+                                          matTooltip="Eliminar repuesto"
+                                          (click)="deleteRepuesto(subItem.id, repuesto)">
+                                    <mat-icon>delete</mat-icon>
+                                  </button>
                                 </div>
-                                <div class="repuesto-detail">
-                                  <strong>Marca:</strong> 
-                                  <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
-                                </div>
-                                <div class="repuesto-detail">
-                                  <strong>Cantidad:</strong> 
-                                  <span>{{ repuesto.cantidad }}</span>
-                                </div>
-                                <div class="repuesto-detail">
-                                  <strong>Precio:</strong> 
-                                  <span>${{ repuesto.repuesto?.precio?.toLocaleString('es-CL') || 'N/A' }}</span>
-                                </div>
-                                <div class="repuesto-detail">
-                                  <strong>Total:</strong> 
-                                  <span>${{ (repuesto.cantidad * repuesto.repuesto.precio).toLocaleString('es-CL') || 'N/A' }}</span>
-                                </div>
-                                <button class="delete-button" 
-                                        matTooltip="Eliminar repuesto"
-                                        (click)="deleteRepuesto(subItem.id, repuesto, $index)">
-                                  <mat-icon>delete</mat-icon>
-                                </button>
                               </div>
                             </li>
                           }
@@ -512,6 +553,36 @@ td.mat-cell {
   color: #2ecc71;
   font-weight: 600;
   font-size: 1.2em;
+}
+
+.photos-container {
+  margin: 10px 0;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.photo-item {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.inspection-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.inspection-photo:hover {
+  transform: scale(1.05);
 }
 </style>
 

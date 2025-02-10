@@ -13,6 +13,7 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -39,10 +40,49 @@ export class AppController {
     }
 
     const filename = file.filename;
-     const fileUrl = `http://138.255.103.35:3000/uploads/${path}/${filename}`;
+    const fileUrl = `${process.env.API_URL || 'http://localhost:3000'}/uploads/${path}/${filename}`;
 
-  
-    //console.log(`Uploading file to path: ${path}`);
+    return {
+      filename: filename,
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      url: fileUrl,
+    };
+  }
+
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          const solicitudId = req.params.solicitudId;
+          const itemId = req.params.itemId;
+          const uploadPath = join(__dirname, '..', 'uploads', 'solicitudes', solicitudId, itemId);
+
+          if (!existsSync(uploadPath)) {
+            mkdirSync(uploadPath, { recursive: true });
+          }
+
+          cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+          cb(null, `${Date.now()}-${file.originalname}`);
+        },
+      }),
+    }),
+  )
+  @Post('upload/solicitudes/:solicitudId/:itemId')
+  uploadSolicitudFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('solicitudId') solicitudId: string,
+    @Param('itemId') itemId: string
+  ) {
+    if (!file) {
+      throw new Error('Archivo no encontrado');
+    }
+
+    const filename = file.filename;
+    const fileUrl = `${process.env.API_URL || 'http://localhost:3000'}/uploads/solicitudes/${solicitudId}/${itemId}/${filename}`;
+
     return {
       filename: filename,
       originalname: file.originalname,

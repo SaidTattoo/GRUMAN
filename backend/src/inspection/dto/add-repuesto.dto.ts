@@ -18,4 +18,12 @@ export class AddRepuestoDto {
   @IsNotEmpty()
   @IsNumber()
   solicitarVisitaId: number;
+
+  @IsOptional()
+  @IsString()
+  estado?: string;
+
+  @IsOptional()
+  @IsString({ each: true })
+  fotos?: string[];
 } 

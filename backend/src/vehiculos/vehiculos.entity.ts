@@ -1,4 +1,5 @@
 /* import { Programacion } from '../programacion/programacion.entity'; */
+import { Documentos } from 'src/documentos/documentos.entity';
 import { Programacion } from 'src/programacion/programacion.entity';
 import { UserVehiculo } from 'src/user-vehiculo/user-vehiculo.entity';
 import {
@@ -27,8 +28,11 @@ export class Vehiculo {
   @Column()
   modelo: string;
 
-  @Column('text', { nullable: true })
+  @Column({ type: 'text', nullable: true })
   documentacion: string;
+
+  @OneToMany(() => Documentos, documento => documento.vehiculo)
+  documentos: Documentos[];
 
   @BeforeInsert()
   @BeforeUpdate()

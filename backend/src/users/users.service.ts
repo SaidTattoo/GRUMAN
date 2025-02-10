@@ -44,7 +44,7 @@ export class UsersService {
         return this.userRepository.findOne({ where: { email, disabled: false }, relations: ['clients'] });
     }
     async findByRut(rut: string): Promise<User | undefined> {
-        return this.userRepository.findOne({ where: { rut, disabled: false }, relations: ['clients'] });
+        return this.userRepository.findOne({ where: { rut, disabled: false }, relations: ['clients', 'especialidades' ,] });
     }
     /** CREATEUSER  and asign client */
     /**encode password */
@@ -270,5 +270,62 @@ export class UsersService {
             logo: client.logo || '',
             rut: client.rut
         }));
+    }
+
+    async findVehiculoByTecnicoId(userId: number): Promise<any> {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const user = await this.userRepository
+            .createQueryBuilder('user')
+            .leftJoinAndSelect('user.vehiculoAsignaciones', 'asignacion')
+            .leftJoinAndSelect('asignacion.vehiculo', 'vehiculo')
+            .leftJoinAndSelect('vehiculo.documentos', 'documentos', 'documentos.activo = :activo AND documentos.deleted = :deleted', {
+                activo: true,
+                deleted: false
+            })
+            .where('user.id = :userId', { userId })
+            .andWhere('user.disabled = :disabled', { disabled: false })
+            .andWhere('vehiculo.deleted = :vehiculoDeleted', { vehiculoDeleted: false })
+            .orderBy('documentos.fecha', 'DESC') // Ordenar documentos por fecha
+            .getOne();
+
+        if (!user) {
+            throw new NotFoundException('Técnico no encontrado');
+        }
+
+        const todayVehiculo = user.vehiculoAsignaciones
+            .find(asig => {
+                const asigDate = new Date(asig.fecha_utilizado);
+                asigDate.setHours(0, 0, 0, 0);
+                
+                return asig.activo && 
+                       !asig.odometro_fin && 
+                       asigDate.getTime() === today.getTime();
+            });
+
+        if (!todayVehiculo) {
+            return {
+                message: 'No hay vehículo asignado para hoy',
+                vehiculo: null
+            };
+        }
+
+        return {
+            message: 'Vehículo encontrado',
+            vehiculo: {
+                id: todayVehiculo.vehiculo.id,
+                movil: todayVehiculo.vehiculo.movil,
+                patente: todayVehiculo.vehiculo.patente,
+                marca: todayVehiculo.vehiculo.marca,
+                modelo: todayVehiculo.vehiculo.modelo,
+                anio: todayVehiculo.vehiculo.anio,
+                activo: todayVehiculo.vehiculo.activo,
+                documentos: todayVehiculo.vehiculo.documentos || [], // Asegurar que siempre devuelva un array
+                documentacion: todayVehiculo.vehiculo.documentacion,
+                odometro_inicio: todayVehiculo.odometro_inicio,
+                fecha_utilizado: todayVehiculo.fecha_utilizado
+            }
+        };
     }
 }
