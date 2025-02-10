@@ -273,67 +273,16 @@ export class SolicitarVisitaService {
     }
 /* agregar fecha_hora_fin_servicio */
     async finalizarServicio(id: number, data: FinalizarServicioDto): Promise<SolicitarVisita> {
-        console.log(`🔍 Iniciando finalizarServicio con ID: ${id}`);
-
         const solicitud = await this.solicitarVisitaRepository.findOne({
             where: { id },
             relations: ['itemRepuestos', 'itemRepuestos.repuesto']
         });
 
         if (!solicitud) {
-            console.log(`❌ No se encontró la solicitud con ID: ${id}`);
             throw new NotFoundException(`Solicitud with ID ${id} not found`);
         }
 
-        console.log(`✅ Solicitud encontrada:`, solicitud);
-
-        // Guardar los repuestos primero
-        for (const itemId in data.repuestos) {
-            const itemData = data.repuestos[itemId];
-            console.log(`📦 Procesando item ${itemId}:`, itemData);
-            
-            // Obtener repuestos existentes para este item
-            const existingRepuestos = solicitud.itemRepuestos.filter(
-                ir => ir.itemId === Number(itemId)
-            );
-            console.log(`🔍 Repuestos existentes para item ${itemId}:`, existingRepuestos);
-
-            // Procesar nuevos repuestos
-            for (const repuestoData of itemData.repuestos) {
-                // Verificar si el repuesto ya existe
-                const repuestoExistente = existingRepuestos.find(
-                    er => er.repuestoId === repuestoData.repuesto.id
-                );
-
-                if (!repuestoExistente) {
-                    try {
-                        console.log(`➕ Agregando nuevo repuesto:`, repuestoData);
-                        const itemRepuestoData = {
-                            itemId: Number(itemId),
-                            repuestoId: repuestoData.repuesto.id,
-                            cantidad: repuestoData.cantidad || 0,
-                            comentario: repuestoData.comentario || '',
-                            estado: itemData.estado || 'pendiente',
-                            fotos: itemData.fotos || [],
-                            solicitarVisitaId: Number(id)
-                        };
-
-                        console.log(`💾 Intentando guardar nuevo itemRepuesto:`, itemRepuestoData);
-                        const savedItem = await this.itemRepuestoRepository.save(itemRepuestoData);
-                        console.log(`✅ Nuevo ItemRepuesto guardado exitosamente:`, savedItem);
-                    } catch (error) {
-                        console.log(`❌ Error al guardar repuesto:`, error);
-                        console.log(`🔍 Detalles del repuesto que falló:`, repuestoData);
-                        throw error;
-                    }
-                } else {
-                    console.log(`ℹ️ Repuesto ya existe, no es necesario agregarlo:`, repuestoExistente);
-                }
-            }
-        }
-
-        console.log(`📝 Actualizando estado de la solicitud...`);
-
+        // Actualizar estado y firma
         await this.solicitarVisitaRepository.update(id, {
             status: SolicitudStatus.FINALIZADA,
             fecha_hora_fin_servicio: new Date(),
@@ -341,13 +290,43 @@ export class SolicitarVisitaService {
             observaciones: data.observaciones
         });
 
-        const updatedSolicitud = await this.solicitarVisitaRepository.findOne({
+        // Procesar repuestos y fotos
+        for (const [itemId, itemData] of Object.entries(data.repuestos)) {
+            // Procesar cada repuesto del item
+            for (const repuestoData of itemData.repuestos) {
+                const itemRepuesto = solicitud.itemRepuestos.find(ir => 
+                    ir.itemId === parseInt(itemId) && 
+                    ir.repuestoId === repuestoData.repuesto.id
+                );
+
+                if (itemRepuesto) {
+                    // Actualizar repuesto existente
+                    await this.itemRepuestoRepository.update(itemRepuesto.id, {
+                        cantidad: repuestoData.cantidad,
+                        comentario: repuestoData.comentario || '',
+                        estado: itemData.estado,
+                        fotos: itemData.fotos || []
+                    });
+                } else {
+                    // Crear nuevo repuesto
+                    await this.itemRepuestoRepository.save({
+                        itemId: parseInt(itemId),
+                        repuestoId: repuestoData.repuesto.id,
+                        solicitarVisitaId: id,
+                        cantidad: repuestoData.cantidad,
+                        comentario: repuestoData.comentario || '',
+                        estado: itemData.estado,
+                        fotos: itemData.fotos || []
+                    });
+                }
+            }
+        }
+
+        // Retornar solicitud actualizada
+        return await this.solicitarVisitaRepository.findOne({
             where: { id },
             relations: ['itemRepuestos', 'itemRepuestos.repuesto']
         });
-
-        console.log(`✅ Solicitud finalizada exitosamente:`, updatedSolicitud);
-        return updatedSolicitud;
     }
 
     async reabrirSolicitud(id: number): Promise<SolicitarVisita> {
