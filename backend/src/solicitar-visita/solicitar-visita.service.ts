@@ -338,10 +338,19 @@ export class SolicitarVisitaService {
         }
 
         // Retornar solicitud actualizada con sus relaciones
-        return await this.solicitarVisitaRepository.findOne({
-            where: { id },
-            relations: ['itemRepuestos', 'itemRepuestos.repuesto', 'itemFotos']
-        });
+        const solicitudActualizada = await this.solicitarVisitaRepository
+            .createQueryBuilder('solicitud')
+            .leftJoinAndSelect('solicitud.itemRepuestos', 'itemRepuestos')
+            .leftJoinAndSelect('itemRepuestos.repuesto', 'repuesto')
+            .leftJoinAndSelect('solicitud.itemFotos', 'itemFotos')
+            .where('solicitud.id = :id', { id })
+            .getOne();
+
+        if (!solicitudActualizada) {
+            throw new NotFoundException(`Solicitud with ID ${id} not found`);
+        }
+
+        return solicitudActualizada;
     }
 
     async reabrirSolicitud(id: number): Promise<SolicitarVisita> {

@@ -5,6 +5,7 @@ import { TipoServicio } from "../tipo-servicio/tipo-servicio.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "src/users/users.entity";
 import { ItemRepuesto } from "src/inspection/entities/item-repuesto.entity";
+import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
 
 export enum SolicitudStatus {
     PENDIENTE = 'pendiente',
@@ -110,6 +111,9 @@ export class SolicitarVisita {
 
   @OneToMany(() => ItemRepuesto, itemRepuesto => itemRepuesto.solicitarVisita)
   itemRepuestos: ItemRepuesto[];
+
+  @OneToMany(() => ItemFotos, itemFotos => itemFotos.solicitarVisita)
+  itemFotos: ItemFotos[];
 
   // Relación con User para aprobada_por
   @ManyToOne(() => User, (user) => user.id, { nullable: true })
