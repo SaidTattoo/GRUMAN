@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
+import { SolicitarVisita } from 'src/solicitar-visita/solicitar-visita.entity';
 
 @Entity()
 export class ItemFotos {
@@ -16,4 +17,7 @@ export class ItemFotos {
 
     @CreateDateColumn()
     fechaAgregado: Date;
+
+    @ManyToOne(() => SolicitarVisita, solicitud => solicitud.itemFotos)
+    solicitarVisita: SolicitarVisita;
 } 
