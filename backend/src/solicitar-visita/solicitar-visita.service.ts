@@ -350,21 +350,12 @@ export class SolicitarVisitaService {
             throw new NotFoundException(`Solicitud with ID ${id} not found`);
         }
 
-        // Agrupar las fotos por itemId y asignarlas a los repuestos correspondientes
-        if (solicitudActualizada.itemFotos) {
-            const fotosPorItem = solicitudActualizada.itemFotos.reduce((acc, foto) => {
-                if (!acc[foto.itemId]) {
-                    acc[foto.itemId] = foto.fotos;
-                }
-                return acc;
-            }, {});
-
-            // Asignar las fotos a los repuestos correspondientes
-            solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos.map(repuesto => ({
-                ...repuesto,
-                fotos: fotosPorItem[repuesto.itemId] || null
-            }));
-        }
+        // Asignar las fotos a los repuestos correspondientes
+        solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos.map(repuesto => {
+            const itemRepuestoInstance = this.itemRepuestoRepository.create(repuesto);
+            itemRepuestoInstance.fotos = itemRepuestoInstance.getFotos(solicitudActualizada.itemFotos);
+            return itemRepuestoInstance;
+        });
 
         return solicitudActualizada;
     }
