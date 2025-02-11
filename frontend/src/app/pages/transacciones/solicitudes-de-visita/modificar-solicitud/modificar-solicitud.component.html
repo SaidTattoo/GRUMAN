@@ -145,14 +145,16 @@
                       </div>
 
                       <!-- Miniaturas de fotos -->
-                      <div class="photos-container" *ngIf="subItem.fotos && subItem.fotos.length > 0">
+                      <div class="photos-container" *ngIf="subItem.fotos?.length">
                         <div class="photo-grid">
-                          <div class="photo-item" *ngFor="let foto of subItem.fotos">
-                            <img [src]="foto" 
-                                 (click)="openPhotoViewer([foto])" 
-                                 [alt]="'Foto de ' + subItem.name"
-                                 class="inspection-photo">
-                          </div>
+                          @for (foto of subItem.fotos; track foto) {
+                            <div class="photo-item">
+                              <img [src]="foto" 
+                                   (click)="openPhotoViewer([foto])" 
+                                   [alt]="'Foto de ' + subItem.name"
+                                   class="inspection-photo">
+                            </div>
+                          }
                         </div>
                       </div>
 

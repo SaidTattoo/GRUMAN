@@ -669,16 +669,16 @@ export class ModificarSolicitudComponent implements OnInit {
     if (!this.listaInspeccion || !this.itemRepuestos) return;
 
     // Crear un mapa de fotos por itemId
-    const fotosPorItem:  { [key: number]: string[] } = {};
+    const fotosPorItem: { [key: number]: string[] } = {};
     if (this.solicitud?.itemFotos) {
         this.solicitud.itemFotos.forEach((itemFoto: any) => {
-            fotosPorItem[itemFoto.itemId] = itemFoto.fotos || [];
+            fotosPorItem[itemFoto.itemId] = itemFoto.fotos;
         });
     }
 
     this.listaInspeccion = this.listaInspeccion.map(lista => ({
         ...lista,
-        items: lista.items.map((item: any) => ({
+        items: lista.items.map((item: any)   => ({
             ...item,
             subItems: item.subItems.map((subItem: any) => {
                 // Obtener repuestos existentes
@@ -700,17 +700,20 @@ export class ModificarSolicitudComponent implements OnInit {
                     ) || repuesto.pendingDelete
                 }));
 
+                // Obtener las fotos del itemId correspondiente
+                const fotosDelItem = fotosPorItem[subItem.id] || [];
+
                 return {
                     ...subItem,
                     estado: subItem.estado || 'no_conforme',
-                    fotos: fotosPorItem[subItem.id] || [], // Asignar fotos al subItem
+                    fotos: fotosDelItem,
                     repuestos: allRepuestos
                 };
             })
         }))
     }));
 
-    console.log('Lista actualizada:', this.listaInspeccion);
+    console.log('Lista actualizada con fotos:', this.listaInspeccion);
   }
 
   openPhotoViewer(imageUrls: string[]): void {
