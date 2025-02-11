@@ -126,8 +126,6 @@ export class SolicitarVisitaService {
     }
 
     getSolicitudVisita(id: number): Promise<SolicitarVisita> {
-
-        
         return this.solicitarVisitaRepository.findOne({ 
           where: { id }, 
           relations: [
@@ -135,7 +133,8 @@ export class SolicitarVisitaService {
             'client', 
             'tecnico_asignado',
             'itemRepuestos',
-            'itemRepuestos.repuesto'
+            'itemRepuestos.repuesto',
+            'itemFotos'
           ] 
         });
     }
