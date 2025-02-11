@@ -54,6 +54,19 @@ interface RepuestoItem {
   repuestos: any[];
 }
 
+interface RepuestoMap {
+  [key: number]: {
+    estado: string;
+    comentario: string;
+    fotos: string[];
+    repuestos: Array<{
+      cantidad: number;
+      comentario: string;
+      repuesto: Repuesto;
+    }>;
+  };
+}
+
 @Component({
   selector: 'app-modificar-solicitud',
   standalone: true,
@@ -147,7 +160,7 @@ export class ModificarSolicitudComponent implements OnInit {
     'fechaAgregado'
   ];
   itemRepuestos: any[] = [];
-  repuestos: { [key: number]: RepuestoItem } = {};
+  repuestos: RepuestoMap = {};
   repuestosList: Repuesto[] = [];
   selectedRepuesto: number | null = null;
   newRepuestoCantidad: number = 1;
@@ -655,6 +668,14 @@ export class ModificarSolicitudComponent implements OnInit {
   private updateListaInspeccion() {
     if (!this.listaInspeccion || !this.itemRepuestos) return;
 
+    // Crear un mapa de fotos por itemId
+    const fotosPorItem:  { [key: number]: string[] } = {};
+    if (this.solicitud?.itemFotos) {
+        this.solicitud.itemFotos.forEach((itemFoto: any) => {
+            fotosPorItem[itemFoto.itemId] = itemFoto.fotos || [];
+        });
+    }
+
     this.listaInspeccion = this.listaInspeccion.map(lista => ({
         ...lista,
         items: lista.items.map((item: any) => ({
@@ -681,9 +702,8 @@ export class ModificarSolicitudComponent implements OnInit {
 
                 return {
                     ...subItem,
-                    // Mantener el estado original del subItem
                     estado: subItem.estado || 'no_conforme',
-                    fotos: subItem.fotos || [],
+                    fotos: fotosPorItem[subItem.id] || [], // Asignar fotos al subItem
                     repuestos: allRepuestos
                 };
             })
