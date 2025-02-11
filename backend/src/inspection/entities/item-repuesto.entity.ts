@@ -2,6 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Jo
 import { Item } from './item.entity';
 import { Repuesto } from '../../repuestos/repuestos.entity';
 import { SolicitarVisita } from '../../solicitar-visita/solicitar-visita.entity';
+import { ItemFotos } from './item-fotos.entity';
+
 
 @Entity()
 export class ItemRepuesto {
@@ -42,4 +44,8 @@ export class ItemRepuesto {
 
   @CreateDateColumn()
   fechaAgregado: Date;
+
+  @ManyToOne(() => ItemFotos)
+  @JoinColumn({ name: 'itemId', referencedColumnName: 'itemId' })
+  itemFotos: ItemFotos;
 } 
