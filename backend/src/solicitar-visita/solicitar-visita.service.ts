@@ -366,10 +366,11 @@ export class SolicitarVisitaService {
             const itemFoto = solicitudActualizada.itemFotos?.find(
                 foto => foto.itemId === repuesto.itemId
             );
-            return {
+            const itemRepuestoInstance = this.itemRepuestoRepository.create({
                 ...repuesto,
                 fotos: itemFoto?.fotos || []
-            };
+            });
+            return itemRepuestoInstance;
         });
 
         return solicitudActualizada;
