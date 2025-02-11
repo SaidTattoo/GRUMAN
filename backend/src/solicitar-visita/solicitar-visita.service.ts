@@ -342,6 +342,7 @@ export class SolicitarVisitaService {
             .createQueryBuilder('solicitud')
             .leftJoinAndSelect('solicitud.itemRepuestos', 'itemRepuestos')
             .leftJoinAndSelect('itemRepuestos.repuesto', 'repuesto')
+            .leftJoinAndSelect('solicitud.itemFotos', 'itemFotos')
             .where('solicitud.id = :id', { id })
             .getOne();
 
@@ -349,18 +350,14 @@ export class SolicitarVisitaService {
             throw new NotFoundException(`Solicitud with ID ${id} not found`);
         }
 
-        // Obtener las fotos directamente
-        const fotos = await this.itemFotosRepository
-            .createQueryBuilder('itemFotos')
-            .where('itemFotos.solicitarVisitaId = :id', { id })
-            .getMany();
-
         // Asignar las fotos a los repuestos correspondientes
         solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos.map(repuesto => {
-            const itemFoto = fotos.find(foto => foto.itemId === repuesto.itemId);
+            const itemFoto = solicitudActualizada.itemFotos?.find(
+                foto => foto.itemId === repuesto.itemId
+            );
             return this.itemRepuestoRepository.create({
                 ...repuesto,
-                fotos: itemFoto ? itemFoto.fotos : []
+                fotos: itemFoto?.fotos || []
             });
         });
 
