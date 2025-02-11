@@ -11,6 +11,7 @@ import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
 import { In, Between } from 'typeorm';
 import { FacturacionService } from 'src/facturacion/facturacion.service';
 import { Repuesto } from 'src/repuestos/repuestos.entity';
+import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
 
 interface ServiciosRealizadosParams {
   tipoBusqueda: string;
@@ -39,7 +40,9 @@ export class SolicitarVisitaService {
         private itemRepuestoRepository: Repository<ItemRepuesto>,
         private facturacionService: FacturacionService,
         @InjectRepository(Repuesto)
-        private repuestoRepository: Repository<Repuesto>
+        private repuestoRepository: Repository<Repuesto>,
+        @InjectRepository(ItemFotos)
+        private itemFotosRepository: Repository<ItemFotos>
     ) {}
 
     /**
@@ -292,9 +295,6 @@ export class SolicitarVisitaService {
 
         // Procesar repuestos y fotos
         for (const [itemId, itemData] of Object.entries(data.repuestos)) {
-            // Obtener las fotos del item
-            const itemFotos = itemData.fotos || [];
-            
             // Procesar cada repuesto del item
             for (const repuestoData of itemData.repuestos) {
                 const itemRepuesto = solicitud.itemRepuestos.find(ir => 
@@ -303,38 +303,44 @@ export class SolicitarVisitaService {
                 );
 
                 if (itemRepuesto) {
-                    // Actualizar repuesto existente
                     await this.itemRepuestoRepository.update(itemRepuesto.id, {
                         cantidad: repuestoData.cantidad,
                         comentario: repuestoData.comentario || '',
-                        estado: itemData.estado,
-                        // Solo asignar fotos al primer repuesto del item
-                        fotos: itemRepuesto === solicitud.itemRepuestos.find(ir => ir.itemId === parseInt(itemId)) 
-                            ? itemFotos 
-                            : []
+                        estado: itemData.estado
                     });
                 } else {
-                    // Crear nuevo repuesto
                     await this.itemRepuestoRepository.save({
                         itemId: parseInt(itemId),
                         repuestoId: repuestoData.repuesto.id,
                         solicitarVisitaId: id,
                         cantidad: repuestoData.cantidad,
                         comentario: repuestoData.comentario || '',
-                        estado: itemData.estado,
-                        // Solo asignar fotos al primer repuesto del item
-                        fotos: !solicitud.itemRepuestos.some(ir => ir.itemId === parseInt(itemId))
-                            ? itemFotos
-                            : []
+                        estado: itemData.estado
                     });
                 }
             }
+
+            // Guardar las fotos en la nueva tabla
+            if (itemData.fotos && itemData.fotos.length > 0) {
+                // Primero eliminar fotos existentes si las hay
+                await this.itemFotosRepository.delete({
+                    itemId: parseInt(itemId),
+                    solicitarVisitaId: id
+                });
+                
+                // Guardar las nuevas fotos
+                await this.itemFotosRepository.save({
+                    itemId: parseInt(itemId),
+                    solicitarVisitaId: id,
+                    fotos: itemData.fotos
+                });
+            }
         }
 
-        // Retornar solicitud actualizada
+        // Retornar solicitud actualizada con sus relaciones
         return await this.solicitarVisitaRepository.findOne({
             where: { id },
-            relations: ['itemRepuestos', 'itemRepuestos.repuesto']
+            relations: ['itemRepuestos', 'itemRepuestos.repuesto', 'itemFotos']
         });
     }
 

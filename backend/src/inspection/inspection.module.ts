@@ -8,6 +8,7 @@ import { SubItem } from './entities/sub-item.entity';
 import { Client } from 'src/client/client.entity';
 import { ItemRepuesto } from './entities/item-repuesto.entity';
 import { Repuesto } from '../repuestos/repuestos.entity';
+import { ItemFotos } from './entities/item-fotos.entity';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { Repuesto } from '../repuestos/repuestos.entity';
       SubItem,
       Client,
       ItemRepuesto,
-      Repuesto
+      Repuesto,
+      ItemFotos
     ])
   ],
   controllers: [InspectionController],
