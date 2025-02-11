@@ -343,10 +343,17 @@ export class SolicitarVisitaService {
             .leftJoinAndSelect('solicitud.itemRepuestos', 'itemRepuestos')
             .leftJoinAndSelect('itemRepuestos.repuesto', 'repuesto')
             .leftJoinAndSelect(
-                'item_fotos', 
+                ItemFotos,
                 'itemFotos',
                 'itemFotos.solicitarVisitaId = solicitud.id AND itemFotos.itemId = itemRepuestos.itemId'
             )
+            .select([
+                'solicitud',
+                'itemRepuestos',
+                'repuesto',
+                'itemFotos.itemId',
+                'itemFotos.fotos'
+            ])
             .where('solicitud.id = :id', { id })
             .getOne();
 
@@ -356,12 +363,13 @@ export class SolicitarVisitaService {
 
         // Asignar las fotos a los repuestos correspondientes
         solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos.map(repuesto => {
-            const itemRepuestoInstance = this.itemRepuestoRepository.create(repuesto);
-            const fotosDelItem = solicitudActualizada.itemFotos?.find(
+            const itemFoto = solicitudActualizada.itemFotos?.find(
                 foto => foto.itemId === repuesto.itemId
             );
-            itemRepuestoInstance.fotos = fotosDelItem?.fotos || [];
-            return itemRepuestoInstance;
+            return {
+                ...repuesto,
+                fotos: itemFoto?.fotos || []
+            };
         });
 
         return solicitudActualizada;
