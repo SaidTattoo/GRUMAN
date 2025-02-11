@@ -172,7 +172,7 @@
                           <mat-form-field appearance="fill">
                             <mat-label>Seleccionar Repuesto</mat-label>
                             <mat-select [(ngModel)]="selectedRepuesto" [ngModelOptions]="{standalone: true}">
-                              @for (repuesto of repuestos; track repuesto.id) {
+                              @for (repuesto of repuestosList; track repuesto.id) {
                                 <mat-option [value]="repuesto.id">
                                   {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ repuesto.precio.toLocaleString('es-CL') }}
                                 </mat-option>
