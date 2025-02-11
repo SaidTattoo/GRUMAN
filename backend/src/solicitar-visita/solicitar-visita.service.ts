@@ -342,7 +342,11 @@ export class SolicitarVisitaService {
             .createQueryBuilder('solicitud')
             .leftJoinAndSelect('solicitud.itemRepuestos', 'itemRepuestos')
             .leftJoinAndSelect('itemRepuestos.repuesto', 'repuesto')
-            .leftJoinAndSelect('solicitud.itemFotos', 'itemFotos', 'itemFotos.solicitarVisitaId = solicitud.id')
+            .leftJoinAndSelect(
+                'item_fotos', 
+                'itemFotos',
+                'itemFotos.solicitarVisitaId = solicitud.id AND itemFotos.itemId = itemRepuestos.itemId'
+            )
             .where('solicitud.id = :id', { id })
             .getOne();
 
