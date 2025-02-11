@@ -667,55 +667,56 @@ export class ModificarSolicitudComponent implements OnInit {
 
   private updateListaInspeccion() {
     if (!this.listaInspeccion || !this.itemRepuestos) return;
-
+  
     // Crear un mapa de fotos por itemId
     const fotosPorItem: { [key: number]: string[] } = {};
     if (this.solicitud?.itemFotos) {
-        this.solicitud.itemFotos.forEach((itemFoto: any) => {
-            fotosPorItem[itemFoto.itemId] = itemFoto.fotos;
-        });
+      this.solicitud.itemFotos.forEach((itemFoto: any) => {
+        fotosPorItem[itemFoto.itemId] = itemFoto.fotos || [];
+      });
     }
-
+  
     this.listaInspeccion = this.listaInspeccion.map(lista => ({
-        ...lista,
-        items: lista.items.map((item: any)   => ({
-            ...item,
-            subItems: item.subItems.map((subItem: any) => {
-                // Obtener repuestos existentes
-                const existingRepuestos = this.itemRepuestos.filter(
-                    repuesto => repuesto.itemId === subItem.id
-                );
-
-                // Obtener repuestos temporales para este subItem
-                const tempRepuestos = this.temporaryRepuestos[subItem.id] || [];
-
-                // Combinar repuestos existentes y temporales
-                const allRepuestos = [
-                    ...existingRepuestos,
-                    ...tempRepuestos
-                ].map(repuesto => ({
-                    ...repuesto,
-                    pendingDelete: this.temporaryDeletedRepuestos[subItem.id]?.some(
-                        deletedRepuesto => deletedRepuesto.id === repuesto.id
-                    ) || repuesto.pendingDelete
-                }));
-
-                // Obtener las fotos del itemId correspondiente
-                const fotosDelItem = fotosPorItem[subItem.id] || [];
-
-                return {
-                    ...subItem,
-                    estado: subItem.estado || 'no_conforme',
-                    fotos: fotosDelItem,
-                    repuestos: allRepuestos
-                };
-            })
-        }))
+      ...lista,
+      items: lista.items.map((item: any) => ({
+        ...item,
+        subItems: item.subItems.map((subItem: any) => {
+          // Obtener repuestos existentes
+          const existingRepuestos = this.itemRepuestos.filter(
+            repuesto => repuesto.itemId === subItem.id
+          );
+  
+          // Obtener repuestos temporales
+          const tempRepuestos = this.temporaryRepuestos[subItem.id] || [];
+  
+          // Combinar repuestos existentes y temporales
+          const allRepuestos = [
+            ...existingRepuestos,
+            ...tempRepuestos
+          ].map(repuesto => ({
+            ...repuesto,
+            pendingDelete: this.temporaryDeletedRepuestos[subItem.id]?.some(
+              deletedRepuesto => deletedRepuesto.id === repuesto.id
+            ) || repuesto.pendingDelete
+          }));
+  
+          // Verificar si hay fotos asociadas a este subItem
+          const fotosDelItem = fotosPorItem[subItem.id] || [];
+  
+          return {
+            ...subItem,
+            estado: subItem.estado || 'no_conforme',
+            fotos: fotosDelItem.length > 0 ? fotosDelItem : [], // Asegurar asignación de fotos
+            repuestos: allRepuestos
+          };
+        })
+      }))
     }));
-
+  
     console.log('Lista actualizada con fotos:', this.listaInspeccion);
   }
-
+  
+  
   openPhotoViewer(imageUrls: string[]): void {
     console.log('Opening photo viewer with URLs:', imageUrls); // Para debugging
     
