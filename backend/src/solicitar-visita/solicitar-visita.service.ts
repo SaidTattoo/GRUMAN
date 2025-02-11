@@ -292,6 +292,9 @@ export class SolicitarVisitaService {
 
         // Procesar repuestos y fotos
         for (const [itemId, itemData] of Object.entries(data.repuestos)) {
+            // Obtener las fotos del item
+            const itemFotos = itemData.fotos || [];
+            
             // Procesar cada repuesto del item
             for (const repuestoData of itemData.repuestos) {
                 const itemRepuesto = solicitud.itemRepuestos.find(ir => 
@@ -305,7 +308,10 @@ export class SolicitarVisitaService {
                         cantidad: repuestoData.cantidad,
                         comentario: repuestoData.comentario || '',
                         estado: itemData.estado,
-                        fotos: itemData.fotos || []
+                        // Solo asignar fotos al primer repuesto del item
+                        fotos: itemRepuesto === solicitud.itemRepuestos.find(ir => ir.itemId === parseInt(itemId)) 
+                            ? itemFotos 
+                            : []
                     });
                 } else {
                     // Crear nuevo repuesto
@@ -316,7 +322,10 @@ export class SolicitarVisitaService {
                         cantidad: repuestoData.cantidad,
                         comentario: repuestoData.comentario || '',
                         estado: itemData.estado,
-                        fotos: itemData.fotos || []
+                        // Solo asignar fotos al primer repuesto del item
+                        fotos: !solicitud.itemRepuestos.some(ir => ir.itemId === parseInt(itemId))
+                            ? itemFotos
+                            : []
                     });
                 }
             }
