@@ -24,8 +24,6 @@ import { InspectionService } from 'src/app/services/inspection.service';
 import { DialogPhotoViewerComponent } from '../../../../components/dialog-photo-viewer/dialog-photo-viewer.component';
 import { forkJoin } from 'rxjs';
 
-
-
 interface Repuesto {
   id: number;
   familia: string;
@@ -47,6 +45,13 @@ interface Item {
   name: string;
   estado?: string;
   subItems: SubItem[];
+}
+
+interface RepuestoItem {
+  estado: string;
+  comentario: string;
+  fotos: string[];
+  repuestos: any[];
 }
 
 @Component({
@@ -142,7 +147,8 @@ export class ModificarSolicitudComponent implements OnInit {
     'fechaAgregado'
   ];
   itemRepuestos: any[] = [];
-  repuestos: Repuesto[] = [];
+  repuestos: { [key: number]: RepuestoItem } = {};
+  repuestosList: Repuesto[] = [];
   selectedRepuesto: number | null = null;
   newRepuestoCantidad: number = 1;
   showAddRepuestoForm: { [key: number]: boolean } = {};
@@ -210,6 +216,7 @@ export class ModificarSolicitudComponent implements OnInit {
           this.tiposServicio = result.tiposServicio;
           this.sectoresTrabajos = result.sectoresTrabajos;
           this.repuestos = result.repuestos;
+          this.repuestosList = Object.values(result.repuestos);
           
           console.log('Catálogos cargados:', { 
             tiposServicio: this.tiposServicio, 
@@ -306,6 +313,32 @@ export class ModificarSolicitudComponent implements OnInit {
             }))
           }));
         }
+
+        // Agrupar las fotos por itemId
+        const fotosPorItem: { [key: number]: string[] } = {};
+        if (data.itemFotos) {
+          data.itemFotos.forEach((itemFoto: any) => {
+            fotosPorItem[itemFoto.itemId] = itemFoto.fotos;
+          });
+        }
+
+        // Asignar las fotos a los repuestos según su itemId
+        this.repuestos = {};
+        this.itemRepuestos.forEach(repuesto => {
+          if (!this.repuestos[repuesto.itemId]) {
+            this.repuestos[repuesto.itemId] = {
+              estado: repuesto.estado,
+              comentario: repuesto.comentario,
+              fotos: fotosPorItem[repuesto.itemId] || [],
+              repuestos: []
+            };
+          }
+          this.repuestos[repuesto.itemId].repuestos.push({
+            cantidad: repuesto.cantidad,
+            comentario: repuesto.comentario,
+            repuesto: repuesto.repuesto
+          });
+        });
 
         this.loading = false;
       },
@@ -437,7 +470,7 @@ export class ModificarSolicitudComponent implements OnInit {
       return;
     }
 
-    const repuesto = this.repuestos.find(r => r.id === this.selectedRepuesto);
+    const repuesto = this.repuestos[this.selectedRepuesto];
     if (!repuesto) {
       this.snackBar.open('Repuesto no encontrado', 'Cerrar', {
         duration: 3000
@@ -480,7 +513,7 @@ export class ModificarSolicitudComponent implements OnInit {
         return;
     }
 
-    const repuesto = this.repuestos.find(r => r.id === this.selectedRepuesto);
+    const repuesto = this.repuestos[this.selectedRepuesto];
     if (!repuesto) {
         this.snackBar.open('Repuesto no encontrado', 'Cerrar', {
             duration: 3000
