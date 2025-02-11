@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { SolicitarVisita } from 'src/solicitar-visita/solicitar-visita.entity';
 
 @Entity()
@@ -19,5 +19,6 @@ export class ItemFotos {
     fechaAgregado: Date;
 
     @ManyToOne(() => SolicitarVisita, solicitud => solicitud.itemFotos)
+    @JoinColumn({ name: 'solicitarVisitaId' })
     solicitarVisita: SolicitarVisita;
 } 
