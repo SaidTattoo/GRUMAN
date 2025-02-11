@@ -1,9 +1,11 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Param, Get, Res, Delete, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Post, UseInterceptors, UploadedFile, Param, Get, Res, Delete, HttpException, HttpStatus, NotFoundException, UploadedFiles } from '@nestjs/common';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { join } from 'path';
 import { UploadService } from './upload.service';
 import { existsSync, readdirSync } from 'fs';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('upload')
 export class UploadController {

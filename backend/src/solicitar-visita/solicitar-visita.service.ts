@@ -74,7 +74,7 @@ export class SolicitarVisitaService {
                 where: { id: solicitud.tecnico_asignado_id } 
             });
         }
-        if(solicitudVisita.tipo_mantenimiento === 'programado') {
+       /*  if(solicitudVisita.tipo_mantenimiento === 'programado') {
             // Obtener las facturaciones del cliente
             const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
             
@@ -108,7 +108,7 @@ export class SolicitarVisitaService {
                     `Ya existe una solicitud de visita programada para este local en ${mesFormateado}`
                 );
             }
-        }
+        } */
         // Si la solicitud está aprobada, asigna el aprobador
         if (solicitud.status === 'aprobada' && solicitud.aprobada_por_id) {
             solicitudVisita.status = SolicitudStatus.APROBADA;
