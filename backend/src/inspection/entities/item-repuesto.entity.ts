@@ -44,8 +44,7 @@ export class ItemRepuesto {
   @CreateDateColumn()
   fechaAgregado: Date;
 
-  getFotos(itemFotos: ItemFotos[]): string[] {
-    const fotosDelItem = itemFotos?.find(foto => foto.itemId === this.itemId);
-    return fotosDelItem?.fotos || null;
-  }
+  @ManyToOne(() => ItemFotos)
+  @JoinColumn({ name: 'itemId', referencedColumnName: 'itemId' })
+  itemFotos: ItemFotos;
 } 
