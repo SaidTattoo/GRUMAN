@@ -45,6 +45,9 @@ export class ItemRepuesto {
   fechaAgregado: Date;
 
   @ManyToOne(() => ItemFotos)
-  @JoinColumn({ name: 'itemId', referencedColumnName: 'itemId' })
+  @JoinColumn([
+    { name: 'itemId', referencedColumnName: 'itemId' },
+    { name: 'solicitarVisitaId', referencedColumnName: 'solicitarVisitaId' }
+  ])
   itemFotos: ItemFotos;
 } 
