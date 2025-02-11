@@ -125,18 +125,27 @@ export class SolicitarVisitaService {
         return await this.solicitarVisitaRepository.save(solicitudVisita);
     }
 
-    getSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        return this.solicitarVisitaRepository.findOne({ 
-          where: { id }, 
-          relations: [
-            'local', 
-            'client', 
-            'tecnico_asignado',
-            'itemRepuestos',
-            'itemRepuestos.repuesto',
-            'itemFotos'
-          ] 
+    async getSolicitudVisita(id: number): Promise<SolicitarVisita> {
+        const solicitud = await this.solicitarVisitaRepository.findOne({ 
+            where: { id }, 
+            relations: [
+                'local', 
+                'client', 
+                'tecnico_asignado',
+                'itemRepuestos',
+                'itemRepuestos.repuesto',
+                'itemFotos'
+            ],
         });
+
+        if (!solicitud) {
+            throw new Error(`Solicitud con ID ${id} no encontrada`);
+        }
+
+        // Verificamos si hay fotos
+        console.log('Fotos encontradas:', solicitud.itemFotos);
+
+        return solicitud;
     }
 
 
