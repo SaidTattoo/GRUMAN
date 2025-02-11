@@ -351,10 +351,11 @@ export class SolicitarVisitaService {
         }
 
         // Asignar las fotos a los repuestos correspondientes
-        solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos.map(repuesto => ({
-            ...repuesto,
-            fotos: repuesto.getFotos(solicitudActualizada.itemFotos)
-        }));
+        solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos.map(repuesto => {
+            const itemRepuestoInstance = this.itemRepuestoRepository.create(repuesto);
+            itemRepuestoInstance.fotos = itemRepuestoInstance.getFotos(solicitudActualizada.itemFotos);
+            return itemRepuestoInstance;
+        });
 
         return solicitudActualizada;
     }
