@@ -162,7 +162,7 @@ export class ModificarSolicitudComponent implements OnInit {
   itemRepuestos: any[] = [];
   repuestos: RepuestoMap = {};
   repuestosList: Repuesto[] = [];
-  selectedRepuesto: number | null = null;
+  selectedRepuesto: Repuesto | null = null;
   newRepuestoCantidad: number = 1;
   showAddRepuestoForm: { [key: number]: boolean } = {};
   temporaryRepuestos: {[key: number]: any[]} = {};
@@ -476,18 +476,12 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   addRepuestoToSubItem(subItemId: number) {
-    if (!this.selectedRepuesto || this.newRepuestoCantidad <= 0) {
-      this.snackBar.open('Por favor seleccione un repuesto y una cantidad válida', 'Cerrar', {
-        duration: 3000
-      });
-      return;
-    }
+    if (!this.selectedRepuesto || this.newRepuestoCantidad <= 0) return;
 
-    const repuesto = this.repuestos[this.selectedRepuesto];
+    // Usar el ID como índice
+    const repuesto = this.repuestos[this.selectedRepuesto.id];
     if (!repuesto) {
-      this.snackBar.open('Repuesto no encontrado', 'Cerrar', {
-        duration: 3000
-      });
+      this.snackBar.open('Repuesto no encontrado', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -519,57 +513,41 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   addRepuestoToItem(subItemId: number) {
-    if (!this.selectedRepuesto || this.newRepuestoCantidad <= 0) {
-        this.snackBar.open('Por favor seleccione un repuesto y una cantidad válida', 'Cerrar', {
-            duration: 3000
-        });
-        return;
+    console.log('Iniciando addRepuestoToItem:', {
+      subItemId,
+      selectedRepuesto: this.selectedRepuesto,
+      cantidad: this.newRepuestoCantidad
+    });
+
+    if (!this.selectedRepuesto || !this.newRepuestoCantidad) {
+      console.log('Validación fallida: repuesto o cantidad no seleccionados');
+      return;
     }
 
-    const repuesto = this.repuestos[this.selectedRepuesto];
-    if (!repuesto) {
-        this.snackBar.open('Repuesto no encontrado', 'Cerrar', {
-            duration: 3000
-        });
-        return;
-    }
+    const nuevoRepuesto = {
+      itemId: subItemId,
+      repuestoId: this.selectedRepuesto.id,
+      cantidad: this.newRepuestoCantidad,
+      repuesto: this.selectedRepuesto
+    };
+    console.log('Nuevo repuesto creado:', nuevoRepuesto);
 
     // Inicializar el array temporal si no existe
     if (!this.temporaryRepuestos[subItemId]) {
-        this.temporaryRepuestos[subItemId] = [];
+      this.temporaryRepuestos[subItemId] = [];
     }
 
-    // Obtener el estado y fotos del último repuesto existente
-    const existingRepuestos = this.itemRepuestos.filter(r => r.itemId === subItemId);
-    const lastRepuesto = existingRepuestos.length > 0 ? 
-        existingRepuestos[existingRepuestos.length - 1] : null;
-
-    const newItemRepuesto = {
-        itemId: subItemId,
-        solicitarVisitaId: Number(this.solicitudId),
-        repuesto: repuesto,
-        cantidad: this.newRepuestoCantidad,
-        comentario: '',
-        fechaAgregado: new Date(),
-        estado: lastRepuesto?.estado || 'Pendiente',
-        fotos: lastRepuesto?.fotos || []
-    };
-
     // Agregar al array temporal
-    this.temporaryRepuestos[subItemId].push(newItemRepuesto);
-    console.log('Repuesto temporal agregado:', this.temporaryRepuestos);
+    this.temporaryRepuestos[subItemId].push(nuevoRepuesto);
+    console.log('Estado actual de repuestos temporales:', this.temporaryRepuestos);
 
-    // Limpiar el formulario
+    // Limpiar y actualizar
     this.selectedRepuesto = null;
     this.newRepuestoCantidad = 1;
     this.showAddRepuestoForm[subItemId] = false;
-
-    // Actualizar la vista
     this.updateListaInspeccion();
 
-    this.snackBar.open('Repuesto agregado temporalmente', 'Cerrar', {
-        duration: 3000
-    });
+    console.log('Repuesto agregado exitosamente');
   }
 
   deleteRepuesto(subItemId: number, repuesto: any) {
@@ -762,5 +740,47 @@ export class ModificarSolicitudComponent implements OnInit {
       default:
         return '';
     }
+  }
+
+  getItemFotos(itemId: number) {
+    return this.solicitud?.itemFotos?.find((item: any) => item.itemId === itemId);
+  }
+
+  async saveChanges() {
+    try {
+      // Preparar los datos para guardar
+      const changes = {
+        addedRepuestos: Object.entries(this.temporaryRepuestos).flatMap(([itemId, repuestos]) => 
+          repuestos.filter(r => !r.pendingDelete).map(r => ({
+            itemId: parseInt(itemId),
+            repuestoId: r.repuesto.id,
+            cantidad: r.cantidad,
+            solicitarVisitaId: Number(this.solicitudId),
+            comentario: r.comentario || ''
+          }))
+        ),
+        deletedRepuestos: Object.values(this.temporaryDeletedRepuestos).flat().map(r => r.id)
+      };
+
+      // Guardar los cambios
+      await this.solicitarVisitaService.updateRepuestos(this.solicitudId, changes).toPromise();
+
+      // Limpiar los temporales
+      this.temporaryRepuestos = {};
+      this.temporaryDeletedRepuestos = {};
+
+      // Recargar la solicitud
+      this.loadSolicitud();
+
+      this.snackBar.open('Cambios guardados correctamente', 'Cerrar', { duration: 3000 });
+    } catch (error) {
+      console.error('Error al guardar los cambios:', error);
+      this.snackBar.open('Error al guardar los cambios', 'Cerrar', { duration: 3000 });
+    }
+  }
+
+  hasChanges(): boolean {
+    return Object.values(this.temporaryRepuestos).some(repuestos => repuestos.length > 0) ||
+           Object.values(this.temporaryDeletedRepuestos).some(repuestos => repuestos.length > 0);
   }
 } 

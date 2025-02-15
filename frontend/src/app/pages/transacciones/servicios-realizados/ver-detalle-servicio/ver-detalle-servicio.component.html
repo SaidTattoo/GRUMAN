@@ -1,0 +1,172 @@
+<mat-card class="cardWithShadow">
+  <mat-card-header class="header-with-logo">
+    <!-- Logo del cliente -->
+    <div class="client-logo" *ngIf="servicio?.client?.logo">
+      <img [src]="servicio.client.logo" alt="Logo del cliente">
+    </div>
+    <mat-card-title>Detalle del Servicio #{{servicio?.id}}</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="p-24" *ngIf="!loading">
+    <div class="detail-section">
+      <h3>Información General</h3>
+      <div class="detail-row">
+        <!-- Información del Cliente -->
+        <div class="detail-item cliente-info">
+          <div class="cliente-foto" *ngIf="fotoClienteUrl">
+            <img [src]="fotoClienteUrl" alt="Foto del cliente" class="cliente-imagen">
+          </div>
+          <div class="cliente-datos">
+            <h4>Cliente</h4>
+            <p><strong>Nombre:</strong> {{servicio.client?.nombre}}</p>
+            <p><strong>RUT:</strong> {{servicio.client?.rut}}</p>
+          </div>
+        </div>
+
+        <!-- Información del Local -->
+        <div class="detail-item local-info">
+          <h4>Local</h4>
+          <p><strong>Nombre:</strong> {{servicio.local?.nombre_local}}</p>
+          <p><strong>Dirección:</strong> {{servicio.local?.direccion}}</p>
+          <p><strong>Comuna:</strong> {{servicio.local?.comuna}}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section" *ngIf="servicio?.local?.latitud && servicio?.local?.longitud">
+        <h3>Ubicación del Local</h3>
+    <div class="map-container">
+        <div class="map-frame">
+          <div id="map"></div>
+        </div>
+      </div>
+     
+    </div>
+
+  
+    <div class="detail-section">
+      <h3>Información General</h3>
+      <div class="detail-row">
+        <div class="detail-item">
+          <strong>Fecha:</strong> {{servicio.fechaIngreso | date}}
+        </div>
+        <div class="detail-item">
+          <strong>Técnico:</strong> {{servicio.tecnico_asignado?.name}}
+        </div>
+        <div class="detail-item">
+          <strong>Estado:</strong> {{servicio.status}}
+        </div>
+      </div>
+      <!-- Agregar nueva fila para las fechas de inicio y término -->
+      <div class="detail-row mt-3">
+        <div class="detail-item">
+          <strong>Inicio del trabajo:</strong> 
+          {{servicio.fecha_hora_inicio_servicio | date:'dd/MM/yyyy HH:mm'}}
+        </div>
+        <div class="detail-item">
+          <strong>Término del trabajo:</strong> 
+          {{servicio.fecha_hora_fin_servicio | date:'dd/MM/yyyy HH:mm'}}
+        </div>
+        <div class="detail-item">
+          <strong>Duración:</strong> 
+          {{getDuracionServicio()}}
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section" *ngIf="servicio.observaciones">
+      <h3>Observaciones</h3>
+      <p>{{servicio.observaciones}}</p>
+    </div>
+
+    <div class="detail-section" *ngIf="servicio?.client?.listaInspeccion">
+      <h3>Lista de Inspección</h3>
+      
+      <div class="inspeccion-container" *ngFor="let lista of servicio.client.listaInspeccion">
+        <h4 class="inspeccion-title">{{lista.name}}</h4>
+        
+        <div class="inspeccion-item" *ngFor="let item of lista.items">
+          <h5 class="item-title">{{item.name}}</h5>
+          
+          <div class="subitem-container" *ngFor="let subItem of item.subItems">
+            <div class="subitem-header">
+              <span class="subitem-name">{{subItem.name}}</span>
+            </div>
+
+            <!-- Repuestos asociados al item -->
+            <div class="repuestos-container" *ngIf="getRepuestosPorItem(subItem.id).length > 0">
+              <h6>Repuestos Utilizados:</h6>
+              <table mat-table [dataSource]="getRepuestosPorItem(subItem.id)" class="w-100">
+                <ng-container matColumnDef="articulo">
+                  <th mat-header-cell *matHeaderCellDef> Artículo </th>
+                  <td mat-cell *matCellDef="let repuesto"> {{repuesto.repuesto?.articulo}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="cantidad">
+                  <th mat-header-cell *matHeaderCellDef> Cantidad </th>
+                  <td mat-cell *matCellDef="let repuesto"> {{repuesto.cantidad}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="estado">
+                  <th mat-header-cell *matHeaderCellDef> Estado </th>
+                  <td mat-cell *matCellDef="let repuesto"> {{repuesto.estado}} </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="['articulo', 'cantidad', 'estado']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['articulo', 'cantidad', 'estado'];"></tr>
+              </table>
+            </div>
+
+            <!-- Fotos asociadas al item -->
+            <div class="fotos-container" *ngIf="getFotosPorItem(subItem.id)">
+              <h6>Fotos:</h6>
+              <div class="fotos-grid">
+                <div class="foto-item" *ngFor="let foto of getFotosPorItem(subItem.id)?.fotos">
+                  <img [src]="foto" alt="Foto de inspección" (click)="openImage(foto)">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section" *ngIf="servicio.itemRepuestos?.length">
+      <h3>Repuestos Utilizados</h3>
+      <table mat-table [dataSource]="servicio.itemRepuestos" class="w-100">
+        <ng-container matColumnDef="articulo">
+          <th mat-header-cell *matHeaderCellDef> Artículo </th>
+          <td mat-cell *matCellDef="let repuesto"> {{repuesto.repuesto?.articulo}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="cantidad">
+          <th mat-header-cell *matHeaderCellDef> Cantidad </th>
+          <td mat-cell *matCellDef="let repuesto"> {{repuesto.cantidad}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef> Estado </th>
+          <td mat-cell *matCellDef="let repuesto"> {{repuesto.estado}} </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="['articulo', 'cantidad', 'estado']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['articulo', 'cantidad', 'estado'];"></tr>
+      </table>
+    </div>
+
+  
+    <div class="detail-section" *ngIf="servicio?.firma_cliente">
+      <h3>Firma del Cliente</h3>
+      <div class="firma-container">
+        <img [src]="servicio.firma_cliente" alt="Firma del cliente" class="firma-imagen">
+      </div>
+    </div>
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button mat-raised-button color="primary" (click)="volver()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </button>
+  </mat-card-actions>
+</mat-card> 

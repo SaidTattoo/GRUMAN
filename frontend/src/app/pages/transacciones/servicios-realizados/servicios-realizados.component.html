@@ -131,7 +131,7 @@
   <mat-card class="cardWithShadow">
     <mat-card-header>
       <mat-card-title>Resultados de la Búsqueda</mat-card-title>
-      <mat-card-subtitle>Total: {{serviciosRealizados.length}} registros encontrados</mat-card-subtitle>
+      <mat-card-subtitle>Total: {{serviciosRealizados.length}} registros encontrados </mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content class="p-24">
@@ -164,7 +164,11 @@
           <!-- Local Column -->
           <ng-container matColumnDef="local">
             <th mat-header-cell *matHeaderCellDef>Local</th>
-            <td mat-cell *matCellDef="let servicio">{{servicio.local?.nombre_local}}</td>
+            <td mat-cell *matCellDef="let servicio" 
+                [matTooltip]="servicio.local?.direccion || 'Dirección no disponible'"
+                matTooltipPosition="above">
+              {{servicio.local?.nombre_local}}
+            </td>
           </ng-container>
 
          
@@ -187,6 +191,16 @@
           <ng-container matColumnDef="observaciones">
             <th mat-header-cell *matHeaderCellDef> Observaciones </th>
             <td mat-cell *matCellDef="let servicio"> {{servicio.observaciones}} </td>
+          </ng-container>
+
+          <!-- Acciones Column -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef> Acciones </th>
+            <td mat-cell *matCellDef="let servicio">
+              <button mat-icon-button color="primary" (click)="verDetalle(servicio)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
