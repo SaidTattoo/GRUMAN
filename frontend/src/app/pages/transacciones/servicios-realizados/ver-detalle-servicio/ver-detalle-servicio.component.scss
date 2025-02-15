@@ -1,0 +1,242 @@
+.cardWithShadow {
+  margin: 16px;
+  padding: 16px;
+}
+
+.detail-section {
+  margin-bottom: 24px;
+
+  h3 {
+    color: #3f51b5;
+    margin-bottom: 16px;
+  }
+}
+
+.detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.detail-item {
+  flex: 1 1 200px;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.mat-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.cliente-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.cliente-foto {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.cliente-imagen {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cliente-datos {
+  flex: 1;
+}
+
+.local-info {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.map-container {
+  height: 400px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 16px;
+
+  #map {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.map-container {
+    height: 500px;
+    margin: 30px;
+  }
+  
+  .map-frame {
+    border: 2px solid black;
+    height: 100%;
+  }
+  
+  #map {
+    height: 100%;
+  }
+  .min-w-200 {
+    min-width: 180px;
+  }
+
+.header-with-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.client-logo {
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+  border-radius: 8px;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.mt-3 {
+  margin-top: 16px;
+}
+
+.detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  
+  .detail-item {
+    flex: 1 1 300px;
+    
+    strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #666;
+    }
+  }
+}
+
+.firma-container {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  border: 1px solid #e0e0e0;
+}
+
+.firma-imagen {
+  max-width: 400px;
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.inspeccion-container {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 24px;
+  padding: 16px;
+}
+
+.inspeccion-title {
+  color: #3f51b5;
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3f51b5;
+}
+
+.inspeccion-item {
+  margin-bottom: 16px;
+}
+
+.item-title {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.subitem-container {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.subitem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.subitem-name {
+  font-weight: 500;
+  color: #34495e;
+}
+
+.repuestos-container {
+  margin-top: 12px;
+  
+  h6 {
+    color: #666;
+    margin-bottom: 8px;
+  }
+}
+
+.fotos-container {
+  margin-top: 16px;
+  
+  h6 {
+    color: #666;
+    margin-bottom: 8px;
+  }
+}
+
+.fotos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.foto-item {
+  position: relative;
+  padding-top: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}

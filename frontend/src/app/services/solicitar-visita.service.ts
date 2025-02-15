@@ -102,4 +102,8 @@ export class SolicitarVisitaService {
         })
     );
   }
+
+  updateRepuestos(solicitudId: string, changes: any) {
+    return this.http.patch(`${this.apiUrl}/solicitar-visita/${solicitudId}/repuestos`, changes);
+  }
 }

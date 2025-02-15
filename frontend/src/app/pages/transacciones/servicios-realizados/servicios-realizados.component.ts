@@ -10,7 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { ServiciosRealizadosService } from 'src/app/services/servicios-realizados.service';
 import { ServiciosService } from 'src/app/services/servicios.service';
@@ -18,11 +18,15 @@ import { StorageService } from 'src/app/services/storage.service';
 import { TipoServicioService } from 'src/app/services/tipo-servicio.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-servicios-realizados',
   standalone: true,
   imports: [  
+    RouterModule,
+    MatIconModule,
     CommonModule, 
     MatCardModule, 
     MatFormFieldModule, 
@@ -35,7 +39,8 @@ import { MatTableModule } from '@angular/material/table';
     MatRadioModule, 
     MatButtonModule,
     MatTableModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatTooltipModule
   ],
   templateUrl: './servicios-realizados.component.html',
   styleUrls: ['./servicios-realizados.component.scss'],
@@ -78,15 +83,15 @@ export class ServiciosRealizadosComponent implements OnInit {
   selectedCompany: any;
   serviciosRealizados: any[] = [];
   displayedColumns: string[] = [
-    'id','local',
-   
+    'id',
+    'fechaIngreso',
+    'local',
     'tipo_mantenimiento',
     'tipoServicio',
-    
-  
     'tecnico',
     'status',
-    'observaciones' ,'fechaIngreso',
+    'observaciones',
+    'acciones'
   ];
   panelOpenState = true; // Controla el estado del panel de búsqueda
 
@@ -276,6 +281,7 @@ export class ServiciosRealizadosComponent implements OnInit {
   }
 
   formatDate(date: string): string {
+    if (!date) return '';
     return new Date(date).toLocaleDateString('es-CL');
   }
 
@@ -288,5 +294,9 @@ export class ServiciosRealizadosComponent implements OnInit {
     console.log('Company name:', companyName);
     console.log('Is Gruman check:', isGruman);
     return isGruman;
+  }
+
+  verDetalle(servicio: any): void {
+    this.router.navigate(['/transacciones/servicios-realizados', servicio.id]);
   }
 }

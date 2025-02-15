@@ -133,27 +133,34 @@
                                 matTooltip="Agregar repuesto">
                           <mat-icon>add</mat-icon>
                         </button>
-                        <button mat-mini-fab 
+                       <!--  <button mat-mini-fab 
                                 [color]="subItem.fotos?.length ? 'primary' : 'basic'"
                                 (click)="openPhotoViewer(subItem.fotos)"
                                 [matTooltip]="subItem.fotos?.length ? 'Ver imágenes de inspección' : 'No hay imágenes disponibles'">
                           <mat-icon>photo_library</mat-icon>
-                        </button>
+                        </button> -->
                         @if (subItem.fotos?.length) {
                           <span class="photo-count">{{ subItem.fotos.length }} foto(s)</span>
                         }
                       </div>
 
                       <!-- Miniaturas de fotos -->
-                      <div class="photos-container" *ngIf="subItem.fotos?.length">
-                        <div class="photo-grid">
-                          <div class="photo-item" *ngFor="let foto of subItem.fotos">
-                            <img [src]="foto" 
-                                 (click)="openPhotoViewer([foto])" 
-                                 [alt]="'Foto de ' + subItem.name"
-                                 class="inspection-photo">
+                      <div class="photos-container">
+                        @if (getItemFotos(subItem.id)?.fotos?.length) {
+                          <div class="photo-grid">
+                            <div class="photo-item" *ngFor="let foto of getItemFotos(subItem.id)?.fotos">
+                              <img [src]="foto" 
+                                   (click)="openPhotoViewer([foto])" 
+                                   [alt]="'Foto de ' + subItem.name"
+                                   class="inspection-photo">
+                            </div>
                           </div>
-                        </div>
+                        } @else {
+                          <div class="no-photos">
+                            <mat-icon>no_photography</mat-icon>
+                            <span>Sin fotos</span>
+                          </div>
+                        }
                       </div>
 
                       <!-- Estado después de las fotos -->
@@ -173,7 +180,7 @@
                             <mat-label>Seleccionar Repuesto</mat-label>
                             <mat-select [(ngModel)]="selectedRepuesto" [ngModelOptions]="{standalone: true}">
                               @for (repuesto of repuestosList; track repuesto.id) {
-                                <mat-option [value]="repuesto.id">
+                                <mat-option [value]="repuesto">
                                   {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ repuesto.precio.toLocaleString('es-CL') }}
                                 </mat-option>
                               }
@@ -279,6 +286,15 @@
       <button mat-button (click)="onCancel()">Cancelar</button>
      <!--  <button mat-raised-button color="primary" (click)="onSubmit()">Guardar</button> -->
       <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">Validar Solicitud</button>
+    </div>
+
+    <!-- Agregar al final del formulario -->
+    <div class="actions-container">
+      <button mat-raised-button color="primary" 
+              (click)="saveChanges()"
+              [disabled]="!hasChanges()">
+        Guardar Cambios
+      </button>
     </div>
   </form>
 </div>
@@ -583,6 +599,29 @@ td.mat-cell {
 
 .inspection-photo:hover {
   transform: scale(1.05);
+}
+
+.no-photos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px dashed #ccc;
+  color: #666;
+  gap: 8px;
+}
+
+.no-photos mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.no-photos span {
+  font-size: 14px;
 }
 </style>
 
