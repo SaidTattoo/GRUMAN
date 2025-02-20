@@ -23,6 +23,8 @@ import { RepuestosService } from 'src/app/services/repuestos.service';
 import { InspectionService } from 'src/app/services/inspection.service';
 import { DialogPhotoViewerComponent } from '../../../../components/dialog-photo-viewer/dialog-photo-viewer.component';
 import { forkJoin } from 'rxjs';
+import * as L from 'leaflet';
+import { environment } from 'src/environments/environment';
 
 interface Repuesto {
   id: number;
@@ -169,6 +171,7 @@ export class ModificarSolicitudComponent implements OnInit {
   temporaryDeletedRepuestos: {[key: number]: any[]} = {};
   tiposServicio: any[] = [];
   sectoresTrabajos: any[] = [];
+  private map: L.Map | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -352,6 +355,11 @@ export class ModificarSolicitudComponent implements OnInit {
             repuesto: repuesto.repuesto
           });
         });
+
+        // Inicializar mapa después de cargar los datos
+        setTimeout(() => {
+          this.initMapWithMarker();
+        }, 100);
 
         this.loading = false;
       },
@@ -625,7 +633,9 @@ export class ModificarSolicitudComponent implements OnInit {
   calculateItemTotal(repuestos: any[]): number {
     return this.calculateSubItemTotal(repuestos);
   }
-
+  isValidated(): boolean {
+    return this.solicitud?.status?.toLowerCase().trim() === 'validada';
+  }
   calculateFinalTotal(): number {
     let finalTotal = 0;
     
@@ -782,5 +792,41 @@ export class ModificarSolicitudComponent implements OnInit {
   hasChanges(): boolean {
     return Object.values(this.temporaryRepuestos).some(repuestos => repuestos.length > 0) ||
            Object.values(this.temporaryDeletedRepuestos).some(repuestos => repuestos.length > 0);
+  }
+
+  private initMapWithMarker(): void {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+      console.error('Contenedor del mapa no encontrado');
+      return;
+    }
+
+    console.log('Inicializando mapa...');
+    this.map = L.map('map', {
+      center: [-33.4569, -70.6483],
+      zoom: 13
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      minZoom: 3,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(this.map);
+
+    if (this.map && this.solicitud?.local?.latitud && this.solicitud?.local?.longitud) {
+      const marker = L.marker([this.solicitud.local.latitud, this.solicitud.local.longitud])
+        .bindPopup(`
+          <b>${this.solicitud.local.nombre_local}</b><br>
+          ${this.solicitud.local.direccion}<br>
+          ${this.solicitud.local.comuna}<br>
+          <img src="./assets/images/empresas/wazee.png" 
+               onclick="window.open('https://waze.com/ul?ll=${this.solicitud.local.latitud},${this.solicitud.local.longitud}&navigate=yes', '_blank')"
+               style="cursor:pointer; width: 24px; height: 24px;">
+          Abrir en Waze
+        `);
+      
+      marker.addTo(this.map);
+      this.map.setView([this.solicitud.local.latitud, this.solicitud.local.longitud], 15);
+    }
   }
 } 

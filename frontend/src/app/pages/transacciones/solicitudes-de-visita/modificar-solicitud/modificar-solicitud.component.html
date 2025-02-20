@@ -9,24 +9,24 @@
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Cliente</mat-label>
-        <input matInput formControlName="client.nombre">
+        <input matInput formControlName="client.nombre" [disabled]="solicitud?.status === 'validada'">
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Local</mat-label>
-        <input matInput formControlName="local.nombre_local">
+        <input matInput formControlName="local.nombre_local" [disabled]="solicitud?.status === 'validada'">
       </mat-form-field>
     </div>
 
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Dirección Local</mat-label>
-        <input matInput formControlName="local.direccion">
+        <input matInput formControlName="local.direccion" [disabled]="solicitud?.status === 'validada'">
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Técnico Asignado</mat-label>
-        <input matInput formControlName="tecnico_asignado.name">
+        <input matInput formControlName="tecnico_asignado.name" [disabled]="solicitud?.status === 'validada'">
       </mat-form-field>
     </div>
 
@@ -35,19 +35,19 @@
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Tipo de Servicio</mat-label>
-        <input matInput formControlName="tipoServicioId">
+        <input matInput formControlName="tipoServicioId" [disabled]="solicitud?.status === 'validada'">
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Sector de Trabajo</mat-label>
-        <input matInput formControlName="sectorTrabajoId">
+        <input matInput formControlName="sectorTrabajoId" [disabled]="solicitud?.status === 'validada'">
       </mat-form-field>
     </div>
 
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Especialidad</mat-label>
-        <mat-select formControlName="especialidad">
+        <mat-select formControlName="especialidad" [disabled]="solicitud?.status === 'validada'">
           <mat-option *ngFor="let especialidad of especialidades" [value]="especialidad">
             {{especialidad}}
           </mat-option>
@@ -56,8 +56,8 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Fecha de Ingreso</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="fechaIngreso">
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <input matInput [matDatepicker]="picker" formControlName="fechaIngreso" [disabled]="solicitud?.status === 'validada'">
+        <mat-datepicker-toggle matSuffix [for]="picker" [disabled]="solicitud?.status === 'validada'"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
     </div>
@@ -65,18 +65,26 @@
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Ticket Gruman</mat-label>
-        <input matInput formControlName="ticketGruman">
+        @if (isValidated()) {
+          <input matInput [value]="solicitud?.ticketGruman" disabled>
+        } @else {
+          <input matInput formControlName="ticketGruman">
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Status</mat-label>
-        <input matInput formControlName="status">
+        <input matInput [value]="solicitud?.status" disabled>
       </mat-form-field>
     </div>
 
     <mat-form-field appearance="fill" class="full-width">
       <mat-label>Observaciones</mat-label>
-      <textarea matInput formControlName="observaciones" rows="4"></textarea>
+      @if (isValidated()) {
+        <textarea matInput [value]="solicitud?.observaciones" rows="4" disabled></textarea>
+      } @else {
+        <textarea matInput formControlName="observaciones" rows="4"></textarea>
+      }
     </mat-form-field>
 
     <!-- Fechas de Servicio -->
@@ -84,12 +92,12 @@
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Fecha/Hora Inicio Servicio</mat-label>
-        <input matInput formControlName="fecha_hora_inicio_servicio">
+        <input matInput formControlName="fecha_hora_inicio_servicio" [disabled]="solicitud?.status === 'validada'">
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Fecha/Hora Fin Servicio</mat-label>
-        <input matInput formControlName="fecha_hora_fin_servicio">
+        <input matInput formControlName="fecha_hora_fin_servicio" [disabled]="solicitud?.status === 'validada'">
       </mat-form-field>
     </div>
 
@@ -98,13 +106,37 @@
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Longitud</mat-label>
-        <input matInput formControlName="longitud_movil" type="number" step="0.000001">
+        @if (isValidated()) {
+          <input matInput [value]="solicitud?.longitud_movil" disabled>
+        } @else {
+          <input matInput formControlName="longitud_movil" type="number" step="0.000001">
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Latitud</mat-label>
-        <input matInput formControlName="latitud_movil" type="number" step="0.000001">
+        @if (isValidated()) {
+          <input matInput [value]="solicitud?.latitud_movil" disabled>
+        } @else {
+          <input matInput formControlName="latitud_movil" type="number" step="0.000001">
+        }
       </mat-form-field>
+    </div>
+
+    <!-- Agregar esto temporalmente para debug -->
+    <div style="display: none">
+      Status actual: {{solicitud?.status}}
+      ¿Está validada?: {{solicitud?.status === 'validada'}}
+    </div>
+
+    <!-- Agregar después de la sección de ubicación -->
+    <div class="detail-section" *ngIf="solicitud?.local?.latitud && solicitud?.local?.longitud">
+      <h3>Ubicación del Local</h3>
+      <div class="map-container">
+        <div class="map-frame">
+          <div id="map"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Firma del Cliente -->
@@ -129,6 +161,7 @@
                       {{ subItem.name }}
                       <div class="subitem-actions">
                         <button mat-mini-fab color="primary" 
+                                *ngIf="solicitud?.status !== 'validada'"
                                 (click)="toggleAddRepuestoForm(subItem.id)"
                                 matTooltip="Agregar repuesto">
                           <mat-icon>add</mat-icon>
@@ -224,14 +257,7 @@
                                     <strong>Artículo:</strong> 
                                     <span>{{ repuesto.repuesto.articulo }}</span>
                                   </div>
-                                  <div class="repuesto-detail">
-                                    <strong>Marca:</strong> 
-                                    <span>{{ repuesto.repuesto.marca }}</span>
-                                  </div>
-                                  <div class="repuesto-detail">
-                                    <strong>Familia:</strong> 
-                                    <span>{{ repuesto.repuesto.familia }}</span>
-                                  </div>
+                                 
                                   <div class="repuesto-detail">
                                     <strong>Cantidad:</strong> 
                                     <span>{{ repuesto.cantidad }}</span>
@@ -248,6 +274,7 @@
                                 
                                 <div class="actions-container">
                                   <button class="delete-button" 
+                                          *ngIf="solicitud?.status !== 'validada'"
                                           matTooltip="Eliminar repuesto"
                                           (click)="deleteRepuesto(subItem.id, repuesto)">
                                     <mat-icon>delete</mat-icon>
@@ -283,19 +310,23 @@
     </div>
 
     <div class="actions">
-      <button mat-button (click)="onCancel()">Cancelar</button>
-     <!--  <button mat-raised-button color="primary" (click)="onSubmit()">Guardar</button> -->
-      <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">Validar Solicitud</button>
+      <button mat-button [style.color]="solicitud?.validada ? '#1976d2' : ''" (click)="onCancel()">
+        {{ !solicitud?.validada ? 'Cancelar' : 'Volver' }}
+      </button>
+      @if (solicitud?.status !== 'validada') {
+        <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
+          Validar Solicitud
+        </button>
+      } @else {
+        <div class="validation-message" style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
+          <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
+          Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+      }
     </div>
 
-    <!-- Agregar al final del formulario -->
-    <div class="actions-container">
-      <button mat-raised-button color="primary" 
-              (click)="saveChanges()"
-              [disabled]="!hasChanges()">
-        Guardar Cambios
-      </button>
-    </div>
+   
+
   </form>
 </div>
 

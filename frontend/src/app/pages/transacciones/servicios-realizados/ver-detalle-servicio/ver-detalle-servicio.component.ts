@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { environment } from 'src/environments/environment';
 import * as L from 'leaflet';
 import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from 'src/app/services/auth.service';
 @Component({
   selector: 'app-ver-detalle-servicio',
   standalone: true,
@@ -33,7 +34,8 @@ export class VerDetalleServicioComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private solicitarVisitaService: SolicitarVisitaService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -145,5 +147,35 @@ export class VerDetalleServicioComponent implements OnInit {
 
   volver(): void {
     this.router.navigate(['/transacciones/servicios-realizados']);
+  }
+
+  validarSolicitud() {
+    this.authService.currentUser.subscribe(currentUser => {
+      if (!currentUser || !currentUser.id) {
+        this.snackBar.open('Error: No se pudo obtener el usuario actual', 'Cerrar', {
+          duration: 3000
+        });
+        return;
+      }
+
+      this.solicitarVisitaService.validarSolicitud(
+        this.servicio.id,
+        { validada_por_id: currentUser.id }
+      ).subscribe({
+        next: () => {
+          this.snackBar.open('Solicitud validada correctamente', 'Cerrar', {
+            duration: 3000
+          });
+          this.servicio.status = 'validada';
+          this.loadServicio(this.servicio.id.toString());
+        },
+        error: (error) => {
+          console.error('Error al validar la solicitud:', error);
+          this.snackBar.open('Error al validar la solicitud', 'Cerrar', {
+            duration: 3000
+          });
+        }
+      });
+    });
   }
 } 

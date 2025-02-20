@@ -168,5 +168,16 @@
       <mat-icon>arrow_back</mat-icon>
       Volver
     </button>
+
+    <!-- Botón de validar solo si está finalizada -->
+    <button 
+      mat-raised-button 
+      color="accent" 
+      *ngIf="servicio?.status === 'finalizada'"
+      (click)="validarSolicitud()"
+      class="ml-2">
+      <mat-icon>check_circle</mat-icon>
+      Validar Solicitud
+    </button>
   </mat-card-actions>
 </mat-card> 
