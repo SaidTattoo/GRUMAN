@@ -55,7 +55,7 @@ export const SolicitudesDeVisitaRoutes: Routes = [
   },
   {
     path: 'ver-solicitud/:id',
-    component: VerSolicitudComponent,
+    component: ModificarSolicitudComponent,
     data: {
       title: 'Ver Solicitud'
     }
