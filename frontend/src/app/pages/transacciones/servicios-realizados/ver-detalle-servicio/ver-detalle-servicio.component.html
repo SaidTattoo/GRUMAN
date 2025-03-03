@@ -33,17 +33,48 @@
       </div>
     </div>
 
-    <div class="detail-section" *ngIf="servicio?.local?.latitud && servicio?.local?.longitud">
-        <h3>Ubicación del Local</h3>
-    <div class="map-container">
-        <div class="map-frame">
-          <div id="map"></div>
+    <!-- Sección de Ubicación -->
+    <div class="detail-section">
+      <h3>Ubicación</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="label">Dirección:</span>
+          <span class="value">{{servicio?.local?.direccion}}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Comuna:</span>
+          <span class="value">{{servicio?.local?.comuna?.comuna_nombre}}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Región:</span>
+          <span class="value">{{servicio?.local?.region?.region_nombre}}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Latitud:</span>
+          <span class="value">{{servicio?.local?.latitud || 'No disponible'}}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Longitud:</span>
+          <span class="value">{{servicio?.local?.longitud || 'No disponible'}}</span>
+        </div>
+        
+        <!-- Si hay coordenadas del móvil, mostrarlas también -->
+        <div class="detail-item" *ngIf="servicio?.latitud_movil">
+          <span class="label">Latitud del técnico:</span>
+          <span class="value">{{servicio?.latitud_movil || 'No disponible'}}</span>
+        </div>
+        <div class="detail-item" *ngIf="servicio?.longitud_movil">
+          <span class="label">Longitud del técnico:</span>
+          <span class="value">{{servicio?.longitud_movil || 'No disponible'}}</span>
         </div>
       </div>
-     
+      
+      <!-- Mapa -->
+      <div class="map-container" *ngIf="servicio?.local?.latitud && servicio?.local?.longitud">
+        <div id="map"></div>
+      </div>
     </div>
 
-  
     <div class="detail-section">
       <h3>Información General</h3>
       <div class="detail-row">

@@ -1,179 +1,192 @@
 <mat-card class="cardWithShadow">
-    <mat-card-content class="p-24">
-      <div class="row justify-content-between m-b-8">
-        <div class="col-sm-4 col-lg-4">
-          <button mat-flat-button (click)="modalNuevoLocal()" color="primary" >Nuevo</button>
-          <button mat-button disabled>Exportar a Excel</button>
-        </div>
-        <div class="col-sm-4 col-lg-3">
-          <mat-form-field appearance="outline" class="w-100 hide-hint">
-            <input matInput (keyup)="applyFilter($event)" placeholder="Ex. ium" placeholder="Search here" #input />
-          </mat-form-field>
-        </div>
-      </div>
-
-      <div class="table-responsive m-t-30">
-        <table mat-table [dataSource]="dataSource" class="w-100">
-          <!-- ID Column -->
+  <mat-card-header>
+    <mat-card-title>Locales</mat-card-title>
+    <div class="spacer"></div>
+    
+    <form [formGroup]="filterForm" class="filter-form-inline">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Buscar</mat-label>
+        <input matInput formControlName="search" placeholder="Nombre, dirección...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline" class="client-field">
+        <mat-label>Cliente</mat-label>
+        <mat-select formControlName="clientId">
+          <mat-option [value]="">Todos</mat-option>
+          <mat-option *ngFor="let cliente of clientes" [value]="cliente.id">
+            {{cliente.nombre}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      
+      <button mat-icon-button color="primary" (click)="resetFilters()" matTooltip="Limpiar filtros">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      
+      <button mat-raised-button color="primary" (click)="modalNuevoLocal()">
+        <mat-icon>add</mat-icon> Nuevo Local
+      </button>
+    </form>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource" class="w-100">
+        <!-- ID Column -->
         <ng-container matColumnDef="cliente">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">
-             Cliente
-            </th>
-            <td mat-cell *matCellDef="let element" class="p-l-0">
-              {{ element.client.nombre }}
-            </td>
-          </ng-container>
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0">
+            Cliente
+          </th>
+          <td mat-cell *matCellDef="let element" class="p-l-0">
+            {{ element.client.nombre }}
+          </td>
+        </ng-container>
 
-          <!-- Nombre Local Column -->
-          <ng-container matColumnDef="nombre_local">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Nombre Local
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.nombre_local }}
-            </td>
-          </ng-container>
+        <!-- Nombre Local Column -->
+        <ng-container matColumnDef="nombre_local">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Nombre Local
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.nombre_local }}
+          </td>
+        </ng-container>
 
-          <!-- Dirección Column -->
-          <ng-container matColumnDef="direccion">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Dirección
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.direccion }}
-            </td>
-          </ng-container>
+        <!-- Dirección Column -->
+        <ng-container matColumnDef="direccion">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Dirección
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.direccion }}
+          </td>
+        </ng-container>
 
-          <!-- Comuna Column -->
-          <ng-container matColumnDef="comuna">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Comuna
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.comuna.comuna_nombre }}
-            </td>
-          </ng-container>
+        <!-- Comuna Column -->
+        <ng-container matColumnDef="comuna">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Comuna
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.comuna.comuna_nombre }}
+          </td>
+        </ng-container>
 
-          <!-- Región Column -->
-          <ng-container matColumnDef="region">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Región
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.region.region_nombre || '-' }}
-            </td>
-          </ng-container>
+        <!-- Región Column -->
+        <ng-container matColumnDef="region">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Región
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.region.region_nombre || '-' }}
+          </td>
+        </ng-container>
 
-          <!-- Sobreprecio Column -->
-          <ng-container matColumnDef="sobreprecio">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 min-w-100">
-              Sobreprecio
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.sobreprecio }}%
-            </td>
-          </ng-container>
+        <!-- Sobreprecio Column -->
+        <ng-container matColumnDef="sobreprecio">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 min-w-100">
+            Sobreprecio
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.sobreprecio }}%
+          </td>
+        </ng-container>
 
-          <!-- Valor por Local Column -->
-          <ng-container matColumnDef="valorPorLocal">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 min-w-100">
-              Valor Local
-            </th>
-            <td mat-cell *matCellDef="let element">
-              ${{ element.valorPorLocal }}
-            </td>
-          </ng-container>
+        <!-- Valor por Local Column -->
+        <ng-container matColumnDef="valorPorLocal">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 min-w-100">
+            Valor Local
+          </th>
+          <td mat-cell *matCellDef="let element">
+            ${{ element.valorPorLocal }}
+          </td>
+        </ng-container>
 
-          <!-- Teléfono Column -->
-          <ng-container matColumnDef="telefono">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Teléfono
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.telefono }}
-            </td>
-          </ng-container>
+        <!-- Teléfono Column -->
+        <ng-container matColumnDef="telefono">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Teléfono
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.telefono }}
+          </td>
+        </ng-container>
 
-          <!-- Email Local Column -->
-          <ng-container matColumnDef="email_local">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Email Local
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.email_local }}
-            </td>
-          </ng-container>
+        <!-- Email Local Column -->
+        <ng-container matColumnDef="email_local">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Email Local
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.email_local }}
+          </td>
+        </ng-container>
 
-          <!-- Email Encargado Column -->
-          <ng-container matColumnDef="email_encargado">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Email Encargado
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.email_encargado }}
-            </td>
-          </ng-container>
-          <!-- Latitud Column -->
-          <ng-container matColumnDef="latitud">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Latitud
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.latitud }}
-            </td>
-          </ng-container>
+        <!-- Email Encargado Column -->
+        <ng-container matColumnDef="email_encargado">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Email Encargado
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.email_encargado }}
+          </td>
+        </ng-container>
+        <!-- Latitud Column -->
+        <ng-container matColumnDef="latitud">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Latitud
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.latitud }}
+          </td>
+        </ng-container>
 
-          <!-- Longitud Column -->
-          <ng-container matColumnDef="longitud">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Longitud
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.longitud }}
-            </td>
-          </ng-container>
-          <!-- Nombre Encargado Column -->
-          <ng-container matColumnDef="nombre_encargado">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Nombre Encargado
-            </th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.nombre_encargado }}
-            </td>
-          </ng-container>
+        <!-- Longitud Column -->
+        <ng-container matColumnDef="longitud">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Longitud
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.longitud }}
+          </td>
+        </ng-container>
+        <!-- Nombre Encargado Column -->
+        <ng-container matColumnDef="nombre_encargado">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Nombre Encargado
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.nombre_encargado }}
+          </td>
+        </ng-container>
 
-          <!-- Acciones Column -->
-          <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
-              Acciones
-            </th>
-            <td mat-cell *matCellDef="let element">
-              <button mat-icon-button (click)="modalEditarLocal(element)">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button (click)="deleteLocal(element.id)" color="warn">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
-          <!-- Row shown when there is no matching data. -->
-          <tr class="mat-row" *matNoDataRow>
-            <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
-              No se encontraron datos
-            </td>
-          </tr>
-        </table>
-      </div>
-
-
-    </mat-card-content>
-  </mat-card>
-  <div class="map-container">
-    <div class="map-frame">
-      <div id="map"></div>
+        <!-- Acciones Column -->
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">
+            Acciones
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-icon-button (click)="modalEditarLocal(element)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="deleteLocal(element.id)" color="warn">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      
+      <mat-paginator 
+        [length]="totalLocales"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        [pageIndex]="currentPage"
+        (page)="onPageChange($event)"
+        showFirstLastButtons>
+      </mat-paginator>
     </div>
-  </div>
+  </mat-card-content>
+</mat-card>
 
