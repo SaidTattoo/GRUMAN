@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { Locales } from './locales.entity';
 import { LocalesService } from './locales.service';
 import { SectorTrabajo } from '../sectores-trabajo/sectores-trabajo.entity';
@@ -8,8 +8,18 @@ export class LocalesController {
   constructor(private readonly localesService: LocalesService) {}
 
   @Get()
-  findAll(): Promise<Locales[]> {
-    return this.localesService.findAll();
+  async findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('clientId') clientId?: number,
+    @Query('search') search?: string,
+  ) {
+    return this.localesService.findAll({
+      page: page ? +page : undefined,
+      limit: limit ? +limit : undefined,
+      clientId: clientId ? +clientId : undefined,
+      search
+    });
   }
 
   @Get(':id')

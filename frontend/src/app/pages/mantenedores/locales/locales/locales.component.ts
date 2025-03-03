@@ -1,39 +1,100 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
-import * as L from 'leaflet';
+import { ClientesService } from 'src/app/services/clientes.service';
 import { LocalesService } from 'src/app/services/locales.service';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-locales',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatTableModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule],
+  imports: [
+    CommonModule, 
+    MatCardModule, 
+    MatTableModule, 
+    MatFormFieldModule, 
+    MatInputModule, 
+    MatButtonModule, 
+    MatIconModule,
+    MatPaginatorModule,
+    MatSelectModule,
+    ReactiveFormsModule
+  ],
   templateUrl: './locales.component.html',
   styleUrl: './locales.component.scss'
 })
-export class LocalesComponent implements OnInit, AfterViewInit {
-  private map: any;
+export class LocalesComponent implements OnInit {
   displayedColumns: string[] = ['cliente', 'nombre_local', 'direccion', 'comuna', 'region', 'sobreprecio', 'valorPorLocal', 'telefono', 'email_local', 'email_encargado', 'nombre_encargado', 'latitud', 'longitud', 'acciones'];
-  dataSource = new MatTableDataSource<any>();
-  constructor(private localesService: LocalesService, private dialog: MatDialog, private router: Router) {}
+  dataSource = new MatTableDataSource<any>([]);
+  
+  // Paginación
+  totalLocales = 0;
+  pageSize = 10;
+  currentPage = 0;
+  
+  // Filtros
+  filterForm: FormGroup;
+  clientes: any[] = [];
+  
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  constructor(
+    private localesService: LocalesService, 
+    private clientesService: ClientesService,
+    private dialog: MatDialog, 
+    private router: Router,
+    private fb: FormBuilder
+  ) {
+    this.filterForm = this.fb.group({
+      search: [''],
+      clientId: ['']
+    });
+  }
 
   ngOnInit(): void {
+    this.loadClientes();
     this.loadLocales();
+    
+    // Suscribirse a cambios en los filtros
+    this.filterForm.valueChanges.subscribe(() => {
+      this.currentPage = 0;
+      this.loadLocales();
+    });
+  }
+  
+  loadClientes() {
+    this.clientesService.getClientes().subscribe({
+      next: (data) => {
+        this.clientes = data;
+      },
+      error: (error) => {
+        console.error('Error al cargar clientes:', error);
+      }
+    });
   }
 
   loadLocales() {
-    this.localesService.getLocales().subscribe({
-      next: (data) => {
-        this.dataSource.data = data;
-        this.addMarkersToMap(data);
+    const filters = this.filterForm.value;
+    
+    this.localesService.getLocalesPaginados(
+      this.currentPage + 1,
+      this.pageSize,
+      filters.clientId,
+      filters.search
+    ).subscribe({
+      next: (response) => {
+        this.dataSource.data = response.data;
+        this.totalLocales = response.total;
       },
       error: (error) => {
         console.error('Error al cargar locales:', error);
@@ -41,46 +102,17 @@ export class LocalesComponent implements OnInit, AfterViewInit {
       }
     });
   }
-
-  ngAfterViewInit(): void {
-    this.initMap();
+  
+  onPageChange(event: any) {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadLocales();
   }
 
-  private initMap(): void {
-    this.map = L.map('map', {
-      center: [-33.4569, -70.6483],
-      zoom: 12
-    });
-    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      minZoom: 3,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    });
-
-    tiles.addTo(this.map);
-  }
-
-  private addMarkersToMap(locales: any[]): void {
-    const markers = L.featureGroup();
-    locales.forEach(local => {
-      if (local.latitud && local.longitud) {
-        const marker = L.marker([local.latitud, local.longitud])
-          .bindPopup(`
-            <b>${local.direccion}</b><br>${local.comuna}<br>
-            <img src="./assets/images/empresas/wazee.png" onclick="window.open('https://waze.com/ul?ll=${local.latitud},${local.longitud}&navigate=yes', '_blank')">
-              Abrir en Waze
-            </img>
-          `);
-        markers.addLayer(marker);
-      }
-    });
-    markers.addTo(this.map);
-    this.map.fitBounds(markers.getBounds());
-  }
-
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+  resetFilters() {
+    this.filterForm.reset();
+    this.currentPage = 0;
+    this.loadLocales();
   }
 
   modalEditarLocal(local: any) {
@@ -105,10 +137,7 @@ export class LocalesComponent implements OnInit, AfterViewInit {
       if (result.isConfirmed) {
         this.localesService.deleteLocal(id).subscribe({
           next: () => {
-            this.dataSource.data = this.dataSource.data.filter(
-              (local: any) => local.id !== id
-            );
-            this.addMarkersToMap(this.dataSource.data);
+            this.loadLocales(); // Recargar la lista después de eliminar
             Swal.fire(
               'Eliminado!',
               'El local ha sido eliminado.',

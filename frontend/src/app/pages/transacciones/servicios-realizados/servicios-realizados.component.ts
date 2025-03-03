@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -40,7 +40,8 @@ import { MatIconModule } from '@angular/material/icon';
     MatButtonModule,
     MatTableModule,
     MatExpansionModule,
-    MatTooltipModule
+    MatTooltipModule,
+    DatePipe
   ],
   templateUrl: './servicios-realizados.component.html',
   styleUrls: ['./servicios-realizados.component.scss'],
@@ -90,6 +91,7 @@ export class ServiciosRealizadosComponent implements OnInit {
     'tipoServicio',
     'tecnico',
     'status',
+    'fechaValidacion',
     'observaciones',
     'acciones'
   ];
@@ -297,6 +299,11 @@ export class ServiciosRealizadosComponent implements OnInit {
   }
 
   verDetalle(servicio: any): void {
-    this.router.navigate(['/transacciones/servicios-realizados', servicio.id]);
+    // Crear la URL usando el router
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/transacciones/servicios-realizados', servicio.id])
+    );
+    // Abrir en una nueva pestaña
+    window.open(url, '_blank');
   }
 }

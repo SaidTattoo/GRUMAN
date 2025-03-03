@@ -358,7 +358,7 @@ export class ModificarSolicitudComponent implements OnInit {
 
         // Inicializar mapa después de cargar los datos
         setTimeout(() => {
-          this.initMapWithMarker();
+          this.initMap();
         }, 100);
 
         this.loading = false;
@@ -794,39 +794,52 @@ export class ModificarSolicitudComponent implements OnInit {
            Object.values(this.temporaryDeletedRepuestos).some(repuestos => repuestos.length > 0);
   }
 
-  private initMapWithMarker(): void {
-    const mapContainer = document.getElementById('map');
-    if (!mapContainer) {
-      console.error('Contenedor del mapa no encontrado');
-      return;
-    }
+  private initMap(): void {
+    if (!this.map) {
+      this.map = L.map('map', {
+        center: [-33.4569, -70.6483],
+        zoom: 13
+      });
 
-    console.log('Inicializando mapa...');
-    this.map = L.map('map', {
-      center: [-33.4569, -70.6483],
-      zoom: 13
-    });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        minZoom: 3,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(this.map);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      minZoom: 3,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(this.map);
-
-    if (this.map && this.solicitud?.local?.latitud && this.solicitud?.local?.longitud) {
-      const marker = L.marker([this.solicitud.local.latitud, this.solicitud.local.longitud])
-        .bindPopup(`
-          <b>${this.solicitud.local.nombre_local}</b><br>
-          ${this.solicitud.local.direccion}<br>
-          ${this.solicitud.local.comuna}<br>
-          <img src="./assets/images/empresas/wazee.png" 
-               onclick="window.open('https://waze.com/ul?ll=${this.solicitud.local.latitud},${this.solicitud.local.longitud}&navigate=yes', '_blank')"
-               style="cursor:pointer; width: 24px; height: 24px;">
-          Abrir en Waze
-        `);
-      
-      marker.addTo(this.map);
-      this.map.setView([this.solicitud.local.latitud, this.solicitud.local.longitud], 15);
+      // Usar latitud y longitud del móvil si están disponibles
+      if (this.map && this.solicitud?.latitud_movil && this.solicitud?.longitud_movil) {
+        const marker = L.marker([this.solicitud.latitud_movil, this.solicitud.longitud_movil])
+          .bindPopup(`
+            <b>${this.solicitud.local.nombre_local}</b><br>
+            ${this.solicitud.local.direccion}<br>
+            ${this.solicitud.local.comuna}<br>
+            <strong>Ubicación del técnico</strong><br>
+            <img src="./assets/images/empresas/wazee.png" 
+                 onclick="window.open('https://waze.com/ul?ll=${this.solicitud.latitud_movil},${this.solicitud.longitud_movil}&navigate=yes', '_blank')"
+                 style="cursor:pointer; width: 24px; height: 24px;">
+            Abrir en Waze
+          `);
+        
+        marker.addTo(this.map);
+        this.map.setView([this.solicitud.latitud_movil, this.solicitud.longitud_movil], 15);
+      }
+      // Si no hay coordenadas del móvil, usar las del local
+      else if (this.map && this.solicitud?.local?.latitud && this.solicitud?.local?.longitud) {
+        const marker = L.marker([this.solicitud.local.latitud, this.solicitud.local.longitud])
+          .bindPopup(`
+            <b>${this.solicitud.local.nombre_local}</b><br>
+            ${this.solicitud.local.direccion}<br>
+            ${this.solicitud.local.comuna}<br>
+            <img src="./assets/images/empresas/wazee.png" 
+                 onclick="window.open('https://waze.com/ul?ll=${this.solicitud.local.latitud},${this.solicitud.local.longitud}&navigate=yes', '_blank')"
+                 style="cursor:pointer; width: 24px; height: 24px;">
+            Abrir en Waze
+          `);
+        
+        marker.addTo(this.map);
+        this.map.setView([this.solicitud.latitud_movil, this.solicitud.longitud_movil], 15);
+      }
     }
   }
 } 

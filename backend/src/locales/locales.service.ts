@@ -19,20 +19,49 @@ export class LocalesService {
     private readonly clienteRepository: Repository<Client>,
   ) {}
 
-  async findAll(): Promise<Locales[]> {
-    return this.localesRepository.find({ 
-      where: { deleted: false },
-      order: { id: 'DESC' },
-      relations: [
-        'client', 
-        'sectoresTrabajo',
-        'comuna', 
-        'provincia',
-        'region',
-        'comuna.provincia', 
-        'comuna.provincia.region'
-      ]
-    });
+  async findAll(options?: {
+    page?: number;
+    limit?: number;
+    clientId?: number;
+    search?: string;
+  }): Promise<{ data: Locales[]; total: number }> {
+    const { page = 1, limit = 10, clientId, search } = options || {};
+    
+    // Construir la consulta base
+    const queryBuilder = this.localesRepository.createQueryBuilder('local')
+      .leftJoinAndSelect('local.client', 'client')
+      .leftJoinAndSelect('local.sectoresTrabajo', 'sectoresTrabajo')
+      .leftJoinAndSelect('local.comuna', 'comuna')
+      .leftJoinAndSelect('local.provincia', 'provincia')
+      .leftJoinAndSelect('local.region', 'region')
+      .leftJoinAndSelect('comuna.provincia', 'comunaProvincia')
+      .leftJoinAndSelect('comunaProvincia.region', 'comunaProvinciaRegion')
+      .where('local.deleted = :deleted', { deleted: false });
+    
+    // Aplicar filtro por cliente si se proporciona
+    if (clientId) {
+      queryBuilder.andWhere('client.id = :clientId', { clientId });
+    }
+    
+    // Aplicar búsqueda si se proporciona
+    if (search) {
+      queryBuilder.andWhere(
+        '(local.nombre_local LIKE :search OR local.direccion LIKE :search OR comuna.comuna_nombre LIKE :search OR client.nombre LIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+    
+    // Obtener el total de registros para la paginación
+    const total = await queryBuilder.getCount();
+    
+    // Aplicar paginación
+    const data = await queryBuilder
+      .orderBy('local.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+    
+    return { data, total };
   }
   
   async findOne(id: number): Promise<Locales | undefined> {

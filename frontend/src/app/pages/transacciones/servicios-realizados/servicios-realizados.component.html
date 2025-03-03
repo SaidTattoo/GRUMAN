@@ -193,11 +193,19 @@
             <td mat-cell *matCellDef="let servicio"> {{servicio.observaciones}} </td>
           </ng-container>
 
+          <!-- fecha validacion -->
+          <ng-container matColumnDef="fechaValidacion">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Validación</th>
+            <!-- formatear con pipepipe  -->
+            <td mat-cell *matCellDef="let servicio">
+              {{ servicio.fecha_hora_validacion ? (servicio.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm') : 'Sin fecha' }}
+            </td>
+          </ng-container>
           <!-- Acciones Column -->
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef> Acciones </th>
             <td mat-cell *matCellDef="let servicio">
-              <button mat-icon-button color="primary" (click)="verDetalle(servicio)">
+              <button mat-icon-button color="primary" (click)="verDetalle(servicio)" matTooltip="Ver en nueva pestaña">
                 <mat-icon>visibility</mat-icon>
               </button>
             </td>
