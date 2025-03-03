@@ -7,10 +7,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
-import { environment } from 'src/environments/environment';
 import * as L from 'leaflet';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from 'src/app/services/auth.service';
+import { environment } from 'src/app/config';
 @Component({
   selector: 'app-ver-detalle-servicio',
   standalone: true,
