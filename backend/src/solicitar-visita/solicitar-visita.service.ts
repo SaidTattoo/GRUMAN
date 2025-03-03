@@ -1,14 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { SolicitarVisita, SolicitudStatus } from './solicitar-visita.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { Client } from 'src/client/client.entity';
 import { Locales } from 'src/locales/locales.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
 import { User } from 'src/users/users.entity';
 import { ItemRepuesto } from 'src/inspection/entities/item-repuesto.entity';
 import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
-import { In, Between } from 'typeorm';
+import { In } from 'typeorm';
 import { FacturacionService } from 'src/facturacion/facturacion.service';
 import { Repuesto } from 'src/repuestos/repuestos.entity';
 import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
@@ -77,7 +77,9 @@ export class SolicitarVisitaService {
                 where: { id: solicitud.tecnico_asignado_id } 
             });
         }
-       /*  if(solicitudVisita.tipo_mantenimiento === 'programado') {
+        
+        // Verificar si es una visita de tipo programado (mantenimiento programado)
+        if(solicitudVisita.tipo_mantenimiento === 'programado') {
             // Obtener las facturaciones del cliente
             const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
             
@@ -108,10 +110,11 @@ export class SolicitarVisitaService {
 
             if (solicitudesExistentes.length > 0) {
                 throw new BadRequestException(
-                    `Ya existe una solicitud de visita programada para este local en ${mesFormateado}`
+                    `Ya existe una solicitud de visita programada para el local "${solicitudVisita.local.nombre_local}" en ${mesFormateado}. Solo se permite una visita programada por local por mes.`
                 );
             }
-        } */
+        }
+        
         // Si la solicitud está aprobada, asigna el aprobador
         if (solicitud.status === 'aprobada' && solicitud.aprobada_por_id) {
             solicitudVisita.status = SolicitudStatus.APROBADA;
