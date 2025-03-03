@@ -11,7 +11,7 @@ export class LocalesService {
   constructor(private http: HttpClient) { }
 
   getLocales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/locales`);
+    return this.http.get<any[]>(`${this.apiUrl}locales`);
   }
   
   getLocalesPaginados(
@@ -20,7 +20,7 @@ export class LocalesService {
     clientId?: number, 
     search?: string
   ): Observable<{data: any[], total: number}> {
-    let url = `${this.apiUrl}/locales?page=${page}&limit=${limit}`;
+    let url = `${this.apiUrl}locales?page=${page}&limit=${limit}`;
     
     if (clientId) {
       url += `&clientId=${clientId}`;
@@ -35,21 +35,21 @@ export class LocalesService {
 
   crearLocal(local: any): Observable<any> {
     //console.log('****', local);
-    return this.http.post<any>(`${this.apiUrl}/locales`, local);
+    return this.http.post<any>(`${this.apiUrl}locales`, local);
   }
   getLocalById(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/locales/${id}`);
+    return this.http.get(`${this.apiUrl}locales/${id}`);
   }
   updateLocal(id: number, local: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/locales/${id}`, local);
+    return this.http.put(`${this.apiUrl}locales/${id}`, local);
   }
   deleteLocal(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/locales/${id}`);
+    return this.http.delete(`${this.apiUrl}locales/${id}`);
   }
   getLocalesByCliente(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/locales/cliente/${id}`);
+    return this.http.get(`${this.apiUrl}locales/cliente/${id}`);
   }
   addSectorToLocal(localId: number, sectorData: Partial<any>): Observable<any> {
-    return this.http.post(`${this.apiUrl}/locales/${localId}/sectores`, sectorData);
+    return this.http.post(`${this.apiUrl}locales/${localId}/sectores`, sectorData);
   }
 }
