@@ -24,7 +24,6 @@ import { InspectionService } from 'src/app/services/inspection.service';
 import { DialogPhotoViewerComponent } from '../../../../components/dialog-photo-viewer/dialog-photo-viewer.component';
 import { forkJoin } from 'rxjs';
 import * as L from 'leaflet';
-import { environment } from 'src/environments/environment';
 
 interface Repuesto {
   id: number;
