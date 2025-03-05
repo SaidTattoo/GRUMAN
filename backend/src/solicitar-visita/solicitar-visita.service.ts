@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { SolicitarVisita, SolicitudStatus } from './solicitar-visita.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, Not } from 'typeorm';
 import { Client } from 'src/client/client.entity';
 import { Locales } from 'src/locales/locales.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
@@ -78,8 +78,8 @@ export class SolicitarVisitaService {
             });
         }
         
-        // Verificar si es una visita de tipo programado (mantenimiento programado)
-        if(solicitudVisita.tipo_mantenimiento === 'programado') {
+        // Solo validar una visita por mes si es de tipo programado Y NO es tipo servicio 4
+        if (solicitudVisita.tipo_mantenimiento === 'programado' && solicitudVisita.tipoServicioId !== 7) {
             // Obtener las facturaciones del cliente
             const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
             
@@ -93,14 +93,16 @@ export class SolicitarVisitaService {
             );
 
             if (!periodoCorrespondiente) {
-                throw new BadRequestException(`No existe un período de facturación para ${mesFormateado}`);
+                throw new BadRequestException(`Ya existe una solicitud preventiva para este local para el periodo ${mesFormateado}`);
             }
 
             // Buscar solicitudes programadas existentes para el mismo local en el mismo mes
+            // Excluir tipo servicio 4 y solo buscar las programadas
             const solicitudesExistentes = await this.solicitarVisitaRepository.find({
                 where: {
                     local: { id: solicitudVisita.local.id },
                     tipo_mantenimiento: 'programado',
+                    tipoServicioId: Not(7),
                     fechaIngreso: Between(
                         new Date(periodoCorrespondiente.fecha_inicio),
                         new Date(periodoCorrespondiente.fecha_termino)

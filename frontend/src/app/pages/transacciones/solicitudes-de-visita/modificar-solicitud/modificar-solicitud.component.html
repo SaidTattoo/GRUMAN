@@ -311,10 +311,15 @@
     </div>
 
     <div class="actions">
-      <button mat-button [style.color]="solicitud?.validada ? '#1976d2' : ''" (click)="onCancel()">
-        {{ !solicitud?.validada ? 'Cancelar' : 'Volver' }}
+      <button mat-button [style.color]="solicitud?.status === 'validada' ? '#1976d2' : ''" (click)="onCancel()">
+        {{ solicitud?.status !== 'validada' ? 'Cancelar' : 'Volver' }}
       </button>
+
       @if (solicitud?.status !== 'validada') {
+        <button mat-raised-button color="primary" (click)="onSaveRepuestos()" style="margin-right: 10px;">
+          <mat-icon>save</mat-icon>
+          Guardar Repuestos
+        </button>
         <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
           Validar Solicitud
         </button>
