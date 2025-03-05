@@ -375,7 +375,67 @@ export class ModificarSolicitudComponent implements OnInit {
   onCancel(): void {
     this.router.navigate(['/transacciones/solicitudes-de-visita/validadas']);
   }
+  onSaveRepuestos(): void {
+    console.log('Iniciando guardado de repuestos...');
+    this.loading = true;
 
+    // Crear un array de promesas para todas las operaciones
+    const promises: Promise<any>[] = [];
+
+    // Manejar repuestos eliminados
+    for (const subItemId in this.temporaryDeletedRepuestos) {
+      for (const repuesto of this.temporaryDeletedRepuestos[subItemId]) {
+        promises.push(
+          this.inspectionService.deleteRepuestoFromItem(repuesto.id).toPromise()
+        );
+      }
+    }
+
+    // Manejar nuevos repuestos
+    for (const subItemId in this.temporaryRepuestos) {
+      for (const repuesto of this.temporaryRepuestos[subItemId]) {
+        if (!repuesto.pendingDelete) {
+          promises.push(
+            this.inspectionService.insertRepuestoInItem(
+              String(subItemId),
+              repuesto.repuesto.id,
+              repuesto.cantidad,
+              repuesto.comentario,
+              Number(this.solicitudId)
+            ).toPromise()
+          );
+        }
+      }
+    }
+
+    // Ejecutar todas las operaciones
+    Promise.all(promises)
+      .then(() => {
+        // Limpiar los temporales
+        this.temporaryRepuestos = {};
+        this.temporaryDeletedRepuestos = {};
+        
+        // Recargar los datos
+        this.loadSolicitud();
+        
+        this.snackBar.open('Repuestos guardados correctamente', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+        });
+      })
+      .catch((error) => {
+        console.error('Error al guardar los repuestos:', error);
+        this.snackBar.open('Error al guardar los repuestos', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+        });
+      })
+      .finally(() => {
+        this.loading = false;
+      });
+  }
   onValidate(): void {
     console.log('Iniciando validación...');
     this.authService.currentUser.subscribe(currentUser => {
@@ -795,6 +855,23 @@ export class ModificarSolicitudComponent implements OnInit {
 
   private initMap(): void {
     if (!this.map) {
+      // Configurar el ícono por defecto de Leaflet
+      const iconRetinaUrl = 'assets/marker-icon-2x.png';
+      const iconUrl = 'assets/marker-icon.png';
+      const shadowUrl = 'assets/marker-shadow.png';
+      
+      const iconDefault = L.icon({
+        iconRetinaUrl,
+        iconUrl,
+        shadowUrl,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        tooltipAnchor: [16, -28],
+        shadowSize: [41, 41]
+      });
+      L.Marker.prototype.options.icon = iconDefault;
+
       this.map = L.map('map', {
         center: [-33.4569, -70.6483],
         zoom: 13
@@ -807,37 +884,47 @@ export class ModificarSolicitudComponent implements OnInit {
       }).addTo(this.map);
 
       // Usar latitud y longitud del móvil si están disponibles
-      if (this.map && this.solicitud?.latitud_movil && this.solicitud?.longitud_movil) {
-        const marker = L.marker([this.solicitud.latitud_movil, this.solicitud.longitud_movil])
-          .bindPopup(`
-            <b>${this.solicitud.local.nombre_local}</b><br>
-            ${this.solicitud.local.direccion}<br>
-            ${this.solicitud.local.comuna}<br>
-            <strong>Ubicación del técnico</strong><br>
-            <img src="./assets/images/empresas/wazee.png" 
-                 onclick="window.open('https://waze.com/ul?ll=${this.solicitud.latitud_movil},${this.solicitud.longitud_movil}&navigate=yes', '_blank')"
-                 style="cursor:pointer; width: 24px; height: 24px;">
-            Abrir en Waze
-          `);
+      if (this.solicitud?.latitud_movil && this.solicitud?.longitud_movil) {
+        const lat = parseFloat(this.solicitud.latitud_movil);
+        const lng = parseFloat(this.solicitud.longitud_movil);
         
-        marker.addTo(this.map);
-        this.map.setView([this.solicitud.latitud_movil, this.solicitud.longitud_movil], 15);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const marker = L.marker([lat, lng])
+            .bindPopup(`
+              <b>${this.solicitud.local?.nombre_local || 'Local'}</b><br>
+              ${this.solicitud.local?.direccion || ''}<br>
+              ${this.solicitud.local?.comuna || ''}<br>
+              <strong>Ubicación del técnico</strong><br>
+              <img src="assets/images/empresas/wazee.png" 
+                   onclick="window.open('https://waze.com/ul?ll=${lat},${lng}&navigate=yes', '_blank')"
+                   style="cursor:pointer; width: 24px; height: 24px;">
+              Abrir en Waze
+            `);
+          
+          marker.addTo(this.map);
+          this.map.setView([lat, lng], 15);
+        }
       }
       // Si no hay coordenadas del móvil, usar las del local
-      else if (this.map && this.solicitud?.local?.latitud && this.solicitud?.local?.longitud) {
-        const marker = L.marker([this.solicitud.local.latitud, this.solicitud.local.longitud])
-          .bindPopup(`
-            <b>${this.solicitud.local.nombre_local}</b><br>
-            ${this.solicitud.local.direccion}<br>
-            ${this.solicitud.local.comuna}<br>
-            <img src="./assets/images/empresas/wazee.png" 
-                 onclick="window.open('https://waze.com/ul?ll=${this.solicitud.local.latitud},${this.solicitud.local.longitud}&navigate=yes', '_blank')"
-                 style="cursor:pointer; width: 24px; height: 24px;">
-            Abrir en Waze
-          `);
+      else if (this.solicitud?.local?.latitud && this.solicitud?.local?.longitud) {
+        const lat = parseFloat(this.solicitud.local.latitud);
+        const lng = parseFloat(this.solicitud.local.longitud);
         
-        marker.addTo(this.map);
-        this.map.setView([this.solicitud.latitud_movil, this.solicitud.longitud_movil], 15);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const marker = L.marker([lat, lng])
+            .bindPopup(`
+              <b>${this.solicitud.local?.nombre_local || 'Local'}</b><br>
+              ${this.solicitud.local?.direccion || ''}<br>
+              ${this.solicitud.local?.comuna || ''}<br>
+              <img src="assets/images/empresas/wazee.png" 
+                   onclick="window.open('https://waze.com/ul?ll=${lat},${lng}&navigate=yes', '_blank')"
+                   style="cursor:pointer; width: 24px; height: 24px;">
+              Abrir en Waze
+            `);
+          
+          marker.addTo(this.map);
+          this.map.setView([lat, lng], 15);
+        }
       }
     }
   }
