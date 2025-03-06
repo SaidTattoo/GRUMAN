@@ -41,8 +41,17 @@ export class SolicitarVisitaService {
   aprobarSolicitudVisita(id: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}solicitar-visita/${id}/aprobar`, {});
   }
-  rechazarSolicitudVisita(id: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}solicitar-visita/${id}/rechazar`, {});
+  rechazarSolicitudVisita(id: number, data: any): Observable<any> {
+    // Obtenemos el ID del usuario actual del localStorage
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userData = {
+      motivo: data.motivo,
+      rechazada_por_id: currentUser?.id
+    };
+    
+    console.log('Rechazando solicitud con datos:', userData);
+    
+    return this.http.post<any>(`${this.apiUrl}solicitar-visita/${id}/rechazar`, userData);
   }
   getPendientes(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}solicitar-visita/pendientes`);

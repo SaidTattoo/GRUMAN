@@ -23,6 +23,14 @@ export class UsersService {
         return this.userRepository.find({ where: { disabled: false , profile: 'user' }, relations: ['clients'] });
     }
 
+    /** findOne - Obtener un usuario por ID */
+    async findOne(id: number): Promise<User | undefined> {
+        return this.userRepository.findOne({ 
+            where: { id, disabled: false }, 
+            relations: ['clients', 'especialidades'] 
+        });
+    }
+
     findAllTecnicos(): Promise<User[]> {
         return this.userRepository.find({ where: { profile: 'tecnico', disabled: false }, relations: ['especialidades'] });
     }

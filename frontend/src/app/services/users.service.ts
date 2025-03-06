@@ -28,4 +28,8 @@ export class UsersService {
   getAllTecnicos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/tecnicos`);
   }
+  
+  getUserById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
 }

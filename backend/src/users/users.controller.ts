@@ -10,10 +10,9 @@ export class UsersController {
 
     @Get()
     @ApiOperation({ summary: 'Obtener todos los usuarios' })
-    findAllUsers(): Promise<User[]> {
+    findAll(): Promise<User[]> {
         return this.usersService.findAllUsers();
     }
-
 
     @Get('client/:id') 
     @ApiOperation({ summary: 'Obtener usuarios por ID de cliente' })
@@ -27,6 +26,13 @@ export class UsersController {
     @ApiParam({ name: 'rut', type: String, description: 'RUT del usuario' })
     findOneUserByRut(@Param('rut') rut: string): Promise<User | undefined> {
         return this.usersService.findOneUser(rut);
+    }
+
+    @Get(':id')
+    @ApiOperation({ summary: 'Obtener un usuario por ID' })
+    @ApiParam({ name: 'id', type: Number, description: 'ID del usuario' })
+    findOne(@Param('id') id: number): Promise<User | undefined> {
+        return this.usersService.findOne(id);
     }
 
     @Post()

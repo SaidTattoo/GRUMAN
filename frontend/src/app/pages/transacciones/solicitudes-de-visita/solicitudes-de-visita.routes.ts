@@ -54,7 +54,28 @@ export const SolicitudesDeVisitaRoutes: Routes = [
     }
   },
   {
-    path: 'ver-solicitud/:id',
+    path: 'ver-solicitud/pendiente/:id',
+    component: ModificarSolicitudComponent,
+    data: {
+      title: 'Ver Solicitud'
+    }
+  },
+  {
+    path: 'ver-solicitud/aprobada/:id',
+    component: ModificarSolicitudComponent,
+    data: {
+      title: 'Ver Solicitud'
+    }
+  },
+  {
+    path: 'ver-solicitud/rechazada/:id',
+    component: ModificarSolicitudComponent,
+    data: {
+      title: 'Ver Solicitud'
+    }
+  },
+  {
+    path: 'ver-solicitud/validada/:id',
     component: ModificarSolicitudComponent,
     data: {
       title: 'Ver Solicitud'

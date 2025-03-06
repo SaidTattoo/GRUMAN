@@ -24,6 +24,8 @@ import { InspectionService } from 'src/app/services/inspection.service';
 import { DialogPhotoViewerComponent } from '../../../../components/dialog-photo-viewer/dialog-photo-viewer.component';
 import { forkJoin } from 'rxjs';
 import * as L from 'leaflet';
+import { UsersService } from 'src/app/services/users.service';
+import { ConfirmDialogComponent } from '../../../../components/confirm-dialog/confirm-dialog.component';
 
 interface Repuesto {
   id: number;
@@ -86,7 +88,8 @@ interface RepuestoMap {
     MatIconModule,
     MatTooltipModule,
     MatDialogModule,
-    DialogPhotoViewerComponent
+    DialogPhotoViewerComponent,
+    ConfirmDialogComponent
   ],
   providers: [
     provideNativeDateAdapter()
@@ -170,7 +173,13 @@ export class ModificarSolicitudComponent implements OnInit {
   temporaryDeletedRepuestos: {[key: number]: any[]} = {};
   tiposServicio: any[] = [];
   sectoresTrabajos: any[] = [];
+  tecnicos: any[] = [];
   private map: L.Map | null = null;
+  isPendiente: boolean = false;
+  isAprobada: boolean = false;
+  isRechazada: boolean = false;
+  isValidada: boolean = false;
+  usuarioRechazo: any = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -184,17 +193,18 @@ export class ModificarSolicitudComponent implements OnInit {
     private dialog: MatDialog,
     private repuestosService: RepuestosService,
     private inspectionService: InspectionService,
-    private sectorTrabajoService: SectoresService
+    private sectorTrabajoService: SectoresService,
+    private usersService: UsersService
   ) {
     this.solicitudForm = this.fb.group({
-      tipoServicioId: [{value: '', disabled: true}],
-      sectorTrabajoId: [{value: '', disabled: true}],
+      tipoServicioId: [''],
+      sectorTrabajoId: [''],
       especialidad: [''],
       fechaIngreso: [{value: '', disabled: true}],
       ticketGruman: [''],
       observaciones: [''],
       status: [{value: '', disabled: true}],
-      tecnico_asignado_id: [{value: '', disabled: true}],
+      tecnico_asignado_id: [''],
       fecha_hora_inicio_servicio: [{value: '', disabled: true}],
       fecha_hora_fin_servicio: [{value: '', disabled: true}],
       longitud_movil: [''],
@@ -212,11 +222,46 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.solicitudId = this.route.snapshot.params['id'];
-    // Primero cargamos los catálogos y luego la solicitud
-    this.loadCatalogos().then(() => {
-      this.loadSolicitud();
+    this.solicitudId = this.route.snapshot.paramMap.get('id') || '';
+    
+    // Detectar estado de la solicitud por URL
+    const url = this.router.url;
+    this.isPendiente = url.includes('pendiente');
+    this.isAprobada = url.includes('aprobada');
+    this.isRechazada = url.includes('rechazada');
+    this.isValidada = url.includes('validada');
+    
+    this.inicializarFormulario();
+    this.loadRepuestos();
+    this.loadCatalogos();
+    this.loadSolicitud();
+    this.cargarTecnicos();
+  }
+
+  inicializarFormulario() {
+    this.solicitudForm = this.fb.group({
+      tipoServicioId: [''],
+      sectorTrabajoId: [''],
+      especialidad: [''],
+      fechaIngreso: [{value: '', disabled: true}],
+      ticketGruman: [''],
+      observaciones: [''],
+      status: [{value: '', disabled: true}],
+      tecnico_asignado_id: [''],
+      fecha_hora_inicio_servicio: [{value: '', disabled: true}],
+      fecha_hora_fin_servicio: [{value: '', disabled: true}],
+      longitud_movil: [''],
+      latitud_movil: [''],
+      // Campos adicionales de solo lectura
+      'local.nombre_local': [{value: '', disabled: true}],
+      'local.direccion': [{value: '', disabled: true}],
+      'client.nombre': [{value: '', disabled: true}],
+      'tecnico_asignado.name': [{value: '', disabled: true}],
+      'tipoServicio': [{value: '', disabled: true}],
+      'sectorTrabajo': [{value: '', disabled: true}]
     });
+    this.temporaryRepuestos = {};
+    this.temporaryDeletedRepuestos = {};
   }
 
   loadCatalogos(): Promise<void> {
@@ -270,6 +315,50 @@ export class ModificarSolicitudComponent implements OnInit {
     this.solicitarVisitaService.getSolicitudVisita(Number(this.solicitudId)).subscribe({
       next: (data) => {
         this.solicitud = data;
+        
+        // Detectar estado de la solicitud por su estado actual
+        if (this.solicitud?.status === 'pendiente') {
+          this.isPendiente = true;
+        } else if (this.solicitud?.status === 'aprobada') {
+          this.isAprobada = true;
+        } else if (this.solicitud?.status === 'rechazada') {
+          this.isRechazada = true;
+          
+          // Cargar la información del usuario que rechazó la solicitud
+          if (this.solicitud?.rechazada_por_id) {
+            this.loading = true; // Mantener loading mientras cargamos datos adicionales
+            this.usersService.getUserById(this.solicitud.rechazada_por_id).subscribe({
+              next: (usuario) => {
+                this.usuarioRechazo = usuario;
+                console.log('Usuario que rechazó la solicitud:', usuario);
+              },
+              error: (error) => {
+                console.error('Error al cargar información del usuario que rechazó:', error);
+                this.snackBar.open('No se pudo cargar la información completa del usuario que rechazó la solicitud', 'Cerrar', {
+                  duration: 5000
+                });
+              },
+              complete: () => {
+                this.loading = false;
+              }
+            });
+          } else {
+            console.warn('La solicitud está rechazada pero no tiene rechazada_por_id');
+          }
+        }
+        
+        // Si el estado es pendiente, habilitar los controles necesarios
+        if (this.isPendiente) {
+          this.solicitudForm.get('tecnico_asignado_id')?.enable();
+          this.solicitudForm.get('tipoServicioId')?.enable();
+          this.solicitudForm.get('sectorTrabajoId')?.enable();
+        } else {
+          // Si no está en pendiente, deshabilitar los controles
+          this.solicitudForm.get('tecnico_asignado_id')?.disable();
+          this.solicitudForm.get('tipoServicioId')?.disable();
+          this.solicitudForm.get('sectorTrabajoId')?.disable();
+        }
+        
         this.itemRepuestos = data.itemRepuestos || [];
 
         // Encontrar los nombres de tipo servicio y sector trabajo
@@ -282,8 +371,8 @@ export class ModificarSolicitudComponent implements OnInit {
           'local.nombre_local': data.local?.nombre_local || '',
           'local.direccion': data.local?.direccion || '',
           'tecnico_asignado.name': data.tecnico_asignado?.name || '',
-          'tipoServicio': tipoServicio?.nombre || `Tipo Servicio ID: ${data.tipoServicioId}`,
-          'sectorTrabajo': sectorTrabajo?.nombre || `Sector Trabajo ID: ${data.sectorTrabajoId}`,
+          'tipoServicioId': data.tipoServicioId || (data.tipoServicio?.id || ''),
+          'sectorTrabajoId': data.sectorTrabajoId || '',
           'especialidad': data.especialidad || '',
           'fechaIngreso': data.fechaIngreso ? new Date(data.fechaIngreso) : null,
           'ticketGruman': data.ticketGruman || '',
@@ -292,9 +381,15 @@ export class ModificarSolicitudComponent implements OnInit {
           'fecha_hora_inicio_servicio': data.fecha_hora_inicio_servicio || '',
           'fecha_hora_fin_servicio': data.fecha_hora_fin_servicio || '',
           'longitud_movil': data.longitud_movil || '',
-          'latitud_movil': data.latitud_movil || ''
+          'latitud_movil': data.latitud_movil || '',
+          'tecnico_asignado_id': data.tecnico_asignado?.id || ''
         });
 
+        // Si está rechazada, deshabilitar todos los controles
+        if (this.isRechazada) {
+          this.deshabilitarControlesFormulario();
+        }
+        
         // Procesar lista de inspección
         if (data.client?.listaInspeccion) {
           this.listaInspeccion = data.client.listaInspeccion.map((lista: any) => ({
@@ -362,7 +457,7 @@ export class ModificarSolicitudComponent implements OnInit {
 
         this.loading = false;
       },
-      error: (error) => {
+      error: (error:any) => {
         console.error('Error loading solicitud:', error);
         this.loading = false;
         this.snackBar.open('Error al cargar la solicitud', 'Cerrar', {
@@ -373,9 +468,86 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/transacciones/solicitudes-de-visita/validadas']);
+    this.router.navigate(['/transacciones/solicitudes-de-visita']);
   }
+
+  aprobarSolicitud(): void {
+    this.loading = true;
+    this.solicitarVisitaService.aprobarSolicitudVisita(Number(this.solicitudId)).subscribe({
+      next: () => {
+        this.snackBar.open('Solicitud aprobada correctamente', 'Cerrar', {
+          duration: 3000
+        });
+        this.router.navigate(['/transacciones/solicitudes-de-visita']);
+      },
+      error: (error: any) => {
+        console.error('Error al aprobar la solicitud:', error);
+        this.snackBar.open('Error al aprobar la solicitud', 'Cerrar', {
+          duration: 3000
+        });
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      }
+    });
+  }
+
+  rechazarSolicitud(): void {
+    // Diálogo para pedir motivo de rechazo
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      data: {
+        title: 'Rechazar Solicitud',
+        message: '¿Estás seguro de que deseas rechazar esta solicitud?',
+        inputLabel: 'Motivo del rechazo',
+        inputPlaceholder: 'Ingrese el motivo del rechazo',
+        requireInput: true, // Requiere que se ingrese un motivo
+        confirmText: 'Rechazar',
+        cancelText: 'Cancelar',
+        confirmColor: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loading = true;
+        
+        // Obtenemos la información del usuario actual
+        const currentUser = this.authService.currentUserValue;
+        console.log('Usuario actual:', currentUser);
+        
+        this.solicitarVisitaService.rechazarSolicitudVisita(Number(this.solicitudId), {
+          motivo: result,
+          rechazada_por_id: currentUser?.id
+        }).subscribe({
+          next: () => {
+            this.snackBar.open('Solicitud rechazada correctamente', 'Cerrar', {
+              duration: 3000
+            });
+            this.router.navigate(['/transacciones/solicitudes-de-visita']);
+          },
+          error: (error) => {
+            console.error('Error al rechazar la solicitud:', error);
+            this.snackBar.open('Error al rechazar la solicitud', 'Cerrar', {
+              duration: 3000
+            });
+            this.loading = false;
+          },
+          complete: () => {
+            this.loading = false;
+          }
+        });
+      }
+    });
+  }
+
   onSaveRepuestos(): void {
+    // Si la solicitud está rechazada, no permitir guardar repuestos
+    if (this.isRechazada) {
+      return;
+    }
+    
     console.log('Iniciando guardado de repuestos...');
     this.loading = true;
 
@@ -436,7 +608,13 @@ export class ModificarSolicitudComponent implements OnInit {
         this.loading = false;
       });
   }
+
   onValidate(): void {
+    // Si la solicitud está rechazada, no permitir validar
+    if (this.isRechazada) {
+      return;
+    }
+    
     console.log('Iniciando validación...');
     this.authService.currentUser.subscribe(currentUser => {
       if (!currentUser || !currentUser.id) {
@@ -927,5 +1105,76 @@ export class ModificarSolicitudComponent implements OnInit {
         }
       }
     }
+  }
+
+  // Método para guardar los cambios
+  onSubmit() {
+    // Si la solicitud está rechazada, no permitir enviar el formulario
+    if (this.isRechazada) {
+      return;
+    }
+    
+    if (this.solicitudForm.valid) {
+      const formData = this.solicitudForm.getRawValue(); // Obtiene valores incluso de campos deshabilitados
+      
+      // Si es pendiente, incluir el técnico asignado en la actualización
+      if (this.isPendiente) {
+        formData.tecnico_asignado_id = formData.tecnico_asignado_id || null;
+      }
+
+      this.solicitarVisitaService.updateSolicitudVisita(Number(this.solicitudId), formData).subscribe({
+        next: (response: any) => {
+          this.snackBar.open('Solicitud actualizada correctamente', 'Cerrar', {
+            duration: 3000
+          });
+          this.router.navigate(['/transacciones/solicitudes-de-visita']);
+        },
+        error: (error: any) => {
+          console.error('Error updating solicitud:', error);
+          this.snackBar.open('Error al actualizar la solicitud', 'Cerrar', {
+            duration: 3000
+          });
+        }
+      });
+    }
+  }
+
+  cargarTecnicos() {
+    this.usersService.getAllTecnicos().subscribe({
+      next: (response) => {
+        this.tecnicos = response;
+      },
+      error: (error) => {
+        console.error('Error al cargar técnicos:', error);
+      }
+    });
+  }
+
+  /**
+   * Deshabilita todos los controles del formulario cuando la solicitud está rechazada
+   */
+  private deshabilitarControlesFormulario(): void {
+    // Lista de controles que deben ser deshabilitados
+    const controles = [
+      'tipoServicioId',
+      'sectorTrabajoId',
+      'especialidad',
+      'fechaIngreso',
+      'ticketGruman',
+      'observaciones',
+      'tecnico_asignado_id',
+      'fecha_hora_inicio_servicio',
+      'fecha_hora_fin_servicio',
+      'latitud_movil',
+      'longitud_movil'
+    ];
+    
+    // Deshabilitar cada control
+    controles.forEach(control => {
+      const formControl = this.solicitudForm.get(control);
+      if (formControl) {
+        formControl.disable();
+      }
+    });
   }
 } 
