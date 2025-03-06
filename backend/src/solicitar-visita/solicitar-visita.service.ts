@@ -79,7 +79,7 @@ export class SolicitarVisitaService {
         }
         
         // Solo validar una visita por mes si es de tipo programado Y NO es tipo servicio 4
-        if (solicitudVisita.tipo_mantenimiento === 'programado' && solicitudVisita.tipoServicioId !== 7) {
+        if (solicitudVisita.tipo_mantenimiento === 'programado' && solicitudVisita.tipoServicioId !== 3) {
             // Obtener las facturaciones del cliente
             const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
             
@@ -93,7 +93,7 @@ export class SolicitarVisitaService {
             );
 
             if (!periodoCorrespondiente) {
-                throw new BadRequestException(`Ya existe una solicitud preventiva para este local para el periodo ${mesFormateado}`);
+                throw new BadRequestException(`Ya existe una solicitud ${solicitudVisita.tipoServicioId === 3 ? 'preventiva' : 'programada'} para este local para el periodo ${mesFormateado}`);
             }
 
             // Buscar solicitudes programadas existentes para el mismo local en el mismo mes

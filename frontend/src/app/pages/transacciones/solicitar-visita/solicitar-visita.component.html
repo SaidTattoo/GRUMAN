@@ -13,9 +13,11 @@
                       [value]="'no-disponible'">
               @if (tipoServicio.length) {
                 @for (tipo of tipoServicio; track tipo.id) {
-                  <mat-option [value]="tipo.id">
-                    {{tipo.nombre}}
-                  </mat-option>
+                  @if (tipo.nombre.toLowerCase() !== 'preventivo') {
+                    <mat-option [value]="tipo.id">
+                      {{tipo.nombre}}
+                    </mat-option>
+                  }
                 }
               } @else {
                 <mat-option value="no-disponible" disabled>No hay tipos de servicio disponibles para este cliente</mat-option>
