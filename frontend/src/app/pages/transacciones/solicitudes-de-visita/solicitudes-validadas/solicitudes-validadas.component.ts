@@ -287,7 +287,7 @@ export class SolicitudesValidadasComponent implements OnInit {
   }
 
   verDetalle(id: number) {
-    this.router.navigate(['transacciones/solicitudes-de-visita/ver-solicitud', id]);
+    this.router.navigate(['transacciones/solicitudes-de-visita/ver-solicitud/validada', id]);
   }
 
   reabrirSolicitud(solicitud: any) {

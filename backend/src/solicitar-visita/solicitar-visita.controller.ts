@@ -178,8 +178,12 @@ export class SolicitarVisitaController {
   }
 
   @Post(':id/rechazar')
-  async rechazarSolicitudVisita(@Param('id') id: number) {
-    return this.solicitarVisitaService.rechazarSolicitudVisita(id);
+  async rechazarSolicitudVisita(
+    @Param('id') id: number,
+    @Body() data: { motivo: string, rechazada_por_id?: number }
+  ) {
+    console.log('Rechazando solicitud:', id, 'con datos:', data);
+    return this.solicitarVisitaService.rechazarSolicitudVisita(id, data);
   }
 
   @Put(':id')

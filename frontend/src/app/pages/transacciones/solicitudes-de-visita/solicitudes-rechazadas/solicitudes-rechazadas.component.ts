@@ -230,7 +230,7 @@ export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit {
   }
 
   verDetalle(id: number) {
-    this.router.navigate(['transacciones/solicitudes-de-visita/ver-solicitud', id]);
+    this.router.navigate(['transacciones/solicitudes-de-visita/ver-solicitud/rechazada', id]);
   }
 
   onImageError(event: any) {

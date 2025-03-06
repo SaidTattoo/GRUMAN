@@ -115,7 +115,7 @@ export class SolicitudesDeVisitaComponent implements OnInit {
   }
 
   verSolicitud(element: any) {
-    this.router.navigate(['/transacciones/solicitudes-de-visita/ver-solicitud', element.id]);
+    this.router.navigate(['/transacciones/solicitudes-de-visita/ver-solicitud/pendiente', element.id]);
   }
 
   onImageError(event: any) {

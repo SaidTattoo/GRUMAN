@@ -78,8 +78,8 @@ export class SolicitarVisitaService {
             });
         }
         
-        // Solo validar una visita por mes si es de tipo programado Y NO es tipo servicio 4
-        if (solicitudVisita.tipo_mantenimiento === 'programado' && solicitudVisita.tipoServicioId !== 3) {
+        // Solo validar una visita por mes por local si es de tipo programado o preventivo
+        if (solicitudVisita.tipo_mantenimiento === 'programado' &&  solicitudVisita.tipoServicioId === 3) {
             // Obtener las facturaciones del cliente
             const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
             
@@ -92,27 +92,32 @@ export class SolicitarVisitaService {
                 periodo.mes === mesFormateado
             );
 
-            if (!periodoCorrespondiente) {
-                throw new BadRequestException(`Ya existe una solicitud ${solicitudVisita.tipoServicioId === 3 ? 'preventiva' : 'programada'} para este local para el periodo ${mesFormateado}`);
-            }
+            if (periodoCorrespondiente) {
+                // Buscar solicitudes del mismo tipo (programado o preventivo) para el mismo local en el mismo mes
+                const solicitudesExistentes = await this.solicitarVisitaRepository.find({
+                    where: {
+                        local: { id: solicitudVisita.local.id },
+                        tipo_mantenimiento: solicitudVisita.tipo_mantenimiento, // Buscar solo del mismo tipo
+                        fechaIngreso: Between(
+                            new Date(periodoCorrespondiente.fecha_inicio),
+                            new Date(periodoCorrespondiente.fecha_termino)
+                        )
+                    },
+                    relations: ['local']
+                });
 
-            // Buscar solicitudes programadas existentes para el mismo local en el mismo mes
-            // Excluir tipo servicio 4 y solo buscar las programadas
-            const solicitudesExistentes = await this.solicitarVisitaRepository.find({
-                where: {
-                    local: { id: solicitudVisita.local.id },
-                    tipo_mantenimiento: 'programado',
-                    tipoServicioId: Not(7),
-                    fechaIngreso: Between(
-                        new Date(periodoCorrespondiente.fecha_inicio),
-                        new Date(periodoCorrespondiente.fecha_termino)
-                    )
+                if (solicitudesExistentes.length > 0) {
+                    const solicitudExistente = solicitudesExistentes[0];
+                    throw new BadRequestException(
+                        `Ya existe una visita de tipo ${solicitudExistente.tipo_mantenimiento} para el local "${solicitudVisita.local.nombre_local}" en ${mesFormateado}. ` +
+                        `(Solicitud #${solicitudExistente.id} del ${new Date(solicitudExistente.fechaIngreso).toLocaleDateString()}). ` +
+                        `Solo se permite una visita ${solicitudVisita.tipo_mantenimiento} por local por mes.`
+                    );
                 }
-            });
-
-            if (solicitudesExistentes.length > 0) {
+            } else {
                 throw new BadRequestException(
-                    `Ya existe una solicitud de visita programada para el local "${solicitudVisita.local.nombre_local}" en ${mesFormateado}. Solo se permite una visita programada por local por mes.`
+                    `No existe un período de facturación configurado para ${mesFormateado}. ` +
+                    `Por favor, configure el período antes de crear la solicitud.`
                 );
             }
         }
@@ -238,10 +243,24 @@ export class SolicitarVisitaService {
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 
-    async rechazarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-         await this.solicitarVisitaRepository.update(id, { status: SolicitudStatus.RECHAZADA });
+    async rechazarSolicitudVisita(id: number, data: { motivo: string, rechazada_por_id?: number }): Promise<SolicitarVisita> {
+        const updateData: any = { 
+            status: SolicitudStatus.RECHAZADA,
+            observacion_rechazo: data.motivo
+        };
         
-        return this.solicitarVisitaRepository.findOne({ where: { id } });
+        // Si se proporciona un ID de quien rechaza, guardarlo
+        if (data.rechazada_por_id) {
+            updateData.rechazada_por_id = data.rechazada_por_id;
+        }
+        
+        console.log('Actualizando solicitud con datos:', updateData);
+        await this.solicitarVisitaRepository.update(id, updateData);
+        
+        return this.solicitarVisitaRepository.findOne({ 
+            where: { id },
+            relations: ['local', 'client', 'tecnico_asignado', 'rechazada_por'] 
+        });
     }
 
     async finalizarSolicitudVisita(id: number): Promise<SolicitarVisita> {
