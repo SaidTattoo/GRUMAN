@@ -9,10 +9,9 @@ async function bootstrap() {
 
   // Configuración de CORS
   app.enableCors({
-    origin: true, // Permite todas las origenes en desarrollo
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
-    allowedHeaders: 'Content-Type, Accept, Authorization'
   });
 
   app.useGlobalPipes(new ValidationPipe());

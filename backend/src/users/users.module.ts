@@ -14,4 +14,8 @@ import { Especialidad } from 'src/especialidad/especialidad.entity';
   providers: [UsersService],
   exports: [UsersService]
 })
-export class UsersModule {}
+export class UsersModule {
+  constructor() {
+    console.log('UsersModule inicializado');
+  }
+}

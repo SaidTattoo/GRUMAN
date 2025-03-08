@@ -2,12 +2,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../config';
+import { tap, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsersService {
-  private apiUrl = environment.apiUrl + 'users'; // URL de tu API de usuarios
+  private apiUrl = environment.apiUrl + 'users'; // Asegúrate que environment.apiUrl termine en '/'
 
   constructor(private http: HttpClient) { }
 
@@ -26,7 +27,15 @@ export class UsersService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
   getAllTecnicos(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/tecnicos`);
+    const url = `${this.apiUrl}/tecnicos`;
+    console.log('URL de la petición:', url);
+    return this.http.get<any[]>(url).pipe(
+        tap(response => console.log('Respuesta del servidor:', response)),
+        catchError(error => {
+            console.error('Error al obtener técnicos:', error);
+            throw error;
+        })
+    );
   }
   
   getUserById(id: number): Observable<any> {
