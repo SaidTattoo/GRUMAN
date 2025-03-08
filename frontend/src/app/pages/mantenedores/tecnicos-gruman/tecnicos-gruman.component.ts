@@ -32,6 +32,7 @@ export class TecnicosGrumanComponent implements OnInit {
   dataSource: any[] = [];
   displayedColumns: string[] = [ 'name', 'especialidades', 'acciones'];
   ngOnInit(): void {
+    console.log('findAllTecnicos');
     this.usersService.getAllTecnicos().subscribe((tecnicos: any) => {
       this.tecnicos = tecnicos;
       this.dataSource = this.tecnicos;

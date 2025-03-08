@@ -19,7 +19,7 @@ export class UsersService {
     ) {}
 
     /** findAllUsers */
-    findAllUsers(): Promise<User[]> {
+    async findAllUsers(): Promise<User[]> {
         return this.userRepository.find({ where: { disabled: false , profile: 'user' }, relations: ['clients'] });
     }
 
@@ -31,16 +31,30 @@ export class UsersService {
         });
     }
 
-    findAllTecnicos(): Promise<User[]> {
-        return this.userRepository.find({ where: { profile: 'tecnico', disabled: false }, relations: ['especialidades'] });
+    async findAllTecnicos(): Promise<User[]> {
+        console.log('Iniciando búsqueda de técnicos');
+        try {
+            const tecnicos = await this.userRepository.find({ 
+                where: { 
+                    profile: 'tecnico', 
+                    disabled: false 
+                }, 
+                relations: ['especialidades'] 
+            });
+            console.log(`Se encontraron ${tecnicos.length} técnicos`);
+            return tecnicos;
+        } catch (error) {
+            console.error('Error al buscar técnicos:', error);
+            throw error;
+        }
     }
 
-    findOneTecnico(id: number): Promise<User | undefined> {
+    async findOneTecnico(id: number): Promise<User | undefined> {
         return this.userRepository.findOne({ where: { id, disabled: false }, relations: ['clients',  'especialidades'] });
     }
 
     /** FINDALLUSERS WHERE CLIENTE  */
-    findAllUsersByClient(clientId: number): Promise<User[]> {
+    async findAllUsersByClient(clientId: number): Promise<User[]> {
         return this.userRepository.find({ where: { clients: { id: clientId }, disabled: false }, relations: ['clients'] });
     }
 

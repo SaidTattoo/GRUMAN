@@ -6,7 +6,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 @ApiTags('usuarios')
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(private readonly usersService: UsersService) {
+        console.log('UsersController inicializado');
+    }
 
     @Get()
     @ApiOperation({ summary: 'Obtener todos los usuarios' })
@@ -14,23 +16,34 @@ export class UsersController {
         return this.usersService.findAllUsers();
     }
 
-    @Get('client/:id') 
+    @Get('tecnicos')
+    @ApiOperation({ summary: 'Obtener todos los tecnicos' })
+    findAllTecnicos(): Promise<User[]> {
+        console.log('Entrando al endpoint GET /users/tecnicos');
+        try {
+            const result = this.usersService.findAllTecnicos();
+            console.log('Resultado obtenido del servicio');
+            return result;
+        } catch (error) {
+            console.error('Error en findAllTecnicos:', error);
+            throw error;
+        }
+    }
+
+    @Get('client/:id')
     @ApiOperation({ summary: 'Obtener usuarios por ID de cliente' })
-    @ApiParam({ name: 'id', type: Number, description: 'ID del cliente' })
     findAllUsersByClient(@Param('id') id: number): Promise<User[]> {
         return this.usersService.findAllUsersByClient(id);
     }
 
     @Get('rut/:rut')
     @ApiOperation({ summary: 'Obtener usuario por RUT' })
-    @ApiParam({ name: 'rut', type: String, description: 'RUT del usuario' })
     findOneUserByRut(@Param('rut') rut: string): Promise<User | undefined> {
         return this.usersService.findOneUser(rut);
     }
 
     @Get(':id')
     @ApiOperation({ summary: 'Obtener un usuario por ID' })
-    @ApiParam({ name: 'id', type: Number, description: 'ID del usuario' })
     findOne(@Param('id') id: number): Promise<User | undefined> {
         return this.usersService.findOne(id);
     }
@@ -78,12 +91,6 @@ export class UsersController {
     @ApiParam({ name: 'id', type: Number, description: 'ID del cliente' })
     getAllUsersByClient(@Param('id') id: number): Promise<User[]> {
         return this.usersService.getAllUsersByClient(id);
-    }
-
-    @Get('tecnicos')
-    @ApiOperation({ summary: 'Obtener todos los tecnicos' })
-    findAllTecnicos(): Promise<User[]> {
-        return this.usersService.findAllTecnicos();
     }
 
     @Get('tecnicos/:id')
