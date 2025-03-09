@@ -8,18 +8,18 @@ export class FinalizarServicioDto {
   @IsNotEmpty()
   repuestos: {
     [key: string]: {
-      estado: string;
-      comentario: string;
-      fotos: string[];
-      repuestos: Array<{
+      estado: 'conforme' | 'no_conforme' | 'no_aplica';
+      comentario?: string;
+      fotos?: string[];
+      repuestos?: Array<{
         cantidad: number;
-        comentario: string;
+        comentario?: string;
         repuesto: {
           id: number;
           articulo: string;
           familia: string;
           marca: string;
-        };
+        }
       }>;
     };
   };

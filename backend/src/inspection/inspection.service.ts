@@ -310,7 +310,7 @@ export class InspectionService {
 
 
  
-    async insertRepuestoInItem(itemId: string, repuestoId: number, cantidad: number, comentario: string, solicitarVisitaId: number) {
+    async insertRepuestoInItem(itemId: string, repuestoId: number, cantidad: number, comentario: string, solicitarVisitaId: number, estado?: string) {
         const item = await this.itemRepository.findOne({
             where: { id: parseInt(itemId) },
             relations: ['section']
@@ -333,7 +333,8 @@ export class InspectionService {
             repuesto,
             cantidad,
             solicitarVisita: { id: solicitarVisitaId },
-            comentario
+            comentario,
+            estado
         });
 
         return await this.itemRepuestoRepository.save(itemRepuesto);

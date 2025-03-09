@@ -308,9 +308,16 @@ export class SolicitarVisitaService {
     }
 /* agregar fecha_hora_fin_servicio */
     async finalizarServicio(id: number, data: FinalizarServicioDto): Promise<SolicitarVisita> {
+
+        // Mostrar los datos recibidos
+        console.log('###########################');
+        console.log('###########################');
+        console.log('Datos recibidos:', JSON.stringify(data, null, 2));
+        console.log('###########################'); 
+        console.log('###########################');
         const solicitud = await this.solicitarVisitaRepository.findOne({
             where: { id },
-            relations: ['itemRepuestos', 'itemRepuestos.repuesto']
+            relations: ['itemRepuestos', 'itemRepuestos.repuesto', 'client']
         });
 
         if (!solicitud) {
@@ -321,77 +328,109 @@ export class SolicitarVisitaService {
         await this.solicitarVisitaRepository.update(id, {
             status: SolicitudStatus.FINALIZADA,
             fecha_hora_fin_servicio: new Date(),
-            firma_cliente: data.firma_cliente,
-            observaciones: data.observaciones
+            firma_cliente: data.firma_cliente
         });
 
-        // Procesar repuestos y fotos
+        // Procesar cada item y sus estados
         for (const [itemId, itemData] of Object.entries(data.repuestos)) {
-            // Procesar cada repuesto del item
-            for (const repuestoData of itemData.repuestos) {
-                const itemRepuesto = solicitud.itemRepuestos.find(ir => 
-                    ir.itemId === parseInt(itemId) && 
-                    ir.repuestoId === repuestoData.repuesto.id
-                );
+            // Guardar el estado del item
+            const existingItem = await this.itemRepuestoRepository.findOne({
+                where: {
+                    itemId: parseInt(itemId),
+                    solicitarVisitaId: id
+                }
+            });
 
-                if (itemRepuesto) {
-                    await this.itemRepuestoRepository.update(itemRepuesto.id, {
-                        cantidad: repuestoData.cantidad,
-                        comentario: repuestoData.comentario || '',
-                        estado: itemData.estado
-                    });
-                } else {
+            if (existingItem) {
+                await this.itemRepuestoRepository.update(existingItem.id, {
+                    estado: itemData.estado,
+                    comentario: itemData.comentario || ''
+                });
+            } else {
+                // Guardar el estado sin repuesto asociado (repuestoId = null)
+                try {
+                    console.log(`Guardando estado ${itemData.estado} para ítem ${itemId} sin repuestos asociados (repuestoId: null)`);
                     await this.itemRepuestoRepository.save({
                         itemId: parseInt(itemId),
-                        repuestoId: repuestoData.repuesto.id,
+                        repuestoId: null, // Permitir guardar con repuestoId NULL
                         solicitarVisitaId: id,
-                        cantidad: repuestoData.cantidad,
-                        comentario: repuestoData.comentario || '',
-                        estado: itemData.estado
+                        estado: itemData.estado,
+                        comentario: itemData.comentario || '',
+                        cantidad: 0
                     });
+                } catch (error) {
+                    console.error(`Error al guardar estado para ítem ${itemId}:`, error);
                 }
             }
 
-            // Guardar las fotos en la nueva tabla
+            // Procesar repuestos si existen
+            if (itemData.repuestos && itemData.repuestos.length > 0) {
+                for (const repuestoData of itemData.repuestos) {
+                    // Verificar que el repuesto tenga id y exista
+                    if (!repuestoData.repuesto || !repuestoData.repuesto.id) {
+                        console.warn(`Repuesto inválido encontrado para ítem ${itemId}, no tiene un ID válido:`, repuestoData);
+                        continue; // Saltar este repuesto
+                    }
+                    
+                    try {
+                        await this.itemRepuestoRepository.save({
+                            itemId: parseInt(itemId),
+                            repuestoId: repuestoData.repuesto.id,
+                            solicitarVisitaId: id,
+                            cantidad: repuestoData.cantidad || 1,
+                            comentario: repuestoData.comentario || '',
+                            estado: itemData.estado
+                        });
+                        console.log(`Guardado repuesto ${repuestoData.repuesto.id} para ítem ${itemId}`);
+                    } catch (error) {
+                        console.error(`Error al guardar repuesto para ítem ${itemId}:`, error);
+                    }
+                }
+            }
+
+            // Guardar las fotos si existen
             if (itemData.fotos && itemData.fotos.length > 0) {
-                // Primero eliminar fotos existentes si las hay
-                await this.itemFotosRepository.delete({
-                    itemId: parseInt(itemId),
-                    solicitarVisitaId: id
-                });
-                
-                // Guardar las nuevas fotos
-                await this.itemFotosRepository.save({
-                    itemId: parseInt(itemId),
-                    solicitarVisitaId: id,
-                    fotos: itemData.fotos
-                });
+                // Eliminar fotos anteriores si existen
+                try {
+                    await this.itemFotosRepository.delete({
+                        itemId: parseInt(itemId),
+                        solicitarVisitaId: id
+                    });
+                    
+                    // Guardar las nuevas fotos
+                    await this.itemFotosRepository.save({
+                        itemId: parseInt(itemId),
+                        solicitarVisitaId: id,
+                        fotos: itemData.fotos
+                    });
+                    console.log(`Guardadas ${itemData.fotos.length} fotos para el ítem ${itemId}`);
+                } catch (error) {
+                    console.error(`Error al guardar fotos para el ítem ${itemId}:`, error);
+                    // Continuar con el siguiente ítem en caso de error
+                }
             }
         }
 
-        // Retornar solicitud actualizada con sus relaciones
+        // Obtener la solicitud actualizada con todos los datos
         const solicitudActualizada = await this.solicitarVisitaRepository
             .createQueryBuilder('solicitud')
             .leftJoinAndSelect('solicitud.itemRepuestos', 'itemRepuestos')
             .leftJoinAndSelect('itemRepuestos.repuesto', 'repuesto')
             .leftJoinAndSelect('solicitud.itemFotos', 'itemFotos')
+            .leftJoinAndSelect('solicitud.local', 'local')
+            .leftJoinAndSelect('solicitud.client', 'client')
+            .leftJoinAndSelect('solicitud.tecnico_asignado', 'tecnico_asignado')
             .where('solicitud.id = :id', { id })
             .getOne();
 
-        if (!solicitudActualizada) {
-            throw new NotFoundException(`Solicitud with ID ${id} not found`);
+        // Agrupar los repuestos por itemId para construir una estructura más utilizable
+        if (solicitudActualizada) {
+            // Ordenar por itemId para facilidad de lectura
+            solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos || [];
+            solicitudActualizada.itemRepuestos.sort((a, b) => a.itemId - b.itemId);
+            
+            console.log(`Solicitud actualizada con ${solicitudActualizada.itemRepuestos.length} estados/repuestos registrados.`);
         }
-
-        // Asignar las fotos a los repuestos correspondientes
-        solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos.map(repuesto => {
-            const itemFoto = solicitudActualizada.itemFotos?.find(
-                foto => foto.itemId === repuesto.itemId
-            );
-            return this.itemRepuestoRepository.create({
-                ...repuesto,
-                fotos: itemFoto?.fotos || []
-            });
-        });
 
         return solicitudActualizada;
     }

@@ -565,6 +565,13 @@ export class ModificarSolicitudComponent implements OnInit {
 
     // Manejar nuevos repuestos
     for (const subItemId in this.temporaryRepuestos) {
+      // Encontrar el estado actual del subItem si existe
+      let estadoSubItem: string | undefined;
+      const subItemInfo = this.findSubItemById(Number(subItemId));
+      if (subItemInfo) {
+        estadoSubItem = subItemInfo.estado;
+      }
+      
       for (const repuesto of this.temporaryRepuestos[subItemId]) {
         if (!repuesto.pendingDelete) {
           promises.push(
@@ -573,7 +580,8 @@ export class ModificarSolicitudComponent implements OnInit {
               repuesto.repuesto.id,
               repuesto.cantidad,
               repuesto.comentario,
-              Number(this.solicitudId)
+              Number(this.solicitudId),
+              estadoSubItem // Pasar el estado actual si existe
             ).toPromise()
           );
         }
@@ -607,6 +615,23 @@ export class ModificarSolicitudComponent implements OnInit {
       .finally(() => {
         this.loading = false;
       });
+  }
+
+  // Método auxiliar para encontrar un subItem por su ID
+  private findSubItemById(subItemId: number): any {
+    if (!this.listaInspeccion) return null;
+    
+    for (const lista of this.listaInspeccion) {
+      for (const item of lista.items) {
+        for (const subItem of item.subItems) {
+          if (subItem.id === subItemId) {
+            return subItem;
+          }
+        }
+      }
+    }
+    
+    return null;
   }
 
   onValidate(): void {
@@ -720,43 +745,6 @@ export class ModificarSolicitudComponent implements OnInit {
     }
   }
 
-  addRepuestoToSubItem(subItemId: number) {
-    if (!this.selectedRepuesto || this.newRepuestoCantidad <= 0) return;
-
-    // Usar el ID como índice
-    const repuesto = this.repuestos[this.selectedRepuesto.id];
-    if (!repuesto) {
-      this.snackBar.open('Repuesto no encontrado', 'Cerrar', { duration: 3000 });
-      return;
-    }
-
-    // Inicializar el array temporal si no existe
-    if (!this.temporaryRepuestos[subItemId]) {
-      this.temporaryRepuestos[subItemId] = [];
-    }
-
-    const newItemRepuesto = {
-      itemId: subItemId,
-      solicitarVisitaId: Number(this.solicitudId),
-      repuesto: repuesto,
-      cantidad: this.newRepuestoCantidad,
-      comentario: '',
-      fechaAgregado: new Date()
-    };
-
-    // Agregar al array temporal
-    this.temporaryRepuestos[subItemId].push(newItemRepuesto);
-    console.log('Repuesto temporal agregado:', this.temporaryRepuestos);
-
-    // Limpiar el formulario
-    this.selectedRepuesto = null;
-    this.newRepuestoCantidad = 1;
-    this.showAddRepuestoForm[subItemId] = false;
-
-    // Actualizar la vista
-    this.updateListaInspeccion();
-  }
-
   addRepuestoToItem(subItemId: number) {
     console.log('Iniciando addRepuestoToItem:', {
       subItemId,
@@ -769,11 +757,15 @@ export class ModificarSolicitudComponent implements OnInit {
       return;
     }
 
+    // Obtener el estado actual del subítem
+    const subItem = this.findSubItemById(subItemId);
+    
     const nuevoRepuesto = {
       itemId: subItemId,
       repuestoId: this.selectedRepuesto.id,
       cantidad: this.newRepuestoCantidad,
-      repuesto: this.selectedRepuesto
+      repuesto: this.selectedRepuesto,
+      comentario: ''
     };
     console.log('Nuevo repuesto creado:', nuevoRepuesto);
 
@@ -856,15 +848,14 @@ export class ModificarSolicitudComponent implements OnInit {
 
   calculateSubItemTotal(repuestos: any[]): number {
     if (!repuestos || repuestos.length === 0) return 0;
-    
-    return repuestos.reduce((total, repuesto) => {
-      // Si el repuesto está marcado para eliminar, no lo incluimos en el total
-      if (repuesto.pendingDelete) return total;
-      
-      const precio = repuesto.repuesto?.precio || 0;
-      const cantidad = repuesto.cantidad || 0;
-      return total + (precio * cantidad);
-    }, 0);
+
+    return repuestos
+      .filter(rep => rep.repuesto) // Solo considerar repuestos válidos (no nulos)
+      .reduce((total, repuesto) => {
+        const precio = repuesto.repuesto?.precio || 0;
+        const cantidad = repuesto.cantidad || 0;
+        return total + (precio * cantidad);
+      }, 0);
   }
 
   calculateItemTotal(repuestos: any[]): number {
@@ -930,8 +921,8 @@ export class ModificarSolicitudComponent implements OnInit {
   
           return {
             ...subItem,
-            estado: subItem.estado || 'no_conforme',
-            fotos: fotosDelItem.length > 0 ? fotosDelItem : [], // Asegurar asignación de fotos
+            estado: subItem.estado,
+            fotos: fotosDelItem.length > 0 ? fotosDelItem : [],
             repuestos: allRepuestos
           };
         })
@@ -1176,5 +1167,33 @@ export class ModificarSolicitudComponent implements OnInit {
         formControl.disable();
       }
     });
+  }
+
+  // Método para calcular el total general
+  calculateTotal(): number {
+    if (!this.listaInspeccion) return 0;
+    
+    return this.listaInspeccion.reduce((totalItems, item) => {
+      if (!item.items) return totalItems;
+      
+      const subItemsTotal = item.items.reduce((totalSubItems: number, subItem: any  ) => {
+        if (!subItem.repuestos) return totalSubItems;
+        
+        // Filtramos repuestos válidos (no nulos) y no marcados para eliminar
+        const validRepuestos = subItem.repuestos.filter((rep: any) => 
+          rep.repuesto && !this.isRepuestoPendingDelete(subItem.id, rep)
+        );
+        
+        const subItemTotal = validRepuestos.reduce((total: number, repuesto: any) => {
+          const precio = repuesto.repuesto?.precio || 0;
+          const cantidad = repuesto.cantidad || 0;
+          return total + (precio * cantidad);
+        }, 0);
+        
+        return totalSubItems + subItemTotal;
+      }, 0);
+      
+      return totalItems + subItemsTotal;
+    }, 0);
   }
 } 

@@ -82,8 +82,14 @@ export class InspectionService {
     return this.http.post(`${this.apiUrl}/cleanup-lists`, {});
   }
   
-  insertRepuestoInItem(itemId: string, repuestoId: number, cantidad: number, comentario: string, solicitarVisitaId:any) {
-    return this.http.post(`${this.apiUrl}/items/${itemId}/repuestos`, { repuestoId, cantidad, comentario, solicitarVisitaId });
+  insertRepuestoInItem(itemId: string, repuestoId: number, cantidad: number, comentario: string, solicitarVisitaId: any, estado?: string) {
+    return this.http.post(`${this.apiUrl}/items/${itemId}/repuestos`, { 
+      repuestoId, 
+      cantidad, 
+      comentario, 
+      solicitarVisitaId,
+      estado
+    });
   }
   deleteRepuestoFromItem(id: string) {
     return this.http.delete(`${this.apiUrl}/items/${id}`);

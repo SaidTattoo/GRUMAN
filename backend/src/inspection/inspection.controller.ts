@@ -160,7 +160,8 @@ export class InspectionController {
             addRepuestoDto.repuestoId,
             addRepuestoDto.cantidad,
             addRepuestoDto.comentario,
-            addRepuestoDto.solicitarVisitaId
+            addRepuestoDto.solicitarVisitaId,
+            addRepuestoDto.estado
         );
     }
 
