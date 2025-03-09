@@ -218,7 +218,7 @@
                         }
                       </div>
 
-                      <!-- Estado después de las fotos -->
+                      <!-- Estado después de las fotos - Siempre se muestra independientemente de los repuestos -->
                       <div class="estado-container">
                         <span class="badge" [ngClass]="{
                           'badge-success': subItem.estado === 'conforme',
@@ -259,22 +259,24 @@
                         </div>
                       }
 
+                      <!-- Modificamos esta sección para mostrar repuestos solo si hay repuestos válidos -->
                       @if (subItem.repuestos?.length) {
                         <ul class="repuestos-list">
                           @for (repuesto of subItem.repuestos; track $index) {
-                            <li class="repuesto-item" [class.temporal]="!repuesto.id" [class.pending-delete]="isRepuestoPendingDelete(subItem.id, repuesto)">
-                              <div class="repuesto-info">
-                                @if (!repuesto.id) {
-                                  <div class="temporal-badge">
-                                    Pendiente de guardar
-                                  </div>
-                                }
-                                @if (isRepuestoPendingDelete(subItem.id, repuesto)) {
-                                  <div class="pending-delete-badge">
-                                    Pendiente de eliminar
-                                  </div>
-                                }
-                                @if (repuesto.repuesto) {
+                            <!-- Solo mostrar si el repuesto tiene un repuesto asociado -->
+                            @if (repuesto.repuesto) {
+                              <li class="repuesto-item" [class.temporal]="!repuesto.id" [class.pending-delete]="isRepuestoPendingDelete(subItem.id, repuesto)">
+                                <div class="repuesto-info">
+                                  @if (!repuesto.id) {
+                                    <div class="temporal-badge">
+                                      Pendiente de guardar
+                                    </div>
+                                  }
+                                  @if (isRepuestoPendingDelete(subItem.id, repuesto)) {
+                                    <div class="pending-delete-badge">
+                                      Pendiente de eliminar
+                                    </div>
+                                  }
                                   <div class="repuesto-detail">
                                     <strong>Artículo:</strong> 
                                     <span>{{ repuesto.repuesto.articulo }}</span>
@@ -292,26 +294,30 @@
                                     <strong>Total:</strong> 
                                     <span>${{ (repuesto.cantidad * repuesto.repuesto.precio).toLocaleString('es-CL') }}</span>
                                   </div>
-                                }
-                                
-                                <div class="actions-container">
-                                  <button class="delete-button" 
-                                          *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
-                                          matTooltip="Eliminar repuesto"
-                                          (click)="deleteRepuesto(subItem.id, repuesto)">
-                                    <mat-icon>delete</mat-icon>
-                                  </button>
+                                  
+                                  <div class="actions-container">
+                                    <button class="delete-button" 
+                                            *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
+                                            matTooltip="Eliminar repuesto"
+                                            (click)="deleteRepuesto(subItem.id, repuesto)">
+                                      <mat-icon>delete</mat-icon>
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            </li>
+                              </li>
+                            }
                           }
                         </ul>
-                        <div class="total-section">
-                          <div class="total-amount">
-                            <strong>Total General:</strong>
-                            <span>${{ calculateSubItemTotal(subItem.repuestos).toLocaleString('es-CL') || '0' }}</span>
+                        
+                        <!-- Solo mostrar el total si hay repuestos válidos -->
+                        @if (calculateSubItemTotal(subItem.repuestos) > 0) {
+                          <div class="total-section">
+                            <div class="total-amount">
+                              <strong>Total General:</strong>
+                              <span>${{ calculateSubItemTotal(subItem.repuestos).toLocaleString('es-CL') || '0' }}</span>
+                            </div>
                           </div>
-                        </div>
+                        }
                       }
                     </li>
                   }

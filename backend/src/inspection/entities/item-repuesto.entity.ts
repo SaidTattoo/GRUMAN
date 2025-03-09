@@ -18,7 +18,7 @@ export class ItemRepuesto {
   @JoinColumn({ name: 'repuestoId' })
   repuesto: Repuesto;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', nullable: true })
   repuestoId: number;
 
   @Column({ type: 'int', nullable: false })
