@@ -21,7 +21,8 @@ import { ClientesService } from 'src/app/services/clientes.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
-import { environment } from 'src/environments/environment';
+import { environment } from 'src/app/config';
+
 
 interface Client {
   id: number;
@@ -240,6 +241,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   }
 
   onFileSelected(event: Event) {
+    console.log('Evento de selección de archivos:', event);
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       Array.from(input.files).forEach((file, index) => {
