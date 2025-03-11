@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { environment } from '../config';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +22,7 @@ export class UploadDataService {
     // Eliminar barras iniciales y finales del path
     const cleanPath = path.replace(/^\/+|\/+$/g, '');
     // Construir la URL correctamente
-    const url = `${this.apiUrl}/upload/${cleanPath}`;
+    const url = `${this.apiUrl}upload/${cleanPath}`;
     console.log('URL de carga:', url); // Para debugging
     
     // Asegurarse de que el FormData tenga el archivo con el nombre 'file'
@@ -52,9 +52,9 @@ export class UploadDataService {
    */
   downloadFile(path: string): Observable<any> {
     console.log('Descargando archivo...');
-    console.log('Ruta del servidor:', `${this.apiUrl}/upload/${path}`);
+    console.log('Ruta del servidor:', `${this.apiUrl}upload/${path}`);
 
-    return this.http.get(`${this.apiUrl}/upload/${path}`, {
+    return this.http.get(`${this.apiUrl}upload/${path}`, {
       responseType: 'blob'
     });
   }
@@ -66,9 +66,9 @@ export class UploadDataService {
    */
   deleteFile(path: string): Observable<any> {
     console.log('Eliminando archivo...');
-    console.log('Ruta del servidor:', `${this.apiUrl}/upload/${path}`);
+    console.log('Ruta del servidor:', `${this.apiUrl}upload/${path}`);
 
-    const url = `${this.apiUrl}/upload/${path}`;
+    const url = `${this.apiUrl}upload/${path}`;
     return this.http.delete(url);
   }
 
