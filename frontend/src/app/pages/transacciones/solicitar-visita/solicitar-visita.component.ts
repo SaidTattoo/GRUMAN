@@ -21,7 +21,7 @@ import { ClientesService } from 'src/app/services/clientes.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
-import { environment } from 'src/app/config';
+import { environment } from 'src/environments/environment';
 
 interface Client {
   id: number;
@@ -134,12 +134,11 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       const responses = await Promise.all(uploadPromises);
       this.urlImage = responses.map((res: any) => {
         if (res && res.url) {
-          return res.url.replace('http://localhost:3000', environment.apiUrl);
+          return res.url.replace(/http:\/\/localhost:3000|https?:\/\/[^\/]+/, environment.apiUrl);
         }
         return res.url;
       });
 
-      console.log('Imágenes subidas:', this.urlImage);
       return this.urlImage;
     } catch (error) {
       console.error('Error al subir imágenes:', error);
@@ -251,9 +250,12 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         this.uploadDataService.uploadFile(formData, 'solicitar_visita/').subscribe({
           next: (response: any) => {
             if (response && response.url) {
-              const correctedUrl = response.url.replace('http://localhost:3000', environment.apiUrl);
+              const correctedUrl = response.url.replace(/http:\/\/localhost:3000|https?:\/\/[^\/]+/, environment.apiUrl);
               this.urlImage.push(correctedUrl);
               console.log(`Imagen subida exitosamente: ${correctedUrl}`);
+              
+              this.selectedFiles.push(file);
+              this.createImagePreview(file, this.selectedFiles.length - 1);
             }
           },
           error: (error) => {
@@ -261,11 +263,8 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
             Swal.fire('Error', 'Hubo un problema al subir la imagen', 'error');
           },
         });
-
-        this.createImagePreview(file, index);
       });
     }
-    console.log(this.urlImage);
   }
 
   createImagePreview(file: File, index: number) {
