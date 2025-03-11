@@ -21,6 +21,7 @@ import { ClientesService } from 'src/app/services/clientes.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
+import { environment } from 'src/app/config';
 
 interface Client {
   id: number;
@@ -131,7 +132,13 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       });
 
       const responses = await Promise.all(uploadPromises);
-      this.urlImage = responses.map((res: any) => res.url); // Guardar las URLs en el array
+      this.urlImage = responses.map((res: any) => {
+        if (res.url && res.url.includes('localhost')) {
+          return res.url.replace('http://localhost:3000', environment.apiUrl);
+        }
+        return res.url;
+      });
+       // Guardar las URLs en el array
       console.log('Imágenes subidas:', this.urlImage);
 
       return this.urlImage;
