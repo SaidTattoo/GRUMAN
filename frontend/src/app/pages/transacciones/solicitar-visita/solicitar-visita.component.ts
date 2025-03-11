@@ -133,14 +133,13 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
 
       const responses = await Promise.all(uploadPromises);
       this.urlImage = responses.map((res: any) => {
-        if (res.url && res.url.includes('localhost')) {
+        if (res && res.url) {
           return res.url.replace('http://localhost:3000', environment.apiUrl);
         }
         return res.url;
       });
-       // Guardar las URLs en el array
-      console.log('Imágenes subidas:', this.urlImage);
 
+      console.log('Imágenes subidas:', this.urlImage);
       return this.urlImage;
     } catch (error) {
       console.error('Error al subir imágenes:', error);
@@ -252,8 +251,9 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         this.uploadDataService.uploadFile(formData, 'solicitar_visita/').subscribe({
           next: (response: any) => {
             if (response && response.url) {
-              this.urlImage.push(response.url);
-              console.log(`Imagen subida exitosamente: ${response.url}`);
+              const correctedUrl = response.url.replace('http://localhost:3000', environment.apiUrl);
+              this.urlImage.push(correctedUrl);
+              console.log(`Imagen subida exitosamente: ${correctedUrl}`);
             }
           },
           error: (error) => {
