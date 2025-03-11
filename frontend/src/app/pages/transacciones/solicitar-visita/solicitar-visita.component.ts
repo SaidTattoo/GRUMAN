@@ -247,7 +247,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         formData.append('file', file);
         formData.append('originalname', file.name);
 
-        this.uploadDataService.uploadFile(formData, 'solicitar_visita/').subscribe({
+        this.uploadDataService.uploadFile(formData, 'solicitar_visita').subscribe({
           next: (response: any) => {
             if (response && response.url) {
               const correctedUrl = response.url.replace(/http:\/\/localhost:3000|https?:\/\/[^\/]+/, environment.apiUrl);

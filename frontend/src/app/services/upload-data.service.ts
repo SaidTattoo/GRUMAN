@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from '../config';
+import { environment } from 'src/environments/environment';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -19,7 +19,11 @@ export class UploadDataService {
    * @returns Observable con la respuesta del servidor.
    */
   uploadFile(formData: FormData, path: string): Observable<any> {
-    console.log('Subiendo archivo a:', `${this.apiUrl}/upload/${path}`);
+    // Eliminar barras iniciales y finales del path
+    const cleanPath = path.replace(/^\/+|\/+$/g, '');
+    // Construir la URL correctamente
+    const url = `${this.apiUrl}/upload/${cleanPath}`;
+    console.log('URL de carga:', url); // Para debugging
     
     // Asegurarse de que el FormData tenga el archivo con el nombre 'file'
     const file = formData.get('file');
@@ -28,9 +32,6 @@ export class UploadDataService {
       throw new Error('No se encontró el archivo');
     }
 
-    // Construir la URL completa
-    const url = `${this.apiUrl}/upload/${path}`;
-    
     // Realizar la petición POST
     return this.http.post(url, formData)
       .pipe(
