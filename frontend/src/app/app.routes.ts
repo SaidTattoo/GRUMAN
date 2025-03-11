@@ -6,6 +6,7 @@ import { FullComponent } from './layouts/full/full.component';
 import { EditarTecnicoComponent } from './pages/mantenedores/tecnicos/editar-tecnico/editar-tecnico.component';
 import { ChangelogTimelineComponent } from './components/changelog-timeline/changelog-timeline.component';
 import { SolicitudesDeVisitaRoutes } from './pages/transacciones/solicitudes-de-visita/solicitudes-de-visita.routes';
+import { SolicitudesValidadasRoutes } from './pages/transacciones/solicitudes-de-visita/solicitudes-validadas/solicitudes-validadas.routes';
 
 export const routes: Routes = [
   {
@@ -214,6 +215,10 @@ export const routes: Routes = [
           import('./pages/transacciones/servicios-realizados/servicios-realizados.routes').then(
             (m) => m.SERVICIOS_REALIZADOS_ROUTES
           ),
+      },
+      {
+        path: 'transacciones/solicitudes-de-visita/validadas',
+        children: SolicitudesValidadasRoutes
       },
       {
         path: 'starter',

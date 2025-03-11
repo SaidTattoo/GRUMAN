@@ -46,6 +46,12 @@ import { MatInputModule } from '@angular/material/input';
 
         <div class="table-responsive m-t-30">
           <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
+            <!-- ID Column -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
+              <td mat-cell *matCellDef="let row">{{row.id}}</td>
+            </ng-container>
+            
             <!-- Logo Column -->
             <ng-container matColumnDef="logo">
               <th mat-header-cell *matHeaderCellDef>Logo</th>
@@ -172,11 +178,11 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = [
-   
-    'fechaIngreso',
+    'id',
     'logo',
     'cliente',
     'local',
+    'fechaIngreso',
     'ticketGruman',
     'especialidad',
     'observaciones',

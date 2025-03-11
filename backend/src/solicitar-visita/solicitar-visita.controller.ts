@@ -173,8 +173,17 @@ export class SolicitarVisitaController {
   }
 
   @Post(':id/aprobar')
-  async aprobarSolicitudVisita(@Param('id') id: number) {
-    return this.solicitarVisitaService.aprovarSolicitudVisita(id);
+  async aprobarSolicitudVisita(
+    @Param('id') id: number,
+    @Body() data: { 
+      tecnico_asignado_id?: number, 
+      aprobada_por_id?: number,
+      fechaVisita?: Date,
+      especialidad?: string
+    }
+  ) {
+    console.log('Aprobando solicitud:', id, 'con datos:', data);
+    return this.solicitarVisitaService.aprovarSolicitudVisita(id, data);
   }
 
   @Post(':id/rechazar')

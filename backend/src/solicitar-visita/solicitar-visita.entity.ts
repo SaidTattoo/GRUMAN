@@ -52,8 +52,8 @@ export class SolicitarVisita {
   sectorTrabajoId: number;
 
   // Especialidad como texto opcional
-  @Column({ type: 'varchar', nullable: true, length: 255 })
-  especialidad: string;
+  @Column({ type: 'int', nullable: true })
+  especialidad: number;
 
   // Fecha de ingreso
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -122,6 +122,9 @@ export class SolicitarVisita {
 
   @Column({ type: 'int', nullable: true })
   aprobada_por_id: number;
+
+  @Column({ type: 'timestamp', nullable: true })
+  fecha_hora_aprobacion: Date;
 
   // Relación con User para rechazada_por
   @ManyToOne(() => User, (user) => user.id, { nullable: true })

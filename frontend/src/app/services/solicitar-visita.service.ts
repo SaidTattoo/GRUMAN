@@ -38,8 +38,24 @@ export class SolicitarVisitaService {
     return this.http.get<any>(`${this.apiUrl}solicitar-visita/${id}`);
   }
 
-  aprobarSolicitudVisita(id: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}solicitar-visita/${id}/aprobar`, {});
+  aprobarSolicitudVisita(
+    id: number, 
+    tecnico_asignado_id?: number, 
+    especialidad?: string,
+    fechaVisita?: Date
+  ): Observable<any> {
+    // Obtenemos el ID del usuario actual del localStorage
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userData = {
+      tecnico_asignado_id: tecnico_asignado_id,
+      aprobada_por_id: currentUser?.id,
+      fechaVisita: fechaVisita || new Date(),
+      especialidad: especialidad
+    };
+    
+    console.log('Aprobando solicitud con datos:', userData);
+    
+    return this.http.post<any>(`${this.apiUrl}solicitar-visita/${id}/aprobar`, userData);
   }
   rechazarSolicitudVisita(id: number, data: any): Observable<any> {
     // Obtenemos el ID del usuario actual del localStorage

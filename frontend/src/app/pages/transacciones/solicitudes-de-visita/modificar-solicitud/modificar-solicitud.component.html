@@ -2,15 +2,15 @@
     <mat-card-content class="p-24">
         <div class="container">
   @if (isPendiente) {
-    <h2>Solicitud Pendiente</h2>
+    <h2>Solicitud Pendiente Numero: <strong>{{solicitud?.id}}</strong></h2>
   } @else if (isAprobada) {
-    <h2>Solicitud Aprobada</h2>
+    <h2>Solicitud Aprobada Numero: <strong>{{solicitud?.id}}</strong></h2>
   } @else if (isRechazada) {
-    <h2>Solicitud Rechazada</h2>
+    <h2>Solicitud Rechazada Numero: <strong>{{solicitud?.id}}</strong></h2>
   } @else if (isValidada) {
-    <h2>Solicitud Validada</h2>
+    <h2>Solicitud Validada Numero: <strong>{{solicitud?.id}}</strong></h2>
   } @else {
-    <h2>Modificar Solicitud</h2>
+    <h2>Modificar Solicitud Numero: <strong>{{solicitud?.id}}</strong></h2>
   }
   
   <form [formGroup]="solicitudForm">
@@ -36,14 +36,36 @@
 
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Técnico Asignado</mat-label>
-        <mat-select formControlName="tecnico_asignado_id" [disabled]="!isPendiente || isRechazada">
+        <mat-select formControlName="tecnico_asignado_id" [disabled]="!isPendiente || isRechazada" required>
           <mat-option [value]="null">Sin asignar</mat-option>
           <mat-option *ngFor="let tecnico of tecnicos" [value]="tecnico.id">
-            {{tecnico.name}}
+            <div style="display: flex; align-items: center; justify-content: space-between;"
+                 [matTooltip]="'Especialidades: ' + getTecnicoEspecialidades(tecnico)">
+              <span>{{tecnico.name}}  {{tecnico.lastName}}</span>
+              @if (tecnicoTieneEspecialidad(tecnico)) {
+                <span style="color: #4CAF50; font-size: 18px; margin-left: 8px; font-weight: bold; display: flex; align-items: center;"
+                     matTooltip="Técnico con la especialidad requerida">
+                  ✓
+                </span>
+              }
+            </div>
           </mat-option>
         </mat-select>
+        <mat-error *ngIf="isPendiente && solicitudForm.get('tecnico_asignado_id')?.hasError('required')">
+          Se requiere asignar un técnico antes de aprobar la solicitud
+        </mat-error>
       </mat-form-field>
     </div>
+
+    <!-- Mensaje explicativo sobre el ícono de especialidad -->
+    @if (isPendiente) {
+      <div style="margin-bottom: 16px; padding: 8px 12px; background-color: #f5f7fa; border-radius: 4px; font-size: 14px; color: #555; border-left: 3px solid #4CAF50;">
+        <strong>Nota:</strong> Los técnicos marcados con <span style="color: #4CAF50; font-weight: bold;">✓</span> tienen la especialidad requerida para esta solicitud.
+      </div>
+    }
+
+    <!-- Nota informativa para solicitudes pendientes -->
+  
 
     <!-- Detalles de la Solicitud -->
     <div class="section-title">Detalles de la Solicitud</div>
@@ -57,7 +79,7 @@
             </mat-option>
           </mat-select>
         } @else {
-          <input matInput formControlName="tipoServicioId" [disabled]="true">
+          <input matInput [value]="getTipoServicioNombre(solicitud?.tipoServicioId)" disabled>
         }
       </mat-form-field>
 
@@ -70,7 +92,7 @@
             </mat-option>
           </mat-select>
         } @else {
-          <input matInput formControlName="sectorTrabajoId" [disabled]="true">
+          <input matInput [value]="getSectorTrabajoNombre(solicitud?.sectorTrabajoId)" disabled>
         }
       </mat-form-field>
     </div>
@@ -78,29 +100,39 @@
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Especialidad</mat-label>
-        @if (isValidated() || isRechazada || isValidada) {
-          <input matInput [value]="solicitud?.especialidad" disabled>
-        } @else {
+        @if (isPendiente && !isRechazada) {
           <mat-select formControlName="especialidad">
-            <mat-option *ngFor="let especialidad of especialidades" [value]="especialidad">
-              {{especialidad}}
+            <mat-option [value]="null">Seleccione una especialidad</mat-option>
+            <mat-option *ngFor="let esp of especialidades" [value]="esp.id">
+              {{esp.nombre}}
             </mat-option>
           </mat-select>
+        } @else {
+          <input matInput [value]="getEspecialidadNombre(solicitud?.especialidad)" disabled>
         }
       </mat-form-field>
 
       <mat-form-field appearance="fill">
-        <mat-label>Fecha de Ingreso</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="fechaIngreso" [disabled]="solicitud?.status === 'validada' || isRechazada">
-        <mat-datepicker-toggle matSuffix [for]="picker" [disabled]="solicitud?.status === 'validada' || isRechazada"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
+        <mat-label>Fecha de Visita</mat-label>
+        @if (solicitud?.status === 'validada' || isRechazada || isAprobada) {
+          <input matInput [value]="solicitud?.fechaVisita | date:'yyyy-MM-dd'" disabled>
+        } @else {
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <input matInput [matDatepicker]="picker" formControlName="fechaVisita" required style="flex: 1;">
+            <mat-datepicker-toggle [for]="picker"></mat-datepicker-toggle>
+          </div>
+          <mat-datepicker #picker></mat-datepicker>
+          <mat-error *ngIf="isPendiente && solicitudForm.get('fechaVisita')?.hasError('required')">
+            Se requiere una fecha de visita antes de aprobar la solicitud
+          </mat-error>
+        }
       </mat-form-field>
     </div>
 
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Ticket</mat-label>
-        @if (isValidated() || isRechazada || isValidada) {
+        @if (isValidated() || isRechazada || isValidada || isAprobada) {
           <input matInput [value]="solicitud?.ticketGruman" disabled>
         } @else {
           <input matInput formControlName="ticketGruman">
@@ -115,12 +147,29 @@
 
     <mat-form-field appearance="fill" class="full-width">
       <mat-label>Observaciones</mat-label>
-      @if (isValidated() || isRechazada || isValidada) {
+      @if (isValidated() || isRechazada || isValidada || isAprobada) {
         <textarea matInput [value]="solicitud?.observaciones" rows="4" disabled></textarea>
       } @else {
         <textarea matInput formControlName="observaciones" rows="4"></textarea>
       }
     </mat-form-field>
+
+    <!-- Imágenes de la solicitud -->
+    @if (solicitud?.imagenes?.length) {
+      <div class="section-title">Imágenes de la Solicitud</div>
+      <div class="images-container">
+        <div class="image-grid">
+          @for (imagen of solicitud.imagenes; track $index) {
+            <div class="image-item">
+              <img [src]="imagen" 
+                  (click)="openPhotoViewer([imagen])" 
+                  alt="Imagen de la solicitud"
+                  class="solicitud-image">
+            </div>
+          }
+        </div>
+      </div>
+    }
 
     <!-- Fechas de Servicio -->
     <div class="section-title" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Fechas de Servicio</div>
@@ -162,7 +211,7 @@
       <h3>Ubicación del Local</h3>
       <div class="map-container">
         <div class="map-frame">
-          <div id="map"></div>
+          <div id="map" style="height: 400px;"></div>
         </div>
       </div>
     </div>
@@ -336,7 +385,12 @@
         <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
       </div>
     </div>
-
+    @if (isPendiente) {
+      <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
+        <mat-icon style="color: #1976d2;">info</mat-icon>
+        <span style="color: #1565c0; font-size: 14px;">Para aprobar esta solicitud, debes asignar un técnico y verificar la fecha de visita.</span>
+      </div>
+    }
     <div class="actions">
       <button mat-button [style.color]="solicitud?.status === 'validada' || isAprobada || isRechazada ? '#1976d2' : ''" (click)="onCancel()">
         {{ solicitud?.status !== 'validada' && !isAprobada && !isRechazada ? 'Cancelar' : 'Volver' }}
@@ -344,7 +398,10 @@
 
       @if (isPendiente) {
         <!-- Botones para estado pendiente -->
-        <button mat-raised-button color="primary" (click)="aprobarSolicitud()" style="margin-right: 10px;">
+        <button mat-raised-button color="primary" 
+                (click)="aprobarSolicitud()" 
+                style="margin-right: 10px;"
+                [disabled]="!solicitudForm.get('tecnico_asignado_id')?.value">
           <mat-icon>check_circle</mat-icon> Aprobar
         </button>
         <button mat-raised-button color="warn" (click)="rechazarSolicitud()">
@@ -734,15 +791,59 @@ td.mat-cell {
   border: 1px solid #ddd;
 }
 
-.inspection-photo {
+.solicitud-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.3s ease;
 }
 
-.inspection-photo:hover {
+.solicitud-image:hover {
+  transform: scale(1.05);
+}
+
+/* Estilo para mensajes informativos */
+.info-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.info-message mat-icon {
+  color: #1976d2;
+}
+
+.info-message span {
+  color: #1565c0;
+  font-size: 14px;
+}
+
+/* Estilos para imágenes de la solicitud */
+.images-container {
+  margin: 15px 0 25px;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.image-item {
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.solicitud-image:hover {
   transform: scale(1.05);
 }
 

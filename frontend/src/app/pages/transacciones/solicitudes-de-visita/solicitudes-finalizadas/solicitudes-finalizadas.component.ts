@@ -43,6 +43,12 @@ import { MatInputModule } from '@angular/material/input';
 
         <div class="table-responsive m-t-30">
           <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
+            <!-- ID Column -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
+              <td mat-cell *matCellDef="let row">{{row.id}}</td>
+            </ng-container>
+
             <!-- Logo Column -->
             <ng-container matColumnDef="logo">
               <th mat-header-cell *matHeaderCellDef>Logo</th>
@@ -107,7 +113,7 @@ import { MatInputModule } from '@angular/material/input';
               <td mat-cell *matCellDef="let row">
                 <button mat-raised-button color="primary" (click)="finalizarSolicitud(row)">
                   <mat-icon>check_circle</mat-icon>
-                  Finalizar
+                  Validar
                 </button>
               </td>
             </ng-container>
@@ -164,10 +170,11 @@ import { MatInputModule } from '@angular/material/input';
 export class SolicitudesFinalizadasComponent implements OnInit {
   dataSource: MatTableDataSource<any>;
   displayedColumns: string[] = [
-   'fechaIngreso',
+    'id',
     'logo',
     'cliente',
     'local',
+    'fechaIngreso',
     'especialidad',
     'ticketGruman',
     'observaciones',

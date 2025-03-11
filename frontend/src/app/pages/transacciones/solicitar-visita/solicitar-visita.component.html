@@ -71,9 +71,9 @@
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
             <mat-select formControlName="especialidad">
-              @for (especialidad of especialidades; track especialidad.id) {
-                <mat-option [value]="especialidad.nombre">{{especialidad.nombre}}</mat-option>
-              }
+              <mat-option *ngFor="let esp of especialidades" [value]="esp.id">
+                {{esp.nombre}}
+              </mat-option>
             </mat-select>
           </mat-form-field>
         </div>
