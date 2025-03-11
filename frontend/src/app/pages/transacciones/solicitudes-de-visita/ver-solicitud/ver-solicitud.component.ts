@@ -213,7 +213,12 @@ export class VerSolicitudComponent implements OnInit {
           fechaVisita: this.activity.fechaVisita
         }).subscribe({
           next: () => {
-            this.solicitarVisitaService.aprobarSolicitudVisita(this.activity.id).subscribe({
+            this.solicitarVisitaService.aprobarSolicitudVisita(
+              this.activity.id, 
+              this.activity.tecnico_asignado_id,
+              this.activity.especialidad,
+              this.activity.fechaVisita
+            ).subscribe({
               next: (response) => {
                 this.activity = response;
                 Swal.fire('Éxito', 'Solicitud aprobada correctamente', 'success');

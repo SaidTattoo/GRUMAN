@@ -28,6 +28,11 @@ interface Client {
   // ... otros campos necesariosa
 }
 
+interface Especialidad {
+  id: number;
+  nombre: string;
+}
+
 @Component({
   selector: 'app-solicitar-visita',
   standalone: true,
@@ -52,7 +57,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   locales: any[] = [];
   sectores: any[] = [];
   tipoServicio: any[] = [];
-  especialidades: any[] = [];
+  especialidades: Especialidad[] = [];
   user: any;
   visitaForm: FormGroup;
   urlImage: string[] = []; // Cambiado a arreglo para almacenar las URLs
@@ -145,11 +150,11 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         localId: Number(values.localId),
         sectorTrabajoId: Number(values.sectorTrabajoId),
         clientId: this.clientId,
-        especialidad: values.especialidad,
+        especialidad: Number(values.especialidad),
         ticketGruman: values.ticketGruman,
         observaciones: values.observaciones,
         fechaIngreso: values.fechaIngreso,
-        imagenes: this.urlImage, // Agregar URLs al objeto de solicitud
+        imagenes: this.urlImage,
       };
 
       this.solicitarVisitaService.crearSolicitudVisita(solicitud).subscribe({
@@ -220,7 +225,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
 
   loadEspecialidades() {
     this.especialidadesService.findAll().subscribe({
-      next: (data) => {
+      next: (data: Especialidad[]) => {
         this.especialidades = data;
       },
       error: (error) => {

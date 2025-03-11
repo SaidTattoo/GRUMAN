@@ -118,7 +118,7 @@
           <mat-form-field appearance="outline" class="w-100">
             <mat-select formControlName="tecnico_asignado_id" placeholder="Seleccionar Técnico">
               <mat-option *ngFor="let tecnico of tecnicos" [value]="tecnico.id">
-                {{ tecnico.name }}
+                {{ tecnico.name }} {{ tecnico.lastName }}
               </mat-option>
             </mat-select>
             @if (programacionForm.get('tecnico_asignado_id')?.touched && programacionForm.get('tecnico_asignado_id')?.invalid) {

@@ -62,6 +62,7 @@ import { Router, RouterModule } from '@angular/router';
 export class SolicitudesDeVisitaComponent implements OnInit {
   dataSource: MatTableDataSource<any>;
   displayedColumns: string[] = [
+    'id',
     'fechaIngreso',	
     'logo',
     'cliente',

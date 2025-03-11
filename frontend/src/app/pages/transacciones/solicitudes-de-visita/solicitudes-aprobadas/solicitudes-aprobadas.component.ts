@@ -44,15 +44,13 @@ import { MatInputModule } from '@angular/material/input';
 
         <div class="table-responsive m-t-30">
           <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
-            <!-- Logo Column -->
-
-            
-            <!-- Fecha Column -->
-            <ng-container matColumnDef="fechaIngreso">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
-              <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
+            <!-- ID Column -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
+              <td mat-cell *matCellDef="let row">{{row.id}}</td>
             </ng-container>
 
+            <!-- Logo Column -->
             <ng-container matColumnDef="logo">
               <th mat-header-cell *matHeaderCellDef>Logo</th>
               <td mat-cell *matCellDef="let row" class="logo-cell">
@@ -62,6 +60,12 @@ import { MatInputModule } from '@angular/material/input';
                   class="client-logo"
                   (error)="onImageError($event)">
               </td>
+            </ng-container>
+
+            <!-- Fecha Column -->
+            <ng-container matColumnDef="fechaIngreso">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
+              <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
             </ng-container>
 
             <!-- Cliente Column -->
@@ -164,11 +168,11 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class SolicitudesAprobadasComponent implements OnInit {
   displayedColumns: string[] = [
-    
-    'fechaIngreso',
+    'id',
     'logo',
     'cliente',
     'local',
+    'fechaIngreso',
     'ticketGruman',
     'especialidad',
     'observaciones',

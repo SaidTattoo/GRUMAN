@@ -50,6 +50,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
         <div class="table-responsive m-t-30">
           <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
+            <!-- ID Column -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
+              <td mat-cell *matCellDef="let row">{{row.id}}</td>
+            </ng-container>
+
             <!-- Logo Column -->
             <ng-container matColumnDef="logo">
               <th mat-header-cell *matHeaderCellDef>Logo</th>
@@ -130,6 +136,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
                 <button mat-icon-button color="primary" (click)="verDetalle(row.id); $event.stopPropagation()">
                   <mat-icon>visibility</mat-icon>
                 </button>
+              <!--   <button mat-icon-button 
+                        color="primary" 
+                        (click)="verHistorial(row); $event.stopPropagation()"
+                        matTooltip="Ver historial"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="500">
+                  <mat-icon>history</mat-icon>
+                </button> -->
                 <button  mat-icon-button 
                          color="primary" 
                          (click)="reabrirSolicitud(row); $event.stopPropagation()" 
@@ -219,11 +233,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class SolicitudesValidadasComponent implements OnInit {
   displayedColumns: string[] = [
-   
-    'fechaIngreso',
+    'id',
     'logo',
     'cliente',
     'local',
+    'fechaIngreso',
     'ticketGruman',
     'especialidad',
     'observaciones',
@@ -330,5 +344,9 @@ export class SolicitudesValidadasComponent implements OnInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  verHistorial(solicitud: any) {
+    this.router.navigate(['/transacciones/solicitudes-de-visita/validadas/historial', solicitud.id]);
   }
 } 

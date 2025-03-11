@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
@@ -26,6 +26,8 @@ import { forkJoin } from 'rxjs';
 import * as L from 'leaflet';
 import { UsersService } from 'src/app/services/users.service';
 import { ConfirmDialogComponent } from '../../../../components/confirm-dialog/confirm-dialog.component';
+import { EspecialidadesService } from '../../../../services/especialidades.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 interface Repuesto {
   id: number;
@@ -68,6 +70,16 @@ interface RepuestoMap {
       repuesto: Repuesto;
     }>;
   };
+}
+
+interface Tecnico {
+  id: number;
+  name: string;
+  lastName?: string;
+  especialidades: {
+    id: number;
+    nombre: string;
+  }[];
 }
 
 @Component({
@@ -141,17 +153,7 @@ export class ModificarSolicitudComponent implements OnInit {
   tipoServicio: any;
   sectorTrabajo: any;
   listaInspeccion: any[] = [];
-  especialidades: string[] = [
-    'Electricidad',
-    'Climatización',
-    'Refrigeración',
-    'Mecánica',
-    'Plomería',
-    'Carpintería',
-    'Albañilería',
-    'Pintura',
-    'Otros'
-  ];
+  especialidades: any[] = [];
   displayedColumns: string[] = [
     'id', 
     'repuesto.familia',
@@ -173,7 +175,7 @@ export class ModificarSolicitudComponent implements OnInit {
   temporaryDeletedRepuestos: {[key: number]: any[]} = {};
   tiposServicio: any[] = [];
   sectoresTrabajos: any[] = [];
-  tecnicos: any[] = [];
+  tecnicos: Tecnico[] = [];
   private map: L.Map | null = null;
   isPendiente: boolean = false;
   isAprobada: boolean = false;
@@ -194,17 +196,19 @@ export class ModificarSolicitudComponent implements OnInit {
     private repuestosService: RepuestosService,
     private inspectionService: InspectionService,
     private sectorTrabajoService: SectoresService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private especialidadesService: EspecialidadesService,
+    private cd: ChangeDetectorRef
   ) {
     this.solicitudForm = this.fb.group({
       tipoServicioId: [''],
       sectorTrabajoId: [''],
       especialidad: [''],
-      fechaIngreso: [{value: '', disabled: true}],
+      fechaVisita: [{value: '', disabled: false}, Validators.required],
       ticketGruman: [''],
       observaciones: [''],
       status: [{value: '', disabled: true}],
-      tecnico_asignado_id: [''],
+      tecnico_asignado_id: ['', Validators.required],
       fecha_hora_inicio_servicio: [{value: '', disabled: true}],
       fecha_hora_fin_servicio: [{value: '', disabled: true}],
       longitud_movil: [''],
@@ -236,6 +240,8 @@ export class ModificarSolicitudComponent implements OnInit {
     this.loadCatalogos();
     this.loadSolicitud();
     this.cargarTecnicos();
+    this.loadEspecialidades();
+    this.watchEspecialidadChanges();
   }
 
   inicializarFormulario() {
@@ -243,11 +249,11 @@ export class ModificarSolicitudComponent implements OnInit {
       tipoServicioId: [''],
       sectorTrabajoId: [''],
       especialidad: [''],
-      fechaIngreso: [{value: '', disabled: true}],
+      fechaVisita: [{value: '', disabled: false}, Validators.required],
       ticketGruman: [''],
       observaciones: [''],
       status: [{value: '', disabled: true}],
-      tecnico_asignado_id: [''],
+      tecnico_asignado_id: ['', Validators.required],
       fecha_hora_inicio_servicio: [{value: '', disabled: true}],
       fecha_hora_fin_servicio: [{value: '', disabled: true}],
       longitud_movil: [''],
@@ -374,7 +380,7 @@ export class ModificarSolicitudComponent implements OnInit {
           'tipoServicioId': data.tipoServicioId || (data.tipoServicio?.id || ''),
           'sectorTrabajoId': data.sectorTrabajoId || '',
           'especialidad': data.especialidad || '',
-          'fechaIngreso': data.fechaIngreso ? new Date(data.fechaIngreso) : null,
+          'fechaVisita': data.fechaVisita ? new Date(data.fechaVisita) : null,
           'ticketGruman': data.ticketGruman || '',
           'status': data.status || '',
           'observaciones': data.observaciones || '',
@@ -472,24 +478,79 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   aprobarSolicitud(): void {
+    // Verificar si el formulario es válido
+    if (this.solicitudForm.invalid) {
+      // Marcar todos los campos como tocados para mostrar los errores
+      Object.keys(this.solicitudForm.controls).forEach(key => {
+        const control = this.solicitudForm.get(key);
+        control?.markAsTouched();
+      });
+      
+      this.snackBar.open('Por favor completa los campos requeridos antes de aprobar la solicitud', 'Cerrar', {
+        duration: 5000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    // Validar que haya un técnico asignado
+    if (!this.solicitudForm.get('tecnico_asignado_id')?.value) {
+      this.snackBar.open('No se puede aprobar la solicitud sin un técnico asignado', 'Cerrar', {
+        duration: 5000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    // Validar que haya una fecha de visita
+    if (!this.solicitudForm.get('fechaVisita')?.value) {
+      this.snackBar.open('No se puede aprobar la solicitud sin una fecha de visita', 'Cerrar', {
+        duration: 5000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    // Proceder con la aprobación
     this.loading = true;
-    this.solicitarVisitaService.aprobarSolicitudVisita(Number(this.solicitudId)).subscribe({
-      next: () => {
-        this.snackBar.open('Solicitud aprobada correctamente', 'Cerrar', {
-          duration: 3000
-        });
-        this.router.navigate(['/transacciones/solicitudes-de-visita']);
-      },
-      error: (error: any) => {
-        console.error('Error al aprobar la solicitud:', error);
-        this.snackBar.open('Error al aprobar la solicitud', 'Cerrar', {
-          duration: 3000
-        });
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-      }
+    
+    // Primero guardar los cambios en el formulario
+    this.saveChanges().then(() => {
+      // Obtener el ID del técnico asignado y la especialidad
+      const tecnicoAsignadoId = this.solicitudForm.get('tecnico_asignado_id')?.value;
+      const especialidad = this.solicitudForm.get('especialidad')?.value;
+      const fechaVisita = this.solicitudForm.get('fechaVisita')?.value;
+      
+      // Luego aprobar la solicitud
+      this.solicitarVisitaService.aprobarSolicitudVisita(
+        Number(this.solicitudId), 
+        tecnicoAsignadoId,
+        especialidad,
+        fechaVisita
+      ).subscribe({
+        next: () => {
+          this.snackBar.open('Solicitud aprobada correctamente', 'Cerrar', {
+            duration: 3000
+          });
+          this.router.navigate(['/transacciones/solicitudes-de-visita']);
+        },
+        error: (error: any) => {
+          console.error('Error al aprobar la solicitud:', error);
+          this.snackBar.open('Error al aprobar la solicitud', 'Cerrar', {
+            duration: 3000
+          });
+          this.loading = false;
+        },
+        complete: () => {
+          this.loading = false;
+        }
+      });
+    }).catch(error => {
+      console.error('Error al guardar los cambios del formulario:', error);
+      this.snackBar.open('Error al guardar los cambios del formulario', 'Cerrar', {
+        duration: 3000
+      });
+      this.loading = false;
     });
   }
 
@@ -1132,11 +1193,12 @@ export class ModificarSolicitudComponent implements OnInit {
 
   cargarTecnicos() {
     this.usersService.getAllTecnicos().subscribe({
-      next: (response) => {
+      next: (response: Tecnico[]) => {
         this.tecnicos = response;
+        console.log('Técnicos cargados:', this.tecnicos);
       },
       error: (error) => {
-        console.error('Error al cargar técnicos:', error);
+        console.error('Error cargando técnicos:', error);
       }
     });
   }
@@ -1150,7 +1212,7 @@ export class ModificarSolicitudComponent implements OnInit {
       'tipoServicioId',
       'sectorTrabajoId',
       'especialidad',
-      'fechaIngreso',
+      'fechaVisita',
       'ticketGruman',
       'observaciones',
       'tecnico_asignado_id',
@@ -1195,5 +1257,67 @@ export class ModificarSolicitudComponent implements OnInit {
       
       return totalItems + subItemsTotal;
     }, 0);
+  }
+
+  private loadEspecialidades(): void {
+    this.especialidadesService.findAll().subscribe({
+      next: (data: any[]) => {
+        this.especialidades = data;
+        // Actualizar el valor en el formulario después de cargar las especialidades
+        if (this.solicitud?.especialidad) {
+          const especialidadId = Number(this.solicitud.especialidad);
+          this.solicitudForm.patchValue({
+            especialidad: especialidadId
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error cargando especialidades:', error);
+      }
+    });
+  }
+
+  getEspecialidadNombre(especialidadId: string | null): string {
+    if (!especialidadId) return 'Sin especialidad';
+    
+    const especialidad = this.especialidades.find(e => e.id === Number(especialidadId));
+    return especialidad ? especialidad.nombre : 'Sin especialidad';
+  }
+
+  getTipoServicioNombre(tipoServicioId: number | null): string {
+    if (!tipoServicioId) return 'Sin tipo de servicio';
+    const tipo = this.tiposServicio.find(t => t.id === tipoServicioId);
+    return tipo ? tipo.nombre : 'Sin tipo de servicio';
+  }
+
+  getSectorTrabajoNombre(sectorTrabajoId: number | null): string {
+    if (!sectorTrabajoId) return 'Sin sector de trabajo';
+    const sector = this.sectoresTrabajos.find(s => s.id === sectorTrabajoId);
+    return sector ? sector.nombre : 'Sin sector de trabajo';
+  }
+
+  // Método para verificar si el técnico tiene la especialidad requerida
+  tecnicoTieneEspecialidad(tecnico: any): boolean {
+    if (!this.solicitud?.especialidad) return false;
+    const especialidadId = Number(this.solicitud.especialidad);
+    return tecnico.especialidades?.some((esp: any) => esp.id === especialidadId);
+  }
+
+  // Opcional: Agregar un método para obtener el nombre de las especialidades del técnico
+  getTecnicoEspecialidades(tecnico: Tecnico): string {
+    return tecnico.especialidades
+      ?.map(esp => esp.nombre)
+      .join(', ') || 'Sin especialidades';
+  }
+
+  private watchEspecialidadChanges() {
+    this.solicitudForm.get('especialidad')?.valueChanges.subscribe(newValue => {
+      // Actualizar la especialidad en la solicitud para que tecnicoTieneEspecialidad funcione correctamente
+      if (this.solicitud) {
+        this.solicitud.especialidad = newValue?.toString();
+      }
+      // Forzar la actualización de la vista
+      this.cd.detectChanges();
+    });
   }
 } 

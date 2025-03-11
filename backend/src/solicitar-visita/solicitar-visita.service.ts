@@ -237,8 +237,38 @@ export class SolicitarVisitaService {
         return data;
     }
 
-    async aprovarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-       await this.solicitarVisitaRepository.update(id, { status: SolicitudStatus.APROBADA });
+    async aprovarSolicitudVisita(id: number, data?: { 
+        tecnico_asignado_id?: number, 
+        aprobada_por_id?: number,
+        fechaVisita?: Date,
+        especialidad?: string
+    }): Promise<SolicitarVisita> {
+       const updateData: any = { 
+           status: SolicitudStatus.APROBADA,
+           fecha_hora_aprobacion: new Date()
+       };
+       
+       // Si se proporciona un ID de técnico asignado, guardarlo
+       if (data?.tecnico_asignado_id) {
+           updateData.tecnico_asignado_id = data.tecnico_asignado_id;
+       }
+       
+       // Si se proporciona un ID de quien aprueba, guardarlo
+       if (data?.aprobada_por_id) {
+           updateData.aprobada_por_id = data.aprobada_por_id;
+       }
+       
+       // Si se proporciona una fecha de visita, guardarla
+       if (data?.fechaVisita) {
+           updateData.fechaVisita = data.fechaVisita;
+       }
+       
+       // Si se proporciona una especialidad, guardarla
+       if (data?.especialidad) {
+           updateData.especialidad = data.especialidad;
+       }
+       
+       await this.solicitarVisitaRepository.update(id, updateData);
        
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
