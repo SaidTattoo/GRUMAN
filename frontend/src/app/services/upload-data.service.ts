@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../config';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -31,7 +32,16 @@ export class UploadDataService {
     const url = `${this.apiUrl}upload/${path}`;
     
     // Realizar la petición POST
-    return this.http.post(url, formData);
+    return this.http.post(url, formData)
+      .pipe(
+        map((response: any) => {
+          if (response && response.url) {
+            // Asegurarse de que la URL use el dominio correcto
+            response.url = response.url.replace('http://localhost:3000', this.apiUrl);
+          }
+          return response;
+        })
+      );
   }
 
   /**
