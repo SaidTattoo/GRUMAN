@@ -40,8 +40,13 @@ export class AppController {
     }
 
     const filename = file.filename;
-    const fileUrl = `${process.env.API_URL || 'http://localhost:3000'}/uploads/${path}/${filename}`;
-
+    const fileUrl = `${process.env.API_URL}uploads/${path}/${filename}`;
+    console.log('#############################');
+    console.log('#############################');
+    console.log(process.env.API_URL);
+    console.log(fileUrl);
+    console.log('#############################');
+    console.log('#############################');
     return {
       filename: filename,
       originalname: file.originalname,
@@ -81,7 +86,7 @@ export class AppController {
     }
 
     const filename = file.filename;
-    const fileUrl = `${process.env.API_URL || 'http://localhost:3000'}/uploads/solicitudes/${solicitudId}/${itemId}/${filename}`;
+    const fileUrl = `${process.env.API_URL}uploads/solicitudes/${solicitudId}/${itemId}/${filename}`;
 
     return {
       filename: filename,

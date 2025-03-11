@@ -21,6 +21,7 @@ import { ClientesService } from 'src/app/services/clientes.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
+import { environment } from 'src/app/config';
 
 interface Client {
   id: number;
@@ -131,8 +132,12 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       });
 
       const responses = await Promise.all(uploadPromises);
-      this.urlImage = responses.map((res: any) => res.url); // Guardar las URLs en el array
-      console.log('Imágenes subidas:', this.urlImage);
+      this.urlImage = responses.map((res: any) => {
+        if (res && res.url) {
+          return res.url.replace(/http:\/\/localhost:3000|https?:\/\/[^\/]+/, environment.apiUrl);
+        }
+        return res.url;
+      });
 
       return this.urlImage;
     } catch (error) {
@@ -235,6 +240,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   }
 
   onFileSelected(event: Event) {
+    console.log('Evento de selección de archivos:', event);
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       Array.from(input.files).forEach((file, index) => {
@@ -242,11 +248,15 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         formData.append('file', file);
         formData.append('originalname', file.name);
 
-        this.uploadDataService.uploadFile(formData, 'solicitar_visita/').subscribe({
+        this.uploadDataService.uploadFile(formData, 'solicitar_visita').subscribe({
           next: (response: any) => {
             if (response && response.url) {
-              this.urlImage.push(response.url);
-              console.log(`Imagen subida exitosamente: ${response.url}`);
+              const correctedUrl = response.url.replace(/http:\/\/localhost:3000|https?:\/\/[^\/]+/, environment.apiUrl);
+              this.urlImage.push(correctedUrl);
+              console.log(`Imagen subida exitosamente: ${correctedUrl}`);
+              
+              this.selectedFiles.push(file);
+              this.createImagePreview(file, this.selectedFiles.length - 1);
             }
           },
           error: (error) => {
@@ -254,11 +264,8 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
             Swal.fire('Error', 'Hubo un problema al subir la imagen', 'error');
           },
         });
-
-        this.createImagePreview(file, index);
       });
     }
-    console.log(this.urlImage);
   }
 
   createImagePreview(file: File, index: number) {
