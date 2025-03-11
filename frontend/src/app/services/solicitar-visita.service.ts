@@ -8,12 +8,14 @@ import { tap, catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class SolicitarVisitaService {
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
-  private apiUrl = environment.apiUrl;
-  crearSolicitudVisita(solicitudVisita: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}solicitar-visita`, solicitudVisita);
+
+  crearSolicitudVisita(solicitud: any) {
+    return this.http.post(`${this.apiUrl}solicitar-visita`, solicitud);
   }
+
   getSolicitudesVisita(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}solicitar-visita`);
   }
@@ -129,6 +131,6 @@ export class SolicitarVisitaService {
   }
 
   updateRepuestos(solicitudId: string, changes: any) {
-    return this.http.patch(`${this.apiUrl}/solicitar-visita/${solicitudId}/repuestos`, changes);
+    return this.http.patch(`${this.apiUrl}solicitar-visita/${solicitudId}/repuestos`, changes);
   }
 }

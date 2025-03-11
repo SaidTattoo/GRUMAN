@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../config';
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,10 +20,12 @@ export class UploadDataService {
    * @returns Observable con la respuesta del servidor.
    */
   uploadFile(formData: FormData, path: string): Observable<any> {
-    // Eliminar barras iniciales y finales del path
+    // Solo limpiar barras extras del path
     const cleanPath = path.replace(/^\/+|\/+$/g, '');
-    // Construir la URL correctamente
+    
+    // Construir la URL asegurándose de que no haya dobles barras
     const url = `${this.apiUrl}upload/${cleanPath}`;
+    
     console.log('URL de carga:', url); // Para debugging
     
     // Asegurarse de que el FormData tenga el archivo con el nombre 'file'
@@ -37,8 +40,10 @@ export class UploadDataService {
       .pipe(
         map((response: any) => {
           if (response && response.url) {
-            // Asegurarse de que la URL use el dominio correcto
-            response.url = response.url.replace('http://localhost:3000', this.apiUrl);
+            // Limpiar la URL antes de devolverla
+            response.url = response.url
+              .replace(/([^:]\/)\/+/g, '$1')
+              .replace(/localhost:3000/, environment.apiUrl);
           }
           return response;
         })
@@ -88,7 +93,7 @@ export class UploadDataService {
       throw new Error('No se encontró el archivo');
     }
 
-    const url = `${this.apiUrl}/upload/solicitudes/${solicitudId}/${itemId}`;
+    const url = `${this.apiUrl}upload/solicitudes/${solicitudId}/${itemId}`;
     return this.http.post(url, formData);
   }
 }

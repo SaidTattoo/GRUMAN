@@ -151,6 +151,11 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     if (this.visitaForm.valid) {
       const values = this.visitaForm.getRawValue();
 
+      // Limpiar las URLs de las imágenes antes de enviar
+      const imagenesLimpias = this.urlImage.map(url => 
+        url.replace(/([^:]\/)\/+/g, '$1')
+      );
+
       const solicitud = {
         tipoServicioId: Number(values.tipoServicioId),
         localId: Number(values.localId),
@@ -160,39 +165,23 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         ticketGruman: values.ticketGruman,
         observaciones: values.observaciones,
         fechaIngreso: values.fechaIngreso,
-        imagenes: this.urlImage,
+        imagenes: imagenesLimpias, // Usar las URLs limpias
       };
 
       this.solicitarVisitaService.crearSolicitudVisita(solicitud).subscribe({
-        next: async (response) => {
+        next: (response) => {
           console.log('Visita creada:', response);
-
-          try {
-            await this.subirImagenes(response.data.id);
-            Swal.fire({
-              title: 'Éxito',
-              html: `
-                <div style="text-align: left">
-                  <p><strong>Solicitud de visita generada correctamente</strong></p>
-                  <p><strong>N° Requerimiento:</strong> ${response.data.id}</p>
-                  <p><strong>Fecha:</strong> ${this.formatDate(response.data.fechaVisita)}</p>
-                </div>
-              `,
-              icon: 'success'
-            });
-          } catch (error) {
-            console.error('Error al subir imágenes:', error);
-            Swal.fire(
-              'Error',
-              'La visita se creó pero hubo un error al subir las imágenes',
-              'error'
-            );
-          }
+          // Mostrar mensaje de éxito
+          Swal.fire({
+            title: 'Éxito',
+            text: 'La solicitud de visita se ha creado correctamente',
+            icon: 'success'
+          });
         },
         error: (error) => {
-          console.error('Error al crear visita:', error);
-          Swal.fire('Error', 'No se pudo crear la visita', 'error');
-        },
+          console.error('Error al crear la visita:', error);
+          Swal.fire('Error', 'No se pudo crear la solicitud de visita', 'error');
+        }
       });
     } else {
       Swal.fire('Error', 'Debe completar todos los campos requeridos', 'error');
@@ -241,7 +230,6 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   }
 
   onFileSelected(event: Event) {
-    console.log('Evento de selección de archivos:', event);
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       Array.from(input.files).forEach((file, index) => {
@@ -252,9 +240,8 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         this.uploadDataService.uploadFile(formData, 'solicitar_visita').subscribe({
           next: (response: any) => {
             if (response && response.url) {
-              const correctedUrl = response.url.replace(/http:\/\/localhost:3000|https?:\/\/[^\/]+/, environment.apiUrl);
-              this.urlImage.push(correctedUrl);
-              console.log(`Imagen subida exitosamente: ${correctedUrl}`);
+              this.urlImage.push(response.url);
+              console.log(`Imagen subida exitosamente: ${response.url}`);
               
               this.selectedFiles.push(file);
               this.createImagePreview(file, this.selectedFiles.length - 1);

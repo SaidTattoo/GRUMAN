@@ -53,7 +53,7 @@ export class VerDetalleServicioComponent implements OnInit {
         console.log('Servicio cargado:', data);
         this.servicio = data;
         if (this.servicio.client?.foto) {
-          this.fotoClienteUrl = `${environment.apiUrl}/uploads/clientes/${this.servicio.client.foto}`;
+          this.fotoClienteUrl = `${environment.apiUrl}uploads/clientes/${this.servicio.client.foto}`;
         }
         this.loading = false;
 
