@@ -19,7 +19,7 @@ export class UploadDataService {
    * @returns Observable con la respuesta del servidor.
    */
   uploadFile(formData: FormData, path: string): Observable<any> {
-    console.log('Subiendo archivo a:', `${this.apiUrl}upload/${path}`);
+    console.log('Subiendo archivo a:', `${this.apiUrl}/upload/${path}`);
     
     // Asegurarse de que el FormData tenga el archivo con el nombre 'file'
     const file = formData.get('file');
@@ -29,7 +29,7 @@ export class UploadDataService {
     }
 
     // Construir la URL completa
-    const url = `${this.apiUrl}upload/${path}`;
+    const url = `${this.apiUrl}/upload/${path}`;
     
     // Realizar la petición POST
     return this.http.post(url, formData)
@@ -51,9 +51,9 @@ export class UploadDataService {
    */
   downloadFile(path: string): Observable<any> {
     console.log('Descargando archivo...');
-    console.log('Ruta del servidor:', `${this.apiUrl}upload/${path}`);
+    console.log('Ruta del servidor:', `${this.apiUrl}/upload/${path}`);
 
-    return this.http.get(`${this.apiUrl}upload/${path}`, {
+    return this.http.get(`${this.apiUrl}/upload/${path}`, {
       responseType: 'blob'
     });
   }
@@ -65,9 +65,9 @@ export class UploadDataService {
    */
   deleteFile(path: string): Observable<any> {
     console.log('Eliminando archivo...');
-    console.log('Ruta del servidor:', `${this.apiUrl}upload/${path}`);
+    console.log('Ruta del servidor:', `${this.apiUrl}/upload/${path}`);
 
-    const url = `${this.apiUrl}upload/${path}`;
+    const url = `${this.apiUrl}/upload/${path}`;
     return this.http.delete(url);
   }
 
@@ -87,7 +87,7 @@ export class UploadDataService {
       throw new Error('No se encontró el archivo');
     }
 
-    const url = `${this.apiUrl}upload/solicitudes/${solicitudId}/${itemId}`;
+    const url = `${this.apiUrl}/upload/solicitudes/${solicitudId}/${itemId}`;
     return this.http.post(url, formData);
   }
 }
