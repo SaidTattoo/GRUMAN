@@ -40,7 +40,7 @@ export class AppController {
     }
 
     const filename = file.filename;
-    const fileUrl = `${process.env.API_URL || 'http://localhost:3000'}/uploads/${path}/${filename}`;
+    const fileUrl = `${process.env.API_URL_PROD || 'http://localhost:3000'}/uploads/${path}/${filename}`;
 
     return {
       filename: filename,
