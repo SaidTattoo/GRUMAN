@@ -87,7 +87,7 @@ export class CrearLocalComponent implements OnInit {
       (r) => r.region_id === this.localForm.get('region')?.value
     )?.region_nombre;
   
-    if (direccion && comuna && region) {
+  /*   if (direccion && comuna && region) {
       const fullAddress = `${direccion}, ${comuna}, ${region}`;
       this.geocodingService.geocodeAddress(fullAddress).subscribe({
         next: (response) => {
@@ -112,7 +112,7 @@ export class CrearLocalComponent implements OnInit {
           console.error('Error en la geocodificación:', error);
         },
       });
-    }
+    } */
   }
   cargarRegiones() {
     this.regionesComunasService.getRegiones().subscribe({
