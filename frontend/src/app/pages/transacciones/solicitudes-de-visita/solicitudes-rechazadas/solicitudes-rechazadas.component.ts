@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { EspecialidadesService } from 'src/app/services/especialidades.service';
 
 @Component({
   selector: 'app-solicitudes-rechazadas',
@@ -85,7 +86,9 @@ import { MatInputModule } from '@angular/material/input';
             <!-- Especialidad Column -->
             <ng-container matColumnDef="especialidad">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Especialidad</th>
-              <td mat-cell *matCellDef="let row">{{row.especialidad || 'No especificada'}}</td>
+              <td mat-cell *matCellDef="let row">
+                {{especialidades[row.especialidad] || 'No especificada'}}
+              </td>
             </ng-container>
 
             <!-- Ticket Column -->
@@ -194,14 +197,18 @@ export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
+  especialidades: { [key: number]: string } = {};
+
   constructor(
     private solicitarVisitaService: SolicitarVisitaService,
+    private especialidadesService: EspecialidadesService,
     private router: Router
   ) {
     this.dataSource = new MatTableDataSource();
   }
 
   ngOnInit() {
+    this.loadEspecialidades();
     this.loadSolicitudes();
     this.dataSource.filterPredicate = (data: any, filter: string) => {
       return data.ticketGruman?.toLowerCase().includes(filter);
@@ -222,6 +229,20 @@ export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit {
       },
       error: (error) => {
         console.error('Error cargando solicitudes rechazadas:', error);
+      }
+    });
+  }
+
+  loadEspecialidades() {
+    this.especialidadesService.findAll().subscribe({
+      next: (especialidades) => {
+        this.especialidades = especialidades.reduce((acc, esp) => {
+          acc[esp.id] = esp.nombre;
+          return acc;
+        }, {} as { [key: number]: string });
+      },
+      error: (error) => {
+        console.error('Error cargando especialidades:', error);
       }
     });
   }

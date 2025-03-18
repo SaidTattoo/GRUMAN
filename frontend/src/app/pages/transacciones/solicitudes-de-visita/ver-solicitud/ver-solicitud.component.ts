@@ -209,15 +209,19 @@ export class VerSolicitudComponent implements OnInit {
           sectorTrabajoId: this.activity.sectorTrabajoId,
           tipoServicioId: this.activity.tipoServicioId,
           tecnico_asignado_id: this.activity.tecnico_asignado_id,
+          tecnico_asignado_id_2: this.activity.tecnico_asignado_id_2,
           observaciones: this.activity.observaciones,
-          fechaVisita: this.activity.fechaVisita
+          fechaVisita: this.activity.fechaVisita,
+          valorPorLocal: this.activity.valorPorLocal || this.activity.local?.valorPorLocal || 0
         }).subscribe({
           next: () => {
             this.solicitarVisitaService.aprobarSolicitudVisita(
               this.activity.id, 
               this.activity.tecnico_asignado_id,
+              this.activity.tecnico_asignado_id_2,
               this.activity.especialidad,
-              this.activity.fechaVisita
+              this.activity.fechaVisita,
+              this.activity.valorPorLocal
             ).subscribe({
               next: (response) => {
                 this.activity = response;

@@ -34,6 +34,24 @@
         <input matInput formControlName="local.direccion" [disabled]="solicitud?.status === 'validada' || isRechazada">
       </mat-form-field>
 
+      <mat-form-field appearance="fill">
+        <mat-label>Valor Servicio {{ getTipoServicioNombre(solicitudForm.get('tipoServicioId')?.value) ? ' ' + getTipoServicioNombre(solicitudForm.get('tipoServicioId')?.value) : '' }}</mat-label>
+        <input matInput formControlName="valorPorLocal" type="number" 
+               [disabled]="(!isPendiente && !isReabierta && solicitud?.status !== 'reabierta' && solicitud?.status !== 'finalizada') || isRechazada || isAprobada || isValidada">
+        <span matPrefix>$&nbsp;</span>
+      </mat-form-field>
+    </div>
+
+    <!-- Registro de Visita - Visible en estados finalizada, reabierta o validada -->
+    <div class="form-row" *ngIf="solicitud?.status === 'finalizada' || solicitud?.status === 'reabierta' || isReabierta || solicitud?.status === 'validada' || isValidada">
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Registro de Visita</mat-label>
+        <input matInput formControlName="registroVisita" rows="4" placeholder="Ingrese los detalles de la visita"
+                 [disabled]="solicitud?.status === 'validada' || isValidada"/>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Técnico Asignado</mat-label>
         <mat-select formControlName="tecnico_asignado_id" [disabled]="!isPendiente || isRechazada" required>
@@ -54,6 +72,26 @@
         <mat-error *ngIf="isPendiente && solicitudForm.get('tecnico_asignado_id')?.hasError('required')">
           Se requiere asignar un técnico antes de aprobar la solicitud
         </mat-error>
+      </mat-form-field>
+    </div>
+    <div class="form-row">
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Técnico Asignado 2 (Opcional)</mat-label>
+        <mat-select formControlName="tecnico_asignado_id_2" [disabled]="!isPendiente || isRechazada">
+          <mat-option [value]="null">Sin asignar</mat-option>
+          <mat-option *ngFor="let tecnico of getTecnicosDisponiblesParaSegundoSelect()" [value]="tecnico.id">
+            <div style="display: flex; align-items: center; justify-content: space-between;"
+                 [matTooltip]="'Especialidades: ' + getTecnicoEspecialidades(tecnico)">
+              <span>{{tecnico.name}}  {{tecnico.lastName}}</span>
+              @if (tecnicoTieneEspecialidad(tecnico)) {
+                <span style="color: #4CAF50; font-size: 18px; margin-left: 8px; font-weight: bold; display: flex; align-items: center;"
+                     matTooltip="Técnico con la especialidad requerida">
+                  ✓
+                </span>
+              }
+            </div>
+          </mat-option>
+        </mat-select>
       </mat-form-field>
     </div>
 
@@ -250,7 +288,7 @@
 
                       <!-- Miniaturas de fotos -->
                       <div class="photos-container">
-                        @if (getItemFotos(subItem.id)?.fotos?.length) {
+                       
                           <div class="photo-grid">
                             <div class="photo-item" *ngFor="let foto of getItemFotos(subItem.id)?.fotos">
                               <img [src]="foto" 
@@ -259,12 +297,7 @@
                                    class="inspection-photo">
                             </div>
                           </div>
-                        } @else {
-                          <div class="no-photos">
-                            <mat-icon>no_photography</mat-icon>
-                            <span>Sin fotos</span>
-                          </div>
-                        }
+                      
                       </div>
 
                       <!-- Estado después de las fotos - Siempre se muestra independientemente de los repuestos -->

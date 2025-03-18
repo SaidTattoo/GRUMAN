@@ -6,6 +6,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { User } from "src/users/users.entity";
 import { ItemRepuesto } from "src/inspection/entities/item-repuesto.entity";
 import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
+import { CausaRaiz } from "src/causa-raiz/causa-raiz.entity";
 
 export enum SolicitudStatus {
     PENDIENTE = 'pendiente',
@@ -64,7 +65,7 @@ export class SolicitarVisita {
   ticketGruman: string;
 
   // Observaciones
-  @Column({ type: 'text', nullable: true }) // Lo hago opcional para evitar errores si no se envía
+  @Column({ type: 'text', nullable: true })
   observaciones: string;
 
   // Estado del ticket
@@ -74,6 +75,10 @@ export class SolicitarVisita {
     default: SolicitudStatus.PENDIENTE
   })
   status: SolicitudStatus;
+
+  // Valor por local
+  @Column({ type: 'varchar', nullable: true, default: null })
+  valorPorLocal: string;
 
   // Imagenes como un arreglo de strings
   @Column('simple-array', { nullable: true })
@@ -90,6 +95,14 @@ export class SolicitarVisita {
 
   @Column({ type: 'int', nullable: true })
   tecnico_asignado_id: number;
+
+  // Relación con la tabla User
+  @ManyToOne(() => User, (user) => user.id, { nullable: true })
+  @JoinColumn({ name: 'tecnico_asignado_id_2' })
+  tecnico_asignado_2: User;
+
+  @Column({ type: 'int', nullable: true })
+  tecnico_asignado_id_2: number;
 
   @Column({ type: 'text', nullable: true })
   observacion_rechazo: string;
@@ -161,6 +174,9 @@ export class SolicitarVisita {
   @Column({ type: 'timestamp', nullable: true })
   fecha_hora_validacion: Date;
 
+  @Column({ type: 'text', nullable: true })
+  registroVisita: string;
+
   @Column({
     type: 'varchar',
     length: 100,  // Increased length
@@ -169,5 +185,13 @@ export class SolicitarVisita {
     default:null
   })
   estado: string;
+
+  // Relación con CausaRaiz
+  @ManyToOne(() => CausaRaiz, { nullable: true })
+  @JoinColumn({ name: 'causaRaizId' })
+  causaRaiz: CausaRaiz;
+
+  @Column({ type: 'int', nullable: true })
+  causaRaizId: number;
 }
  

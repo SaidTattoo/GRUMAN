@@ -28,6 +28,7 @@ import { UsersService } from 'src/app/services/users.service';
 import { ConfirmDialogComponent } from '../../../../components/confirm-dialog/confirm-dialog.component';
 import { EspecialidadesService } from '../../../../services/especialidades.service';
 import { ChangeDetectorRef } from '@angular/core';
+import Swal from 'sweetalert2';
 
 interface Repuesto {
   id: number;
@@ -156,14 +157,16 @@ export class ModificarSolicitudComponent implements OnInit {
   especialidades: any[] = [];
   displayedColumns: string[] = [
     'id', 
-    'repuesto.familia',
-    'repuesto.articulo',
-    'repuesto.marca',
-    'repuesto.precio',
-    'cantidad',
-    'total',
+    'itemId', 
+    'repuestoId', 
+    'cantidad', 
     'comentario', 
-    'fechaAgregado'
+    'solicitarVisitaId',
+    'articulo',
+    'marca',
+    'precio',
+    'total',
+    'acciones'
   ];
   itemRepuestos: any[] = [];
   repuestos: RepuestoMap = {};
@@ -181,6 +184,7 @@ export class ModificarSolicitudComponent implements OnInit {
   isAprobada: boolean = false;
   isRechazada: boolean = false;
   isValidada: boolean = false;
+  isReabierta: boolean = false;
   usuarioRechazo: any = null;
 
   constructor(
@@ -209,15 +213,19 @@ export class ModificarSolicitudComponent implements OnInit {
       observaciones: [''],
       status: [{value: '', disabled: true}],
       tecnico_asignado_id: ['', Validators.required],
+      tecnico_asignado_id_2: [''],
       fecha_hora_inicio_servicio: [{value: '', disabled: true}],
       fecha_hora_fin_servicio: [{value: '', disabled: true}],
       longitud_movil: [''],
       latitud_movil: [''],
+      valorPorLocal: [''],
+      registroVisita: [''],
       // Campos adicionales de solo lectura
       'local.nombre_local': [{value: '', disabled: true}],
       'local.direccion': [{value: '', disabled: true}],
       'client.nombre': [{value: '', disabled: true}],
       'tecnico_asignado.name': [{value: '', disabled: true}],
+      'tecnico_asignado_2.name': [{value: '', disabled: true}],
       'tipoServicio': [{value: '', disabled: true}],
       'sectorTrabajo': [{value: '', disabled: true}]
     });
@@ -234,6 +242,7 @@ export class ModificarSolicitudComponent implements OnInit {
     this.isAprobada = url.includes('aprobada');
     this.isRechazada = url.includes('rechazada');
     this.isValidada = url.includes('validada');
+    this.isReabierta = url.includes('reabierta');
     
     this.inicializarFormulario();
     this.loadRepuestos();
@@ -242,6 +251,7 @@ export class ModificarSolicitudComponent implements OnInit {
     this.cargarTecnicos();
     this.loadEspecialidades();
     this.watchEspecialidadChanges();
+    this.watchTipoServicioChanges();
   }
 
   inicializarFormulario() {
@@ -254,20 +264,51 @@ export class ModificarSolicitudComponent implements OnInit {
       observaciones: [''],
       status: [{value: '', disabled: true}],
       tecnico_asignado_id: ['', Validators.required],
+      tecnico_asignado_id_2: [''],
       fecha_hora_inicio_servicio: [{value: '', disabled: true}],
       fecha_hora_fin_servicio: [{value: '', disabled: true}],
       longitud_movil: [''],
       latitud_movil: [''],
+      valorPorLocal: [''],
+      registroVisita: [''],
       // Campos adicionales de solo lectura
       'local.nombre_local': [{value: '', disabled: true}],
       'local.direccion': [{value: '', disabled: true}],
       'client.nombre': [{value: '', disabled: true}],
       'tecnico_asignado.name': [{value: '', disabled: true}],
+      'tecnico_asignado_2.name': [{value: '', disabled: true}],
       'tipoServicio': [{value: '', disabled: true}],
       'sectorTrabajo': [{value: '', disabled: true}]
     });
     this.temporaryRepuestos = {};
     this.temporaryDeletedRepuestos = {};
+
+    // Add validation for duplicate technicians
+    this.solicitudForm.get('tecnico_asignado_id')?.valueChanges.subscribe(value => {
+      const tecnico2Control = this.solicitudForm.get('tecnico_asignado_id_2');
+      if (value && tecnico2Control?.value === value) {
+        tecnico2Control?.setValue('');
+        Swal.fire({
+          title: 'Error',
+          text: 'Este técnico ya está seleccionado como Técnico principal',
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
+      }
+    });
+
+    this.solicitudForm.get('tecnico_asignado_id_2')?.valueChanges.subscribe(value => {
+      const tecnico1Control = this.solicitudForm.get('tecnico_asignado_id');
+      if (value && tecnico1Control?.value === value) {
+        this.solicitudForm.get('tecnico_asignado_id_2')?.setValue('');
+        Swal.fire({
+          title: 'Error',
+          text: 'Este técnico ya está seleccionado como Técnico principal',
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
+      }
+    });
   }
 
   loadCatalogos(): Promise<void> {
@@ -351,16 +392,22 @@ export class ModificarSolicitudComponent implements OnInit {
           } else {
             console.warn('La solicitud está rechazada pero no tiene rechazada_por_id');
           }
+        } else if (this.solicitud?.status === 'validada') {
+          this.isValidada = true;
+        } else if (this.solicitud?.status === 'reabierta') {
+          this.isReabierta = true;
         }
         
         // Si el estado es pendiente, habilitar los controles necesarios
         if (this.isPendiente) {
           this.solicitudForm.get('tecnico_asignado_id')?.enable();
+          this.solicitudForm.get('tecnico_asignado_id_2')?.enable();
           this.solicitudForm.get('tipoServicioId')?.enable();
           this.solicitudForm.get('sectorTrabajoId')?.enable();
         } else {
           // Si no está en pendiente, deshabilitar los controles
           this.solicitudForm.get('tecnico_asignado_id')?.disable();
+          this.solicitudForm.get('tecnico_asignado_id_2')?.disable();
           this.solicitudForm.get('tipoServicioId')?.disable();
           this.solicitudForm.get('sectorTrabajoId')?.disable();
         }
@@ -388,12 +435,35 @@ export class ModificarSolicitudComponent implements OnInit {
           'fecha_hora_fin_servicio': data.fecha_hora_fin_servicio || '',
           'longitud_movil': data.longitud_movil || '',
           'latitud_movil': data.latitud_movil || '',
-          'tecnico_asignado_id': data.tecnico_asignado?.id || ''
+          'valorPorLocal': data.valorPorLocal !== null ? data.valorPorLocal : data.local?.valorPorLocal || '',
+          'registroVisita': data.registroVisita || '',
+          'tecnico_asignado_id': data.tecnico_asignado?.id || '',
+          'tecnico_asignado_id_2': data.tecnico_asignado_2?.id || '',
+          'tipoServicio': data.tipoServicio?.nombre || '',
+          'sectorTrabajo': data.sectorTrabajo?.nombre || ''
         });
 
         // Si está rechazada, deshabilitar todos los controles
         if (this.isRechazada) {
           this.deshabilitarControlesFormulario();
+        }
+        
+        // Si está aprobada, también deshabilitar todos los controles
+        if (this.isAprobada) {
+          this.deshabilitarControlesFormulario();
+        }
+        
+        // Si está validada, también deshabilitar todos los controles
+        if (this.isValidada) {
+          this.deshabilitarControlesFormulario();
+          // Asegurarse explícitamente que registroVisita esté deshabilitado
+          this.solicitudForm.get('registroVisita')?.disable();
+        }
+        
+        // Si está reabierta, NO deshabilitar controles relacionados con valorPorLocal
+        if (this.isReabierta || this.solicitud?.status === 'reabierta') {
+          // Asegurarse que el campo valorPorLocal esté habilitado
+          this.solicitudForm.get('valorPorLocal')?.enable();
         }
         
         // Procesar lista de inspección
@@ -518,15 +588,19 @@ export class ModificarSolicitudComponent implements OnInit {
     this.saveChanges().then(() => {
       // Obtener el ID del técnico asignado y la especialidad
       const tecnicoAsignadoId = this.solicitudForm.get('tecnico_asignado_id')?.value;
+      const tecnicoAsignadoId2 = this.solicitudForm.get('tecnico_asignado_id_2')?.value;
       const especialidad = this.solicitudForm.get('especialidad')?.value;
       const fechaVisita = this.solicitudForm.get('fechaVisita')?.value;
+      const valorPorLocal = this.solicitudForm.get('valorPorLocal')?.value;
       
       // Luego aprobar la solicitud
       this.solicitarVisitaService.aprobarSolicitudVisita(
         Number(this.solicitudId), 
         tecnicoAsignadoId,
+        tecnicoAsignadoId2,
         especialidad,
-        fechaVisita
+        fechaVisita,
+        valorPorLocal
       ).subscribe({
         next: () => {
           this.snackBar.open('Solicitud aprobada correctamente', 'Cerrar', {
@@ -611,9 +685,20 @@ export class ModificarSolicitudComponent implements OnInit {
     
     console.log('Iniciando guardado de repuestos...');
     this.loading = true;
+    
+    // Obtener el valorPorLocal del formulario
+    const valorPorLocal = this.solicitudForm.get('valorPorLocal')?.value;
 
     // Crear un array de promesas para todas las operaciones
     const promises: Promise<any>[] = [];
+    
+    // Guardar el valor por local primero
+    if (valorPorLocal !== null && valorPorLocal !== undefined) {
+      const updateData = {
+        valorPorLocal: valorPorLocal
+      };
+      promises.push(this.solicitarVisitaService.updateSolicitudVisita(Number(this.solicitudId), updateData).toPromise());
+    }
 
     // Manejar repuestos eliminados
     for (const subItemId in this.temporaryDeletedRepuestos) {
@@ -733,6 +818,8 @@ export class ModificarSolicitudComponent implements OnInit {
         observaciones: formValues.observaciones,
         longitud_movil: formValues.longitud_movil,
         latitud_movil: formValues.latitud_movil,
+        valorPorLocal: formValues.valorPorLocal,
+        registroVisita: formValues.registroVisita,
         listaInspeccion: this.listaInspeccion.map(lista => ({
           ...lista,
           items: lista.items.map((item: any) => ({
@@ -1161,33 +1248,14 @@ export class ModificarSolicitudComponent implements OnInit {
 
   // Método para guardar los cambios
   onSubmit() {
-    // Si la solicitud está rechazada, no permitir enviar el formulario
-    if (this.isRechazada) {
-      return;
-    }
-    
     if (this.solicitudForm.valid) {
-      const formData = this.solicitudForm.getRawValue(); // Obtiene valores incluso de campos deshabilitados
-      
-      // Si es pendiente, incluir el técnico asignado en la actualización
-      if (this.isPendiente) {
-        formData.tecnico_asignado_id = formData.tecnico_asignado_id || null;
-      }
-
-      this.solicitarVisitaService.updateSolicitudVisita(Number(this.solicitudId), formData).subscribe({
-        next: (response: any) => {
-          this.snackBar.open('Solicitud actualizada correctamente', 'Cerrar', {
-            duration: 3000
-          });
-          this.router.navigate(['/transacciones/solicitudes-de-visita']);
-        },
-        error: (error: any) => {
-          console.error('Error updating solicitud:', error);
-          this.snackBar.open('Error al actualizar la solicitud', 'Cerrar', {
-            duration: 3000
-          });
-        }
-      });
+      const updateData: any = {
+        id: this.solicitudForm.get('id')?.value,
+        observaciones: this.solicitudForm.get('observaciones')?.value,
+        valorPorLocal: this.solicitudForm.get('valorPorLocal')?.value,
+        registroVisita: this.solicitudForm.get('registroVisita')?.value
+      };
+      // ... existing code ...
     }
   }
 
@@ -1207,26 +1275,27 @@ export class ModificarSolicitudComponent implements OnInit {
    * Deshabilita todos los controles del formulario cuando la solicitud está rechazada
    */
   private deshabilitarControlesFormulario(): void {
-    // Lista de controles que deben ser deshabilitados
-    const controles = [
-      'tipoServicioId',
-      'sectorTrabajoId',
-      'especialidad',
-      'fechaVisita',
-      'ticketGruman',
-      'observaciones',
-      'tecnico_asignado_id',
-      'fecha_hora_inicio_servicio',
-      'fecha_hora_fin_servicio',
-      'latitud_movil',
-      'longitud_movil'
-    ];
-    
-    // Deshabilitar cada control
-    controles.forEach(control => {
-      const formControl = this.solicitudForm.get(control);
-      if (formControl) {
-        formControl.disable();
+    // Deshabilitar todos los controles excepto los especiales
+    Object.keys(this.solicitudForm.controls).forEach(key => {
+      // Solo permitir editar observaciones siempre
+      // Para valorPorLocal, permitir edición solo si es pendiente, reabierta o finalizada,
+      // pero nunca si está rechazada, aprobada o validada
+      // Para registroVisita, permitir edición solo si es finalizada o reabierta
+      // pero debe estar deshabilitado si es validada (aunque visible)
+      if (
+        key !== 'observaciones' && 
+        !(
+          key === 'valorPorLocal' && 
+          (this.isPendiente || this.isReabierta || this.solicitud?.status === 'reabierta' || this.solicitud?.status === 'finalizada') &&
+          !this.isRechazada && !this.isAprobada && !this.isValidada
+        ) &&
+        !(
+          key === 'registroVisita' && 
+          (this.solicitud?.status === 'finalizada' || this.solicitud?.status === 'reabierta' || this.isReabierta) &&
+          !this.isValidada && this.solicitud?.status !== 'validada'
+        )
+      ) {
+        this.solicitudForm.get(key)?.disable();
       }
     });
   }
@@ -1319,5 +1388,19 @@ export class ModificarSolicitudComponent implements OnInit {
       // Forzar la actualización de la vista
       this.cd.detectChanges();
     });
+  }
+
+  // Watch for changes in the tipo servicio field to update the label
+  private watchTipoServicioChanges() {
+    this.solicitudForm.get('tipoServicioId')?.valueChanges.subscribe(() => {
+      // Trigger change detection to update the label
+      this.cd.detectChanges();
+    });
+  }
+
+  // Add method to filter available technicians for second select
+  getTecnicosDisponiblesParaSegundoSelect(): any[] {
+    const tecnico1Id = this.solicitudForm.get('tecnico_asignado_id')?.value;
+    return this.tecnicos.filter(tecnico => tecnico.id !== tecnico1Id);
   }
 } 

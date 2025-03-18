@@ -33,7 +33,13 @@ export const routes: Routes = [
             (m) => m.ESPECIALIDADES_ROUTES
           ),
       },
-
+      {
+        path: 'mantenedores/causa-raiz',
+        loadChildren: () =>
+          import('./pages/mantenedores/causa-raiz/causa-raiz.routes').then(
+            (m) => m.CAUSA_RAIZ_ROUTES
+          ),
+      },
       {
         path: 'mantenedores/vehiculos',
         loadChildren: () =>

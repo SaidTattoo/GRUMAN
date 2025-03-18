@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../config';
 import { tap, catchError } from 'rxjs/operators';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ import { tap, catchError } from 'rxjs/operators';
 export class SolicitarVisitaService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
   crearSolicitudVisita(solicitud: any) {
     return this.http.post(`${this.apiUrl}solicitar-visita`, solicitud);
@@ -42,22 +43,22 @@ export class SolicitarVisitaService {
 
   aprobarSolicitudVisita(
     id: number, 
-    tecnico_asignado_id?: number, 
-    especialidad?: string,
-    fechaVisita?: Date
+    tecnico_asignado_id: number,
+    tecnico_asignado_id_2: number | null,
+    especialidad: string,
+    fechaVisita: Date,
+    valorPorLocal: number
   ): Observable<any> {
-    // Obtenemos el ID del usuario actual del localStorage
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const userData = {
-      tecnico_asignado_id: tecnico_asignado_id,
+    const currentUser = this.authService.currentUserValue;
+    const data = {
+      tecnico_asignado_id,
+      tecnico_asignado_id_2,
       aprobada_por_id: currentUser?.id,
-      fechaVisita: fechaVisita || new Date(),
-      especialidad: especialidad
+      fechaVisita,
+      especialidad,
+      valorPorLocal
     };
-    
-    console.log('Aprobando solicitud con datos:', userData);
-    
-    return this.http.post<any>(`${this.apiUrl}solicitar-visita/${id}/aprobar`, userData);
+     return this.http.post(`${this.apiUrl}solicitar-visita/${id}/aprobar`, data);
   }
   rechazarSolicitudVisita(id: number, data: any): Observable<any> {
     // Obtenemos el ID del usuario actual del localStorage

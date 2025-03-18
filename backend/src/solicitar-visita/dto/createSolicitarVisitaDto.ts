@@ -61,5 +61,9 @@ import {
     @IsInt()
     @IsOptional()
     tecnico_asignado_id?: number;
+  
+    @IsInt()
+    @IsOptional()
+    causaRaizId?: number;
   }
   

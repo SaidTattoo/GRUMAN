@@ -77,6 +77,12 @@ export class SolicitarVisitaService {
                 where: { id: solicitud.tecnico_asignado_id } 
             });
         }
+
+        if (solicitud.tecnico_asignado_id_2) {
+            solicitudVisita.tecnico_asignado_2 = await this.userRepository.findOne({ 
+                where: { id: solicitud.tecnico_asignado_id_2 } 
+            });
+        }
         
         // Solo validar una visita por mes por local si es de tipo programado o preventivo
         if (solicitudVisita.tipo_mantenimiento === 'programado' &&  solicitudVisita.tipoServicioId === 3) {
@@ -142,6 +148,7 @@ export class SolicitarVisitaService {
                 'local', 
                 'client', 
                 'tecnico_asignado',
+                'tecnico_asignado_2',
                 'itemRepuestos',
                 'itemRepuestos.repuesto',
                 'itemFotos'
@@ -169,7 +176,7 @@ export class SolicitarVisitaService {
     async getSolicitudesAprobadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { status: In([SolicitudStatus.APROBADA, SolicitudStatus.APROBADA]) },
-            relations: ['local', 'client', 'tecnico_asignado'],
+            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
             order: { fechaIngreso: 'DESC' }
         });
         console.log('[Solicitudes Aprobadas]:', JSON.stringify(data, null, 2));
@@ -192,7 +199,7 @@ export class SolicitarVisitaService {
                 fechaVisita: Between(today, tomorrow),
                 status: In([SolicitudStatus.APROBADA, SolicitudStatus.EN_SERVICIO]) 
             },
-            relations: ['local', 'client', 'tecnico_asignado'],
+            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
             order: { fechaVisita: 'DESC' }
         });
         return data;
@@ -201,7 +208,7 @@ export class SolicitarVisitaService {
     async getSolicitudesRechazadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { status: SolicitudStatus.RECHAZADA },
-            relations: ['local', 'client', 'tecnico_asignado'],
+            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
             order: { fechaIngreso: 'DESC' }
         });
         console.log('[Solicitudes Rechazadas]:', JSON.stringify(data, null, 2));
@@ -212,7 +219,7 @@ export class SolicitarVisitaService {
   async getSolicitudByIdItems(id: number): Promise<SolicitarVisita> {
     return this.solicitarVisitaRepository.findOne({ 
       where: { id },
-      relations: ['itemRepuestos','local','client','tecnico_asignado']
+      relations: ['itemRepuestos','local','client','tecnico_asignado', 'tecnico_asignado_2']
     });
   }
 
@@ -222,7 +229,7 @@ export class SolicitarVisitaService {
     async getSolicitudesFinalizadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { status: In([SolicitudStatus.FINALIZADA, SolicitudStatus.FINALIZADA]) },
-            relations: ['local', 'client', 'tecnico_asignado'],
+            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
             order: { fechaIngreso: 'DESC' }
         });
         return data;
@@ -231,7 +238,7 @@ export class SolicitarVisitaService {
     async getSolicitudesValidadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { status: In([SolicitudStatus.VALIDADA, SolicitudStatus.REABIERTA]) },
-            relations: ['local', 'client', 'tecnico_asignado'],
+            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
             order: { fechaIngreso: 'DESC' }
         });
         return data;
@@ -239,9 +246,11 @@ export class SolicitarVisitaService {
 
     async aprovarSolicitudVisita(id: number, data?: { 
         tecnico_asignado_id?: number, 
+        tecnico_asignado_id_2?: number,
         aprobada_por_id?: number,
         fechaVisita?: Date,
-        especialidad?: string
+        especialidad?: string,
+        valorPorLocal?: number
     }): Promise<SolicitarVisita> {
        const updateData: any = { 
            status: SolicitudStatus.APROBADA,
@@ -251,6 +260,11 @@ export class SolicitarVisitaService {
        // Si se proporciona un ID de técnico asignado, guardarlo
        if (data?.tecnico_asignado_id) {
            updateData.tecnico_asignado_id = data.tecnico_asignado_id;
+       }
+
+       // Si se proporciona un ID de segundo técnico asignado, guardarlo
+       if (data?.tecnico_asignado_id_2) {
+           updateData.tecnico_asignado_id_2 = data.tecnico_asignado_id_2;
        }
        
        // Si se proporciona un ID de quien aprueba, guardarlo
@@ -266,6 +280,12 @@ export class SolicitarVisitaService {
        // Si se proporciona una especialidad, guardarla
        if (data?.especialidad) {
            updateData.especialidad = data.especialidad;
+       }
+       
+       // Siempre actualizar valorPorLocal si está definido en data (incluso si es 0)
+       if (data?.valorPorLocal !== undefined) {
+           console.log('Actualizando valorPorLocal:', data.valorPorLocal);
+           updateData.valorPorLocal = data.valorPorLocal;
        }
        
        await this.solicitarVisitaRepository.update(id, updateData);
@@ -504,6 +524,7 @@ export class SolicitarVisitaService {
             observaciones: visita.observaciones,
             longitud_movil: visita.longitud_movil,
             latitud_movil: visita.latitud_movil,
+            registroVisita: visita.registroVisita
         };
         
         // Actualizar la entidad con todos los cambios
@@ -755,6 +776,13 @@ export class SolicitarVisitaService {
 
     async update(id: number, updateSolicitudVisitaDto: any) {
         try {
+            console.log('Updating solicitud with data:', updateSolicitudVisitaDto);
+            
+            // Convertir campos vacíos a null si son numéricos
+            if (updateSolicitudVisitaDto.especialidad === '') {
+                updateSolicitudVisitaDto.especialidad = null;
+            }
+            
             const solicitud = await this.solicitarVisitaRepository.findOne({
                 where: { id },
                 relations: ['itemRepuestos']
@@ -769,9 +797,11 @@ export class SolicitarVisitaService {
 
             // Guardar la solicitud actualizada
             const result = await this.solicitarVisitaRepository.save(solicitud);
-
+            console.log('Updated solicitud successfully');
+            
             return result;
         } catch (error) {
+            console.error('Error updating solicitud:', error);
             throw new InternalServerErrorException('Error updating solicitud');
         }
     }

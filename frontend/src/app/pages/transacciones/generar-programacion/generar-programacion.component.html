@@ -129,6 +129,25 @@
           </mat-form-field>
         </div>
       </div> 
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Técnico 2 (Opcional)</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-select formControlName="tecnico_asignado_id_2" placeholder="Seleccionar Técnico 2">
+              <mat-option *ngFor="let tecnico of getTecnicosDisponiblesParaSegundoSelect()" [value]="tecnico.id">
+                {{ tecnico.name }} {{ tecnico.lastName }}
+              </mat-option>
+            </mat-select>
+            @if (programacionForm.get('tecnico_asignado_id_2')?.touched && programacionForm.get('tecnico_asignado_id_2')?.invalid) {
+            <mat-error>
+              {{ getErrorMessage('tecnico_asignado_id_2') }}
+            </mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </div> 
 
       <div class="row">
         <div class="col-sm-4 d-flex align-items-center">

@@ -97,8 +97,30 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       status: new FormControl(SolicitudStatus.APROBADA, [Validators.required]),
       fechaIngreso: new FormControl('', [Validators.required]),
       tecnico_asignado_id: new FormControl('', [Validators.required]),
+      tecnico_asignado_id_2: new FormControl(''),  // Este es opcional
       observaciones: new FormControl('', [Validators.maxLength(500)]),
       tipo_mantenimiento: new FormControl(SolicitudStatus.PROGRAMADO, [Validators.required])
+    });
+
+    // Agregar validación para evitar técnicos duplicados
+    this.programacionForm.get('tecnico_asignado_id')?.valueChanges.subscribe(value => {
+      const tecnico2Control = this.programacionForm.get('tecnico_asignado_id_2');
+      if (value && tecnico2Control?.value === value && tecnico2Control) {
+        tecnico2Control.setValue('');
+      }
+    });
+
+    this.programacionForm.get('tecnico_asignado_id_2')?.valueChanges.subscribe(value => {
+      const tecnico1Control = this.programacionForm.get('tecnico_asignado_id');
+      if (value && tecnico1Control?.value === value) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Este técnico ya está seleccionado como Técnico principal',
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
+        this.programacionForm.get('tecnico_asignado_id_2')?.setValue('');
+      }
     });
   }
 
@@ -369,5 +391,11 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         this.tecnicos = res;
       });
+  }
+
+  // Método para filtrar técnicos disponibles para el segundo select
+  getTecnicosDisponiblesParaSegundoSelect(): any[] {
+    const tecnico1Id = this.programacionForm.get('tecnico_asignado_id')?.value;
+    return this.tecnicos.filter(tecnico => tecnico.id !== tecnico1Id);
   }
 }

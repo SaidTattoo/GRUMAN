@@ -179,7 +179,8 @@ export class SolicitarVisitaController {
       tecnico_asignado_id?: number, 
       aprobada_por_id?: number,
       fechaVisita?: Date,
-      especialidad?: string
+      especialidad?: string,
+      valorPorLocal?: number
     }
   ) {
     console.log('Aprobando solicitud:', id, 'con datos:', data);
@@ -257,6 +258,7 @@ export class SolicitarVisitaController {
         observaciones?: string,
         longitud_movil?: string,
         latitud_movil?: string,
+        registroVisita?: string,
         repuestos?: { [key: string]: any[] }
     }
   ) {
@@ -268,6 +270,7 @@ export class SolicitarVisitaController {
             observaciones: data.observaciones,
             longitud_movil: data.longitud_movil,
             latitud_movil: data.latitud_movil,
+            registroVisita: data.registroVisita,
             repuestos: data.repuestos
         });
 

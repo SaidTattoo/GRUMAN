@@ -275,10 +275,11 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 route: 'mantenedores/sectores-trabajo',
               },
               {
-                displayName: 'Servicios',
+                displayName: 'Causas Raíz',
                 iconName: 'home-shield',
-                route: 'mantenedores/servicios',
+                route: 'mantenedores/causa-raiz',
               },
+             
               {
                 displayName: 'Activo Fijo Local',
                 iconName: 'home-shield',

@@ -15,6 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from 'src/app/components/confirm-dialog/confirm-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { EspecialidadesService } from 'src/app/services/especialidades.service';
 
 @Component({
   selector: 'app-solicitudes-validadas',
@@ -95,7 +96,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
             <!-- Especialidad Column -->
             <ng-container matColumnDef="especialidad">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Especialidad</th>
-              <td mat-cell *matCellDef="let row">{{row.especialidad || 'No especificada'}}</td>
+              <td mat-cell *matCellDef="let row">
+                {{especialidades[row.especialidad] || 'No especificada'}}
+              </td>
             </ng-container>
 
             <!-- Observaciones Column -->
@@ -251,8 +254,11 @@ export class SolicitudesValidadasComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
+  especialidades: { [key: number]: string } = {};
+
   constructor(
     private solicitarVisitaService: SolicitarVisitaService,
+    private especialidadesService: EspecialidadesService,
     private router: Router,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
@@ -261,6 +267,7 @@ export class SolicitudesValidadasComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loadEspecialidades();
     this.loadSolicitudes();
     this.dataSource.filterPredicate = (data: any, filter: string) => {
       return data.ticketGruman?.toLowerCase().includes(filter);
@@ -274,6 +281,20 @@ export class SolicitudesValidadasComponent implements OnInit {
 
   onImageError(event: any) {
     event.target.src = 'assets/images/no-image.png';
+  }
+
+  loadEspecialidades() {
+    this.especialidadesService.findAll().subscribe({
+      next: (especialidades) => {
+        this.especialidades = especialidades.reduce((acc, esp) => {
+          acc[esp.id] = esp.nombre;
+          return acc;
+        }, {} as { [key: number]: string });
+      },
+      error: (error) => {
+        console.error('Error cargando especialidades:', error);
+      }
+    });
   }
 
   loadSolicitudes() {
