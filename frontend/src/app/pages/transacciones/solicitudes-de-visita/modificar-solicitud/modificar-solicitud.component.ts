@@ -871,7 +871,7 @@ export class ModificarSolicitudComponent implements OnInit {
       console.log('temporalRepuestos', this.temporaryRepuestos);
       for (const subItemId in this.temporaryRepuestos) {
         for (const repuesto of this.temporaryRepuestos[subItemId]) {
-          this.inspectionService.insertRepuestoInItem(String(subItemId), repuesto.repuesto.id, repuesto.cantidad, repuesto.comentario, Number(this.solicitudId)).subscribe({
+          this.inspectionService.insertRepuestoInItem(subItemId, repuesto.repuesto.id, repuesto.cantidad, repuesto.comentario, Number(this.solicitudId)).subscribe({
             next: () => {
               console.log('Repuesto agregado correctamente');
             },
