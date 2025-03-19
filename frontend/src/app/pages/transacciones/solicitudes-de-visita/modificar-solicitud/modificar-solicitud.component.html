@@ -360,36 +360,28 @@
                       @if (subItem.repuestos?.length) {
                         <ul class="repuestos-list">
                           @for (repuesto of subItem.repuestos; track $index) {
-                            <!-- Solo mostrar si el repuesto tiene un repuesto asociado -->
-                            @if (repuesto.repuesto) {
-                              <li class="repuesto-item" [class.temporal]="!repuesto.id" [class.pending-delete]="isRepuestoPendingDelete(subItem.id, repuesto)">
+                            @if (repuesto?.repuesto) {
+                              <li class="repuesto-item">
                                 <div class="repuesto-info">
-                                  @if (!repuesto.id) {
-                                    <div class="temporal-badge">
-                                      Pendiente de guardar
-                                    </div>
-                                  }
-                                  @if (isRepuestoPendingDelete(subItem.id, repuesto)) {
-                                    <div class="pending-delete-badge">
-                                      Pendiente de eliminar
-                                    </div>
-                                  }
                                   <div class="repuesto-detail">
                                     <strong>Artículo:</strong> 
-                                    <span>{{ repuesto.repuesto.articulo }}</span>
+                                    <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
                                   </div>
-                                 
+                                  <div class="repuesto-detail">
+                                    <strong>Marca:</strong> 
+                                    <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
+                                  </div>
                                   <div class="repuesto-detail">
                                     <strong>Cantidad:</strong> 
                                     <span>{{ repuesto.cantidad }}</span>
                                   </div>
                                   <div class="repuesto-detail">
                                     <strong>Precio:</strong> 
-                                    <span>${{ repuesto.repuesto.precio?.toLocaleString('es-CL') }}</span>
+                                    <span>${{ repuesto.repuesto?.precio?.toLocaleString('es-CL') || '0' }}</span>
                                   </div>
                                   <div class="repuesto-detail">
                                     <strong>Total:</strong> 
-                                    <span>${{ (repuesto.cantidad * repuesto.repuesto.precio).toLocaleString('es-CL') }}</span>
+                                    <span>${{ ((repuesto.cantidad || 0) * (repuesto.repuesto?.precio || 0)).toLocaleString('es-CL') }}</span>
                                   </div>
                                   
                                   <div class="actions-container">

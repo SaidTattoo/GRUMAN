@@ -12,6 +12,7 @@ import { Client } from 'src/client/client.entity';
 import { AddRepuestoDto } from './dto/add-repuesto.dto';
 import { ItemRepuesto } from './entities/item-repuesto.entity';
 import { Repuesto } from '../repuestos/repuestos.entity';
+import { Not, IsNull } from 'typeorm';
 
 
 @Injectable()
@@ -366,5 +367,24 @@ export class InspectionService {
 
     async findItemById(id: number) {
         return this.itemRepository.findOne({ where: { id } });
+    }
+
+    async getRepuestosBySubItem(subItemId: number) {
+        // Buscar directamente los itemRepuestos asociados al subItem
+        const itemRepuestos = await this.itemRepuestoRepository.find({
+            where: { 
+                itemId: subItemId,
+                repuesto: { id: Not(IsNull()) } // Solo obtener los que tienen repuesto
+            },
+            relations: ['repuesto'],
+            order: { id: 'DESC' }
+        });
+
+        if (!itemRepuestos) {
+            return [];
+        }
+
+        // Filtrar cualquier repuesto null antes de retornar
+        return itemRepuestos.filter(ir => ir.repuesto != null);
     }
 } 

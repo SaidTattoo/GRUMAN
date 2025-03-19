@@ -171,4 +171,9 @@ export class InspectionController {
     ) {
         return this.inspectionService.deleteRepuestoFromItem(itemId);
     }
+
+    @Get('subitems/:subItemId/repuestos')
+    getRepuestosBySubItem(@Param('subItemId') subItemId: string) {
+        return this.inspectionService.getRepuestosBySubItem(+subItemId);
+    }
 } 

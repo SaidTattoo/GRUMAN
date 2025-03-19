@@ -1034,15 +1034,14 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   calculateSubItemTotal(repuestos: any[]): number {
-    if (!repuestos || repuestos.length === 0) return 0;
-
+    if (!repuestos) return 0;
     return repuestos
-      .filter(rep => rep.repuesto) // Solo considerar repuestos válidos (no nulos)
-      .reduce((total, repuesto) => {
-        const precio = repuesto.repuesto?.precio || 0;
-        const cantidad = repuesto.cantidad || 0;
-        return total + (precio * cantidad);
-      }, 0);
+        .filter(r => r && r.repuesto) // Solo considerar repuestos válidos
+        .reduce((total, repuesto) => {
+            const cantidad = repuesto.cantidad || 0;
+            const precio = repuesto.repuesto?.precio || 0;
+            return total + (cantidad * precio);
+        }, 0);
   }
 
   calculateItemTotal(repuestos: any[]): number {
