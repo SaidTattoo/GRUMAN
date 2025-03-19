@@ -7,6 +7,7 @@ import { User } from "src/users/users.entity";
 import { ItemRepuesto } from "src/inspection/entities/item-repuesto.entity";
 import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
 import { CausaRaiz } from "src/causa-raiz/causa-raiz.entity";
+import { ActivoFijoRepuestos } from "src/activo-fijo-repuestos/entities/activo-fijo-repuestos.entity";
 
 export enum SolicitudStatus {
     PENDIENTE = 'pendiente',
@@ -179,10 +180,10 @@ export class SolicitarVisita {
 
   @Column({
     type: 'varchar',
-    length: 100,  // Increased length
+    length: 100,
     name: 'estado',
     nullable: true,
-    default:null
+    default: null
   })
   estado: string;
 
@@ -191,7 +192,14 @@ export class SolicitarVisita {
   @JoinColumn({ name: 'causaRaizId' })
   causaRaiz: CausaRaiz;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ 
+    type: 'int', 
+    nullable: true,
+    comment: 'ID de la causa raíz que originó la falla'
+  })
   causaRaizId: number;
+
+  @OneToMany(() => ActivoFijoRepuestos, afr => afr.solicitarVisita)
+  activoFijoRepuestos: ActivoFijoRepuestos[];
 }
  

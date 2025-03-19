@@ -51,6 +51,21 @@
       </mat-form-field>
     </div>
 
+    <!-- Causa Raíz - Solo visible cuando la solicitud está finalizada -->
+    @if (solicitud?.status === 'finalizada' || solicitud?.status === 'reabierta' || solicitud?.status === 'validada') {
+      <div class="form-row">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Causa Raíz</mat-label>
+          <mat-select formControlName="causaRaizId"  [disabled]="solicitud?.status === 'validada' || isValidada">
+            <mat-option [value]="null">Seleccione una causa</mat-option>
+            <mat-option *ngFor="let causa of causasRaiz" [value]="causa.id">
+              {{ causa.nombre }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    }
+
     <div class="form-row">
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Técnico Asignado</mat-label>

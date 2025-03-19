@@ -35,6 +35,7 @@ import { FacturacionModule } from './facturacion/facturacion.module';
 import { OrdenServicioModule } from './orden-servicio/orden-servicio.module';
 import { UserVehiculoModule } from './user-vehiculo/user-vehiculo.module';
 import { CausaRaizModule } from './causa-raiz/causa-raiz.module';
+import { ActivoFijoRepuestosModule } from './activo-fijo-repuestos/activo-fijo-repuestos.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -74,7 +75,8 @@ import { CausaRaizModule } from './causa-raiz/causa-raiz.module';
     ActivoFijoLocalModule,
     UploadV2Module,
     SolicitarVisitaModule,
-    EspecialidadModule,InspectionModule, FacturacionModule, OrdenServicioModule, UserVehiculoModule,CausaRaizModule,  
+    EspecialidadModule,InspectionModule, FacturacionModule, OrdenServicioModule, UserVehiculoModule, CausaRaizModule,  
+    ActivoFijoRepuestosModule,
   
 /*     LocalesModule,
     SectoresTrabajoModule,

@@ -13,6 +13,9 @@ import { Facturacion } from 'src/facturacion/facturacion.entity';
 import { FacturacionModule } from 'src/facturacion/facturacion.module';
 import { Repuesto } from 'src/repuestos/repuestos.entity';
 import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
+import { CausaRaiz } from 'src/causa-raiz/causa-raiz.entity';
+import { ActivoFijoRepuestos } from 'src/activo-fijo-repuestos/entities/activo-fijo-repuestos.entity';
+import { DetalleRepuestoActivoFijo } from 'src/activo-fijo-repuestos/entities/detalle-repuesto-activo-fijo.entity';
 
 @Module({
   imports: [
@@ -26,11 +29,15 @@ import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
       ItemRepuesto,
       ItemFotos,
       Repuesto,
-      Facturacion
+      Facturacion,
+      CausaRaiz,
+      ActivoFijoRepuestos,
+      DetalleRepuestoActivoFijo
     ]),
     FacturacionModule
   ],
   providers: [SolicitarVisitaService],
-  controllers: [SolicitarVisitaController]
+  controllers: [SolicitarVisitaController],
+  exports: [SolicitarVisitaService]
 })
 export class SolicitarVisitaModule {}

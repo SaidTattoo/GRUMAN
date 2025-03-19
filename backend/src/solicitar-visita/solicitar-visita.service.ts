@@ -12,6 +12,10 @@ import { In } from 'typeorm';
 import { FacturacionService } from 'src/facturacion/facturacion.service';
 import { Repuesto } from 'src/repuestos/repuestos.entity';
 import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
+import { DetalleRepuestoActivoFijo } from '../activo-fijo-repuestos/entities/detalle-repuesto-activo-fijo.entity';
+import { ActivoFijoRepuestos } from '../activo-fijo-repuestos/entities/activo-fijo-repuestos.entity';
+
+
 
 interface ServiciosRealizadosParams {
   tipoBusqueda: string;
@@ -42,7 +46,11 @@ export class SolicitarVisitaService {
         @InjectRepository(Repuesto)
         private repuestoRepository: Repository<Repuesto>,
         @InjectRepository(ItemFotos)
-        private itemFotosRepository: Repository<ItemFotos>
+        private itemFotosRepository: Repository<ItemFotos>,
+        @InjectRepository(ActivoFijoRepuestos)
+        private activoFijoRepuestosRepository: Repository<ActivoFijoRepuestos>,
+        @InjectRepository(DetalleRepuestoActivoFijo)
+        private detalleRepuestoActivoFijoRepository: Repository<DetalleRepuestoActivoFijo>
     ) {}
 
     /**
@@ -142,25 +150,28 @@ export class SolicitarVisitaService {
     }
 
     async getSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        const solicitud = await this.solicitarVisitaRepository.findOne({ 
-            where: { id }, 
+        const solicitud = await this.solicitarVisitaRepository.findOne({
+            where: { id },
             relations: [
-                'local', 
-                'client', 
+                'local',
+                'local.activoFijoLocales',
+                'client',
                 'tecnico_asignado',
                 'tecnico_asignado_2',
                 'itemRepuestos',
                 'itemRepuestos.repuesto',
-                'itemFotos'
-            ],
+                'itemFotos',
+                'causaRaiz',
+                'activoFijoRepuestos',
+                'activoFijoRepuestos.activoFijo',
+                'activoFijoRepuestos.detallesRepuestos',
+                'activoFijoRepuestos.detallesRepuestos.repuesto'
+            ]
         });
 
         if (!solicitud) {
-            throw new Error(`Solicitud con ID ${id} no encontrada`);
+            throw new NotFoundException(`Solicitud with ID ${id} not found`);
         }
-
-        // Verificamos si hay fotos
-        console.log('Fotos encontradas:', solicitud.itemFotos);
 
         return solicitud;
     }
@@ -186,7 +197,6 @@ export class SolicitarVisitaService {
 //filtrar por fecha que sea la misma del dia actual con la de fechaVisita pero solo dia mes y año no hora min segundos
 
     async solicitudesPorTecnico(rut: string): Promise<SolicitarVisita[]> {
-        // Create date objects for start and end of current day
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Start of day
         
@@ -199,7 +209,17 @@ export class SolicitarVisitaService {
                 fechaVisita: Between(today, tomorrow),
                 status: In([SolicitudStatus.APROBADA, SolicitudStatus.EN_SERVICIO]) 
             },
-            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
+            relations: [
+                'local', 
+                'local.activoFijoLocales',
+                'client', 
+                'tecnico_asignado', 
+                'tecnico_asignado_2', 
+                'activoFijoRepuestos',
+                'activoFijoRepuestos.activoFijo',
+                'activoFijoRepuestos.detallesRepuestos',
+                'activoFijoRepuestos.detallesRepuestos.repuesto'
+            ],
             order: { fechaVisita: 'DESC' }
         });
         return data;
@@ -358,7 +378,6 @@ export class SolicitarVisitaService {
     }
 /* agregar fecha_hora_fin_servicio */
     async finalizarServicio(id: number, data: FinalizarServicioDto): Promise<SolicitarVisita> {
-
         // Mostrar los datos recibidos
         console.log('###########################');
         console.log('###########################');
@@ -367,7 +386,15 @@ export class SolicitarVisitaService {
         console.log('###########################');
         const solicitud = await this.solicitarVisitaRepository.findOne({
             where: { id },
-            relations: ['itemRepuestos', 'itemRepuestos.repuesto', 'client']
+            relations: [
+                'itemRepuestos', 
+                'itemRepuestos.repuesto', 
+                'client',
+                'activoFijoRepuestos',
+                'activoFijoRepuestos.activoFijo',
+                'activoFijoRepuestos.detallesRepuestos',
+                'activoFijoRepuestos.detallesRepuestos.repuesto'
+            ]
         });
 
         if (!solicitud) {
@@ -461,6 +488,60 @@ export class SolicitarVisitaService {
             }
         }
 
+        // Procesar activoFijoRepuestos si existen
+        if (data.activoFijoRepuestos && data.activoFijoRepuestos.length > 0) {
+            for (const activoFijoRepuesto of data.activoFijoRepuestos) {
+                try {
+                    // Buscar o crear el registro de ActivoFijoRepuesto
+                    let existingActivoFijoRepuesto = await this.activoFijoRepuestosRepository.findOne({
+                        where: {
+                            solicitarVisita: { id },
+                            activoFijo: { id: activoFijoRepuesto.activoFijoId }
+                        }
+                    });
+
+                    if (!existingActivoFijoRepuesto) {
+                        existingActivoFijoRepuesto = await this.activoFijoRepuestosRepository.save({
+                            solicitarVisita: { id },
+                            activoFijo: { id: activoFijoRepuesto.activoFijoId },
+                            estadoOperativo: activoFijoRepuesto.estadoOperativo,
+                            observacionesEstado: activoFijoRepuesto.observacionesEstado || '',
+                            fechaRevision: new Date()
+                        });
+                    } else {
+                        await this.activoFijoRepuestosRepository.update(existingActivoFijoRepuesto.id, {
+                            estadoOperativo: activoFijoRepuesto.estadoOperativo,
+                            observacionesEstado: activoFijoRepuesto.observacionesEstado || '',
+                            fechaRevision: new Date()
+                        });
+                    }
+
+                    // Procesar los repuestos asociados al activo fijo
+                    if (activoFijoRepuesto.repuestos && activoFijoRepuesto.repuestos.length > 0) {
+                        // Eliminar los detalles de repuestos anteriores
+                        await this.detalleRepuestoActivoFijoRepository.delete({
+                            activoFijoRepuestos: { id: existingActivoFijoRepuesto.id }
+                        });
+
+                        // Guardar los nuevos detalles de repuestos
+                        for (const repuesto of activoFijoRepuesto.repuestos) {
+                            await this.detalleRepuestoActivoFijoRepository.save({
+                                activoFijoRepuestos: { id: existingActivoFijoRepuesto.id },
+                                repuestoId: repuesto.repuesto.id,
+                                cantidad: repuesto.cantidad,
+                                comentario: repuesto.comentario || '',
+                                estado: 'pendiente',
+                                precio_unitario: 0 // Este valor debería venir del repuesto o ser calculado
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error al procesar activoFijoRepuesto:`, error);
+                    throw new InternalServerErrorException(`Error al procesar activoFijoRepuesto: ${error.message}`);
+                }
+            }
+        }
+
         // Obtener la solicitud actualizada con todos los datos
         const solicitudActualizada = await this.solicitarVisitaRepository
             .createQueryBuilder('solicitud')
@@ -470,6 +551,10 @@ export class SolicitarVisitaService {
             .leftJoinAndSelect('solicitud.local', 'local')
             .leftJoinAndSelect('solicitud.client', 'client')
             .leftJoinAndSelect('solicitud.tecnico_asignado', 'tecnico_asignado')
+            .leftJoinAndSelect('solicitud.activoFijoRepuestos', 'activoFijoRepuestos')
+            .leftJoinAndSelect('activoFijoRepuestos.activoFijo', 'activoFijo')
+            .leftJoinAndSelect('activoFijoRepuestos.detallesRepuestos', 'detallesRepuestos')
+            .leftJoinAndSelect('detallesRepuestos.repuesto', 'detallesRepuestosRepuesto')
             .where('solicitud.id = :id', { id })
             .getOne();
 
@@ -501,39 +586,34 @@ export class SolicitarVisitaService {
     }
 
 
-    async validarSolicitud(id: number, validada_por_id: number): Promise<SolicitarVisita> {
+    async validarSolicitud(id: number, validada_por_id: number, causaRaizId?: number): Promise<SolicitarVisita> {
         const visita = await this.solicitarVisitaRepository.findOne({ 
-            where: { id }
+            where: { id },
+            relations: ['itemRepuestos', 'causaRaiz']
         });
 
         if (!visita) {
             throw new NotFoundException(`Visita con ID ${id} no encontrada`);
         }
 
-        // Guardar los repuestos temporales
-        
-        console.log('visita', visita);
-        // Combinar los datos de validación con los datos actualizados del formulario
-        const updateData = { 
-            ...visita,
-            status: SolicitudStatus.VALIDADA, 
+        // Actualizar los datos de validación
+        const updateData = {
+            status: SolicitudStatus.VALIDADA,
             validada_por_id: validada_por_id,
             fecha_hora_validacion: new Date(),
-            especialidad: visita.especialidad,
-            ticketGruman: visita.ticketGruman,
-            observaciones: visita.observaciones,
-            longitud_movil: visita.longitud_movil,
-            latitud_movil: visita.latitud_movil,
-            registroVisita: visita.registroVisita
+            causaRaizId: causaRaizId || null
         };
-        
-        // Actualizar la entidad con todos los cambios
-        await this.solicitarVisitaRepository.update(id, updateData);
-        
+
+        // Actualizar la entidad
+        await this.solicitarVisitaRepository.save({
+            ...visita,
+            ...updateData
+        });
+
         // Retornar la entidad actualizada con sus relaciones
-        return this.solicitarVisitaRepository.findOne({ 
+        return this.solicitarVisitaRepository.findOne({
             where: { id },
-            relations: ['local', 'client', 'tecnico_asignado', 'itemRepuestos', 'itemRepuestos.repuesto']
+            relations: ['local', 'client', 'tecnico_asignado', 'itemRepuestos', 'itemRepuestos.repuesto', 'causaRaiz']
         });
     }
 
@@ -783,22 +863,40 @@ export class SolicitarVisitaService {
                 updateSolicitudVisitaDto.especialidad = null;
             }
             
+            // Ensure causaRaizId is properly handled
+            if (updateSolicitudVisitaDto.causaRaizId === '') {
+                updateSolicitudVisitaDto.causaRaizId = null;
+            }
+
+            // Fetch the existing solicitud with relations
             const solicitud = await this.solicitarVisitaRepository.findOne({
                 where: { id },
-                relations: ['itemRepuestos']
+                relations: ['itemRepuestos', 'causaRaiz']
             });
 
             if (!solicitud) {
                 throw new NotFoundException(`Solicitud with ID ${id} not found`);
             }
 
-            // Actualizar los campos básicos
-            Object.assign(solicitud, updateSolicitudVisitaDto);
+            // Update the fields including causaRaizId
+            const updateData = {
+                ...updateSolicitudVisitaDto,
+                causaRaizId: updateSolicitudVisitaDto.causaRaizId || null
+            };
 
-            // Guardar la solicitud actualizada
-            const result = await this.solicitarVisitaRepository.save(solicitud);
-            console.log('Updated solicitud successfully');
-            
+            // Save the updated solicitud
+            await this.solicitarVisitaRepository.save({
+                ...solicitud,
+                ...updateData
+            });
+
+            // Fetch and return the updated entity with all relations
+            const result = await this.solicitarVisitaRepository.findOne({
+                where: { id },
+                relations: ['itemRepuestos', 'causaRaiz', 'local', 'client', 'tecnico_asignado']
+            });
+
+            console.log('Updated solicitud successfully:', result);
             return result;
         } catch (error) {
             console.error('Error updating solicitud:', error);
@@ -806,3 +904,4 @@ export class SolicitarVisitaService {
         }
     }
 }
+

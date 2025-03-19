@@ -29,6 +29,7 @@ import { ConfirmDialogComponent } from '../../../../components/confirm-dialog/co
 import { EspecialidadesService } from '../../../../services/especialidades.service';
 import { ChangeDetectorRef } from '@angular/core';
 import Swal from 'sweetalert2';
+import { CausaRaizService } from '../../../../services/causa-raiz.service';
 
 interface Repuesto {
   id: number;
@@ -186,6 +187,8 @@ export class ModificarSolicitudComponent implements OnInit {
   isValidada: boolean = false;
   isReabierta: boolean = false;
   usuarioRechazo: any = null;
+  causasRaiz: any[] = [];
+  isFinalized: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -202,7 +205,8 @@ export class ModificarSolicitudComponent implements OnInit {
     private sectorTrabajoService: SectoresService,
     private usersService: UsersService,
     private especialidadesService: EspecialidadesService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private causaRaizService: CausaRaizService
   ) {
     this.solicitudForm = this.fb.group({
       tipoServicioId: [''],
@@ -227,7 +231,8 @@ export class ModificarSolicitudComponent implements OnInit {
       'tecnico_asignado.name': [{value: '', disabled: true}],
       'tecnico_asignado_2.name': [{value: '', disabled: true}],
       'tipoServicio': [{value: '', disabled: true}],
-      'sectorTrabajo': [{value: '', disabled: true}]
+      'sectorTrabajo': [{value: '', disabled: true}],
+      causaRaizId: [''],
     });
     this.temporaryRepuestos = {};
     this.temporaryDeletedRepuestos = {};
@@ -252,6 +257,7 @@ export class ModificarSolicitudComponent implements OnInit {
     this.loadEspecialidades();
     this.watchEspecialidadChanges();
     this.watchTipoServicioChanges();
+    this.loadCausasRaiz();
   }
 
   inicializarFormulario() {
@@ -278,7 +284,8 @@ export class ModificarSolicitudComponent implements OnInit {
       'tecnico_asignado.name': [{value: '', disabled: true}],
       'tecnico_asignado_2.name': [{value: '', disabled: true}],
       'tipoServicio': [{value: '', disabled: true}],
-      'sectorTrabajo': [{value: '', disabled: true}]
+      'sectorTrabajo': [{value: '', disabled: true}],
+      causaRaizId: [''],
     });
     this.temporaryRepuestos = {};
     this.temporaryDeletedRepuestos = {};
@@ -440,7 +447,8 @@ export class ModificarSolicitudComponent implements OnInit {
           'tecnico_asignado_id': data.tecnico_asignado?.id || '',
           'tecnico_asignado_id_2': data.tecnico_asignado_2?.id || '',
           'tipoServicio': data.tipoServicio?.nombre || '',
-          'sectorTrabajo': data.sectorTrabajo?.nombre || ''
+          'sectorTrabajo': data.sectorTrabajo?.nombre || '',
+          'causaRaizId': data.causaRaizId || '',
         });
 
         // Si está rechazada, deshabilitar todos los controles
@@ -852,7 +860,10 @@ export class ModificarSolicitudComponent implements OnInit {
           next: () => {
             // Una vez actualizado, procedemos a validar
             const validationData = {
-              validada_por_id: currentUser.id
+              validada_por_id: currentUser.id,
+              causaRaizId: this.solicitudForm.get('causaRaizId')?.value,
+              valorPorLocal: this.solicitudForm.get('valorPorLocal')?.value,
+              registroVisita: this.solicitudForm.get('registroVisita')?.value,
             };
 
             this.solicitarVisitaService.validarSolicitud(
@@ -1247,15 +1258,35 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   // Método para guardar los cambios
-  onSubmit() {
-    if (this.solicitudForm.valid) {
-      const updateData: any = {
-        id: this.solicitudForm.get('id')?.value,
-        observaciones: this.solicitudForm.get('observaciones')?.value,
-        valorPorLocal: this.solicitudForm.get('valorPorLocal')?.value,
-        registroVisita: this.solicitudForm.get('registroVisita')?.value
-      };
-      // ... existing code ...
+  async onSubmit() {
+    if (this.solicitudForm.invalid) {
+        return;
+    }
+
+    const formData = this.solicitudForm.getRawValue();
+    console.log('Form data before update:', formData); // Debug log
+
+    const updateData = {
+        especialidad: formData.especialidad,
+        ticketGruman: formData.ticketGruman,
+        observaciones: formData.observaciones,
+        longitud_movil: formData.longitud_movil,
+        latitud_movil: formData.latitud_movil,
+        valorPorLocal: formData.valorPorLocal,
+        registroVisita: formData.registroVisita,
+        causaRaizId: formData.causaRaizId || null,
+        listaInspeccion: this.listaInspeccion
+    };
+
+    console.log('Update data being sent:', updateData); // Debug log
+
+    try {
+        await this.solicitarVisitaService.updateSolicitudVisita(Number(this.solicitudId), updateData).toPromise();
+        this.snackBar.open('Solicitud actualizada correctamente', 'Cerrar', { duration: 3000 });
+        this.router.navigate(['/transacciones/solicitudes-de-visita']);
+    } catch (error) {
+        console.error('Error al actualizar la solicitud:', error);
+        this.snackBar.open('Error al actualizar la solicitud', 'Cerrar', { duration: 3000 });
     }
   }
 
@@ -1402,5 +1433,19 @@ export class ModificarSolicitudComponent implements OnInit {
   getTecnicosDisponiblesParaSegundoSelect(): any[] {
     const tecnico1Id = this.solicitudForm.get('tecnico_asignado_id')?.value;
     return this.tecnicos.filter(tecnico => tecnico.id !== tecnico1Id);
+  }
+
+  private loadCausasRaiz(): void {
+    this.causaRaizService.findAll().subscribe({
+      next: (data: any[]) => {
+        this.causasRaiz = data;
+      },
+      error: (error) => {
+        console.error('Error cargando causas raíz:', error);
+        this.snackBar.open('Error al cargar las causas raíz', 'Cerrar', {
+          duration: 3000
+        });
+      }
+    });
   }
 } 

@@ -259,6 +259,8 @@ export class SolicitarVisitaController {
         longitud_movil?: string,
         latitud_movil?: string,
         registroVisita?: string,
+        causaRaizId?: number,
+        valorPorLocal?: number,
         repuestos?: { [key: string]: any[] }
     }
   ) {
@@ -271,12 +273,15 @@ export class SolicitarVisitaController {
             longitud_movil: data.longitud_movil,
             latitud_movil: data.latitud_movil,
             registroVisita: data.registroVisita,
+            causaRaizId: data.causaRaizId,
+            valorPorLocal: data.valorPorLocal,
             repuestos: data.repuestos
         });
 
         const result = await this.solicitarVisitaService.validarSolicitud(
             id, 
-            data.validada_por_id
+            data.validada_por_id,
+            data.causaRaizId
         );
         
         console.log('Controller: Resultado de validación:', result);
