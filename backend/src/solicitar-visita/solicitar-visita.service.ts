@@ -438,6 +438,16 @@ export class SolicitarVisitaService {
 
         // Procesar cada item y sus estados
         for (const [itemId, itemData] of Object.entries(data.repuestos)) {
+            // Verificar si el item existe antes de procesar
+            const itemExists = await this.itemRepuestoRepository.findOne({
+                where: { id: parseInt(itemId) }
+            });
+
+            if (!itemExists) {
+                console.log(`Ignorando item ${itemId} porque no existe en la base de datos`);
+                continue;
+            }
+
             // Guardar el estado del item
             const existingItem = await this.itemRepuestoRepository.findOne({
                 where: {
@@ -452,12 +462,11 @@ export class SolicitarVisitaService {
                     comentario: itemData.comentario || ''
                 });
             } else {
-                // Guardar el estado sin repuesto asociado (repuestoId = null)
                 try {
-                    console.log(`Guardando estado ${itemData.estado} para ítem ${itemId} sin repuestos asociados (repuestoId: null)`);
+                    console.log(`Guardando estado ${itemData.estado} para ítem ${itemId}`);
                     await this.itemRepuestoRepository.save({
                         itemId: parseInt(itemId),
-                        repuestoId: null, // Permitir guardar con repuestoId NULL
+                        repuestoId: null,
                         solicitarVisitaId: id,
                         estado: itemData.estado,
                         comentario: itemData.comentario || '',
@@ -524,14 +533,14 @@ export class SolicitarVisitaService {
                     let existingActivoFijoRepuesto = await this.activoFijoRepuestosRepository.findOne({
                         where: {
                             solicitarVisita: { id },
-                            activoFijo: { id: activoFijoRepuesto.activoFijoId }
+                            activoFijo: { id: activoFijoRepuesto.activoFijo.id }
                         }
                     });
 
                     if (!existingActivoFijoRepuesto) {
                         existingActivoFijoRepuesto = await this.activoFijoRepuestosRepository.save({
                             solicitarVisita: { id },
-                            activoFijo: { id: activoFijoRepuesto.activoFijoId },
+                            activoFijo: { id: activoFijoRepuesto.activoFijo.id },
                             estadoOperativo: activoFijoRepuesto.estadoOperativo,
                             observacionesEstado: activoFijoRepuesto.observacionesEstado || '',
                             fechaRevision: new Date()
@@ -555,11 +564,11 @@ export class SolicitarVisitaService {
                         for (const repuesto of activoFijoRepuesto.repuestos) {
                             await this.detalleRepuestoActivoFijoRepository.save({
                                 activoFijoRepuestos: { id: existingActivoFijoRepuesto.id },
-                                repuestoId: repuesto.repuesto.id,
+                                repuesto: { id: repuesto.repuesto.id },
                                 cantidad: repuesto.cantidad,
                                 comentario: repuesto.comentario || '',
-                                estado: 'pendiente',
-                                precio_unitario: 0 // Este valor debería venir del repuesto o ser calculado
+                                estado: repuesto.estado || 'pendiente',
+                                precio_unitario: repuesto.precio_unitario || 0
                             });
                         }
                     }

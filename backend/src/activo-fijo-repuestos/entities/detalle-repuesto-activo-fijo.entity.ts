@@ -21,11 +21,7 @@ export class DetalleRepuestoActivoFijo {
     @Column({ type: 'text', nullable: true })
     comentario: string;
 
-    @Column({ 
-        type: 'enum', 
-        enum: ['pendiente', 'aplicado', 'no_aplicado'],
-        default: 'pendiente'
-    })
+    @Column({ default: 'pendiente' })
     estado: string;
 
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })

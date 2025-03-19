@@ -10,6 +10,9 @@ export class DetalleRepuestoDto {
   @IsString()
   comentario?: string;
 
+  @IsOptional()
+  precio_unitario?: number;
+
   @IsNotEmpty()
   repuesto: {
     id: number;
@@ -33,7 +36,7 @@ export class ActivoFijoRepuestoDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => DetalleRepuestoDto)
-  repuestos: DetalleRepuestoDto[];
+  repuestos: any[];
 }
 
 export class FinalizarServicioDto {
@@ -64,7 +67,7 @@ export class FinalizarServicioDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ActivoFijoRepuestoDto)
-  activoFijoRepuestos?: ActivoFijoRepuestoDto[];
+  activoFijoRepuestos?: any[];
 
   @IsOptional()
   @IsString()

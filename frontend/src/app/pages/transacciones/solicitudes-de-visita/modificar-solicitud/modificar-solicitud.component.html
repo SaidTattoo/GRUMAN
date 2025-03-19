@@ -426,212 +426,143 @@
       }
     </div>
 
-    <!-- Total Final -->
-    <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
-      <div class="final-total-amount">
-        <strong>Total Final:</strong>
-        <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
-      </div>
-    </div>
-    @if (isPendiente) {
-      <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
-        <mat-icon style="color: #1976d2;">info</mat-icon>
-        <span style="color: #1565c0; font-size: 14px;">Para aprobar esta solicitud, debes asignar un técnico y verificar la fecha de visita.</span>
-      </div>
-    }
-    <div class="actions">
-      <button mat-button [style.color]="solicitud?.status === 'validada' || isAprobada || isRechazada ? '#1976d2' : ''" (click)="onCancel()">
-        {{ solicitud?.status !== 'validada' && !isAprobada && !isRechazada ? 'Cancelar' : 'Volver' }}
-      </button>
+   
 
-      @if (isPendiente) {
-        <!-- Botones para estado pendiente -->
-        <button mat-raised-button color="primary" 
-                (click)="aprobarSolicitud()" 
-                style="margin-right: 10px;"
-                [disabled]="!solicitudForm.get('tecnico_asignado_id')?.value">
-          <mat-icon>check_circle</mat-icon> Aprobar
-        </button>
-        <button mat-raised-button color="warn" (click)="rechazarSolicitud()">
-          <mat-icon>cancel</mat-icon> Rechazar
-        </button>
-      } @else if (isAprobada) {
-        <!-- Banner informativo para solicitudes aprobadas -->
-        <div class="approved-message" style="color: #2196F3; padding: 10px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
-          <mat-icon style="vertical-align: middle; margin-right: 8px;">schedule</mat-icon>
-          Esta solicitud está aprobada y a la espera de la visita del técnico
-        </div>
-      } @else if (isRechazada) {
-        <!-- Banner informativo para solicitudes rechazadas -->
-        <div class="rejected-message" style="color: #F44336; padding: 15px; background-color: #FFEBEE; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%; flex-direction: column; margin-bottom: 15px;">
-          <div style="display: flex; align-items: center; width: 100%; justify-content: center; margin-bottom: 10px;">
-            <mat-icon style="vertical-align: middle; margin-right: 8px; font-size: 28px; height: 28px; width: 28px;">cancel</mat-icon>
-            <span style="font-weight: bold; font-size: 18px;">Esta solicitud fue rechazada</span>
-          </div>
-          
-          <!-- Información de quién rechazó -->
-          @if (solicitud?.rechazada_por_id && usuarioRechazo) {
-            <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
-              <strong>Rechazada por:</strong> {{ usuarioRechazo.name }} {{ usuarioRechazo.lastName }}
+    <!-- Estado y Repuestos de Activos Fijos -->
+    <div class="lista-seccion" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
+      <div class="seccion-header">Estado y Repuestos de Activos Fijos</div>
+      <div class="lista-items">
+        @for (activoFijo of solicitud.activoFijoRepuestos; track activoFijo.id) {
+          <li>
+            <!-- Detalles del Activo Fijo -->
+            <div class="repuesto-detail">
+              <strong>Tipo:</strong> {{activoFijo.activoFijo.tipo_equipo}}
+              <strong>Marca:</strong> {{activoFijo.activoFijo.marca}}
+              <strong>Potencia:</strong> {{activoFijo.activoFijo.potencia_equipo}}
+              <strong>Código:</strong> {{activoFijo.activoFijo.codigo_activo}}
             </div>
-          }
-          
-          <!-- Fecha de rechazo (Solo se mostrará si hay) -->
-          @if (solicitud?.fecha_rechazo) {
-            <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
-              <strong>Fecha:</strong> {{ solicitud.fecha_rechazo | date:'dd/MM/yyyy HH:mm' }}
-            </div>
-          }
-          
-          <!-- Observación de rechazo -->
-          @if (solicitud?.observacion_rechazo) {
-            <div style="width: 100%; text-align: center; margin-top: 8px; padding: 10px; background-color: rgba(244, 67, 54, 0.1); border-radius: 4px; font-size: 16px;">
-              <strong>Motivo:</strong> {{ solicitud.observacion_rechazo }}
-            </div>
-          }
-        </div>
-      } @else if (solicitud?.status !== 'validada' && !isValidada) {
-        <!-- Botones para estados diferentes a pendiente, aprobada y validada -->
-        <button mat-raised-button color="primary" (click)="onSaveRepuestos()" style="margin-right: 10px;">
-          <mat-icon>save</mat-icon>
-          Guardar Repuestos
-        </button>
-        <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
-          Validar Solicitud
-        </button>
-      } @else {
-        <div class="validation-message" style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
-          <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
-          Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm' }}
-        </div>
-      }
-    </div>
 
-    <!-- After the existing repuestos section -->
-    <div class="card mt-4" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
-      <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Estado y Repuestos de Activos Fijos</h5>
-      </div>
-      <div class="card-body">
-        <div class="accordion" id="activosFijosAccordion">
-          <div class="accordion-item" *ngFor="let activoFijo of solicitud.activoFijoRepuestos; let i = index">
-            <h2 class="accordion-header">
-              <button class="accordion-button" type="button" [class.collapsed]="i !== 0" data-bs-toggle="collapse"
-                [attr.data-bs-target]="'#activoFijo' + i">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                  <span>
-                    {{activoFijo.activoFijo.tipo_equipo}} - {{activoFijo.activoFijo.marca}}
-                    ({{activoFijo.activoFijo.codigo_activo}})
-                  </span>
-                  <span [class]="getEstadoOperativoClass(activoFijo.estadoOperativo)" class="badge ms-2">
-                    {{getEstadoOperativoLabel(activoFijo.estadoOperativo)}}
-                  </span>
-                </div>
-              </button>
-            </h2>
-            <div [id]="'activoFijo' + i" class="accordion-collapse collapse" [class.show]="i === 0"
-              data-bs-parent="#activosFijosAccordion">
-              <div class="accordion-body">
-                <!-- Detalles del Activo Fijo -->
-                <div class="mb-3">
-                  <h6>Detalles del Equipo:</h6>
-                  <div class="row">
-                    <div class="col-md-3">
-                      <strong>Tipo:</strong> {{activoFijo.activoFijo.tipo_equipo}}
+            <!-- Lista de Repuestos -->
+            <div class="repuestos-list">
+              @for (detalle of activoFijo.detallesRepuestos; track $index) {
+                <div class="repuesto-item">
+                  <div class="repuesto-info">
+                    <div class="repuesto-detail">
+                      <strong>Artículo:</strong> 
+                      <span>{{ detalle.repuesto.articulo || 'N/A' }}</span>
                     </div>
-                    <div class="col-md-3">
-                      <strong>Marca:</strong> {{activoFijo.activoFijo.marca}}
+                    <div class="repuesto-detail">
+                      <strong>Marca:</strong> 
+                      <span>{{ detalle.repuesto.marca || 'N/A' }}</span>
                     </div>
-                    <div class="col-md-3">
-                      <strong>Potencia:</strong> {{activoFijo.activoFijo.potencia_equipo}}
+                    <div class="repuesto-detail">
+                      <strong>Cantidad:</strong> 
+                      <span>{{ detalle.cantidad }}</span>
                     </div>
-                    <div class="col-md-3">
-                      <strong>Código:</strong> {{activoFijo.activoFijo.codigo_activo}}
+                    <div class="repuesto-detail">
+                      <strong>Precio:</strong> 
+                      <span>${{ detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="repuesto-detail">
+                      <strong>Total:</strong> 
+                      <span>${{ detalle.cantidad * +detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
                     </div>
                   </div>
                 </div>
-
-                <!-- Estado y Observaciones -->
-                <div class="mb-3">
-                  <h6>Estado Operativo:</h6>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <strong>Estado:</strong>
-                      <span [class]="getEstadoOperativoClass(activoFijo.estadoOperativo)">
-                        {{getEstadoOperativoLabel(activoFijo.estadoOperativo)}}
-                      </span>
-                    </div>
-                    <div class="col-md-6">
-                      <strong>Fecha Revisión:</strong>
-                      {{activoFijo.fechaRevision | date:'dd/MM/yyyy HH:mm'}}
-                    </div>
-                  </div>
-                  <div *ngIf="activoFijo.observacionesEstado" class="mt-2">
-                    <strong>Observaciones:</strong>
-                    <p class="mb-0">{{activoFijo.observacionesEstado}}</p>
-                  </div>
-                </div>
-
-                <!-- Tabla de Repuestos -->
-                <div *ngIf="activoFijo.detallesRepuestos?.length > 0">
-                  <h6>Repuestos Utilizados:</h6>
-                  <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                      <thead>
-                        <tr>
-                          <th>Artículo</th>
-                          <th>Marca</th>
-                          <th>Cantidad</th>
-                          <th>Precio Unit.</th>
-                          <th>Total</th>
-                          <th>Estado</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let detalle of activoFijo.detallesRepuestos">
-                          <td>{{detalle.repuesto.articulo}}</td>
-                          <td>{{detalle.repuesto.marca}}</td>
-                          <td>{{detalle.cantidad}}</td>
-                          <td>{{detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0'}}</td>
-                          <td>{{detalle.cantidad * +detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0'}}</td>
-                          <td>
-                            <span class="badge" [ngClass]="{
-                              'bg-warning': detalle.estado === 'pendiente',
-                              'bg-success': detalle.estado === 'aprobado',
-                              'bg-danger': detalle.estado === 'rechazado'
-                            }">
-                              {{detalle.estado | titlecase}}
-                            </span>
-                          </td>
-                        </tr>
-                      </tbody>
-                      <tfoot>
-                        <tr>
-                          <td colspan="4" class="text-end"><strong>Total Activo Fijo:</strong></td>
-                          <td colspan="2">
-                            <strong>{{calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos) | currency:'CLP':'symbol-narrow':'1.0-0'}}</strong>
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
+              }
+              
+              <!-- Total del Activo Fijo -->
+              <div class="total-section">
+                <div class="total-amount">
+                  <strong>Total Activo Fijo:</strong>
+                  <span>${{ calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos) | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Total General -->
-        <div class="card-footer text-end">
-          <h5>Total General Activos Fijos: 
-            <span class="text-primary">
-              {{calculateTotalActivosFijos() | currency:'CLP':'symbol-narrow':'1.0-0'}}
-            </span>
-          </h5>
-        </div>
+          </li>
+        }
       </div>
     </div>
+ <!-- Total Final -->
+ <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
+  <div class="final-total-amount">
+    <strong>Total Final:</strong>
+    <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
+  </div>
+</div>
+@if (isPendiente) {
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
+    <mat-icon style="color: #1976d2;">info</mat-icon>
+    <span style="color: #1565c0; font-size: 14px;">Para aprobar esta solicitud, debes asignar un técnico y verificar la fecha de visita.</span>
+  </div>
+}
+<div class="actions">
+  <button mat-button [style.color]="solicitud?.status === 'validada' || isAprobada || isRechazada ? '#1976d2' : ''" (click)="onCancel()">
+    {{ solicitud?.status !== 'validada' && !isAprobada && !isRechazada ? 'Cancelar' : 'Volver' }}
+  </button>
 
+  @if (isPendiente) {
+    <!-- Botones para estado pendiente -->
+    <button mat-raised-button color="primary" 
+            (click)="aprobarSolicitud()" 
+            style="margin-right: 10px;"
+            [disabled]="!solicitudForm.get('tecnico_asignado_id')?.value">
+      <mat-icon>check_circle</mat-icon> Aprobar
+    </button>
+    <button mat-raised-button color="warn" (click)="rechazarSolicitud()">
+      <mat-icon>cancel</mat-icon> Rechazar
+    </button>
+  } @else if (isAprobada) {
+    <!-- Banner informativo para solicitudes aprobadas -->
+    <div class="approved-message" style="color: #2196F3; padding: 10px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
+      <mat-icon style="vertical-align: middle; margin-right: 8px;">schedule</mat-icon>
+      Esta solicitud está aprobada y a la espera de la visita del técnico
+    </div>
+  } @else if (isRechazada) {
+    <!-- Banner informativo para solicitudes rechazadas -->
+    <div class="rejected-message" style="color: #F44336; padding: 15px; background-color: #FFEBEE; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%; flex-direction: column; margin-bottom: 15px;">
+      <div style="display: flex; align-items: center; width: 100%; justify-content: center; margin-bottom: 10px;">
+        <mat-icon style="vertical-align: middle; margin-right: 8px; font-size: 28px; height: 28px; width: 28px;">cancel</mat-icon>
+        <span style="font-weight: bold; font-size: 18px;">Esta solicitud fue rechazada</span>
+      </div>
+      
+      <!-- Información de quién rechazó -->
+      @if (solicitud?.rechazada_por_id && usuarioRechazo) {
+        <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
+          <strong>Rechazada por:</strong> {{ usuarioRechazo.name }} {{ usuarioRechazo.lastName }}
+        </div>
+      }
+      
+      <!-- Fecha de rechazo (Solo se mostrará si hay) -->
+      @if (solicitud?.fecha_rechazo) {
+        <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
+          <strong>Fecha:</strong> {{ solicitud.fecha_rechazo | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+      }
+      
+      <!-- Observación de rechazo -->
+      @if (solicitud?.observacion_rechazo) {
+        <div style="width: 100%; text-align: center; margin-top: 8px; padding: 10px; background-color: rgba(244, 67, 54, 0.1); border-radius: 4px; font-size: 16px;">
+          <strong>Motivo:</strong> {{ solicitud.observacion_rechazo }}
+        </div>
+      }
+    </div>
+  } @else if (solicitud?.status !== 'validada' && !isValidada) {
+    <!-- Botones para estados diferentes a pendiente, aprobada y validada -->
+    <button mat-raised-button color="primary" (click)="onSaveRepuestos()" style="margin-right: 10px;">
+      <mat-icon>save</mat-icon>
+      Guardar Repuestos
+    </button>
+    <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
+      Validar Solicitud
+    </button>
+  } @else {
+    <div class="validation-message" style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
+      <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
+      Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm' }}
+    </div>
+  }
+</div>
   </form>
 </div>
 
