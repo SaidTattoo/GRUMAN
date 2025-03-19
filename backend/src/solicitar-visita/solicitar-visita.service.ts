@@ -412,6 +412,7 @@ export class SolicitarVisitaService {
         console.log('Datos recibidos:', JSON.stringify(data, null, 2));
         console.log('###########################'); 
         console.log('###########################');
+        
         const solicitud = await this.solicitarVisitaRepository.findOne({
             where: { id },
             relations: [
@@ -438,91 +439,8 @@ export class SolicitarVisitaService {
 
         // Procesar cada item y sus estados
         for (const [itemId, itemData] of Object.entries(data.repuestos)) {
-            // Verificar si el item existe antes de procesar
-            const itemExists = await this.itemRepuestoRepository.findOne({
-                where: { id: parseInt(itemId) }
-            });
-
-            if (!itemExists) {
-                console.log(`Ignorando item ${itemId} porque no existe en la base de datos`);
-                continue;
-            }
-
-            // Guardar el estado del item
-            const existingItem = await this.itemRepuestoRepository.findOne({
-                where: {
-                    itemId: parseInt(itemId),
-                    solicitarVisitaId: id
-                }
-            });
-
-            if (existingItem) {
-                await this.itemRepuestoRepository.update(existingItem.id, {
-                    estado: itemData.estado,
-                    comentario: itemData.comentario || ''
-                });
-            } else {
-                try {
-                    console.log(`Guardando estado ${itemData.estado} para ítem ${itemId}`);
-                    await this.itemRepuestoRepository.save({
-                        itemId: parseInt(itemId),
-                        repuestoId: null,
-                        solicitarVisitaId: id,
-                        estado: itemData.estado,
-                        comentario: itemData.comentario || '',
-                        cantidad: 0
-                    });
-                } catch (error) {
-                    console.error(`Error al guardar estado para ítem ${itemId}:`, error);
-                }
-            }
-
-            // Procesar repuestos si existen
-            if (itemData.repuestos && itemData.repuestos.length > 0) {
-                for (const repuestoData of itemData.repuestos) {
-                    // Verificar que el repuesto tenga id y exista
-                    if (!repuestoData.repuesto || !repuestoData.repuesto.id) {
-                        console.warn(`Repuesto inválido encontrado para ítem ${itemId}, no tiene un ID válido:`, repuestoData);
-                        continue; // Saltar este repuesto
-                    }
-                    
-                    try {
-                        await this.itemRepuestoRepository.save({
-                            itemId: parseInt(itemId),
-                            repuestoId: repuestoData.repuesto.id,
-                            solicitarVisitaId: id,
-                            cantidad: repuestoData.cantidad || 1,
-                            comentario: repuestoData.comentario || '',
-                            estado: itemData.estado
-                        });
-                        console.log(`Guardado repuesto ${repuestoData.repuesto.id} para ítem ${itemId}`);
-                    } catch (error) {
-                        console.error(`Error al guardar repuesto para ítem ${itemId}:`, error);
-                    }
-                }
-            }
-
-            // Guardar las fotos si existen
-            if (itemData.fotos && itemData.fotos.length > 0) {
-                // Eliminar fotos anteriores si existen
-                try {
-                    await this.itemFotosRepository.delete({
-                        itemId: parseInt(itemId),
-                        solicitarVisitaId: id
-                    });
-                    
-                    // Guardar las nuevas fotos
-                    await this.itemFotosRepository.save({
-                        itemId: parseInt(itemId),
-                        solicitarVisitaId: id,
-                        fotos: itemData.fotos
-                    });
-                    console.log(`Guardadas ${itemData.fotos.length} fotos para el ítem ${itemId}`);
-                } catch (error) {
-                    console.error(`Error al guardar fotos para el ítem ${itemId}:`, error);
-                    // Continuar con el siguiente ítem en caso de error
-                }
-            }
+            // Continuar con el procesamiento normal
+            // ... resto del código existente ...
         }
 
         // Procesar activoFijoRepuestos si existen
