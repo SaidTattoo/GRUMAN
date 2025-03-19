@@ -485,6 +485,8 @@
     </div>
  <!-- Total Final -->
  <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
+  
+  <!-- Total Final -->
   <div class="final-total-amount">
     <strong>Total Final:</strong>
     <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>

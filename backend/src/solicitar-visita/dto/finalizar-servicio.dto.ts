@@ -11,6 +11,10 @@ export class DetalleRepuestoDto {
   comentario?: string;
 
   @IsOptional()
+  @IsString()
+  estado?: string;
+
+  @IsOptional()
   precio_unitario?: number;
 
   @IsNotEmpty()
@@ -53,6 +57,8 @@ export class FinalizarServicioDto {
       repuestos?: Array<{
         cantidad: number;
         comentario?: string;
+        estado?: string;
+        precio_unitario?: number;
         repuesto: {
           id: number;
           articulo: string;

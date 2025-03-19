@@ -439,8 +439,55 @@ export class SolicitarVisitaService {
 
         // Procesar cada item y sus estados
         for (const [itemId, itemData] of Object.entries(data.repuestos)) {
-            // Continuar con el procesamiento normal
-            // ... resto del código existente ...
+            // Guardar las fotos si existen
+            if (itemData.fotos && itemData.fotos.length > 0) {
+                try {
+                    await this.itemFotosRepository.save({
+                        solicitarVisita: { id },
+                        itemId: parseInt(itemId),
+                        fotos: itemData.fotos
+                    });
+                } catch (error) {
+                    console.error('Error al guardar fotos:', error);
+                    throw new InternalServerErrorException(`Error al guardar fotos: ${error.message}`);
+                }
+            }
+
+            // Procesar los repuestos si existen
+            if (itemData.repuestos && itemData.repuestos.length > 0) {
+                for (const repuestoData of itemData.repuestos) {
+                    try {
+                        await this.itemRepuestoRepository.save({
+                            solicitarVisita: { id },
+                            itemId: parseInt(itemId),
+                            repuesto: { id: repuestoData.repuesto.id },
+                            cantidad: repuestoData.cantidad,
+                            comentario: repuestoData.comentario || '',
+                            estado: itemData.estado,
+                            precio_unitario: repuestoData.precio_unitario || 0
+                        });
+                    } catch (error) {
+                        console.error('Error al guardar repuesto:', error);
+                        throw new InternalServerErrorException(`Error al guardar repuesto: ${error.message}`);
+                    }
+                }
+            } else {
+                // Guardar el estado del item incluso si no tiene repuestos
+                try {
+                    await this.itemRepuestoRepository.save({
+                        solicitarVisita: { id },
+                        itemId: parseInt(itemId),
+                        repuesto: null,
+                        cantidad: 0,
+                        comentario: itemData.comentario || '',
+                        estado: itemData.estado,
+                        precio_unitario: 0
+                    });
+                } catch (error) {
+                    console.error('Error al guardar estado del item:', error);
+                    throw new InternalServerErrorException(`Error al guardar estado del item: ${error.message}`);
+                }
+            }
         }
 
         // Procesar activoFijoRepuestos si existen

@@ -12,7 +12,29 @@ export class ItemFotos {
     @Column()
     solicitarVisitaId: number;
 
-    @Column('simple-array')
+    @Column('text', {
+        nullable: true,
+        default: '[]',
+        transformer: {
+            to: (value: string[]) => {
+                if (!value) return '[]';
+                return JSON.stringify(value);
+            },
+            from: (value: string) => {
+                if (!value) return [];
+                // Si el valor comienza con http, es una URL simple
+                if (value.startsWith('http')) {
+                    return [value];
+                }
+                try {
+                    return JSON.parse(value);
+                } catch (e) {
+                    console.warn('Error parsing fotos JSON:', e);
+                    return [];
+                }
+            }
+        }
+    })
     fotos: string[];
 
     @CreateDateColumn()

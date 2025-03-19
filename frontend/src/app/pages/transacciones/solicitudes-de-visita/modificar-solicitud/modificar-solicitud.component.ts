@@ -1054,16 +1054,21 @@ export class ModificarSolicitudComponent implements OnInit {
   calculateFinalTotal(): number {
     let finalTotal = 0;
     
+    // Sumar repuestos de inspección
     this.listaInspeccion.forEach(lista => {
       lista.items.forEach((item: any) => {
         item.subItems.forEach((subItem: any) => {
           if (subItem.repuestos) {
-            // Usamos el mismo método que ya excluye los repuestos marcados para eliminar
             finalTotal += this.calculateSubItemTotal(subItem.repuestos);
           }
         });
       });
     });
+    
+    // Sumar repuestos de activos fijos
+    if (this.solicitud?.activoFijoRepuestos) {
+      finalTotal += this.calculateTotalActivosFijos();
+    }
     
     return finalTotal;
   }
