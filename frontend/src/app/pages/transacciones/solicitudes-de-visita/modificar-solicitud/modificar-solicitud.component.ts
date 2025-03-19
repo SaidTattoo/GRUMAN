@@ -84,6 +84,34 @@ interface Tecnico {
   }[];
 }
 
+interface ActivoFijoRepuesto {
+  id: number;
+  estadoOperativo: string;
+  observacionesEstado: string;
+  fechaRevision: string;
+  activoFijo: {
+    id: number;
+    tipo_equipo: string;
+    marca: string;
+    potencia_equipo: string;
+    codigo_activo: string;
+  };
+  detallesRepuestos: Array<{
+    id: number;
+    cantidad: number;
+    comentario: string;
+    estado: string;
+    precio_unitario: string;
+    repuesto: {
+      id: number;
+      familia: string;
+      articulo: string;
+      marca: string;
+      precio: number;
+    };
+  }>;
+}
+
 @Component({
   selector: 'app-modificar-solicitud',
   standalone: true,
@@ -1447,5 +1475,36 @@ export class ModificarSolicitudComponent implements OnInit {
         });
       }
     });
+  }
+
+  getEstadoOperativoLabel(estado: string): string {
+    const labels: Record<string, string> = {
+        'funcionando': 'Funcionando',
+        'detenido': 'Detenido',
+        'funcionando_con_observaciones': 'Funcionando con observaciones'
+    };
+    return labels[estado] || '';
+  }
+
+  getEstadoOperativoClass(estado: string): string {
+    const classes: Record<string, string> = {
+        'funcionando': 'text-success',
+        'detenido': 'text-danger',
+        'funcionando_con_observaciones': 'text-warning'
+    };
+    return classes[estado] || '';
+  }
+
+  calculateActivoFijoRepuestoTotal(detallesRepuestos: any[]): number {
+    return detallesRepuestos?.reduce((sum: number, detalle: any) => 
+        sum + (detalle.cantidad * detalle.precio_unitario), 0) || 0;
+  }
+
+  calculateTotalActivosFijos(): number {
+    if (!this.solicitud?.activoFijoRepuestos) return 0;
+    
+    return this.solicitud.activoFijoRepuestos.reduce((total: number, activoFijo: any) => {
+        return total + this.calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos);
+    }, 0);
   }
 } 

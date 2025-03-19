@@ -249,7 +249,21 @@ export class SolicitarVisitaService {
     async getSolicitudesFinalizadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { status: In([SolicitudStatus.FINALIZADA, SolicitudStatus.FINALIZADA]) },
-            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
+            relations: [
+                'local',
+                'local.activoFijoLocales',
+                'client',
+                'tecnico_asignado',
+                'tecnico_asignado_2',
+                'itemRepuestos',
+                'itemRepuestos.repuesto',
+                'itemFotos',
+                'causaRaiz',
+                'activoFijoRepuestos',
+                'activoFijoRepuestos.activoFijo',
+                'activoFijoRepuestos.detallesRepuestos',
+                'activoFijoRepuestos.detallesRepuestos.repuesto'
+            ],
             order: { fechaIngreso: 'DESC' }
         });
         return data;
@@ -258,7 +272,21 @@ export class SolicitarVisitaService {
     async getSolicitudesValidadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { status: In([SolicitudStatus.VALIDADA, SolicitudStatus.REABIERTA]) },
-            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
+            relations: [
+                'local',
+                'local.activoFijoLocales',
+                'client',
+                'tecnico_asignado',
+                'tecnico_asignado_2',
+                'itemRepuestos',
+                'itemRepuestos.repuesto',
+                'itemFotos',
+                'causaRaiz',
+                'activoFijoRepuestos',
+                'activoFijoRepuestos.activoFijo',
+                'activoFijoRepuestos.detallesRepuestos',
+                'activoFijoRepuestos.detallesRepuestos.repuesto'
+            ],
             order: { fechaIngreso: 'DESC' }
         });
         return data;
