@@ -52,11 +52,11 @@
     </div>
 
     <!-- Causa Raíz - Solo visible cuando la solicitud está finalizada -->
-    @if (solicitud?.status === 'finalizada' || solicitud?.status === 'reabierta' || solicitud?.status === 'validada') {
+    @if (solicitud?.status === 'finalizada') {
       <div class="form-row">
         <mat-form-field appearance="fill" class="full-width">
           <mat-label>Causa Raíz</mat-label>
-          <mat-select formControlName="causaRaizId"  [disabled]="solicitud?.status === 'validada' || isValidada">
+          <mat-select formControlName="causaRaizId">
             <mat-option [value]="null">Seleccione una causa</mat-option>
             <mat-option *ngFor="let causa of causasRaiz" [value]="causa.id">
               {{ causa.nombre }}
@@ -360,28 +360,36 @@
                       @if (subItem.repuestos?.length) {
                         <ul class="repuestos-list">
                           @for (repuesto of subItem.repuestos; track $index) {
-                            @if (repuesto?.repuesto) {
-                              <li class="repuesto-item">
+                            <!-- Solo mostrar si el repuesto tiene un repuesto asociado -->
+                            @if (repuesto.repuesto) {
+                              <li class="repuesto-item" [class.temporal]="!repuesto.id" [class.pending-delete]="isRepuestoPendingDelete(subItem.id, repuesto)">
                                 <div class="repuesto-info">
+                                  @if (!repuesto.id) {
+                                    <div class="temporal-badge">
+                                      Pendiente de guardar
+                                    </div>
+                                  }
+                                  @if (isRepuestoPendingDelete(subItem.id, repuesto)) {
+                                    <div class="pending-delete-badge">
+                                      Pendiente de eliminar
+                                    </div>
+                                  }
                                   <div class="repuesto-detail">
                                     <strong>Artículo:</strong> 
-                                    <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
+                                    <span>{{ repuesto.repuesto.articulo }}</span>
                                   </div>
-                                  <div class="repuesto-detail">
-                                    <strong>Marca:</strong> 
-                                    <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
-                                  </div>
+                                 
                                   <div class="repuesto-detail">
                                     <strong>Cantidad:</strong> 
                                     <span>{{ repuesto.cantidad }}</span>
                                   </div>
                                   <div class="repuesto-detail">
                                     <strong>Precio:</strong> 
-                                    <span>${{ repuesto.repuesto?.precio?.toLocaleString('es-CL') || '0' }}</span>
+                                    <span>${{ repuesto.repuesto.precio?.toLocaleString('es-CL') }}</span>
                                   </div>
                                   <div class="repuesto-detail">
                                     <strong>Total:</strong> 
-                                    <span>${{ ((repuesto.cantidad || 0) * (repuesto.repuesto?.precio || 0)).toLocaleString('es-CL') }}</span>
+                                    <span>${{ (repuesto.cantidad * repuesto.repuesto.precio).toLocaleString('es-CL') }}</span>
                                   </div>
                                   
                                   <div class="actions-container">
@@ -418,145 +426,89 @@
       }
     </div>
 
+    <!-- Total Final -->
+    <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
+      <div class="final-total-amount">
+        <strong>Total Final:</strong>
+        <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
+      </div>
+    </div>
+    @if (isPendiente) {
+      <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
+        <mat-icon style="color: #1976d2;">info</mat-icon>
+        <span style="color: #1565c0; font-size: 14px;">Para aprobar esta solicitud, debes asignar un técnico y verificar la fecha de visita.</span>
+      </div>
+    }
+    <div class="actions">
+      <button mat-button [style.color]="solicitud?.status === 'validada' || isAprobada || isRechazada ? '#1976d2' : ''" (click)="onCancel()">
+        {{ solicitud?.status !== 'validada' && !isAprobada && !isRechazada ? 'Cancelar' : 'Volver' }}
+      </button>
+
+      @if (isPendiente) {
+        <!-- Botones para estado pendiente -->
+        <button mat-raised-button color="primary" 
+                (click)="aprobarSolicitud()" 
+                style="margin-right: 10px;"
+                [disabled]="!solicitudForm.get('tecnico_asignado_id')?.value">
+          <mat-icon>check_circle</mat-icon> Aprobar
+        </button>
+        <button mat-raised-button color="warn" (click)="rechazarSolicitud()">
+          <mat-icon>cancel</mat-icon> Rechazar
+        </button>
+      } @else if (isAprobada) {
+        <!-- Banner informativo para solicitudes aprobadas -->
+        <div class="approved-message" style="color: #2196F3; padding: 10px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
+          <mat-icon style="vertical-align: middle; margin-right: 8px;">schedule</mat-icon>
+          Esta solicitud está aprobada y a la espera de la visita del técnico
+        </div>
+      } @else if (isRechazada) {
+        <!-- Banner informativo para solicitudes rechazadas -->
+        <div class="rejected-message" style="color: #F44336; padding: 15px; background-color: #FFEBEE; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%; flex-direction: column; margin-bottom: 15px;">
+          <div style="display: flex; align-items: center; width: 100%; justify-content: center; margin-bottom: 10px;">
+            <mat-icon style="vertical-align: middle; margin-right: 8px; font-size: 28px; height: 28px; width: 28px;">cancel</mat-icon>
+            <span style="font-weight: bold; font-size: 18px;">Esta solicitud fue rechazada</span>
+          </div>
+          
+          <!-- Información de quién rechazó -->
+          @if (solicitud?.rechazada_por_id && usuarioRechazo) {
+            <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
+              <strong>Rechazada por:</strong> {{ usuarioRechazo.name }} {{ usuarioRechazo.lastName }}
+            </div>
+          }
+          
+          <!-- Fecha de rechazo (Solo se mostrará si hay) -->
+          @if (solicitud?.fecha_rechazo) {
+            <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
+              <strong>Fecha:</strong> {{ solicitud.fecha_rechazo | date:'dd/MM/yyyy HH:mm' }}
+            </div>
+          }
+          
+          <!-- Observación de rechazo -->
+          @if (solicitud?.observacion_rechazo) {
+            <div style="width: 100%; text-align: center; margin-top: 8px; padding: 10px; background-color: rgba(244, 67, 54, 0.1); border-radius: 4px; font-size: 16px;">
+              <strong>Motivo:</strong> {{ solicitud.observacion_rechazo }}
+            </div>
+          }
+        </div>
+      } @else if (solicitud?.status !== 'validada' && !isValidada) {
+        <!-- Botones para estados diferentes a pendiente, aprobada y validada -->
+        <button mat-raised-button color="primary" (click)="onSaveRepuestos()" style="margin-right: 10px;">
+          <mat-icon>save</mat-icon>
+          Guardar Repuestos
+        </button>
+        <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
+          Validar Solicitud
+        </button>
+      } @else {
+        <div class="validation-message" style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
+          <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
+          Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+      }
+    </div>
+
    
 
-    <!-- Estado y Repuestos de Activos Fijos -->
-    <div class="lista-seccion" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
-      <div class="seccion-header">Estado y Repuestos de Activos Fijos</div>
-      <div class="lista-items">
-        @for (activoFijo of solicitud.activoFijoRepuestos; track activoFijo.id) {
-          <li>
-            <!-- Detalles del Activo Fijo -->
-            <div class="repuesto-detail">
-              <strong>Tipo:</strong> {{activoFijo.activoFijo.tipo_equipo}}
-              <strong>Marca:</strong> {{activoFijo.activoFijo.marca}}
-              <strong>Potencia:</strong> {{activoFijo.activoFijo.potencia_equipo}}
-              <strong>Código:</strong> {{activoFijo.activoFijo.codigo_activo}}
-            </div>
-
-            <!-- Lista de Repuestos -->
-            <div class="repuestos-list">
-              @for (detalle of activoFijo.detallesRepuestos; track $index) {
-                <div class="repuesto-item">
-                  <div class="repuesto-info">
-                    <div class="repuesto-detail">
-                      <strong>Artículo:</strong> 
-                      <span>{{ detalle.repuesto.articulo || 'N/A' }}</span>
-                    </div>
-                    <div class="repuesto-detail">
-                      <strong>Marca:</strong> 
-                      <span>{{ detalle.repuesto.marca || 'N/A' }}</span>
-                    </div>
-                    <div class="repuesto-detail">
-                      <strong>Cantidad:</strong> 
-                      <span>{{ detalle.cantidad }}</span>
-                    </div>
-                    <div class="repuesto-detail">
-                      <strong>Precio:</strong> 
-                      <span>${{ detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
-                    </div>
-                    <div class="repuesto-detail">
-                      <strong>Total:</strong> 
-                      <span>${{ detalle.cantidad * +detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
-                    </div>
-                  </div>
-                </div>
-              }
-              
-              <!-- Total del Activo Fijo -->
-              <div class="total-section">
-                <div class="total-amount">
-                  <strong>Total Activo Fijo:</strong>
-                  <span>${{ calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos) | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
-                </div>
-              </div>
-            </div>
-          </li>
-        }
-      </div>
-    </div>
- <!-- Total Final -->
- <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
-  
-  <!-- Total Final -->
-  <div class="final-total-amount">
-    <strong>Total Final:</strong>
-    <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
-  </div>
-</div>
-@if (isPendiente) {
-  <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
-    <mat-icon style="color: #1976d2;">info</mat-icon>
-    <span style="color: #1565c0; font-size: 14px;">Para aprobar esta solicitud, debes asignar un técnico y verificar la fecha de visita.</span>
-  </div>
-}
-<div class="actions">
-  <button mat-button [style.color]="solicitud?.status === 'validada' || isAprobada || isRechazada ? '#1976d2' : ''" (click)="onCancel()">
-    {{ solicitud?.status !== 'validada' && !isAprobada && !isRechazada ? 'Cancelar' : 'Volver' }}
-  </button>
-
-  @if (isPendiente) {
-    <!-- Botones para estado pendiente -->
-    <button mat-raised-button color="primary" 
-            (click)="aprobarSolicitud()" 
-            style="margin-right: 10px;"
-            [disabled]="!solicitudForm.get('tecnico_asignado_id')?.value">
-      <mat-icon>check_circle</mat-icon> Aprobar
-    </button>
-    <button mat-raised-button color="warn" (click)="rechazarSolicitud()">
-      <mat-icon>cancel</mat-icon> Rechazar
-    </button>
-  } @else if (isAprobada) {
-    <!-- Banner informativo para solicitudes aprobadas -->
-    <div class="approved-message" style="color: #2196F3; padding: 10px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
-      <mat-icon style="vertical-align: middle; margin-right: 8px;">schedule</mat-icon>
-      Esta solicitud está aprobada y a la espera de la visita del técnico
-    </div>
-  } @else if (isRechazada) {
-    <!-- Banner informativo para solicitudes rechazadas -->
-    <div class="rejected-message" style="color: #F44336; padding: 15px; background-color: #FFEBEE; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%; flex-direction: column; margin-bottom: 15px;">
-      <div style="display: flex; align-items: center; width: 100%; justify-content: center; margin-bottom: 10px;">
-        <mat-icon style="vertical-align: middle; margin-right: 8px; font-size: 28px; height: 28px; width: 28px;">cancel</mat-icon>
-        <span style="font-weight: bold; font-size: 18px;">Esta solicitud fue rechazada</span>
-      </div>
-      
-      <!-- Información de quién rechazó -->
-      @if (solicitud?.rechazada_por_id && usuarioRechazo) {
-        <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
-          <strong>Rechazada por:</strong> {{ usuarioRechazo.name }} {{ usuarioRechazo.lastName }}
-        </div>
-      }
-      
-      <!-- Fecha de rechazo (Solo se mostrará si hay) -->
-      @if (solicitud?.fecha_rechazo) {
-        <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
-          <strong>Fecha:</strong> {{ solicitud.fecha_rechazo | date:'dd/MM/yyyy HH:mm' }}
-        </div>
-      }
-      
-      <!-- Observación de rechazo -->
-      @if (solicitud?.observacion_rechazo) {
-        <div style="width: 100%; text-align: center; margin-top: 8px; padding: 10px; background-color: rgba(244, 67, 54, 0.1); border-radius: 4px; font-size: 16px;">
-          <strong>Motivo:</strong> {{ solicitud.observacion_rechazo }}
-        </div>
-      }
-    </div>
-  } @else if (solicitud?.status !== 'validada' && !isValidada) {
-    <!-- Botones para estados diferentes a pendiente, aprobada y validada -->
-    <button mat-raised-button color="primary" (click)="onSaveRepuestos()" style="margin-right: 10px;">
-      <mat-icon>save</mat-icon>
-      Guardar Repuestos
-    </button>
-    <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
-      Validar Solicitud
-    </button>
-  } @else {
-    <div class="validation-message" style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
-      <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
-      Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm' }}
-    </div>
-  }
-</div>
   </form>
 </div>
 
