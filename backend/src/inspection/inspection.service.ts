@@ -330,7 +330,7 @@ export class InspectionService {
         }
 
         const itemRepuesto = this.itemRepuestoRepository.create({
-            itemId: subItem.item.id, // Usar el ID del item padre
+            itemId:  parseInt(itemId), // Usar el ID del item padre
             repuesto,
             cantidad,
             solicitarVisita: { id: solicitarVisitaId },
