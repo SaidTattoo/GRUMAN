@@ -222,15 +222,12 @@ export class InspectionService {
         }
         console.log('addRepuestoDto', addRepuestoDto);
         const itemRepuesto = this.itemRepuestoRepository.create({
-            item,
-            repuesto,
+            itemId: item.id,
+            repuestoId: repuesto.id,
             comentario: addRepuestoDto.comentario,
             cantidad: addRepuestoDto.cantidad || 1,
-            estado: addRepuestoDto.estado || 'Pendiente',
-            fotos: addRepuestoDto.fotos || [],
-            solicitarVisita: addRepuestoDto.solicitarVisitaId ? 
-                { id: addRepuestoDto.solicitarVisitaId } : 
-                null
+            estado: addRepuestoDto.estado || 'pendiente',
+            solicitarVisitaId: addRepuestoDto.solicitarVisitaId || null
         });
 
         return await this.itemRepuestoRepository.save(itemRepuesto);
@@ -239,14 +236,29 @@ export class InspectionService {
     async getRepuestosFromItem(sectionId: number, itemId: number) {
         const item = await this.itemRepository.findOne({
             where: { id: itemId },
-            relations: ['section', 'itemRepuestos', 'itemRepuestos.repuesto']
+            relations: [
+                'section',
+                'itemRepuestos',
+                'itemRepuestos.repuesto',
+                'itemRepuestos.solicitarVisita',
+                'itemRepuestos.solicitarVisita.activoFijoRepuestos',
+                'itemRepuestos.solicitarVisita.activoFijoRepuestos.detallesRepuestos',
+                'itemRepuestos.solicitarVisita.activoFijoRepuestos.activoFijo'
+            ]
         });
 
         if (!item || item.section.id !== sectionId) {
             throw new NotFoundException(`Item not found or does not belong to section`);
         }
 
-        return item.itemRepuestos;
+        // Asegurarse de que los repuestos y sus relaciones estén cargados
+        const itemRepuestos = await this.itemRepuestoRepository.find({
+            where: { itemId: item.id },
+            relations: ['repuesto', 'solicitarVisita', 'solicitarVisita.activoFijoRepuestos'],
+            order: { id: 'DESC' }
+        });
+
+        return itemRepuestos;
     }
 
     async removeRepuestoFromItem(
@@ -256,8 +268,8 @@ export class InspectionService {
     ) {
         const itemRepuesto = await this.itemRepuestoRepository.findOne({
             where: {
-                item: { id: itemId, section: { id: sectionId } },
-                repuesto: { id: repuestoId }
+                itemId: itemId,
+                repuestoId: repuestoId
             }
         });
 

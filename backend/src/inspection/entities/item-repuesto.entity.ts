@@ -1,45 +1,35 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn } from 'typeorm';
-import { Item } from './item.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Repuesto } from '../../repuestos/repuestos.entity';
 import { SolicitarVisita } from '../../solicitar-visita/solicitar-visita.entity';
 
-@Entity()
+@Entity('item_repuestos')
 export class ItemRepuesto {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  @Column({ type: 'int' })
-  itemId: number;
+    @Column()
+    itemId: number;
 
-  @ManyToOne(() => Item, item => item.itemRepuestos)
-  item: Item;
+    @Column()
+    repuestoId: number;
 
-  @ManyToOne(() => Repuesto)
-  @JoinColumn({ name: 'repuestoId' })
-  repuesto: Repuesto;
+    @Column()
+    cantidad: number;
 
-  @Column({ type: 'int', nullable: true })
-  repuestoId: number;
+    @Column({ nullable: true })
+    comentario: string;
 
-  @Column({ type: 'int', nullable: false })
-  solicitarVisitaId: number;
+    @Column()
+    solicitarVisitaId: number;
 
-  @ManyToOne(() => SolicitarVisita, solicitarVisita => solicitarVisita.itemRepuestos)
-  @JoinColumn({ name: 'solicitarVisitaId' })
-  solicitarVisita: SolicitarVisita;
+    @Column({ default: 'pendiente' })
+    estado: string;
 
-  @Column({ nullable: true })
-  comentario: string;
+    @ManyToOne(() => Repuesto, { eager: true })
+    @JoinColumn({ name: 'repuestoId' })
+    repuesto: Repuesto;
 
-  @Column()
-  cantidad: number;
-
-  @Column({ nullable: true })
-  estado: string;
-
-  @Column('simple-array', { nullable: true })
-  fotos: string[];
-
-  @CreateDateColumn()
-  fechaAgregado: Date;
+    @ManyToOne(() => SolicitarVisita)
+    @JoinColumn({ name: 'solicitarVisitaId' })
+    solicitarVisita: SolicitarVisita;
 } 

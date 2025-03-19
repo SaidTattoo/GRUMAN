@@ -17,6 +17,6 @@ export class Item {
   disabled: boolean;
   @OneToMany(() => SubItem, subItem => subItem.item, { cascade: true })
   subItems: SubItem[];
-  @OneToMany(() => ItemRepuesto, itemRepuesto => itemRepuesto.item, { cascade: true })
+  @OneToMany(() => ItemRepuesto, itemRepuesto => itemRepuesto.itemId)
   itemRepuestos: ItemRepuesto[];
 } 

@@ -426,6 +426,83 @@
       }
     </div>
 
+
+    <!-- Lista de Activos Fijos -->
+    <div class="mt-4" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
+      <mat-card class="mb-4" *ngFor="let activoFijo of solicitud.activoFijoRepuestos">
+        <mat-card-header class="bg-light p-3">
+          <div>
+            <h3 class="mb-0">{{activoFijo.activoFijo?.tipo_equipo}} - {{activoFijo.activoFijo?.marca}}</h3>
+            <p class="text-muted mb-0">Código: {{activoFijo.activoFijo?.codigo_activo}}</p>
+          </div>
+        </mat-card-header>
+
+        <mat-card-content class="p-3">
+          <!-- Estado Operativo -->
+          <div class="d-flex align-items-center mb-3">
+            <span class="badge" [ngClass]="{
+              'bg-success': activoFijo.estadoOperativo === 'funcionando',
+              'bg-warning': activoFijo.estadoOperativo === 'funcionando_con_observaciones',
+              'bg-danger': activoFijo.estadoOperativo === 'detenido'
+            }">
+              {{getEstadoOperativoLabel(activoFijo.estadoOperativo)}}
+            </span>
+          </div>
+
+          <!-- Observaciones -->
+          <div *ngIf="activoFijo.observacionesEstado" class="alert alert-info mb-3">
+            {{activoFijo.observacionesEstado}}
+          </div>
+
+          <!-- Lista de Repuestos -->
+          <div class="repuestos-list">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Familia</th>
+                    <th>Artículo</th>
+                    <th>Marca</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unit.</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let detalle of activoFijo.detallesRepuestos">
+                    <td>{{detalle.repuesto?.familia}}</td>
+                    <td>{{detalle.repuesto?.articulo}}</td>
+                    <td>{{detalle.repuesto?.marca}}</td>
+                    <td>{{detalle.cantidad}}</td>
+                    <td>{{detalle.precio_unitario | currency}}</td>
+                    <td>{{detalle.cantidad * detalle.precio_unitario | currency}}</td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'bg-warning': detalle.estado === 'pendiente',
+                        'bg-success': detalle.estado === 'conforme',
+                        'bg-danger': detalle.estado === 'no_conforme'
+                      }">
+                        {{detalle.estado}}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="5" class="text-end"><strong>Total Activo Fijo:</strong></td>
+                    <td colspan="2"><strong>{{calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos) | currency}}</strong></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+  
+    </div>
+
     <!-- Total Final -->
     <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
       <div class="final-total-amount">
@@ -506,9 +583,6 @@
         </div>
       }
     </div>
-
-   
-
   </form>
 </div>
 
