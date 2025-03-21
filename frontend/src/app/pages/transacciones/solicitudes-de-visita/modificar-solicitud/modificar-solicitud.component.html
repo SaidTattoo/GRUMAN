@@ -52,11 +52,11 @@
     </div>
 
     <!-- Causa Raíz - Solo visible cuando la solicitud está finalizada -->
-    @if (solicitud?.status === 'finalizada') {
+    @if (solicitud?.status === 'finalizada' || solicitud?.status === 'reabierta' || solicitud?.status === 'validada') {
       <div class="form-row">
         <mat-form-field appearance="fill" class="full-width">
           <mat-label>Causa Raíz</mat-label>
-          <mat-select formControlName="causaRaizId">
+          <mat-select formControlName="causaRaizId"  [disabled]="solicitud?.status === 'validada' || isValidada">
             <mat-option [value]="null">Seleccione una causa</mat-option>
             <mat-option *ngFor="let causa of causasRaiz" [value]="causa.id">
               {{ causa.nombre }}
@@ -238,34 +238,16 @@
       </mat-form-field>
     </div>
 
-    <!-- Ubicación -->
-    <div class="section-title" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Ubicación</div>
-    <div class="form-row" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
-      <mat-form-field appearance="fill">
-        <mat-label>Latitud</mat-label>
-        @if (isValidated() || isRechazada || isValidada) {
-          <input matInput [value]="solicitud?.latitud_movil" disabled>
-        } @else {
-          <input matInput formControlName="latitud_movil" type="number" step="0.000001">
-        }
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Longitud</mat-label>
-        @if (isValidated() || isRechazada || isValidada) {
-          <input matInput [value]="solicitud?.longitud_movil" disabled>
-        } @else {
-          <input matInput formControlName="longitud_movil" type="number" step="0.000001">
-        }
-      </mat-form-field>
-    </div>
-
-    <!-- Agregar después de la sección de ubicación -->
-    <div class="detail-section" *ngIf="(!isPendiente && !isAprobada && !isRechazada || isValidada) && solicitud?.latitud_movil && solicitud?.longitud_movil">
-      <h3>Ubicación del Local</h3>
+    <!-- Sección del mapa -->
+    <div class="section-title" *ngIf="(!isPendiente && !isAprobada && !isRechazada || isValidada)">Ubicación</div>
+    <div class="map-section" *ngIf="(!isPendiente && !isAprobada && !isRechazada || isValidada)">
       <div class="map-container">
         <div class="map-frame">
-          <div id="map" style="height: 400px;"></div>
+          <div id="map"></div>
         </div>
+      </div>
+      <div class="map-info" *ngIf="!solicitud?.latitud_movil && !solicitud?.longitud_movil">
+        <p class="no-location-message">No hay coordenadas disponibles para mostrar en el mapa.</p>
       </div>
     </div>
 
@@ -297,26 +279,25 @@
                           <mat-icon>add</mat-icon>
                         </button>
                         @if (subItem.fotos?.length) {
-                          <div class="photos-container">
-                            <div class="photo-count">
-                              <mat-icon>photo_library</mat-icon>
-                              {{ subItem.fotos.length }} foto(s)
-                            </div>
-                            <div class="photo-grid">
-                              @for (foto of subItem.fotos; track $index) {
-                                <div class="photo-item">
-                                  <img [src]="foto" 
-                                      (click)="openPhotoViewer([foto])" 
-                                      [alt]="'Foto de ' + subItem.name"
-                                      class="inspection-photo">
-                                </div>
-                              }
-                            </div>
-                          </div>
+                          <span class="photo-count">{{ subItem.fotos.length }} foto(s)</span>
                         }
                       </div>
 
-                      <!-- Estado después de las fotos -->
+                      <!-- Miniaturas de fotos -->
+                      <div class="photos-container">
+                       
+                          <div class="photo-grid">
+                            <div class="photo-item" *ngFor="let foto of getItemFotos(subItem.id)?.fotos">
+                              <img [src]="foto" 
+                                   (click)="openPhotoViewer([foto])" 
+                                   [alt]="'Foto de ' + subItem.name"
+                                   class="inspection-photo">
+                            </div>
+                          </div>
+                      
+                      </div>
+
+                      <!-- Estado después de las fotos - Siempre se muestra independientemente de los repuestos -->
                       <div class="estado-container">
                         <span class="badge" [ngClass]="{
                           'badge-success': subItem.estado === 'conforme',
@@ -361,36 +342,28 @@
                       @if (subItem.repuestos?.length) {
                         <ul class="repuestos-list">
                           @for (repuesto of subItem.repuestos; track $index) {
-                            <!-- Solo mostrar si el repuesto tiene un repuesto asociado -->
-                            @if (repuesto.repuesto) {
-                              <li class="repuesto-item" [class.temporal]="!repuesto.id" [class.pending-delete]="isRepuestoPendingDelete(subItem.id, repuesto)">
+                            @if (repuesto?.repuesto) {
+                              <li class="repuesto-item">
                                 <div class="repuesto-info">
-                                  @if (!repuesto.id) {
-                                    <div class="temporal-badge">
-                                      Pendiente de guardar
-                                    </div>
-                                  }
-                                  @if (isRepuestoPendingDelete(subItem.id, repuesto)) {
-                                    <div class="pending-delete-badge">
-                                      Pendiente de eliminar
-                                    </div>
-                                  }
                                   <div class="repuesto-detail">
                                     <strong>Artículo:</strong> 
-                                    <span>{{ repuesto.repuesto.articulo }}</span>
+                                    <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
                                   </div>
-                                 
+                                  <div class="repuesto-detail">
+                                    <strong>Marca:</strong> 
+                                    <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
+                                  </div>
                                   <div class="repuesto-detail">
                                     <strong>Cantidad:</strong> 
                                     <span>{{ repuesto.cantidad }}</span>
                                   </div>
                                   <div class="repuesto-detail">
                                     <strong>Precio:</strong> 
-                                    <span>${{ repuesto.repuesto.precio?.toLocaleString('es-CL') }}</span>
+                                    <span>${{ repuesto.repuesto?.precio?.toLocaleString('es-CL') || '0' }}</span>
                                   </div>
                                   <div class="repuesto-detail">
                                     <strong>Total:</strong> 
-                                    <span>${{ (repuesto.cantidad * repuesto.repuesto.precio).toLocaleString('es-CL') }}</span>
+                                    <span>${{ ((repuesto.cantidad || 0) * (repuesto.repuesto?.precio || 0)).toLocaleString('es-CL') }}</span>
                                   </div>
                                   
                                   <div class="actions-container">
@@ -427,310 +400,145 @@
       }
     </div>
 
+   
 
-    <!-- Lista de Activos Fijos -->
-    <div class="mt-4" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
-      <mat-card class="mb-4" *ngFor="let activoFijo of solicitud.activoFijoRepuestos">
-        <mat-card-header class="bg-light p-3">
-          <div>
-            <h3 class="mb-0">{{activoFijo.activoFijo?.tipo_equipo}} - {{activoFijo.activoFijo?.marca}}</h3>
-            <p class="text-muted mb-0">Código: {{activoFijo.activoFijo?.codigo_activo}}</p>
-          </div>
-        </mat-card-header>
-
-        <mat-card-content class="p-3">
-          <!-- Estado Operativo -->
-          <div class="d-flex align-items-center mb-3">
-            <span class="badge" [ngClass]="{
-              'bg-success': activoFijo.estadoOperativo === 'funcionando',
-              'bg-warning': activoFijo.estadoOperativo === 'funcionando_con_observaciones',
-              'bg-danger': activoFijo.estadoOperativo === 'detenido'
-            }">
-              {{getEstadoOperativoLabel(activoFijo.estadoOperativo)}}
-            </span>
-          </div>
-
-          <!-- Observaciones -->
-          <div *ngIf="activoFijo.observacionesEstado" class="alert alert-info mb-3">
-            {{activoFijo.observacionesEstado}}
-          </div>
-
-          <!-- Lista de Repuestos -->
-          <div class="repuestos-list">
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Familia</th>
-                    <th>Artículo</th>
-                    <th>Marca</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unit.</th>
-                    <th>Total</th>
-                    <th>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let detalle of activoFijo.detallesRepuestos">
-                    <td>{{detalle.repuesto?.familia}}</td>
-                    <td>{{detalle.repuesto?.articulo}}</td>
-                    <td>{{detalle.repuesto?.marca}}</td>
-                    <td>{{detalle.cantidad}}</td>
-                    <td>{{detalle.precio_unitario | currency}}</td>
-                    <td>{{detalle.cantidad * detalle.precio_unitario | currency}}</td>
-                    <td>
-                      <span class="badge" [ngClass]="{
-                        'bg-warning': detalle.estado === 'pendiente',
-                        'bg-success': detalle.estado === 'conforme',
-                        'bg-danger': detalle.estado === 'no_conforme'
-                      }">
-                        {{detalle.estado}}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="5" class="text-end"><strong>Total Activo Fijo:</strong></td>
-                    <td colspan="2"><strong>{{calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos) | currency}}</strong></td>
-                  </tr>
-                </tfoot>
-              </table>
+    <!-- Estado y Repuestos de Activos Fijos -->
+    <div class="lista-seccion" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
+      <div class="seccion-header">Estado y Repuestos de Activos Fijos</div>
+      <div class="lista-items">
+        @for (activoFijo of solicitud.activoFijoRepuestos; track activoFijo.id) {
+          <li>
+            <!-- Detalles del Activo Fijo -->
+            <div class="repuesto-detail">
+              <strong>Tipo:</strong> {{activoFijo.activoFijo.tipo_equipo}}
+              <strong>Marca:</strong> {{activoFijo.activoFijo.marca}}
+              <strong>Potencia:</strong> {{activoFijo.activoFijo.potencia_equipo}}
+              <strong>Código:</strong> {{activoFijo.activoFijo.codigo_activo}}
             </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
 
+            <!-- Lista de Repuestos -->
+            <div class="repuestos-list">
+              @for (detalle of activoFijo.detallesRepuestos; track $index) {
+                <div class="repuesto-item">
+                  <div class="repuesto-info">
+                    <div class="repuesto-detail">
+                      <strong>Artículo:</strong> 
+                      <span>{{ detalle.repuesto.articulo || 'N/A' }}</span>
+                    </div>
+                    <div class="repuesto-detail">
+                      <strong>Marca:</strong> 
+                      <span>{{ detalle.repuesto.marca || 'N/A' }}</span>
+                    </div>
+                    <div class="repuesto-detail">
+                      <strong>Cantidad:</strong> 
+                      <span>{{ detalle.cantidad }}</span>
+                    </div>
+                    <div class="repuesto-detail">
+                      <strong>Precio:</strong> 
+                      <span>${{ detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="repuesto-detail">
+                      <strong>Total:</strong> 
+                      <span>${{ detalle.cantidad * +detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+              
+              <!-- Total del Activo Fijo -->
+              <div class="total-section">
+                <div class="total-amount">
+                  <strong>Total Activo Fijo:</strong>
+                  <span>${{ calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos) | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+              </div>
+            </div>
+          </li>
+        }
+      </div>
+    </div>
+ <!-- Total Final -->
+ <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
   
-    </div>
+  <!-- Total Final -->
+  <div class="final-total-amount">
+    <strong>Total Final:</strong>
+    <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
+  </div>
+</div>
+@if (isPendiente) {
+  <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
+    <mat-icon style="color: #1976d2;">info</mat-icon>
+    <span style="color: #1565c0; font-size: 14px;">Para aprobar esta solicitud, debes asignar un técnico y verificar la fecha de visita.</span>
+  </div>
+}
+<div class="actions">
+  <button mat-button [style.color]="solicitud?.status === 'validada' || isAprobada || isRechazada ? '#1976d2' : ''" (click)="onCancel()">
+    {{ solicitud?.status !== 'validada' && !isAprobada && !isRechazada ? 'Cancelar' : 'Volver' }}
+  </button>
 
-    <!-- Total Final -->
-    <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
-      <div class="final-total-amount">
-        <strong>Total Final:</strong>
-        <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
-      </div>
+  @if (isPendiente) {
+    <!-- Botones para estado pendiente -->
+    <button mat-raised-button color="primary" 
+            (click)="aprobarSolicitud()" 
+            style="margin-right: 10px;"
+            [disabled]="!solicitudForm.get('tecnico_asignado_id')?.value">
+      <mat-icon>check_circle</mat-icon> Aprobar
+    </button>
+    <button mat-raised-button color="warn" (click)="rechazarSolicitud()">
+      <mat-icon>cancel</mat-icon> Rechazar
+    </button>
+  } @else if (isAprobada) {
+    <!-- Banner informativo para solicitudes aprobadas -->
+    <div class="approved-message" style="color: #2196F3; padding: 10px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
+      <mat-icon style="vertical-align: middle; margin-right: 8px;">schedule</mat-icon>
+      Esta solicitud está aprobada y a la espera de la visita del técnico
     </div>
-    @if (isPendiente) {
-      <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
-        <mat-icon style="color: #1976d2;">info</mat-icon>
-        <span style="color: #1565c0; font-size: 14px;">Para aprobar esta solicitud, debes asignar un técnico y verificar la fecha de visita.</span>
+  } @else if (isRechazada) {
+    <!-- Banner informativo para solicitudes rechazadas -->
+    <div class="rejected-message" style="color: #F44336; padding: 15px; background-color: #FFEBEE; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%; flex-direction: column; margin-bottom: 15px;">
+      <div style="display: flex; align-items: center; width: 100%; justify-content: center; margin-bottom: 10px;">
+        <mat-icon style="vertical-align: middle; margin-right: 8px; font-size: 28px; height: 28px; width: 28px;">cancel</mat-icon>
+        <span style="font-weight: bold; font-size: 18px;">Esta solicitud fue rechazada</span>
       </div>
-    }
-    <div class="actions">
-      <button mat-button [style.color]="solicitud?.status === 'validada' || isAprobada || isRechazada ? '#1976d2' : ''" (click)="onCancel()">
-        {{ solicitud?.status !== 'validada' && !isAprobada && !isRechazada ? 'Cancelar' : 'Volver' }}
-      </button>
-
-      @if (isPendiente) {
-        <!-- Botones para estado pendiente -->
-        <button mat-raised-button color="primary" 
-                (click)="aprobarSolicitud()" 
-                style="margin-right: 10px;"
-                [disabled]="!solicitudForm.get('tecnico_asignado_id')?.value">
-          <mat-icon>check_circle</mat-icon> Aprobar
-        </button>
-        <button mat-raised-button color="warn" (click)="rechazarSolicitud()">
-          <mat-icon>cancel</mat-icon> Rechazar
-        </button>
-      } @else if (isAprobada) {
-        <!-- Banner informativo para solicitudes aprobadas -->
-        <div class="approved-message" style="color: #2196F3; padding: 10px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
-          <mat-icon style="vertical-align: middle; margin-right: 8px;">schedule</mat-icon>
-          Esta solicitud está aprobada y a la espera de la visita del técnico
+      
+      <!-- Información de quién rechazó -->
+      @if (solicitud?.rechazada_por_id && usuarioRechazo) {
+        <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
+          <strong>Rechazada por:</strong> {{ usuarioRechazo.name }} {{ usuarioRechazo.lastName }}
         </div>
-      } @else if (isRechazada) {
-        <!-- Banner informativo para solicitudes rechazadas -->
-        <div class="rejected-message" style="color: #F44336; padding: 15px; background-color: #FFEBEE; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%; flex-direction: column; margin-bottom: 15px;">
-          <div style="display: flex; align-items: center; width: 100%; justify-content: center; margin-bottom: 10px;">
-            <mat-icon style="vertical-align: middle; margin-right: 8px; font-size: 28px; height: 28px; width: 28px;">cancel</mat-icon>
-            <span style="font-weight: bold; font-size: 18px;">Esta solicitud fue rechazada</span>
-          </div>
-          
-          <!-- Información de quién rechazó -->
-          @if (solicitud?.rechazada_por_id && usuarioRechazo) {
-            <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
-              <strong>Rechazada por:</strong> {{ usuarioRechazo.name }} {{ usuarioRechazo.lastName }}
-            </div>
-          }
-          
-          <!-- Fecha de rechazo (Solo se mostrará si hay) -->
-          @if (solicitud?.fecha_rechazo) {
-            <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
-              <strong>Fecha:</strong> {{ solicitud.fecha_rechazo | date:'dd/MM/yyyy HH:mm' }}
-            </div>
-          }
-          
-          <!-- Observación de rechazo -->
-          @if (solicitud?.observacion_rechazo) {
-            <div style="width: 100%; text-align: center; margin-top: 8px; padding: 10px; background-color: rgba(244, 67, 54, 0.1); border-radius: 4px; font-size: 16px;">
-              <strong>Motivo:</strong> {{ solicitud.observacion_rechazo }}
-            </div>
-          }
+      }
+      
+      <!-- Fecha de rechazo (Solo se mostrará si hay) -->
+      @if (solicitud?.fecha_rechazo) {
+        <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
+          <strong>Fecha:</strong> {{ solicitud.fecha_rechazo | date:'dd/MM/yyyy HH:mm' }}
         </div>
-      } @else if (solicitud?.status !== 'validada' && !isValidada) {
-        <!-- Botones para estados diferentes a pendiente, aprobada y validada -->
-        <button mat-raised-button color="primary" (click)="onSaveRepuestos()" style="margin-right: 10px;">
-          <mat-icon>save</mat-icon>
-          Guardar Repuestos
-        </button>
-        <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
-          Validar Solicitud
-        </button>
-      } @else {
-        <div class="validation-message" style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
-          <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
-          Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm' }}
+      }
+      
+      <!-- Observación de rechazo -->
+      @if (solicitud?.observacion_rechazo) {
+        <div style="width: 100%; text-align: center; margin-top: 8px; padding: 10px; background-color: rgba(244, 67, 54, 0.1); border-radius: 4px; font-size: 16px;">
+          <strong>Motivo:</strong> {{ solicitud.observacion_rechazo }}
         </div>
       }
     </div>
-
-    @if (solicitud?.status === 'finalizada' || solicitud?.status === 'validada' || solicitud?.status === 'reabierta') {
-      <mat-card class="m-t-16">
-        <mat-card-header>
-          <mat-card-title>Checklists de Clima</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          @for (checklist of solicitud.checklistsClima; track checklist.id) {
-            <div class="checklist-container m-b-24">
-              <div class="activo-fijo-info m-b-16">
-                <h3 class="section-title">Información del Equipo</h3>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <span class="info-label">Tipo de Equipo:</span>
-                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.tipo_equipo }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Marca:</span>
-                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.marca }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Código:</span>
-                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.codigo_activo }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Potencia:</span>
-                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.potencia_equipo }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Refrigerante:</span>
-                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.refrigerante }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Tipo:</span>
-                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.on_off_inverter }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Suministra:</span>
-                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.suministra }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <table class="checklist-table">
-                <thead>
-                  <tr>
-                    <th colspan="3" class="text-center">TABLA DE INSPECCIÓN DE RENDIMIENTO</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Mediciones de temperatura -->
-                  <tr>
-                    <th>ITEM</th>
-                    <th>MEDICIÓN [°C]</th>
-                    <th>OBSERVACIÓN</th>
-                    <th>CONSUMO COMPRESOR [A]</th>
-                  </tr>
-                  <tr>
-                    <td>1</td>
-                    <td>Set-point</td>
-                    <td>{{ checklist.medicion_SetPoint }}</td>
-                    <td>{{ checklist.medicion_SetPoint_observacion }}</td>
-                    <td>R</td>
-                    <td>{{ checklist.consumoCompresor_R }}</td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td>T° inyección frío</td>
-                    <td>{{ checklist.medicion_TempInjeccionFrio }}</td>
-                    <td>{{ checklist.medicion_TempInjeccionFrio_observacion }}</td>
-                    <td>S</td>
-                    <td>{{ checklist.consumoCompresor_S }}</td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>T° inyección calor</td>
-                    <td>{{ checklist.medicion_TempInjeccionCalor }}</td>
-                    <td>{{ checklist.medicion_TempInjeccionCalor_observacion }}</td>
-                    <td>T</td>
-                    <td>{{ checklist.consumoCompresor_T }}</td>
-                  </tr>
-                  <tr>
-                    <td>4</td>
-                    <td>T° ambiente</td>
-                    <td>{{ checklist.medicion_TempAmbiente }}</td>
-                    <td>{{ checklist.medicion_TempAmbiente_observacion }}</td>
-                    <td>N</td>
-                    <td>{{ checklist.consumoCompresor_N }}</td>
-                  </tr>
-                  <tr>
-                    <td>5</td>
-                    <td>T° retorno</td>
-                    <td>{{ checklist.medicion_TempRetorno }}</td>
-                    <td>{{ checklist.medicion_TempRetorno_observacion }}</td>
-                  </tr>
-                  <tr>
-                    <td>6</td>
-                    <td>T° exterior</td>
-                    <td>{{ checklist.medicion_TempExterior }}</td>
-                    <td>{{ checklist.medicion_TempExterior_observacion }}</td>
-                  </tr>
-
-                  <!-- Tensión y Consumo Total -->
-                  <tr>
-                    <th colspan="2">TENSIÓN</th>
-                    <th colspan="2">CONSUMO TOTAL</th>
-                    <th colspan="2">PRESIONES</th>
-                  </tr>
-                  <tr>
-                    <td>R-S</td>
-                    <td>{{ checklist.tension_R_S }} [V]</td>
-                    <td>R</td>
-                    <td>{{ checklist.consumo_total_R }} [A]</td>
-                    <td rowspan="2">ALTA</td>
-                    <td rowspan="2">{{ checklist.presiones_alta }} [PSI]</td>
-                  </tr>
-                  <tr>
-                    <td>S-T</td>
-                    <td>{{ checklist.tension_S_T }} [V]</td>
-                    <td>S</td>
-                    <td>{{ checklist.consumo_total_S }} [A]</td>
-                  </tr>
-                  <tr>
-                    <td>T-R</td>
-                    <td>{{ checklist.tension_T_R }} [V]</td>
-                    <td>T</td>
-                    <td>{{ checklist.consumo_total_T }} [A]</td>
-                    <td rowspan="2">BAJA</td>
-                    <td rowspan="2">{{ checklist.presiones_baja }} [PSI]</td>
-                  </tr>
-                  <tr>
-                    <td>T-N</td>
-                    <td>{{ checklist.tension_T_N }} [V]</td>
-                    <td>N</td>
-                    <td>{{ checklist.consumo_total_N }} [A]</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <div class="checklist-footer">
-                <p class="text-muted">Fecha: {{ checklist.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
-              </div>
-            </div>
-          }
-        </mat-card-content>
-      </mat-card>
-    }
+  } @else if (solicitud?.status !== 'validada' && !isValidada) {
+    <!-- Botones para estados diferentes a pendiente, aprobada y validada -->
+    <button mat-raised-button color="primary" (click)="onSaveRepuestos()" style="margin-right: 10px;">
+      <mat-icon>save</mat-icon>
+      Guardar Repuestos
+    </button>
+    <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
+      Validar Solicitud
+    </button>
+  } @else {
+    <div class="validation-message" style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
+      <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
+      Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm' }}
+    </div>
+  }
+</div>
   </form>
 </div>
 

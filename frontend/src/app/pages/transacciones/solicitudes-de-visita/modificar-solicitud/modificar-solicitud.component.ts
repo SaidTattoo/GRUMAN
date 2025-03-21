@@ -698,6 +698,11 @@ export class ModificarSolicitudComponent implements OnInit {
           });
         });
 
+        // Inicializar el mapa después de un pequeño retraso para asegurar que el DOM esté listo
+        setTimeout(() => {
+          this.initMap();
+        }, 100);
+
         console.log('Repuestos cargados:', this.repuestos);
         this.loading = false;
       },
@@ -1204,6 +1209,21 @@ export class ModificarSolicitudComponent implements OnInit {
     return finalTotal;
   }
 
+  getRepuestosPorItem(subItemId: number): any[] {
+    // Obtener repuestos existentes
+    const existingRepuestos = this.itemRepuestos.filter(
+      repuesto => repuesto.itemId === subItemId
+    );
+
+    // Obtener repuestos temporales
+    const tempRepuestos = this.temporaryRepuestos[subItemId] || [];
+
+    // Combinar repuestos existentes y temporales
+    return [...existingRepuestos, ...tempRepuestos].filter(
+      repuesto => !this.isRepuestoPendingDelete(subItemId, repuesto)
+    );
+  }
+
   private updateListaInspeccion() {
     if (!this.listaInspeccion || !this.itemRepuestos) return;
   
@@ -1347,76 +1367,93 @@ export class ModificarSolicitudComponent implements OnInit {
 
   private initMap(): void {
     if (!this.map) {
-      // Configurar el ícono por defecto de Leaflet
-      const iconRetinaUrl = 'assets/marker-icon-2x.png';
-      const iconUrl = 'assets/marker-icon.png';
-      const shadowUrl = 'assets/marker-shadow.png';
-      
-      const iconDefault = L.icon({
-        iconRetinaUrl,
-        iconUrl,
-        shadowUrl,
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        tooltipAnchor: [16, -28],
-        shadowSize: [41, 41]
-      });
-      L.Marker.prototype.options.icon = iconDefault;
-
-      this.map = L.map('map', {
-        center: [-33.4569, -70.6483],
-        zoom: 13
-      });
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        minZoom: 3,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      }).addTo(this.map);
-
-      // Usar latitud y longitud del móvil si están disponibles
-      if (this.solicitud?.latitud_movil && this.solicitud?.longitud_movil) {
-        const lat = parseFloat(this.solicitud.latitud_movil);
-        const lng = parseFloat(this.solicitud.longitud_movil);
-        
-        if (!isNaN(lat) && !isNaN(lng)) {
-          const marker = L.marker([lat, lng])
-            .bindPopup(`
-              <b>${this.solicitud.local?.nombre_local || 'Local'}</b><br>
-              ${this.solicitud.local?.direccion || ''}<br>
-              ${this.solicitud.local?.comuna || ''}<br>
-              <strong>Ubicación del técnico</strong><br>
-              <img src="assets/images/empresas/wazee.png" 
-                   onclick="window.open('https://waze.com/ul?ll=${lat},${lng}&navigate=yes', '_blank')"
-                   style="cursor:pointer; width: 24px; height: 24px;">
-              Abrir en Waze
-            `);
-          
-          marker.addTo(this.map);
-          this.map.setView([lat, lng], 15);
-        }
+      const mapElement = document.getElementById('map');
+      if (!mapElement) {
+        console.error('Elemento del mapa no encontrado');
+        return;
       }
-      // Si no hay coordenadas del móvil, usar las del local
-      else if (this.solicitud?.local?.latitud && this.solicitud?.local?.longitud) {
-        const lat = parseFloat(this.solicitud.local.latitud);
-        const lng = parseFloat(this.solicitud.local.longitud);
+
+      try {
+        // Configurar el ícono por defecto de Leaflet
+        const iconRetinaUrl = 'assets/marker-icon-2x.png';
+        const iconUrl = 'assets/marker-icon.png';
+        const shadowUrl = 'assets/marker-shadow.png';
         
-        if (!isNaN(lat) && !isNaN(lng)) {
-          const marker = L.marker([lat, lng])
-            .bindPopup(`
-              <b>${this.solicitud.local?.nombre_local || 'Local'}</b><br>
-              ${this.solicitud.local?.direccion || ''}<br>
-              ${this.solicitud.local?.comuna || ''}<br>
-              <img src="assets/images/empresas/wazee.png" 
-                   onclick="window.open('https://waze.com/ul?ll=${lat},${lng}&navigate=yes', '_blank')"
-                   style="cursor:pointer; width: 24px; height: 24px;">
-              Abrir en Waze
-            `);
+        const iconDefault = L.icon({
+          iconRetinaUrl,
+          iconUrl,
+          shadowUrl,
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          tooltipAnchor: [16, -28],
+          shadowSize: [41, 41]
+        });
+        L.Marker.prototype.options.icon = iconDefault;
+
+        // Inicializar el mapa en Santiago de Chile por defecto
+        this.map = L.map('map', {
+          center: [-33.4569, -70.6483],
+          zoom: 13
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          minZoom: 3,
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(this.map);
+
+        // Usar latitud y longitud del móvil si están disponibles
+        if (this.solicitud?.latitud_movil && this.solicitud?.longitud_movil) {
+          const lat = parseFloat(this.solicitud.latitud_movil);
+          const lng = parseFloat(this.solicitud.longitud_movil);
           
-          marker.addTo(this.map);
-          this.map.setView([lat, lng], 15);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            const marker = L.marker([lat, lng])
+              .bindPopup(`
+                <b>${this.solicitud.local?.nombre_local || 'Local'}</b><br>
+                ${this.solicitud.local?.direccion || ''}<br>
+                ${this.solicitud.local?.comuna || ''}<br>
+                <strong>Ubicación del técnico</strong><br>
+                <img src="assets/images/empresas/wazee.png" 
+                     onclick="window.open('https://waze.com/ul?ll=${lat},${lng}&navigate=yes', '_blank')"
+                     style="cursor:pointer; width: 24px; height: 24px;">
+                Abrir en Waze
+              `);
+            
+            marker.addTo(this.map);
+            this.map.setView([lat, lng], 15);
+          }
         }
+        // Si no hay coordenadas del móvil, usar las del local
+        else if (this.solicitud?.local?.latitud && this.solicitud?.local?.longitud) {
+          const lat = parseFloat(this.solicitud.local.latitud);
+          const lng = parseFloat(this.solicitud.local.longitud);
+          
+          if (!isNaN(lat) && !isNaN(lng)) {
+            const marker = L.marker([lat, lng])
+              .bindPopup(`
+                <b>${this.solicitud.local?.nombre_local || 'Local'}</b><br>
+                ${this.solicitud.local?.direccion || ''}<br>
+                ${this.solicitud.local?.comuna || ''}<br>
+                <img src="assets/images/empresas/wazee.png" 
+                     onclick="window.open('https://waze.com/ul?ll=${lat},${lng}&navigate=yes', '_blank')"
+                     style="cursor:pointer; width: 24px; height: 24px;">
+                Abrir en Waze
+              `);
+            
+            marker.addTo(this.map);
+            this.map.setView([lat, lng], 15);
+          }
+        }
+
+        // Invalidar el tamaño del mapa para forzar su redibujado
+        setTimeout(() => {
+          this.map?.invalidateSize();
+        }, 200);
+
+      } catch (error) {
+        console.error('Error al inicializar el mapa:', error);
       }
     }
   }
