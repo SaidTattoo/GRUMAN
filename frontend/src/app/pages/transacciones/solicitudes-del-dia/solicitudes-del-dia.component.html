@@ -15,7 +15,7 @@
       <table mat-table [dataSource]="dataSource" class="w-100 mat-elevation-z8">
         <!-- ID Column -->
         <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
+          <th mat-header-cell *matHeaderCellDef>Número de Solicitud</th>
           <td mat-cell *matCellDef="let element">{{element.id}}</td>
         </ng-container>
 
@@ -65,11 +65,38 @@
         <ng-container matColumnDef="tecnico">
           <th mat-header-cell *matHeaderCellDef>Técnico</th>
           <td mat-cell *matCellDef="let element">
-            <div class="user-chip" *ngIf="element.tecnico_asignado">
-              {{element.tecnico_asignado?.name | titlecase  }} {{element.tecnico_asignado?.last_name | titlecase}}
+            <div class="d-flex align-items-center">
+              <div class="user-chip" *ngIf="element.tecnico_asignado">
+                {{element.tecnico_asignado?.name}} {{element.tecnico_asignado?.lastName}}
+              </div>
+              <button mat-icon-button 
+                      color="primary" 
+                      [matTooltip]="element.tecnico_asignado ? 'Cambiar técnico' : 'Agregar técnico'"
+                      (click)="openTecnicoModal(element, 'tecnico')">
+                <mat-icon>{{element.tecnico_asignado ? 'swap_horiz' : 'person_add'}}</mat-icon>
+              </button>
             </div>
           </td>
         </ng-container>
+
+        <!-- Técnico 2 Column -->
+        <ng-container matColumnDef="tecnico_2">
+          <th mat-header-cell *matHeaderCellDef>Técnico 2</th>
+          <td mat-cell *matCellDef="let element">
+            <div class="d-flex align-items-center">
+              <div class="user-chip" *ngIf="element.tecnico_asignado_2">
+                {{element.tecnico_asignado_2?.name}} {{element.tecnico_asignado_2?.lastName}}
+              </div>
+              <button mat-icon-button 
+                      color="primary" 
+                      [matTooltip]="element.tecnico_asignado_2 ? 'Cambiar técnico 2' : 'Agregar técnico 2'"
+                      (click)="openTecnicoModal(element, 'tecnico_2')">
+                <mat-icon>{{element.tecnico_asignado_2 ? 'swap_horiz' : 'person_add'}}</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
 
         <!-- Acciones Column -->
       <!--   <ng-container matColumnDef="acciones">

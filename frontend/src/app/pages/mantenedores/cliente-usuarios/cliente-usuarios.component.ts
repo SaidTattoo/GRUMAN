@@ -17,7 +17,52 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
   standalone: true,
   imports: [CommonModule, MatProgressBarModule, MatCardModule,   MatListModule, MatFormFieldModule, FormsModule, MatInputModule, MatSelectModule, MatButtonModule, ReactiveFormsModule],
   templateUrl: './cliente-usuarios.component.html',
-  styleUrl: './cliente-usuarios.component.scss'
+  styleUrl: './cliente-usuarios.component.scss',
+  styles: [`
+    .client-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .client-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .client-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .client-item img {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+
+    .client-name {
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 10px;
+      color: #333;
+    }
+
+    .selected {
+      background-color: #e3f2fd;
+      border: 2px solid #1e88e5;
+    }
+  `]
 })
 export class ClienteUsuariosComponent implements OnInit {
   clienteUsuarioForm: FormGroup;

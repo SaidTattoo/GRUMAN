@@ -11,7 +11,7 @@ export class ItemRepuesto {
     itemId: number;
 
     @Column()
-    repuestoId: number;
+    repuestoId?: number;
 
     @Column()
     cantidad: number;

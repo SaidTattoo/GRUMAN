@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,7 +27,6 @@ import * as L from 'leaflet';
 import { UsersService } from 'src/app/services/users.service';
 import { ConfirmDialogComponent } from '../../../../components/confirm-dialog/confirm-dialog.component';
 import { EspecialidadesService } from '../../../../services/especialidades.service';
-import { ChangeDetectorRef } from '@angular/core';
 import Swal from 'sweetalert2';
 import { CausaRaizService } from '../../../../services/causa-raiz.service';
 
@@ -173,6 +172,126 @@ interface ActivoFijoRepuesto {
       transform: scale(1.05);
       transition: all 0.2s ease;
     }
+
+    .table-responsive {
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    .mat-mdc-table {
+      width: 100%;
+      background: white;
+    }
+
+    .mat-mdc-header-cell {
+      font-weight: 600;
+      color: #1a1f36;
+    }
+
+    .mat-mdc-cell {
+      padding: 12px 8px;
+    }
+
+    .text-muted {
+      color: #6b7280;
+    }
+
+    .small {
+      font-size: 0.875em;
+    }
+
+    .checklist-container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .checklist-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      border: 1px solid #ddd;
+    }
+
+    .checklist-table th,
+    .checklist-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .checklist-table thead th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .checklist-table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .checklist-table tbody tr:hover {
+      background-color: #f5f5f5;
+    }
+
+    .checklist-footer {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .m-b-16 {
+      margin-bottom: 16px;
+    }
+
+    .m-b-24 {
+      margin-bottom: 24px;
+    }
+
+    .activo-fijo-info {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-label {
+      font-weight: 500;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .info-value {
+      color: #1f2937;
+      font-size: 1rem;
+    }
+
+    .section-title {
+      color: #111827;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 8px;
+    }
   `]
 })
 export class ModificarSolicitudComponent implements OnInit {
@@ -217,6 +336,20 @@ export class ModificarSolicitudComponent implements OnInit {
   usuarioRechazo: any = null;
   causasRaiz: any[] = [];
   isFinalized: boolean = false;
+  checklistColumns: string[] = [
+    'activoFijo',
+    'setPoint',
+    'tempFrio',
+    'tempCalor',
+    'tempAmbiente',
+    'tempRetorno',
+    'tempExterior',
+    'consumoCompresor',
+    'tension',
+    'consumoTotal',
+    'presiones',
+    'fecha'
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -518,6 +651,7 @@ export class ModificarSolicitudComponent implements OnInit {
                 const lastRepuesto = subItemRepuestos
                   .sort((a, b) => new Date(b.fechaAgregado).getTime() - new Date(a.fechaAgregado).getTime())[0];
 
+                // Obtener todas las fotos de los repuestos
                 const fotos = subItemRepuestos.reduce((acc: string[], repuesto: any) => {
                   if (repuesto.fotos && Array.isArray(repuesto.fotos)) {
                     return [...acc, ...repuesto.fotos];
@@ -525,9 +659,19 @@ export class ModificarSolicitudComponent implements OnInit {
                   return acc;
                 }, []);
 
+                // Asignar las fotos al repuesto en el mapa de repuestos
+                if (!this.repuestos[subItem.id]) {
+                  this.repuestos[subItem.id] = {
+                    estado: lastRepuesto?.estado || subItem.estado || 'no_conforme',
+                    comentario: lastRepuesto?.comentario || '',
+                    fotos: fotos,
+                    repuestos: []
+                  };
+                }
+
                 return {
                   ...subItem,
-                  estado: lastRepuesto?.estado || 'no_conforme',
+                  estado: lastRepuesto?.estado || subItem.estado || 'no_conforme',
                   fotos: fotos,
                   repuestos: subItemRepuestos
                 };
@@ -536,40 +680,28 @@ export class ModificarSolicitudComponent implements OnInit {
           }));
         }
 
-        // Agrupar las fotos por itemId
-        const fotosPorItem: { [key: number]: string[] } = {};
-        if (data.itemFotos) {
-          data.itemFotos.forEach((itemFoto: any) => {
-            fotosPorItem[itemFoto.itemId] = itemFoto.fotos;
-          });
-        }
-
-        // Asignar las fotos a los repuestos según su itemId
-        this.repuestos = {};
+        // Actualizar el mapa de repuestos con los repuestos existentes
         this.itemRepuestos.forEach(repuesto => {
-          if (!this.repuestos[repuesto.itemId]) {
-            this.repuestos[repuesto.itemId] = {
+          const itemId = repuesto.itemId;
+          if (!this.repuestos[itemId]) {
+            this.repuestos[itemId] = {
               estado: repuesto.estado,
               comentario: repuesto.comentario,
-              fotos: fotosPorItem[repuesto.itemId] || [],
+              fotos: repuesto.fotos || [],
               repuestos: []
             };
           }
-          this.repuestos[repuesto.itemId].repuestos.push({
+          this.repuestos[itemId].repuestos.push({
             cantidad: repuesto.cantidad,
             comentario: repuesto.comentario,
             repuesto: repuesto.repuesto
           });
         });
 
-        // Inicializar mapa después de cargar los datos
-        setTimeout(() => {
-          this.initMap();
-        }, 100);
-
+        console.log('Repuestos cargados:', this.repuestos);
         this.loading = false;
       },
-      error: (error:any) => {
+      error: (error) => {
         console.error('Error loading solicitud:', error);
         this.loading = false;
         this.snackBar.open('Error al cargar la solicitud', 'Cerrar', {
@@ -1510,5 +1642,37 @@ export class ModificarSolicitudComponent implements OnInit {
     return this.solicitud.activoFijoRepuestos.reduce((total: number, activoFijo: any) => {
         return total + this.calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos);
     }, 0);
+  }
+
+  getActivoFijoInfo(activoFijoId: number): string {
+    const activoFijo = this.solicitud?.local?.activoFijoLocales?.find((af:any) => af.id === activoFijoId);
+    if (activoFijo) {
+      return `${activoFijo.tipo_equipo} - ${activoFijo.marca} (${activoFijo.codigo_activo})`;
+    }
+    return 'No encontrado';
+  }
+
+  getActivoFijoDetails(activoFijoId: number): any {
+    const activoFijo = this.solicitud?.local?.activoFijoLocales?.find((af: any) => af.id === activoFijoId);
+    if (activoFijo) {
+      return {
+        tipo_equipo: activoFijo.tipo_equipo || 'No especificado',
+        marca: activoFijo.marca || 'No especificada',
+        codigo_activo: activoFijo.codigo_activo || 'No especificado',
+        potencia_equipo: activoFijo.potencia_equipo || 'No especificada',
+        refrigerante: activoFijo.refrigerante || 'No especificado',
+        on_off_inverter: activoFijo.on_off_inverter || 'No especificado',
+        suministra: activoFijo.suministra || 'No especificado'
+      };
+    }
+    return {
+      tipo_equipo: 'No encontrado',
+      marca: 'No encontrado',
+      codigo_activo: 'No encontrado',
+      potencia_equipo: 'No encontrado',
+      refrigerante: 'No encontrado',
+      on_off_inverter: 'No encontrado',
+      suministra: 'No encontrado'
+    };
   }
 } 

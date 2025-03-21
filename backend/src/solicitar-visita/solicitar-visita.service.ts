@@ -7,16 +7,95 @@ import { Locales } from 'src/locales/locales.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
 import { User } from 'src/users/users.entity';
 import { ItemRepuesto } from 'src/inspection/entities/item-repuesto.entity';
-import { FinalizarServicioDto } from './dto/finalizar-servicio.dto';
+
 import { In } from 'typeorm';
 import { FacturacionService } from 'src/facturacion/facturacion.service';
 import { Repuesto } from 'src/repuestos/repuestos.entity';
 import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
 import { DetalleRepuestoActivoFijo } from '../activo-fijo-repuestos/entities/detalle-repuesto-activo-fijo.entity';
 import { ActivoFijoRepuestos } from '../activo-fijo-repuestos/entities/activo-fijo-repuestos.entity';
+import { ChecklistClima } from 'src/checklist_clima/checklist_clima.entity';
 
 
-
+export interface FotoData {
+    url: string;
+  }
+  
+  export interface RepuestoAsociado {
+    repuestoId: number;
+    cantidad: number;
+    comentario: string;
+    precio_unitario: number;
+  }
+  
+  export interface ItemRepuestoData {
+    id?: number;
+    estado: string;
+    comentario?: string;
+    fotos?: FotoData[];
+    repuestos?: RepuestoAsociado[];
+  }
+  
+  export interface RepuestoDetalle {
+    repuestoId: number;
+    cantidad: number;
+    comentario: string;
+    estado?: string;
+    precio_unitario: number;
+  }
+  
+  export interface ActivoFijoRepuestosData {
+    activoFijoId: number;
+    estadoOperativo: string;
+    observacionesEstado: string;
+    repuestos?: RepuestoDetalle[];
+  }
+  
+  export interface Mediciones {
+    medicion_SetPoint?: number;
+    medicion_TempInjeccionFrio?: number;
+    medicion_TempInjeccionCalor?: number;
+    medicion_TempAmbiente?: number;
+    medicion_TempRetorno?: number;
+    medicion_TempExterior?: number;
+  
+    medicion_SetPoint_observacion?: string;
+    medicion_TempInjeccionFrio_observacion?: string;
+    medicion_TempInjeccionCalor_observacion?: string;
+    medicion_TempAmbiente_observacion?: string;
+    medicion_TempRetorno_observacion?: string;
+    medicion_TempExterior_observacion?: string;
+  
+    consumoCompresor_R?: number;
+    consumoCompresor_S?: number;
+    consumoCompresor_T?: number;
+    consumoCompresor_N?: number;
+  
+    tension_R_S?: number;
+    tension_S_T?: number;
+    tension_T_R?: number;
+    tension_T_N?: number;
+  
+    consumo_total_R?: number;
+    consumo_total_S?: number;
+    consumo_total_T?: number;
+    consumo_total_N?: number;
+  
+    presiones_alta?: number;
+    presiones_baja?: number;
+  }
+  
+  export interface ChecklistClimaData {
+    activoFijoId: number;
+    mediciones: Mediciones;
+  }
+  
+  export interface FinalizarServicioDto {
+    firma_cliente?: string;
+    repuestos: Record<string, ItemRepuestoData>;
+    checklistClima: ChecklistClimaData[];
+    activoFijoRepuestos: ActivoFijoRepuestosData[];
+  }
 interface ServiciosRealizadosParams {
   tipoBusqueda: string;
   clientId?: number;
@@ -50,7 +129,9 @@ export class SolicitarVisitaService {
         @InjectRepository(ActivoFijoRepuestos)
         private activoFijoRepuestosRepository: Repository<ActivoFijoRepuestos>,
         @InjectRepository(DetalleRepuestoActivoFijo)
-        private detalleRepuestoActivoFijoRepository: Repository<DetalleRepuestoActivoFijo>
+        private detalleRepuestoActivoFijoRepository: Repository<DetalleRepuestoActivoFijo>,
+        @InjectRepository(ChecklistClima)
+        private checklistClimaRepository: Repository<ChecklistClima>
     ) {}
 
     /**
@@ -156,6 +237,7 @@ export class SolicitarVisitaService {
                 'local',
                 'local.activoFijoLocales',
                 'client',
+                'checklistsClima',
                 'tecnico_asignado',
                 'tecnico_asignado_2',
                 'itemRepuestos',
@@ -362,8 +444,16 @@ export class SolicitarVisitaService {
     }
 
     async finalizarSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        await this.solicitarVisitaRepository.update(id, { status: SolicitudStatus.FINALIZADA });
-        return this.solicitarVisitaRepository.findOne({ where: { id } });
+        const solicitud = await this.solicitarVisitaRepository.findOne({ where: { id } });
+        if (!solicitud) {
+            throw new NotFoundException(`Solicitud with ID ${id} not found`);
+        }
+        
+        solicitud.status = SolicitudStatus.FINALIZADA;
+        solicitud.fecha_hora_fin_servicio = new Date();
+        await this.solicitarVisitaRepository.save(solicitud);
+
+        return this.solicitarVisitaRepository.findOne({ where: { id }, relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2', 'checklistsClima', 'activoFijoRepuestos', 'activoFijoRepuestos.activoFijo', 'activoFijoRepuestos.detallesRepuestos', 'activoFijoRepuestos.detallesRepuestos.repuesto', 'itemRepuestos', 'itemRepuestos.repuesto', 'itemFotos'] });
     }
 
     //quiero obtener la cantidad de solicitudes pendientes
@@ -405,173 +495,95 @@ export class SolicitarVisitaService {
         return this.solicitarVisitaRepository.findOne({ where: { id } });
     }
 /* agregar fecha_hora_fin_servicio */
-    async finalizarServicio(id: number, data: FinalizarServicioDto): Promise<SolicitarVisita> {
-        // Mostrar los datos recibidos
-        console.log('###########################');
-        console.log('###########################');
-        console.log('Datos recibidos:', JSON.stringify(data, null, 2));
-        console.log('###########################'); 
-        console.log('###########################');
-        
-        const solicitud = await this.solicitarVisitaRepository.findOne({
-            where: { id },
-            relations: [
-                'itemRepuestos', 
-                'itemRepuestos.repuesto', 
-                'client',
-                'activoFijoRepuestos',
-                'activoFijoRepuestos.activoFijo',
-                'activoFijoRepuestos.detallesRepuestos',
-                'activoFijoRepuestos.detallesRepuestos.repuesto'
-            ]
-        });
+async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
 
-        if (!solicitud) {
-            throw new NotFoundException(`Solicitud with ID ${id} not found`);
+    await this.manipularRepuestosYfotos(id, data.repuestos);
+
+
+
+    try {
+      // 1. Guardar checklist clima
+      if (Array.isArray(data.checklistClima)) {
+        for (const checklist of data.checklistClima) {
+          const mediciones = checklist.mediciones;
+  
+          const checklistToSave = this.checklistClimaRepository.create({
+            solicitudId: id,
+            activoFijoId: checklist.activoFijoId,
+            ...mediciones,
+          });
+  
+          await this.checklistClimaRepository.save(checklistToSave);
         }
-
-        // Actualizar estado y firma
-        await this.solicitarVisitaRepository.update(id, {
-            status: SolicitudStatus.FINALIZADA,
-            fecha_hora_fin_servicio: new Date(),
-            firma_cliente: data.firma_cliente
-        });
-
-        // Procesar cada item y sus estados
-        for (const [itemId, itemData] of Object.entries(data.repuestos)) {
-            // Guardar las fotos si existen
-            if (itemData.fotos && itemData.fotos.length > 0) {
-                try {
-                    await this.itemFotosRepository.save({
-                        solicitarVisita: { id },
-                        itemId: parseInt(itemId),
-                        fotos: itemData.fotos
-                    });
-                } catch (error) {
-                    console.error('Error al guardar fotos:', error);
-                    throw new InternalServerErrorException(`Error al guardar fotos: ${error.message}`);
-                }
+      }
+  
+      // 2. Guardar activoFijoRepuestos y sus repuestos
+      if (Array.isArray(data.activoFijoRepuestos)) {
+        for (const activo of data.activoFijoRepuestos) {
+          const activoEntity = this.activoFijoRepuestosRepository.create({
+            solicitarVisita: { id },
+            activoFijo: { id: activo.activoFijoId },
+            estadoOperativo: activo.estadoOperativo,
+            observacionesEstado: activo.observacionesEstado,
+            fechaRevision: new Date(),
+          });
+  
+          const savedActivo = await this.activoFijoRepuestosRepository.save(activoEntity);
+  
+          if (Array.isArray(activo.repuestos)) {
+            for (const repuesto of activo.repuestos) {
+              const detalle = this.detalleRepuestoActivoFijoRepository.create({
+                activoFijoRepuestos: savedActivo,
+                repuesto: { id: repuesto.repuestoId },
+                cantidad: repuesto.cantidad,
+                comentario: repuesto.comentario,
+                estado: repuesto.estado || 'pendiente',
+                precio_unitario: repuesto.precio_unitario,
+              });
+  
+              await this.detalleRepuestoActivoFijoRepository.save(detalle);
             }
-
-            // Procesar los repuestos si existen
-            if (itemData.repuestos && itemData.repuestos.length > 0) {
-                for (const repuestoData of itemData.repuestos) {
-                    try {
-                        await this.itemRepuestoRepository.save({
-                            solicitarVisita: { id },
-                            itemId: parseInt(itemId),
-                            repuesto: { id: repuestoData.repuesto.id },
-                            cantidad: repuestoData.cantidad,
-                            comentario: repuestoData.comentario || '',
-                            estado: itemData.estado,
-                            precio_unitario: repuestoData.precio_unitario || 0
-                        });
-                    } catch (error) {
-                        console.error('Error al guardar repuesto:', error);
-                        throw new InternalServerErrorException(`Error al guardar repuesto: ${error.message}`);
-                    }
-                }
-            } else {
-                // Guardar el estado del item incluso si no tiene repuestos
-                try {
-                    await this.itemRepuestoRepository.save({
-                        solicitarVisita: { id },
-                        itemId: parseInt(itemId),
-                        repuesto: null,
-                        cantidad: 0,
-                        comentario: itemData.comentario || '',
-                        estado: itemData.estado,
-                        precio_unitario: 0
-                    });
-                } catch (error) {
-                    console.error('Error al guardar estado del item:', error);
-                    throw new InternalServerErrorException(`Error al guardar estado del item: ${error.message}`);
-                }
-            }
+          }
         }
-
-        // Procesar activoFijoRepuestos si existen
-        if (data.activoFijoRepuestos && data.activoFijoRepuestos.length > 0) {
-            for (const activoFijoRepuesto of data.activoFijoRepuestos) {
-                try {
-                    // Buscar o crear el registro de ActivoFijoRepuesto
-                    let existingActivoFijoRepuesto = await this.activoFijoRepuestosRepository.findOne({
-                        where: {
-                            solicitarVisita: { id },
-                            activoFijo: { id: activoFijoRepuesto.activoFijo.id }
-                        }
-                    });
-
-                    if (!existingActivoFijoRepuesto) {
-                        existingActivoFijoRepuesto = await this.activoFijoRepuestosRepository.save({
-                            solicitarVisita: { id },
-                            activoFijo: { id: activoFijoRepuesto.activoFijo.id },
-                            estadoOperativo: activoFijoRepuesto.estadoOperativo,
-                            observacionesEstado: activoFijoRepuesto.observacionesEstado || '',
-                            fechaRevision: new Date()
-                        });
-                    } else {
-                        await this.activoFijoRepuestosRepository.update(existingActivoFijoRepuesto.id, {
-                            estadoOperativo: activoFijoRepuesto.estadoOperativo,
-                            observacionesEstado: activoFijoRepuesto.observacionesEstado || '',
-                            fechaRevision: new Date()
-                        });
-                    }
-
-                    // Procesar los repuestos asociados al activo fijo
-                    if (activoFijoRepuesto.repuestos && activoFijoRepuesto.repuestos.length > 0) {
-                        // Eliminar los detalles de repuestos anteriores
-                        await this.detalleRepuestoActivoFijoRepository.delete({
-                            activoFijoRepuestos: { id: existingActivoFijoRepuesto.id }
-                        });
-
-                        // Guardar los nuevos detalles de repuestos
-                        for (const repuesto of activoFijoRepuesto.repuestos) {
-                            await this.detalleRepuestoActivoFijoRepository.save({
-                                activoFijoRepuestos: { id: existingActivoFijoRepuesto.id },
-                                repuesto: { id: repuesto.repuesto.id },
-                                cantidad: repuesto.cantidad,
-                                comentario: repuesto.comentario || '',
-                                estado: repuesto.estado || 'pendiente',
-                                precio_unitario: repuesto.precio_unitario || 0
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.error(`Error al procesar activoFijoRepuesto:`, error);
-                    throw new InternalServerErrorException(`Error al procesar activoFijoRepuesto: ${error.message}`);
-                }
-            }
-        }
-
-        // Obtener la solicitud actualizada con todos los datos
-        const solicitudActualizada = await this.solicitarVisitaRepository
-            .createQueryBuilder('solicitud')
-            .leftJoinAndSelect('solicitud.itemRepuestos', 'itemRepuestos')
-            .leftJoinAndSelect('itemRepuestos.repuesto', 'repuesto')
-            .leftJoinAndSelect('solicitud.itemFotos', 'itemFotos')
-            .leftJoinAndSelect('solicitud.local', 'local')
-            .leftJoinAndSelect('solicitud.client', 'client')
-            .leftJoinAndSelect('solicitud.tecnico_asignado', 'tecnico_asignado')
-            .leftJoinAndSelect('solicitud.activoFijoRepuestos', 'activoFijoRepuestos')
-            .leftJoinAndSelect('activoFijoRepuestos.activoFijo', 'activoFijo')
-            .leftJoinAndSelect('activoFijoRepuestos.detallesRepuestos', 'detallesRepuestos')
-            .leftJoinAndSelect('detallesRepuestos.repuesto', 'detallesRepuestosRepuesto')
-            .where('solicitud.id = :id', { id })
-            .getOne();
-
-        // Agrupar los repuestos por itemId para construir una estructura más utilizable
-        if (solicitudActualizada) {
-            // Ordenar por itemId para facilidad de lectura
-            solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos || [];
-            solicitudActualizada.itemRepuestos.sort((a, b) => a.itemId - b.itemId);
-            
-            console.log(`Solicitud actualizada con ${solicitudActualizada.itemRepuestos.length} estados/repuestos registrados.`);
-        }
-
-        return solicitudActualizada;
+      }
+  
+     
+  
+      // 4. Actualizar solicitud principal
+      const solicitudToUpdate = await this.solicitarVisitaRepository.findOne({
+        where: { id },
+        relations: [
+          'local',
+          'client',
+          'tecnico_asignado',
+          'tecnico_asignado_2',
+          'checklistsClima',
+          'activoFijoRepuestos',
+          'activoFijoRepuestos.activoFijo',
+          'activoFijoRepuestos.detallesRepuestos',
+          'activoFijoRepuestos.detallesRepuestos.repuesto',
+          'itemRepuestos',
+          'itemRepuestos.repuesto',
+          'itemFotos',
+        ],
+      });
+  
+      if (!solicitudToUpdate) {
+        throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+      }
+  
+      solicitudToUpdate.status = SolicitudStatus.FINALIZADA;
+      solicitudToUpdate.fecha_hora_fin_servicio = new Date();
+  
+      const updated = await this.solicitarVisitaRepository.save(solicitudToUpdate);
+  
+      return updated;
+    } catch (error) {
+      console.error('❌ Error en finalizarServicio:', error);
+      throw new InternalServerErrorException(`Error al finalizar servicio: ${error.message}`);
     }
-
+  }
+  
     async reabrirSolicitud(id: number): Promise<SolicitarVisita> {
         const visita = await this.solicitarVisitaRepository.findOne({ 
             where: { id }
@@ -657,8 +669,8 @@ export class SolicitarVisitaService {
                     ]),
                     fechaIngreso: Between(today, tomorrow)
                 },
-                relations: ['local', 'client', 'tecnico_asignado', 'tipoServicio'],
-                order: { fechaIngreso: 'DESC' }
+                relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
+                order: { id: 'DESC' }
             });
 
             console.log('[Service] Query ejecutada exitosamente');
@@ -758,8 +770,8 @@ export class SolicitarVisitaService {
 
             const data = await this.solicitarVisitaRepository.find({ 
                 where: whereClause,
-                relations: ['local', 'client', 'tecnico_asignado', 'tipoServicio'],
-                order: { fechaIngreso: 'DESC' }
+                relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
+                order: { id: 'ASC' }
             });
 
             console.log(`Se encontraron ${data.length} registros`);
@@ -833,7 +845,7 @@ export class SolicitarVisitaService {
                     ]),
                     fechaIngreso: Between(today, tomorrow)
                 },
-                relations: ['local', 'client', 'tecnico_asignado', 'tipoServicio'],
+                relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
                 order: { fechaIngreso: 'DESC' }
             });
 
@@ -905,5 +917,152 @@ export class SolicitarVisitaService {
             throw new InternalServerErrorException('Error updating solicitud');
         }
     }
+
+
+
+    //asignar un tecnico a una solicitud  puede ser tecnico o tecnico_2 
+    async asignarTecnico(solicitudId: number, tecnicoId: number, tipo: 'tecnico' | 'tecnico_2') {
+        try {
+            const solicitud = await this.solicitarVisitaRepository.findOne({ 
+                where: { id: solicitudId },
+                relations: ['tecnico_asignado', 'tecnico_asignado_2']
+            });
+
+            if (!solicitud) {
+                throw new NotFoundException(`Solicitud with ID ${solicitudId} not found`);
+            }
+
+            if (tipo === 'tecnico') {
+                solicitud.tecnico_asignado_id = tecnicoId;
+            } else {
+                solicitud.tecnico_asignado_id_2 = tecnicoId; // Corregido el nombre del campo
+            }
+
+            const result = await this.solicitarVisitaRepository.save(solicitud);
+            
+            // Recarga la solicitud con las relaciones para devolver los datos completos
+            return await this.solicitarVisitaRepository.findOne({
+                where: { id: solicitudId },
+                relations: ['tecnico_asignado', 'tecnico_asignado_2']
+            });
+        } catch (error) {
+            console.error('Error al asignar técnico:', error);
+            throw new InternalServerErrorException('Error al asignar técnico');
+        }
+    }
+
+    async changeTecnico(solicitudId: number, tecnicoId: number, tipo: 'tecnico' | 'tecnico_2') {
+        try {
+            console.log('Changing technician:', { solicitudId, tecnicoId, tipo });
+            
+            const solicitud = await this.solicitarVisitaRepository.findOne({ 
+                where: { id: solicitudId },
+                relations: ['tecnico_asignado', 'tecnico_asignado_2']
+            });
+
+            if (!solicitud) {
+                throw new NotFoundException(`Solicitud with ID ${solicitudId} not found`);
+            }
+
+            // Check if the technician is already assigned to the other position
+            if (tipo === 'tecnico' && solicitud.tecnico_asignado_id_2 === tecnicoId) {
+                throw new BadRequestException('El técnico ya está asignado como técnico 2 en esta solicitud');
+            }
+            if (tipo === 'tecnico_2' && solicitud.tecnico_asignado_id === tecnicoId) {
+                throw new BadRequestException('El técnico ya está asignado como técnico 1 en esta solicitud');
+            }
+
+            // Create update object based on tipo
+            const updateData = tipo === 'tecnico' 
+                ? { tecnico_asignado_id: tecnicoId }
+                : { tecnico_asignado_id_2: tecnicoId };
+
+            // Use repository update method
+            await this.solicitarVisitaRepository.update(solicitudId, updateData);
+            
+            // Recargar la solicitud para verificar los cambios
+            const updatedSolicitud = await this.solicitarVisitaRepository.findOne({
+                where: { id: solicitudId },
+                relations: ['tecnico_asignado', 'tecnico_asignado_2']
+            });
+
+            console.log('Updated solicitud:', updatedSolicitud);
+            return updatedSolicitud;
+        } catch (error) {
+            console.error('Error changing technician:', error);
+            throw error instanceof BadRequestException 
+                ? error 
+                : new InternalServerErrorException('Error al cambiar técnico: ' + error.message);
+        }
+    }
+
+
+
+
+    async manipularRepuestosYfotos(id: number, repuestosData: Record<string, ItemRepuestoData>) {
+        const solicitud = await this.solicitarVisitaRepository.findOne({
+            where: { id },
+            relations: ['itemRepuestos', 'itemFotos']
+        });
+        console.log('solicitud', JSON.stringify(repuestosData));
+        if (!solicitud) {
+            throw new NotFoundException(`Solicitud with ID ${id} not found`);
+        }
+
+        for (const [itemId, itemData] of Object.entries(repuestosData)) {
+            // Guardar fotos
+            if (itemData.fotos && itemData.fotos.length > 0) {
+                // Primero eliminar las fotos existentes para este item
+                await this.itemFotosRepository.delete({
+                    solicitarVisitaId: id,
+                    itemId: parseInt(itemId)
+                });
+
+                // Crear y guardar las nuevas fotos
+                const fotosToSave = this.itemFotosRepository.create({
+                    itemId: parseInt(itemId),
+                    solicitarVisitaId: id,
+                    fotos: itemData.fotos.map(foto => foto.url)
+                });
+
+                await this.itemFotosRepository.save(fotosToSave);
+            }
+
+            // Procesar repuestos
+            if (itemData.repuestos && itemData.repuestos.length > 0) {
+                for (const repuestoData of itemData.repuestos) {
+                    // Buscar si ya existe el repuesto para este item
+                    const itemRepuesto = await this.itemRepuestoRepository.findOne({
+                        where: {
+                            itemId: parseInt(itemId),
+                            repuestoId: repuestoData.repuestoId,
+                            solicitarVisitaId: id
+                        }
+                    });
+
+                    const repuestoToSave = {
+                        itemId: parseInt(itemId),
+                        repuestoId: repuestoData.repuestoId,
+                        solicitarVisitaId: id,
+                        cantidad: repuestoData.cantidad,
+                        comentario: repuestoData.comentario || '',
+                        estado: itemData.estado,
+                        precio_unitario: repuestoData.precio_unitario
+                    };
+
+                    if (itemRepuesto) {
+                        // Actualizar el existente
+                        await this.itemRepuestoRepository.update(itemRepuesto.id, repuestoToSave);
+                    } else {
+                        // Crear uno nuevo
+                        await this.itemRepuestoRepository.save(repuestoToSave);
+                    }
+                }
+            }
+        }
+
+        return solicitud;
+    }
+
 }
 

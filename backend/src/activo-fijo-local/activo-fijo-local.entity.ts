@@ -1,7 +1,8 @@
 import { TipoActivo } from '../tipo_activo/tipo_activo.entity';
 import { Client } from '../client/client.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Locales } from '../locales/locales.entity';
+import { ChecklistClima } from '../checklist_clima/checklist_clima.entity';
 
 @Entity('activo_fijo_local')
 export class ActivoFijoLocal {
@@ -17,6 +18,9 @@ export class ActivoFijoLocal {
 
     @ManyToOne(() => Locales, locales => locales.activoFijoLocales)
     locales: Locales;
+
+    @OneToMany(() => ChecklistClima, checklist => checklist.activoFijo)
+    checklistsClima: ChecklistClima[];
 
     @Column()
     tipo_equipo: string;

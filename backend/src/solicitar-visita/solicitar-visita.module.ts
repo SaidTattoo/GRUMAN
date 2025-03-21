@@ -16,6 +16,7 @@ import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
 import { CausaRaiz } from 'src/causa-raiz/causa-raiz.entity';
 import { ActivoFijoRepuestos } from 'src/activo-fijo-repuestos/entities/activo-fijo-repuestos.entity';
 import { DetalleRepuestoActivoFijo } from 'src/activo-fijo-repuestos/entities/detalle-repuesto-activo-fijo.entity';
+import { ChecklistClima } from 'src/checklist_clima/checklist_clima.entity';
 
 @Module({
   imports: [
@@ -32,7 +33,8 @@ import { DetalleRepuestoActivoFijo } from 'src/activo-fijo-repuestos/entities/de
       Facturacion,
       CausaRaiz,
       ActivoFijoRepuestos,
-      DetalleRepuestoActivoFijo
+      DetalleRepuestoActivoFijo,
+      ChecklistClima
     ]),
     FacturacionModule
   ],

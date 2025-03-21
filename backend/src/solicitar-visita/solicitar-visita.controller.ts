@@ -298,6 +298,25 @@ export class SolicitarVisitaController {
     }
   }
 
+  @Post(':id/asignar-tecnico')
+  async asignarTecnico(@Param('id') id: number, @Body() data: { tecnicoId: number, tipo: 'tecnico' | 'tecnico_2' }) {
+    return this.solicitarVisitaService.asignarTecnico(id, data.tecnicoId, data.tipo);
+  }
+
+  @Post(':id/cambiar-tecnico')
+  async cambiarTecnico(
+    @Param('id') id: number, 
+    @Body() data: { tecnicoId: number, tipo: 'tecnico' | 'tecnico_2' }
+  ) {
+    console.log('Controller: cambiarTecnico request:', { id, data });
+    const result = await this.solicitarVisitaService.changeTecnico(id, data.tecnicoId, data.tipo);
+    console.log('Controller: cambiarTecnico response:', result);
+    return {
+        success: true,
+        data: result
+    };
+  }
+
  /*  @Get('servicios-realizados')
   async getServiciosRealizados(
     @Query('clientId') clientId?: string,

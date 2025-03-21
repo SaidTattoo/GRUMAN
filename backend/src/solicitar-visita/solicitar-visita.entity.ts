@@ -8,6 +8,7 @@ import { ItemRepuesto } from "src/inspection/entities/item-repuesto.entity";
 import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
 import { CausaRaiz } from "src/causa-raiz/causa-raiz.entity";
 import { ActivoFijoRepuestos } from "src/activo-fijo-repuestos/entities/activo-fijo-repuestos.entity";
+import { ChecklistClima } from "src/checklist_clima/checklist_clima.entity";
 
 export enum SolicitudStatus {
     PENDIENTE = 'pendiente',
@@ -201,5 +202,8 @@ export class SolicitarVisita {
 
   @OneToMany(() => ActivoFijoRepuestos, afr => afr.solicitarVisita)
   activoFijoRepuestos: ActivoFijoRepuestos[];
+
+  @OneToMany(() => ChecklistClima, checklist => checklist.solicitud)
+  checklistsClima: ChecklistClima[];
 }
  

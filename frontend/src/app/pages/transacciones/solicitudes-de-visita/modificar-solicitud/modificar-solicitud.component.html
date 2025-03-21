@@ -297,25 +297,26 @@
                           <mat-icon>add</mat-icon>
                         </button>
                         @if (subItem.fotos?.length) {
-                          <span class="photo-count">{{ subItem.fotos.length }} foto(s)</span>
+                          <div class="photos-container">
+                            <div class="photo-count">
+                              <mat-icon>photo_library</mat-icon>
+                              {{ subItem.fotos.length }} foto(s)
+                            </div>
+                            <div class="photo-grid">
+                              @for (foto of subItem.fotos; track $index) {
+                                <div class="photo-item">
+                                  <img [src]="foto" 
+                                      (click)="openPhotoViewer([foto])" 
+                                      [alt]="'Foto de ' + subItem.name"
+                                      class="inspection-photo">
+                                </div>
+                              }
+                            </div>
+                          </div>
                         }
                       </div>
 
-                      <!-- Miniaturas de fotos -->
-                      <div class="photos-container">
-                       
-                          <div class="photo-grid">
-                            <div class="photo-item" *ngFor="let foto of getItemFotos(subItem.id)?.fotos">
-                              <img [src]="foto" 
-                                   (click)="openPhotoViewer([foto])" 
-                                   [alt]="'Foto de ' + subItem.name"
-                                   class="inspection-photo">
-                            </div>
-                          </div>
-                      
-                      </div>
-
-                      <!-- Estado después de las fotos - Siempre se muestra independientemente de los repuestos -->
+                      <!-- Estado después de las fotos -->
                       <div class="estado-container">
                         <span class="badge" [ngClass]="{
                           'badge-success': subItem.estado === 'conforme',
@@ -583,6 +584,153 @@
         </div>
       }
     </div>
+
+    @if (solicitud?.status === 'finalizada' || solicitud?.status === 'validada' || solicitud?.status === 'reabierta') {
+      <mat-card class="m-t-16">
+        <mat-card-header>
+          <mat-card-title>Checklists de Clima</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @for (checklist of solicitud.checklistsClima; track checklist.id) {
+            <div class="checklist-container m-b-24">
+              <div class="activo-fijo-info m-b-16">
+                <h3 class="section-title">Información del Equipo</h3>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">Tipo de Equipo:</span>
+                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.tipo_equipo }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Marca:</span>
+                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.marca }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Código:</span>
+                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.codigo_activo }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Potencia:</span>
+                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.potencia_equipo }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Refrigerante:</span>
+                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.refrigerante }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Tipo:</span>
+                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.on_off_inverter }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Suministra:</span>
+                    <span class="info-value">{{ getActivoFijoDetails(checklist.activoFijoId)?.suministra }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <table class="checklist-table">
+                <thead>
+                  <tr>
+                    <th colspan="3" class="text-center">TABLA DE INSPECCIÓN DE RENDIMIENTO</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Mediciones de temperatura -->
+                  <tr>
+                    <th>ITEM</th>
+                    <th>MEDICIÓN [°C]</th>
+                    <th>OBSERVACIÓN</th>
+                    <th>CONSUMO COMPRESOR [A]</th>
+                  </tr>
+                  <tr>
+                    <td>1</td>
+                    <td>Set-point</td>
+                    <td>{{ checklist.medicion_SetPoint }}</td>
+                    <td>{{ checklist.medicion_SetPoint_observacion }}</td>
+                    <td>R</td>
+                    <td>{{ checklist.consumoCompresor_R }}</td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td>T° inyección frío</td>
+                    <td>{{ checklist.medicion_TempInjeccionFrio }}</td>
+                    <td>{{ checklist.medicion_TempInjeccionFrio_observacion }}</td>
+                    <td>S</td>
+                    <td>{{ checklist.consumoCompresor_S }}</td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>T° inyección calor</td>
+                    <td>{{ checklist.medicion_TempInjeccionCalor }}</td>
+                    <td>{{ checklist.medicion_TempInjeccionCalor_observacion }}</td>
+                    <td>T</td>
+                    <td>{{ checklist.consumoCompresor_T }}</td>
+                  </tr>
+                  <tr>
+                    <td>4</td>
+                    <td>T° ambiente</td>
+                    <td>{{ checklist.medicion_TempAmbiente }}</td>
+                    <td>{{ checklist.medicion_TempAmbiente_observacion }}</td>
+                    <td>N</td>
+                    <td>{{ checklist.consumoCompresor_N }}</td>
+                  </tr>
+                  <tr>
+                    <td>5</td>
+                    <td>T° retorno</td>
+                    <td>{{ checklist.medicion_TempRetorno }}</td>
+                    <td>{{ checklist.medicion_TempRetorno_observacion }}</td>
+                  </tr>
+                  <tr>
+                    <td>6</td>
+                    <td>T° exterior</td>
+                    <td>{{ checklist.medicion_TempExterior }}</td>
+                    <td>{{ checklist.medicion_TempExterior_observacion }}</td>
+                  </tr>
+
+                  <!-- Tensión y Consumo Total -->
+                  <tr>
+                    <th colspan="2">TENSIÓN</th>
+                    <th colspan="2">CONSUMO TOTAL</th>
+                    <th colspan="2">PRESIONES</th>
+                  </tr>
+                  <tr>
+                    <td>R-S</td>
+                    <td>{{ checklist.tension_R_S }} [V]</td>
+                    <td>R</td>
+                    <td>{{ checklist.consumo_total_R }} [A]</td>
+                    <td rowspan="2">ALTA</td>
+                    <td rowspan="2">{{ checklist.presiones_alta }} [PSI]</td>
+                  </tr>
+                  <tr>
+                    <td>S-T</td>
+                    <td>{{ checklist.tension_S_T }} [V]</td>
+                    <td>S</td>
+                    <td>{{ checklist.consumo_total_S }} [A]</td>
+                  </tr>
+                  <tr>
+                    <td>T-R</td>
+                    <td>{{ checklist.tension_T_R }} [V]</td>
+                    <td>T</td>
+                    <td>{{ checklist.consumo_total_T }} [A]</td>
+                    <td rowspan="2">BAJA</td>
+                    <td rowspan="2">{{ checklist.presiones_baja }} [PSI]</td>
+                  </tr>
+                  <tr>
+                    <td>T-N</td>
+                    <td>{{ checklist.tension_T_N }} [V]</td>
+                    <td>N</td>
+                    <td>{{ checklist.consumo_total_N }} [A]</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="checklist-footer">
+                <p class="text-muted">Fecha: {{ checklist.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
   </form>
 </div>
 

@@ -134,4 +134,29 @@ export class SolicitarVisitaService {
   updateRepuestos(solicitudId: string, changes: any) {
     return this.http.patch(`${this.apiUrl}solicitar-visita/${solicitudId}/repuestos`, changes);
   }
+
+  getTecnicos() {
+    return this.http.get(`${this.apiUrl}users/tecnicos`);
+  }
+
+  asignarTecnico(solicitudId: number, tecnicoId: number, tipo: 'tecnico' | 'tecnico_2') {
+    return this.http.post(`${this.apiUrl}solicitar-visita/${solicitudId}/asignar-tecnico`, {
+      tecnicoId,
+      tipo
+    });
+  }
+
+  cambiarTecnico(solicitudId: number, tecnicoId: number, tipo: 'tecnico' | 'tecnico_2') {
+    console.log('Service: cambiarTecnico request:', { solicitudId, tecnicoId, tipo });
+    return this.http.post(`${this.apiUrl}solicitar-visita/${solicitudId}/cambiar-tecnico`, {
+      tecnicoId,
+      tipo
+    }).pipe(
+      tap(response => console.log('Service: cambiarTecnico response:', response)),
+      catchError(error => {
+        console.error('Service: cambiarTecnico error:', error);
+        throw error;
+      })
+    );
+  }
 }

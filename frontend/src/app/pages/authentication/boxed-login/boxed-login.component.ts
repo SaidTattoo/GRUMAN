@@ -24,8 +24,8 @@ export class AppBoxedLoginComponent implements OnInit {
   ) { }
 
   form = new FormGroup({
-    email: new FormControl('administrador@gmail.com', [Validators.required, Validators.minLength(6)]),
-    password: new FormControl('123456789', [Validators.required]),
+    email: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    password: new FormControl('', [Validators.required]),
   });
 
   get f() {
@@ -67,7 +67,7 @@ export class AppBoxedLoginComponent implements OnInit {
           if (companies.length > 1) {
             this.router.navigate(['/auth/select-client']);
           } else {
-            this.router.navigate(['/dashboards/dashboard1']);
+            this.router.navigate(['/dashboards']);
           }
         },
         (error) => {

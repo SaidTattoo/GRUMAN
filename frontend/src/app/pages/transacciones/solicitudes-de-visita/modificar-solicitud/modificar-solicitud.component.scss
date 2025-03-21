@@ -551,21 +551,43 @@ td.mat-cell {
 }
 
 .photos-container {
-  margin: 10px 0;
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  
+  .photo-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    margin-bottom: 10px;
+    
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
 }
 
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
 }
 
 .photo-item {
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
 }
 
 .inspection-photo {
@@ -573,11 +595,11 @@ td.mat-cell {
   height: 100%;
   object-fit: cover;
   cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.inspection-photo:hover {
-  transform: scale(1.05);
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.1);
+  }
 }
 
 .map-container {
