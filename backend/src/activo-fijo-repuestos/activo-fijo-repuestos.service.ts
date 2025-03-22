@@ -19,6 +19,7 @@ export class ActivoFijoRepuestosService {
 
     async guardarRepuestosActivoFijo(solicitudId: number, data: any) {
         return await this.dataSource.transaction(async manager => {
+            // Find the solicitud with its relations
             const solicitud = await this.solicitudRepository.findOne({
                 where: { id: solicitudId },
                 relations: ['local', 'local.activoFijoLocales']
@@ -30,8 +31,9 @@ export class ActivoFijoRepuestosService {
 
             const repuestosSaved = [];
 
+            // Process each activoFijoRepuesto
             for (const activoFijoData of data.activoFijoRepuestos) {
-                // Validar que el activo fijo pertenece al local
+                // Validate activo fijo belongs to local
                 const activoFijo = solicitud.local.activoFijoLocales.find(
                     af => af.id === activoFijoData.activoFijoId
                 );
@@ -42,28 +44,30 @@ export class ActivoFijoRepuestosService {
                     );
                 }
 
-                // Crear el registro principal de ActivoFijoRepuestos
-                const activoFijoRepuestos = manager.create(ActivoFijoRepuestos, {
-                    solicitarVisita: solicitud,
-                    activoFijo,
-                    estadoOperativo: activoFijoData.estadoOperativo,
-                    observacionesEstado: activoFijoData.observacionesEstado
-                });
+                // Create new ActivoFijoRepuestos instance
+                const activoFijoRepuestos = new ActivoFijoRepuestos();
+                activoFijoRepuestos.solicitarVisita = solicitud;
+                activoFijoRepuestos.activoFijo = activoFijo;
+                activoFijoRepuestos.estadoOperativo = activoFijoData.estadoOperativo;
+                activoFijoRepuestos.observacionesEstado = activoFijoData.observacionesEstado;
+                activoFijoRepuestos.fechaRevision = new Date();
 
-                const savedActivoFijoRepuestos = await manager.save(activoFijoRepuestos);
+                // Save the main record
+                const savedActivoFijoRepuestos = await manager.save(ActivoFijoRepuestos, activoFijoRepuestos);
 
-                // Procesar cada repuesto
-                for (const repuestoData of activoFijoData.repuestos) {
-                    const detalleRepuesto = manager.create(DetalleRepuestoActivoFijo, {
-                        activoFijoRepuestos: savedActivoFijoRepuestos,
-                        repuesto: { id: repuestoData.repuestoId },
-                        cantidad: repuestoData.cantidad,
-                        comentario: repuestoData.comentario,
-                        estado: repuestoData.estado,
-                        precio_unitario: repuestoData.precio_unitario
-                    });
+                // Process repuestos if they exist
+                if (activoFijoData.repuestos && activoFijoData.repuestos.length > 0) {
+                    for (const repuestoData of activoFijoData.repuestos) {
+                        const detalleRepuesto:any = new DetalleRepuestoActivoFijo();
+                        detalleRepuesto.activoFijoRepuestos = savedActivoFijoRepuestos;
+                        detalleRepuesto.repuesto = { id: repuestoData.repuesto.id };
+                        detalleRepuesto.cantidad = repuestoData.cantidad;
+                        detalleRepuesto.comentario = repuestoData.comentario;
+                        detalleRepuesto.estado = repuestoData.estado;
+                        detalleRepuesto.precio_unitario = repuestoData.precio_unitario;
 
-                    await manager.save(detalleRepuesto);
+                        await manager.save(DetalleRepuestoActivoFijo, detalleRepuesto);
+                    }
                 }
 
                 repuestosSaved.push(savedActivoFijoRepuestos);

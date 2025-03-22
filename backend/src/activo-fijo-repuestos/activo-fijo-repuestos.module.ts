@@ -5,13 +5,15 @@ import { ActivoFijoRepuestosService } from './activo-fijo-repuestos.service';
 import { ActivoFijoRepuestos } from './entities/activo-fijo-repuestos.entity';
 import { DetalleRepuestoActivoFijo } from './entities/detalle-repuesto-activo-fijo.entity';
 import { SolicitarVisita } from '../solicitar-visita/solicitar-visita.entity';
+import { ChecklistClima } from 'src/checklist_clima/checklist_clima.entity';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([
             ActivoFijoRepuestos,
             DetalleRepuestoActivoFijo,
-            SolicitarVisita
+            SolicitarVisita,
+            ChecklistClima
         ])
     ],
     controllers: [ActivoFijoRepuestosController],

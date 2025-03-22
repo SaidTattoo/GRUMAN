@@ -15,6 +15,7 @@ import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
 import { DetalleRepuestoActivoFijo } from '../activo-fijo-repuestos/entities/detalle-repuesto-activo-fijo.entity';
 import { ActivoFijoRepuestos } from '../activo-fijo-repuestos/entities/activo-fijo-repuestos.entity';
 import { ChecklistClima } from 'src/checklist_clima/checklist_clima.entity';
+import { ActivoFijoRepuestosService } from 'src/activo-fijo-repuestos/activo-fijo-repuestos.service';
 
 
 export interface FotoData {
@@ -131,7 +132,8 @@ export class SolicitarVisitaService {
         @InjectRepository(DetalleRepuestoActivoFijo)
         private detalleRepuestoActivoFijoRepository: Repository<DetalleRepuestoActivoFijo>,
         @InjectRepository(ChecklistClima)
-        private checklistClimaRepository: Repository<ChecklistClima>
+        private checklistClimaRepository: Repository<ChecklistClima>,
+        private activoFijoRepuestosService: ActivoFijoRepuestosService
     ) {}
 
     /**
@@ -498,7 +500,7 @@ export class SolicitarVisitaService {
 async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
 
     await this.manipularRepuestosYfotos(id, data);
-
+    await this.manipularChecklistClimaRepuestos(id, data);
 
 
     try {
@@ -1000,12 +1002,25 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
 
 
     async manipularRepuestosYfotos(id: number, data: Record<string, ItemRepuestoData>) {
-           
+        //agregar firma a solicitud_visita
+        const firmaCliente = data.firma_cliente;
+        const solicitudCliente:any = await this.solicitarVisitaRepository.findOne({
+            where: { id }
+        }); 
+        
+        if (!solicitudCliente) {
+            throw new NotFoundException(`Solicitud with ID ${id} not found`);
+        }
+        
+        solicitudCliente.firma_cliente = firmaCliente;
+        await this.solicitarVisitaRepository.save(solicitudCliente);
+
         const solicitud = await this.solicitarVisitaRepository.findOne({
             where: { id },
             relations: [
                 'itemRepuestos', 
                 'itemRepuestos.repuesto', 
+                'itemFotos',
                 'client',
                 'activoFijoRepuestos',
                 'activoFijoRepuestos.activoFijo',
@@ -1101,6 +1116,20 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
     return solicitudActualizada;
 
     }
-
+    async manipularChecklistClimaRepuestos(id: number, data: FinalizarServicioDto) {
+        // Add firma_cliente to solicitud_visita
+      /*   if (data.firma_cliente) {
+            await this.solicitarVisitaRepository.update(id, {
+                firma_cliente: data.firma_cliente
+            });
+        }
+         */
+        // Call activoFijoRepuestosService with the correct data
+        /* if (data.activoFijoRepuestos && data.activoFijoRepuestos.length > 0) {
+            await this.activoFijoRepuestosService.guardarRepuestosActivoFijo(id, {
+                activoFijoRepuestos: data.activoFijoRepuestos
+            });
+        } */
+    }
 }
 
