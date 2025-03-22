@@ -532,7 +532,7 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
   
           const savedActivo = await this.activoFijoRepuestosRepository.save(activoEntity);
   
-          if (Array.isArray(activo.repuestos)) {
+          /* if (Array.isArray(activo.repuestos)) {
             for (const repuesto of activo.repuestos) {
               const detalle = this.detalleRepuestoActivoFijoRepository.create({
                 activoFijoRepuestos: savedActivo,
@@ -545,7 +545,7 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
   
               await this.detalleRepuestoActivoFijoRepository.save(detalle);
             }
-          }
+          } */
         }
       }
   
