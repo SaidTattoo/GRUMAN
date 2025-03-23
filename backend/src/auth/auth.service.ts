@@ -79,6 +79,7 @@ export class AuthService {
             name: user.name,
             rut: user.rut,
             especialidades: user.especialidades,
+            dev_mode: user.dev_mode,
            
             profile: user.profile,
             clients: user.clients,

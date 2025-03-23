@@ -81,6 +81,8 @@ export class User {
     updatedAt: Date;
 
     @Column({ default: false })
+    dev_mode: boolean;
+    @Column({ default: false })
     disabled: boolean;
 }
   
