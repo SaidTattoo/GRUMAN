@@ -353,7 +353,7 @@ export class SolicitarVisitaService {
                 'activoFijoRepuestos.detallesRepuestos',
                 'activoFijoRepuestos.detallesRepuestos.repuesto'
             ],
-            order: { fechaIngreso: 'DESC' }
+            order: { id: 'DESC' }
         });
         return data;
     }
@@ -1034,12 +1034,20 @@ async manipularRepuestosYfotos(id: number, data: ManipularRepuestosDto) {
     // Guardar fotos si existen
     if (itemData.fotos && itemData.fotos.length > 0) {
       try {
-        await this.itemFotosRepository.save({
-          solicitarVisitaId: id,
-          itemId: parseInt(itemId),
-          fotos: itemData.fotos.map(foto => foto.url)
+        // Filtrar las URLs nulas o vacías
+        const fotosValidas = itemData.fotos.filter(foto => {
+          const url = typeof foto === 'string' ? foto : foto?.url;
+          return url && typeof url === 'string' && url.trim().length > 0;
         });
-        console.log(`📸 Fotos guardadas para item ${itemId}`);
+        
+        if (fotosValidas.length > 0) {
+          await this.itemFotosRepository.save({
+            solicitarVisita: { id },
+            itemId: parseInt(itemId),
+            fotos: fotosValidas.map(foto => typeof foto === 'string' ? foto : foto.url)
+          });
+          console.log(`📸 Fotos guardadas para item ${itemId}:`, fotosValidas);
+        }
       } catch (error) {
         console.error('❌ Error al guardar fotos:', error);
         throw new InternalServerErrorException(`Error al guardar fotos: ${error.message}`);
@@ -1106,19 +1114,46 @@ async manipularRepuestosYfotos(id: number, data: ManipularRepuestosDto) {
 }
 
     async manipularChecklistClimaRepuestos(id: number, data: FinalizarServicioDto) {
-        // Add firma_cliente to solicitud_visita
-      /*   if (data.firma_cliente) {
-            await this.solicitarVisitaRepository.update(id, {
-                firma_cliente: data.firma_cliente
+        console.log("◢◤◢◤◢◤ INICIO DE MANIPULACION DE CHECKLIST CLIMA Y REPUESTOS ◢◤◢◤◢◤");
+        
+        try {
+            // Add firma_cliente to solicitud_visita
+            if (data.firma_cliente) {
+                await this.solicitarVisitaRepository.update(id, {
+                    firma_cliente: data.firma_cliente
+                });
+            }
+            
+            // Filtrar activoFijoRepuestos que tengan repuestos
+            if (data.activoFijoRepuestos?.length > 0) {
+                const activoFijoRepuestosConRepuestos = data.activoFijoRepuestos.filter(
+                    activo => activo.repuestos && activo.repuestos.length > 0
+                );
+
+                if (activoFijoRepuestosConRepuestos.length > 0) {
+                    await this.activoFijoRepuestosService.guardarRepuestosActivoFijo(id, {
+                        activoFijoRepuestos: activoFijoRepuestosConRepuestos
+                    });
+                }
+            }
+
+            // Retornar la solicitud actualizada
+            return await this.solicitarVisitaRepository.findOne({
+                where: { id },
+                relations: [
+                    'activoFijoRepuestos',
+                    'activoFijoRepuestos.activoFijo',
+                    'activoFijoRepuestos.detallesRepuestos',
+                    'activoFijoRepuestos.detallesRepuestos.repuesto'
+                ]
             });
+
+        } catch (error) {
+            console.error('Error en manipularChecklistClimaRepuestos:', error);
+            throw new InternalServerErrorException(
+                `Error al procesar checklist clima y repuestos: ${error.message}`
+            );
         }
-         */
-        // Call activoFijoRepuestosService with the correct data
-        /* if (data.activoFijoRepuestos && data.activoFijoRepuestos.length > 0) {
-            await this.activoFijoRepuestosService.guardarRepuestosActivoFijo(id, {
-                activoFijoRepuestos: data.activoFijoRepuestos
-            });
-        } */
     }
 
     async manipularItemEstados(id: number, itemEstados: Array<{itemId: number, estado: string, comentario?: string}>) {

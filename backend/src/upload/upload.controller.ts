@@ -1,4 +1,4 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Param, Get, Res, Delete, HttpException, HttpStatus, NotFoundException, UploadedFiles } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, Param, Get, Res, Delete, HttpException, HttpStatus, NotFoundException, UploadedFiles, Query } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { join } from 'path';
@@ -59,7 +59,7 @@ export class UploadController {
    */
   @Post('vehiculos/:vehiculoId/documentos/:tipo')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(
+  async uploadVehiculoFile(
     @UploadedFile() file: Express.Multer.File,
     @Param('vehiculoId') vehiculoId: string,
     @Param('tipo') tipo: string,
@@ -163,5 +163,23 @@ export class UploadController {
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  @Post('solicitudes/:solicitudId/:itemId')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadSolicitudFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('solicitudId') solicitudId: string,
+    @Param('itemId') itemId: string
+  ) {
+    const folder = `solicitudes/${solicitudId}/${itemId}`;
+    return await this.uploadService.uploadFile(file, folder);
+  }
+
+  @Post('clientes')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadClienteLogo(@UploadedFile() file: Express.Multer.File) {
+    const folder = 'clientes';
+    return await this.uploadService.uploadFile(file, folder);
   }
 }

@@ -4,9 +4,14 @@ import { join } from 'path';
 import { existsSync, readdirSync, statSync, mkdirSync, writeFile, unlink } from 'fs';
 import { extname } from 'path';
 import * as path from 'path';
+import { config } from '../config/config';
 
 @Injectable()
 export class UploadService {
+  private getFileUrl(relativePath: string): string {
+    return `${config.baseUrl}/${config.uploadPath}/${relativePath}`;
+  }
+
   /**
    * Obtiene la documentación de un vehículo especificado por su ID.
    * Revisa los documentos principales (revisión técnica, permiso de circulación, seguro obligatorio, gases)
@@ -139,20 +144,28 @@ export class UploadService {
    * @param file - Archivo recibido del cliente.
    * @returns Mensaje de éxito.
    */
-  async uploadFile(file: Express.Multer.File) {
-    console.log('Subiendo archivo:', file.originalname);
+  async uploadFile(file: Express.Multer.File, folder: string = '') {
     try {
-      const uploadPath = join(process.cwd(), 'uploads'); // Ruta base de subidas
-      if (!existsSync(uploadPath)) {
-        mkdirSync(uploadPath, { recursive: true }); // Crea la carpeta si no existe
-      }
-      const filePath = join(uploadPath, file.originalname); // Ruta completa del archivo
+      const timestamp = Date.now();
+      const fileName = `${timestamp}-${file.originalname}`;
+      const relativePath = folder ? join(folder, fileName) : fileName;
+      const uploadPath = join(process.cwd(), config.uploadPath, folder);
       
-      await fs.writeFile(filePath, file.buffer); // Guarda el archivo
+      if (!existsSync(uploadPath)) {
+        mkdirSync(uploadPath, { recursive: true });
+      }
+      
+      const filePath = join(uploadPath, fileName);
+      await fs.writeFile(filePath, file.buffer);
+      
       return {
-        message: 'Archivo subido exitosamente'
+        filename: fileName,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        url: this.getFileUrl(relativePath)
       };
     } catch (error) {
+      console.error('Error uploading file:', error);
       throw new Error('Error al subir el archivo');
     }
   }
