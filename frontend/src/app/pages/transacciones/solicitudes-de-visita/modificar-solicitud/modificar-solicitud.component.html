@@ -291,12 +291,12 @@
                 <ul class="lista-subitems">
                   @for (subItem of item.subItems; track subItem.id) {
                     <li [class.deshabilitado]="subItem.disabled">
-                      <div class="repuesto-info">
-                        <div class="repuesto-detail">
-                          <strong>Artículo:</strong> 
+                      <div class="repuesto-info " style="display: flex; justify-content: space-between; width: 100%;">
+                        <div class="repuesto-detail " style="flex: 0 0 60%; padding-right: 10px;">
+                          <strong>Item:</strong> 
                           <span>{{ subItem.name }}</span>
                         </div>
-                        <div class="repuesto-detail">
+                        <div class="repuesto-detail " style="flex: 0 0 40%; text-align: right;">
                           <strong>Estado:</strong>
                           <span class="badge" [ngClass]="{
                             'badge-success': getItemEstado(subItem.id)?.estado === 'conforme',
@@ -308,11 +308,11 @@
                         </div>
                       </div>
                       <div class="subitem-actions">
-                        <button mat-mini-fab color="primary" 
+                        <button mat-button  color="primary" 
                                 *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
                                 (click)="toggleAddRepuestoForm(subItem.id)"
                                 matTooltip="Agregar repuesto">
-                          <mat-icon>add</mat-icon>
+                         Agregar repuestos <mat-icon>add</mat-icon>
                         </button>
                         @if (subItem.fotos?.length) {
                           <span class="photo-count">{{ subItem.fotos.length }} foto(s)</span>
