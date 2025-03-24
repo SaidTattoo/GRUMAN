@@ -317,6 +317,14 @@ export class SolicitarVisitaController {
     };
   }
 
+  @Post(':id/item-estados')
+  async manipularItemEstados(
+    @Param('id') id: number,
+    @Body() data: Array<{itemId: number, estado: string, comentario?: string}>
+  ) {
+    return await this.solicitarVisitaService.manipularItemEstados(id, data);
+  }
+
  /*  @Get('servicios-realizados')
   async getServiciosRealizados(
     @Query('clientId') clientId?: string,

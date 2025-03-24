@@ -7,6 +7,7 @@ import { Locales } from 'src/locales/locales.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
 import { User } from 'src/users/users.entity';
 import { ItemRepuesto } from 'src/inspection/entities/item-repuesto.entity';
+import { ItemEstado } from 'src/inspection/entities/item-estado.entity';
 
 import { In } from 'typeorm';
 import { FacturacionService } from 'src/facturacion/facturacion.service';
@@ -16,6 +17,7 @@ import { DetalleRepuestoActivoFijo } from '../activo-fijo-repuestos/entities/det
 import { ActivoFijoRepuestos } from '../activo-fijo-repuestos/entities/activo-fijo-repuestos.entity';
 import { ChecklistClima } from 'src/checklist_clima/checklist_clima.entity';
 import { ActivoFijoRepuestosService } from 'src/activo-fijo-repuestos/activo-fijo-repuestos.service';
+import { ItemRepuestoDataDto, ManipularRepuestosDto } from './dto/manipular-repuestos.dto';
 
 
 export interface FotoData {
@@ -122,6 +124,8 @@ export class SolicitarVisitaService {
         private userRepository: Repository<User>,
         @InjectRepository(ItemRepuesto)
         private itemRepuestoRepository: Repository<ItemRepuesto>,
+        @InjectRepository(ItemEstado)
+        private itemEstadoRepository: Repository<ItemEstado>,
         private facturacionService: FacturacionService,
         @InjectRepository(Repuesto)
         private repuestoRepository: Repository<Repuesto>,
@@ -249,7 +253,8 @@ export class SolicitarVisitaService {
                 'activoFijoRepuestos',
                 'activoFijoRepuestos.activoFijo',
                 'activoFijoRepuestos.detallesRepuestos',
-                'activoFijoRepuestos.detallesRepuestos.repuesto'
+                'activoFijoRepuestos.detallesRepuestos.repuesto',
+                'itemEstados'
             ]
         });
 
@@ -523,7 +528,7 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
       if (Array.isArray(data.activoFijoRepuestos)) {
         for (const activo of data.activoFijoRepuestos) {
           const activoEntity = this.activoFijoRepuestosRepository.create({
-            solicitarVisita: { id },
+                            solicitarVisita: { id },
             activoFijo: { id: activo.activoFijoId },
             estadoOperativo: activo.estadoOperativo,
             observacionesEstado: activo.observacionesEstado,
@@ -537,9 +542,9 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
               const detalle = this.detalleRepuestoActivoFijoRepository.create({
                 activoFijoRepuestos: savedActivo,
                 repuesto: { id: repuesto.repuestoId },
-                cantidad: repuesto.cantidad,
+                                cantidad: repuesto.cantidad,
                 comentario: repuesto.comentario,
-                estado: repuesto.estado || 'pendiente',
+                                estado: repuesto.estado || 'pendiente',
                 precio_unitario: repuesto.precio_unitario,
               });
   
@@ -584,8 +589,8 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
       console.error('❌ Error en finalizarServicio:', error);
       throw new InternalServerErrorException(`Error al finalizar servicio: ${error.message}`);
     }
-  }
-  
+    }
+
     async reabrirSolicitud(id: number): Promise<SolicitarVisita> {
         const visita = await this.solicitarVisitaRepository.findOne({ 
             where: { id }
@@ -934,8 +939,8 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
                 throw new NotFoundException(`Solicitud with ID ${solicitudId} not found`);
             }
 
-            if (tipo === 'tecnico') {
-                solicitud.tecnico_asignado_id = tecnicoId;
+        if (tipo === 'tecnico') {
+            solicitud.tecnico_asignado_id = tecnicoId;
             } else {
                 solicitud.tecnico_asignado_id_2 = tecnicoId; // Corregido el nombre del campo
             }
@@ -1000,122 +1005,106 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
 
 
 
+async manipularRepuestosYfotos(id: number, data: ManipularRepuestosDto) {
+  console.log("◢◤◢◤◢◤ INICIO DE PROCESAMIENTO ◢◤◢◤◢◤");
+  console.log('Solicitud ID:', id);
+  console.log('Payload recibido:', JSON.stringify(data, null, 2));
 
-    async manipularRepuestosYfotos(id: number, data: Record<string, ItemRepuestoData>) {
-        //agregar firma a solicitud_visita
-        const firmaCliente = data.firma_cliente;
-        const solicitudCliente:any = await this.solicitarVisitaRepository.findOne({
-            where: { id }
-        }); 
-        
-        if (!solicitudCliente) {
-            throw new NotFoundException(`Solicitud with ID ${id} not found`);
-        }
-        
-        solicitudCliente.firma_cliente = firmaCliente;
-        await this.solicitarVisitaRepository.save(solicitudCliente);
+  const solicitud = await this.solicitarVisitaRepository.findOne({
+    where: { id },
+    relations: [
+      'itemRepuestos',
+      'itemRepuestos.repuesto',
+      'itemFotos',
+      'client',
+      'activoFijoRepuestos',
+      'activoFijoRepuestos.activoFijo',
+      'activoFijoRepuestos.detallesRepuestos',
+      'activoFijoRepuestos.detallesRepuestos.repuesto'
+    ]
+  });
 
-        const solicitud = await this.solicitarVisitaRepository.findOne({
-            where: { id },
-            relations: [
-                'itemRepuestos', 
-                'itemRepuestos.repuesto', 
-                'itemFotos',
-                'client',
-                'activoFijoRepuestos',
-                'activoFijoRepuestos.activoFijo',
-                'activoFijoRepuestos.detallesRepuestos',
-                'activoFijoRepuestos.detallesRepuestos.repuesto'
-            ]
+  if (!solicitud) {
+    throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+  }
+
+  for (const [itemId, itemData] of Object.entries(data.repuestos) as [string, ItemRepuestoDataDto][]) {
+    console.log(`➡ Procesando item ${itemId}:`, itemData);
+
+    // Guardar fotos si existen
+    if (itemData.fotos && itemData.fotos.length > 0) {
+      try {
+        await this.itemFotosRepository.save({
+          solicitarVisitaId: id,
+          itemId: parseInt(itemId),
+          fotos: itemData.fotos.map(foto => foto.url)
         });
-
-        if (!solicitud) {
-            throw new NotFoundException(`Solicitud with ID ${id} not found`);
-        }
-
-
-       // Procesar cada item y sus estados
-       for (const [itemId, itemData] of Object.entries(data.repuestos)) {
-        // Guardar las fotos si existen
-        if (itemData.fotos && itemData.fotos.length > 0) {
-            try {
-                await this.itemFotosRepository.save({
-                    solicitarVisita: { id },
-                    itemId: parseInt(itemId),
-                    fotos: itemData.fotos
-                });
-            } catch (error) {
-                console.error('Error al guardar fotos:', error);
-                throw new InternalServerErrorException(`Error al guardar fotos: ${error.message}`);
-            }
-        }
-
-        // Procesar los repuestos si existen
-        if (itemData.repuestos && itemData.repuestos.length > 0) {
-            for (const repuestoData of itemData.repuestos) {
-                try {
-                    await this.itemRepuestoRepository.save({
-                        solicitarVisita: { id },
-                        itemId: parseInt(itemId),
-                        repuesto: { id: repuestoData.repuesto.id },
-                        cantidad: repuestoData.cantidad,
-                        comentario: repuestoData.comentario || '',
-                        estado: itemData.estado,
-                        precio_unitario: repuestoData.precio_unitario || 0
-                    });
-                } catch (error) {
-                    console.error('Error al guardar repuesto:', error);
-                    throw new InternalServerErrorException(`Error al guardar repuesto: ${error.message}`);
-                }
-            }
-        } else {
-            // Guardar el estado del item incluso si no tiene repuestos
-            try {
-                await this.itemRepuestoRepository.save({
-                    solicitarVisita: { id },
-                    itemId: parseInt(itemId),
-                    repuesto: null,
-                    cantidad: 0,
-                    comentario: itemData.comentario || '',
-                    estado: itemData.estado,
-                    precio_unitario: 0
-                });
-            } catch (error) {
-                console.error('Error al guardar estado del item:', error);
-                throw new InternalServerErrorException(`Error al guardar estado del item: ${error.message}`);
-            }
-        }
+        console.log(`📸 Fotos guardadas para item ${itemId}`);
+      } catch (error) {
+        console.error('❌ Error al guardar fotos:', error);
+        throw new InternalServerErrorException(`Error al guardar fotos: ${error.message}`);
+      }
     }
 
-    // Obtener la solicitud actualizada con todos los datos
-    const solicitudActualizada = await this.solicitarVisitaRepository.findOne({
-        where: { id },
-        relations: [
-            'itemRepuestos',
-            'itemRepuestos.repuesto',
-            'itemFotos',
-            'local',
-            'client',
-            'tecnico_asignado',
-            'activoFijoRepuestos',
-            'activoFijoRepuestos.activoFijo',
-            'activoFijoRepuestos.detallesRepuestos',
-            'activoFijoRepuestos.detallesRepuestos.repuesto'
-        ]
-    });
-
-    // Agrupar los repuestos por itemId
-    if (solicitudActualizada) {
-        // Ordenar por itemId para facilidad de lectura
-        solicitudActualizada.itemRepuestos = solicitudActualizada.itemRepuestos || [];
-        solicitudActualizada.itemRepuestos.sort((a, b) => a.itemId - b.itemId);
-        
-        console.log(`Solicitud actualizada con ${solicitudActualizada.itemRepuestos.length} estados/repuestos registrados.`);
+    // Guardar estado y comentario en la nueva tabla ItemEstado
+    try {
+      await this.itemEstadoRepository.save({
+        solicitarVisitaId: id,
+        itemId: parseInt(itemId),
+        comentario: itemData.comentario || '',
+        estado: itemData.estado || 'pendiente'
+      });
+      console.log(`📄 Estado y comentario guardados para item ${itemId}`);
+    } catch (error) {
+      console.error(`❌ Error al guardar estado para item ${itemId}:`, error);
+      throw new InternalServerErrorException(`Error al guardar estado del item: ${error.message}`);
     }
 
-    return solicitudActualizada;
+    // Guardar repuestos solo si existen
+    if (Array.isArray(itemData.repuestos) && itemData.repuestos.length > 0) {
+      for (const repuestoData of itemData.repuestos) {
+        if (!repuestoData.repuesto?.id) {
+          console.warn(`⚠️ Repuesto omitido (sin id de repuesto) para item ${itemId}:`, repuestoData);
+          continue;
+        }
 
+        try {
+          const itemRepuesto = this.itemRepuestoRepository.create({
+            solicitarVisita: { id },
+            itemId: parseInt(itemId),
+            repuestoId: repuestoData.repuesto.id,
+            cantidad: repuestoData.cantidad,
+            comentario: repuestoData.comentario || '',
+            estado: 'pendiente'
+          });
+
+          await this.itemRepuestoRepository.save(itemRepuesto);
+          console.log(`✔ Repuesto guardado para item ${itemId}:`, repuestoData);
+        } catch (error) {
+          console.error(`❌ Error al guardar repuesto para item ${itemId}:`, error);
+          throw new InternalServerErrorException(`Error al guardar repuesto: ${error.message}`);
+        }
+      }
+    } else {
+      console.log(`ℹ️ No se encontraron repuestos para item ${itemId}`);
     }
+  }
+
+  return await this.solicitarVisitaRepository.findOne({
+    where: { id },
+    relations: [
+      'itemRepuestos',
+      'itemRepuestos.repuesto',
+      'itemFotos',
+      'client',
+      'activoFijoRepuestos',
+      'activoFijoRepuestos.activoFijo',
+      'activoFijoRepuestos.detallesRepuestos',
+      'activoFijoRepuestos.detallesRepuestos.repuesto'
+    ]
+  });
+}
+
     async manipularChecklistClimaRepuestos(id: number, data: FinalizarServicioDto) {
         // Add firma_cliente to solicitud_visita
       /*   if (data.firma_cliente) {
@@ -1130,6 +1119,32 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
                 activoFijoRepuestos: data.activoFijoRepuestos
             });
         } */
+    }
+
+    async manipularItemEstados(id: number, itemEstados: Array<{itemId: number, estado: string, comentario?: string}>) {
+        const solicitud = await this.solicitarVisitaRepository.findOne({
+            where: { id },
+            relations: ['itemEstados']
+        });
+
+        if (!solicitud) {
+            throw new NotFoundException(`Solicitud with ID ${id} not found`);
+        }
+
+        // Create new item states
+        const itemEstadosToSave = itemEstados.map(estado => {
+            const itemEstado = new ItemEstado();
+            itemEstado.itemId = estado.itemId;
+            itemEstado.solicitarVisitaId = id;
+            itemEstado.estado = estado.estado;
+            itemEstado.comentario = estado.comentario || '';
+            return itemEstado;
+        });
+
+        // Save all item states
+        await this.itemEstadoRepository.save(itemEstadosToSave);
+
+        return await this.getSolicitudVisita(id);
     }
 }
 

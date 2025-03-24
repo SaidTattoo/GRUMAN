@@ -110,58 +110,84 @@
   }
 }
 
+.repuesto-info {
+  padding: 0;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.repuesto-articulo {
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+
+  strong {
+    font-size: 1.1em;
+    color: #2c3e50;
+    display: block;
+    width: 100%;
+  }
+}
+
+.repuesto-details-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 12px 16px;
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 0 0 8px 8px;
+}
+
 .repuesto-detail {
-  margin: 0.5rem 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  
+  gap: 8px;
+  flex: 1;
+  min-width: 150px;
+
   strong {
-    min-width: 80px;
+    color: #6c757d;
+    font-size: 0.9em;
+    white-space: nowrap;
+  }
+
+  span {
+    color: #2c3e50;
+    font-size: 0.95em;
+  }
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 500;
+  white-space: nowrap;
+  
+  &.badge-success {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  &.badge-warning {
+    background-color: #ff9800;
+    color: white;
+  }
+  
+  &.badge-danger {
+    background-color: #f44336;
+    color: white;
   }
 }
 
 .actions-container {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-
-  .photo-count {
-    font-size: 0.9em;
-    color: #666;
-  }
-
-  .mat-mini-fab {
-    transform: scale(0.8);
-  }
-
-  .delete-button {
-    color: #e74c3c;
-    cursor: pointer;
-    padding: 4px;
-    border: none;
-    background: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background-color: #fee2e2;
-    }
-  }
-}
-
-.repuesto-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  position: relative;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
 }
 
 .subitem-actions {
@@ -379,8 +405,49 @@ td.mat-cell {
   margin: 8px 0;
   background-color: #f8f9fa;
   border-radius: 6px;
-  border-left: 3px solid #3498db;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+
+  &.temporary {
+    background-color: #fff8e1;
+    border: 2px solid #ffd700;
+    position: relative;
+
+    &::after {
+      content: 'Pendiente de guardar';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.75rem;
+      color: #b7791f;
+      background-color: #ffeeba;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      z-index: 1;
+    }
+  }
+
+  &.deleted {
+    background-color: #ffebee;
+    border: 2px solid #ef5350;
+    opacity: 0.7;
+    text-decoration: line-through;
+    position: relative;
+
+    &::after {
+      content: 'Pendiente de eliminar';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.75rem;
+      color: #c62828;
+      background-color: #ffcdd2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      z-index: 1;
+    }
+  }
 }
 
 .repuesto-item.temporal {
@@ -824,8 +891,49 @@ td.mat-cell {
   margin: 8px 0;
   background-color: #f8f9fa;
   border-radius: 6px;
-  border-left: 3px solid #3498db;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+
+  &.temporary {
+    background-color: #fff8e1;
+    border: 2px solid #ffd700;
+    position: relative;
+
+    &::after {
+      content: 'Pendiente de guardar';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.75rem;
+      color: #b7791f;
+      background-color: #ffeeba;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      z-index: 1;
+    }
+  }
+
+  &.deleted {
+    background-color: #ffebee;
+    border: 2px solid #ef5350;
+    opacity: 0.7;
+    text-decoration: line-through;
+    position: relative;
+
+    &::after {
+      content: 'Pendiente de eliminar';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.75rem;
+      color: #c62828;
+      background-color: #ffcdd2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      z-index: 1;
+    }
+  }
 }
 
 .repuesto-item.temporal {
@@ -1238,4 +1346,159 @@ td.mat-cell {
 
 .mb-4 {
   margin-bottom: 1rem;
+}
+
+.lista-inspeccion {
+  margin: 20px 0;
+  padding: 16px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.lista-seccion {
+  margin-bottom: 24px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.seccion-titulo {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.item-group {
+  margin-bottom: 20px;
+}
+
+.item-titulo {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #34495e;
+  margin-bottom: 12px;
+}
+
+.subitems-container {
+  padding-left: 16px;
+}
+
+.subitem-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #e9ecef;
+  }
+}
+
+.subitem-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.subitem-name {
+  font-size: 1rem;
+  color: #495057;
+  min-width: 120px;
+}
+
+.comentario-text {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-style: italic;
+  margin-left: 12px;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-success {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #2e7d32;
+  border: 1px solid #4caf50;
+}
+
+.badge-warning {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #f57c00;
+  border: 1px solid #ffc107;
+}
+
+.badge-danger {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #d32f2f;
+  border: 1px solid #f44336;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}.repuesto-item-horizontal {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin: 10px 0;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.repuesto-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 8px;
+}
+
+.repuesto-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+
+  strong {
+    color: #333;
+    margin-right: 4px;
+  }
+
+  span {
+    color: #555;
+    font-size: 0.95em;
+  }
+}
+
+.repuesto-actions {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #eee;
+}
+.repuesto-item-horizontal.temporary {
+  border: 2px solid #FFC107 !important; /* Yellow border for temporary items */
+  background-color: rgba(255, 193, 7, 0.1);
+}
+
+.repuesto-item-horizontal.deleted {
+  border: 2px solid #F44336 !important; /* Red border for items pending deletion */
+  background-color: rgba(244, 67, 54, 0.1);
+  text-decoration: line-through;
 }

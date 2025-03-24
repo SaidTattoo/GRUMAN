@@ -1112,62 +1112,40 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   deleteRepuesto(subItemId: number, repuesto: any) {
-    // Inicializar el array de repuestos eliminados si no existe
-    if (!this.temporaryDeletedRepuestos[subItemId]) {
-        this.temporaryDeletedRepuestos[subItemId] = [];
-    }
-
-    // Marcar el repuesto como pendiente de eliminar
+    // Verificar si el repuesto tiene ID (es un repuesto existente)
     if (repuesto.id) {
-        // Para repuestos existentes
+      // Es un repuesto existente, agregarlo a temporaryDeletedRepuestos
+      if (!this.temporaryDeletedRepuestos[subItemId]) {
+        this.temporaryDeletedRepuestos[subItemId] = [];
+      }
+      
+      const isAlreadyDeleted = this.temporaryDeletedRepuestos[subItemId].some(
+        deletedRepuesto => deletedRepuesto.id === repuesto.id
+      );
+      
+      if (!isAlreadyDeleted) {
         this.temporaryDeletedRepuestos[subItemId].push(repuesto);
-        repuesto.pendingDelete = true;
+      }
     } else {
-        // Para repuestos temporales
-        if (this.temporaryRepuestos[subItemId]) {
-            const repuestoTemp = this.temporaryRepuestos[subItemId].find(
-                r => r.repuesto.id === repuesto.repuesto.id
-            );
-            if (repuestoTemp) {
-                repuestoTemp.pendingDelete = true;
-            }
+      // Es un repuesto temporal, eliminarlo de temporaryRepuestos
+      if (this.temporaryRepuestos[subItemId]) {
+        this.temporaryRepuestos[subItemId] = this.temporaryRepuestos[subItemId].filter(
+          tempRepuesto => 
+            tempRepuesto.repuesto.id !== repuesto.repuesto.id ||
+            tempRepuesto.cantidad !== repuesto.cantidad
+        );
+        
+        if (this.temporaryRepuestos[subItemId].length === 0) {
+          delete this.temporaryRepuestos[subItemId];
         }
+      }
     }
-
-    // Actualizar la vista
-    this.updateListaInspeccion();
-    
-    this.snackBar.open(
-        'Repuesto marcado para eliminar', 
-        'Deshacer', 
-        { 
-            duration: 3000,
-            horizontalPosition: 'end',
-            verticalPosition: 'bottom'
-        }
-    ).onAction().subscribe(() => {  // Cambiado a onAction()
-        // Deshacer la eliminación solo cuando se hace clic en "Deshacer"
-        if (repuesto.id) {
-            this.temporaryDeletedRepuestos[subItemId] = this.temporaryDeletedRepuestos[subItemId]
-                .filter(r => r.id !== repuesto.id);
-            repuesto.pendingDelete = false;
-        } else {
-            if (this.temporaryRepuestos[subItemId]) {
-                const repuestoTemp = this.temporaryRepuestos[subItemId].find(
-                    r => r.repuesto.id === repuesto.repuesto.id
-                );
-                if (repuestoTemp) {
-                    repuestoTemp.pendingDelete = false;
-                }
-            }
-        }
-        this.updateListaInspeccion();
-    });
   }
 
-  // Método para verificar si un repuesto está pendiente de eliminar
   isRepuestoPendingDelete(subItemId: number, repuesto: any): boolean {
-    return repuesto.id && repuesto.pendingDelete;
+    return this.temporaryDeletedRepuestos[subItemId]?.some(
+      deletedRepuesto => deletedRepuesto.id === repuesto.id
+    ) || false;
   }
 
   calculateSubItemTotal(repuestos: any[]): number {
@@ -1210,18 +1188,15 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   getRepuestosPorItem(subItemId: number): any[] {
-    // Obtener repuestos existentes
-    const existingRepuestos = this.itemRepuestos.filter(
-      repuesto => repuesto.itemId === subItemId
-    );
+    // Obtener repuestos existentes que no estén marcados para eliminar
+    const existingRepuestos = this.itemRepuestos
+      .filter(repuesto => repuesto.itemId === subItemId);
 
     // Obtener repuestos temporales
     const tempRepuestos = this.temporaryRepuestos[subItemId] || [];
 
-    // Combinar repuestos existentes y temporales
-    return [...existingRepuestos, ...tempRepuestos].filter(
-      repuesto => !this.isRepuestoPendingDelete(subItemId, repuesto)
-    );
+    // Combinar ambos arrays
+    return [...existingRepuestos, ...tempRepuestos];
   }
 
   private updateListaInspeccion() {
@@ -1293,19 +1268,21 @@ export class ModificarSolicitudComponent implements OnInit {
     });
   }
 
-  getEstadoLabel(estado: string | null): string {
-    if (!estado) return '';
+  getItemEstado(itemId: number) {
+    return this.solicitud?.itemEstados?.find((estado: any) => estado.itemId === itemId);
+  }
+
+  getEstadoLabel(estado: string | undefined): string {
+    if (!estado) return 'Sin Estado';
     
-    switch (estado.toLowerCase()) {
-      case 'conforme':
-        return '✅ Conforme';
-      case 'no_aplica':
-        return '⚠️ No Aplica';
-      case 'no_conforme':
-        return '❌ No Conforme';
-      default:
-        return estado;
-    }
+    const estados = {
+      'conforme': 'Conforme',
+      'no_conforme': 'No Conforme',
+      'no_aplica': 'No Aplica',
+      'pendiente': 'Pendiente'
+    };
+    
+    return estados[estado as keyof typeof estados] || estado;
   }
 
   getEstadoClass(estado: string | null): string {
@@ -1711,5 +1688,19 @@ export class ModificarSolicitudComponent implements OnInit {
       on_off_inverter: 'No encontrado',
       suministra: 'No encontrado'
     };
+  }
+
+  isTemporaryRepuesto(subItemId: number, repuesto: any): boolean {
+    return this.temporaryRepuestos[subItemId]?.some(
+        (tempRepuesto: any) => 
+            tempRepuesto.id === repuesto.id &&
+            tempRepuesto.repuesto.id === repuesto.repuesto.id &&
+            tempRepuesto.cantidad === repuesto.cantidad
+    ) || false;
+  }
+
+  hasTemporaryRepuestos(): boolean {
+    // Check if there are any temporary repuestos
+    return Object.values(this.temporaryRepuestos).some(repuestos => repuestos && repuestos.length > 0);
   }
 } 

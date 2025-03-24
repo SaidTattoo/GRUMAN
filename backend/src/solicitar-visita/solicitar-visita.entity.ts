@@ -9,6 +9,7 @@ import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
 import { CausaRaiz } from "src/causa-raiz/causa-raiz.entity";
 import { ActivoFijoRepuestos } from "src/activo-fijo-repuestos/entities/activo-fijo-repuestos.entity";
 import { ChecklistClima } from "src/checklist_clima/checklist_clima.entity";
+import { ItemEstado } from "src/inspection/entities/item-estado.entity";
 
 export enum SolicitudStatus {
     PENDIENTE = 'pendiente',
@@ -129,6 +130,9 @@ export class SolicitarVisita {
 
   @OneToMany(() => ItemFotos, itemFotos => itemFotos.solicitarVisita)
   itemFotos: ItemFotos[];
+
+  @OneToMany(() => ItemEstado, itemEstado => itemEstado.solicitarVisita)
+  itemEstados: ItemEstado[];
 
   // Relación con User para aprobada_por
   @ManyToOne(() => User, (user) => user.id, { nullable: true })

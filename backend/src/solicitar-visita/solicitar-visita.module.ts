@@ -9,6 +9,7 @@ import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
 import { Client } from 'src/client/client.entity';
 import { User } from 'src/users/users.entity';
 import { ItemRepuesto } from '../inspection/entities/item-repuesto.entity';
+import { ItemEstado } from '../inspection/entities/item-estado.entity';
 import { Facturacion } from 'src/facturacion/facturacion.entity';
 import { FacturacionModule } from 'src/facturacion/facturacion.module';
 import { Repuesto } from 'src/repuestos/repuestos.entity';
@@ -30,6 +31,7 @@ import { ActivoFijoRepuestosModule } from 'src/activo-fijo-repuestos/activo-fijo
       Client,
       User,
       ItemRepuesto,
+      ItemEstado,
       ItemFotos,
       Repuesto,
       Facturacion,
