@@ -43,7 +43,9 @@ import { AuthService } from 'src/app/services/auth.service';
               <mat-form-field appearance="outline" class="w-100">
                 <mat-select formControlName="perfil" placeholder="Seleccionar Perfil">
                   @for (perfil of perfiles; track perfil) {
-                    <mat-option [value]="perfil">{{ perfil }}</mat-option>
+                    <mat-option [value]="perfil">
+                      {{ perfil }}
+                    </mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -102,12 +104,15 @@ import { AuthService } from 'src/app/services/auth.service';
           <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16 text-center">Seleccionar cliente/s</mat-label>
           <div class="client-grid">
             @for (cliente of clientes; track cliente.id) {
-              <div
-                (click)="toggleClientSelection(cliente.id)"
-                [class.selected]="selectedClientIds.includes(cliente.id)"
-                class="client-item"
-              >
-                <img [src]="cliente.logo" alt="Logo del Cliente" />
+              <div class="client-item-container">
+                <div
+                  (click)="toggleClientSelection(cliente.id)"
+                  [class.selected]="selectedClientIds.includes(cliente.id)"
+                  class="client-item"
+                >
+                  <img [src]="cliente.logo" alt="Foto del Cliente" />
+                </div>
+                <div class="client-name text-center mt-2">{{ cliente.nombre }}</div>
               </div>
             }
           </div>
@@ -122,7 +127,80 @@ import { AuthService } from 'src/app/services/auth.service';
         </form>
       </mat-card-content>
     </mat-card>
-  `
+  `,
+  styles: [`
+    .client-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      justify-items: center;
+      align-items: start;
+    }
+
+    .client-item-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 150px;
+    }
+
+    .client-item {
+      width: 150px;
+      height: 150px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 3px solid transparent;
+      padding: 10px;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      }
+
+      &.selected {
+        border-color: #1e88e5;
+        box-shadow: 0 0 15px rgba(30,136,229,0.3);
+      }
+
+      img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+    }
+
+    .client-name {
+      margin-top: 8px;
+      font-size: 14px;
+      color: rgba(0,0,0,0.87);
+      font-weight: 500;
+    }
+
+    // Responsive adjustments
+    @media (max-width: 768px) {
+      .client-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+      }
+
+      .client-item-container {
+        width: 120px;
+      }
+
+      .client-item {
+        width: 120px;
+        height: 120px;
+      }
+    }
+  `]
 })
 export class EditarClienteUsuarioComponent implements OnInit {
   clienteUsuarioForm: FormGroup;

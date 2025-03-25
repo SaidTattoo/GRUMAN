@@ -112,12 +112,14 @@
         <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16 text-center">Seleccionar cliente/s</mat-label>
         <div class="client-grid">
           @for (cliente of clientes; track cliente.id) {
-          <div
-            (click)="toggleClientSelection(cliente.id)"
-            [class.selected]="selectedClientIds.includes(cliente.id)"
-            class="client-item"
-          >
-            <img [src]="cliente.logo" alt="Foto del Cliente" />
+          <div class="client-item-container">
+            <div
+              (click)="toggleClientSelection(cliente.id)"
+              [class.selected]="selectedClientIds.includes(cliente.id)"
+              class="client-item"
+            >
+              <img [src]="cliente.logo" alt="Foto del Cliente" />
+            </div>
             <div class="client-name">{{ cliente.nombre }}</div>
           </div>
           }
