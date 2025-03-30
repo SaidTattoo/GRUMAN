@@ -157,4 +157,12 @@ export class UsersController {
     async getTecnicoVehiculo(@Param('id') id: number) {
         return this.usersService.findVehiculoByTecnicoId(id);
     }
+
+    @Patch('tecnicos/:rut/password')
+    @ApiOperation({ summary: 'Cambiar la contraseña de un técnico por RUT' })
+    @ApiParam({ name: 'rut', type: String, description: 'RUT del técnico' })
+    async changePasswordByRut(@Param('rut') rut: string, @Body() newPassword: any): Promise<User> {
+        return this.usersService.changePasswordByRut(rut, newPassword); 
+    }
 }
+            

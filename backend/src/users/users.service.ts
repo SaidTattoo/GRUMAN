@@ -125,6 +125,17 @@ export class UsersService {
         return this.userRepository.save(user);
     }
 
+    /*CHANGE PASSWORD BY RUT  */
+    async changePasswordByRut(rut: string, newPassword: any): Promise<User> {    
+        const user = await this.userRepository.findOne({ where: { rut } });
+        if (!user) {
+            throw new NotFoundException('Usuario no encontrado');
+        }
+        user.password = await bcrypt.hash(newPassword.password, 10);
+        return this.userRepository.save(user);
+    }
+
+    
     async getAllUsersByClient(clientId: number): Promise<User[]> {
         return this.userRepository.find({ where: { clients: { id: clientId } }, relations: ['clients'] });
     }
