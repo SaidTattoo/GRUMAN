@@ -69,11 +69,21 @@
               </span>
             </div>
           </div>
-        </div>
-        <div class="p-y-12 p-x-32">
-          <button (click)="logout()"  mat-flat-button color="primary" class="w-100">
-            Salir
-          </button>
+
+          <!-- Botón Cambiar Contraseña -->
+          <div class="p-y-12">
+            <button mat-flat-button color="accent" class="w-100 m-b-12" (click)="openChangePasswordDialog()">
+              <mat-icon class="m-r-8">lock</mat-icon>
+              Cambiar Contraseña
+            </button>
+          </div>
+
+          <!-- Botón Salir -->
+          <div class="p-y-12">
+            <button (click)="logout()" mat-flat-button color="primary" class="w-100">
+              Salir
+            </button>
+          </div>
         </div>
       </ng-scrollbar>
     </mat-menu>

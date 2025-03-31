@@ -20,6 +20,7 @@ import { MaterialModule } from 'src/app/material.module';
 import { AuthService } from 'src/app/services/auth.service';
 import { CoreService } from 'src/app/services/core.service';
 import { navItems } from '../sidebar/sidebar-data';
+import { ChangePasswordDialogComponent } from '../../../../components/change-password-dialog/change-password-dialog.component';
 
 interface notifications {
   id: number;
@@ -327,6 +328,18 @@ export class HeaderComponent implements OnInit {
       link: '/theme-pages/treeview',
     },
   ];
+
+  openChangePasswordDialog() {
+    const dialogRef = this.dialog.open(ChangePasswordDialogComponent, {
+      width: '400px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Handle password change result if needed
+      }
+    });
+  }
 }
 
 @Component({

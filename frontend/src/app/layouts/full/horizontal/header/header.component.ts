@@ -19,6 +19,7 @@ import { Subscription } from 'rxjs';
 import { ChangelogService } from 'src/app/services/changelog.service';
 import { ChangelogDialogComponent } from 'src/app/components/changelog-dialog/changelog-dialog.component';
 import { MatBadgeModule } from '@angular/material/badge';
+import { ChangePasswordDialogComponent } from '../../../../components/change-password-dialog/change-password-dialog.component';
 
 interface notifications {
   id: number;
@@ -430,6 +431,18 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
       selectedCompany: client
     };
     this.storage.setItem('currentUser', updatedUser);
+  }
+
+  openChangePasswordDialog() {
+    const dialogRef = this.dialog.open(ChangePasswordDialogComponent, {
+      width: '400px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Handle password change result if needed
+      }
+    });
   }
 }
 
