@@ -6,11 +6,13 @@ import { CoreService } from 'src/app/services/core.service';
 import { MaterialModule } from '../../../material.module';
 import { StorageService } from '../../../services/storage.service';
 import Swal from 'sweetalert2';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ForgotPasswordComponent } from 'src/app/components/forgot-password/forgot-password.component';
 
 @Component({
   selector: 'app-boxed-login',
   standalone: true,
-  imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule],
+  imports: [RouterModule, MaterialModule,  FormsModule, ReactiveFormsModule],
   templateUrl: './boxed-login.component.html',
 })
 export class AppBoxedLoginComponent implements OnInit {
@@ -20,7 +22,8 @@ export class AppBoxedLoginComponent implements OnInit {
     private settings: CoreService, 
     private router: Router, 
     private authService: AuthService,
-    private storage: StorageService
+    private storage: StorageService,
+    private snackBar: MatSnackBar
   ) { }
 
   form = new FormGroup({
@@ -79,5 +82,19 @@ export class AppBoxedLoginComponent implements OnInit {
         }
       );
     } 
+  }
+
+  onForgotPassword() {
+    console.log('onForgotPassword');
+    this.router.navigate(['/auth/forgot-password'], { skipLocationChange: false })
+      .then(() => {
+        console.log('Navigation successful');
+      })
+      .catch(error => {
+        console.error('Navigation error:', error);
+        this.snackBar.open('Error al navegar a recuperar contraseña', 'Cerrar', {
+          duration: 3000
+        });
+      });
   }
 }

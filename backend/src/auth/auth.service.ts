@@ -3,10 +3,19 @@ import { User } from '../users/users.entity';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import * as crypto from 'crypto';
+
 @Injectable()
 export class AuthService {
 
-    constructor(private usersService: UsersService,private readonly jwtService: JwtService) {}
+    constructor(
+        private usersService: UsersService,
+        private readonly jwtService: JwtService,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>
+    ) {}
    
    
     async validateUser(email: string, password: string): Promise<User | null> {
@@ -90,4 +99,20 @@ export class AuthService {
         };
     }
       
+    async findUserByEmail(email: string): Promise<User> {
+        return await this.userRepository.findOne({ where: { email } });
+    }
+
+    async generatePasswordResetToken(userId: number): Promise<string> {
+        // Generar token único
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        
+        // Guardar token en la base de datos
+        await this.userRepository.update(userId, {
+            resetPasswordToken: resetToken,
+            resetPasswordExpires: new Date(Date.now() + 3600000) // 1 hora de validez
+        });
+
+        return resetToken;
+    }
 }

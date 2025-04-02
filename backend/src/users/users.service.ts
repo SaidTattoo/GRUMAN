@@ -6,6 +6,7 @@ import { Client } from 'src/client/client.entity';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Especialidad } from 'src/especialidad/especialidad.entity';
+import { MoreThan } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -190,6 +191,7 @@ export class UsersService {
     async updateUser(id: number, updateUserDto: any): Promise<User> {
         console.log('=== DEBUG UPDATE USER SERVICE ===');
         console.log('Buscando usuario con ID:', id);
+        console.log('Datos de actualización recibidos:', updateUserDto);
         
         const user = await this.userRepository.findOne({
             where: { id },
@@ -204,13 +206,22 @@ export class UsersService {
 
         try {
             // Actualizar los datos básicos del usuario
-            const updateData = {
+            const updateData: any = {
                 name: updateUserDto.name,
                 lastName: updateUserDto.lastName || updateUserDto.lastName,
                 email: updateUserDto.email,
                 rut: updateUserDto.rut,
                 profile: updateUserDto.perfil || updateUserDto.profile
             };
+
+            // Manejar campos de recuperación de contraseña
+            if (updateUserDto.resetPasswordToken !== undefined) {
+                updateData.resetPasswordToken = updateUserDto.resetPasswordToken;
+            }
+            if (updateUserDto.resetPasswordExpires !== undefined) {
+                updateData.resetPasswordExpires = updateUserDto.resetPasswordExpires;
+            }
+
             console.log('Datos a actualizar:', JSON.stringify(updateData, null, 2));
 
             // Si hay especialidades, actualizarlas
@@ -237,7 +248,7 @@ export class UsersService {
                 user.clients = clients;
             }
 
-            // Aplicar actualizaciones básicas
+            // Aplicar actualizaciones
             Object.assign(user, updateData);
             
             console.log('Usuario antes de guardar:', JSON.stringify(user, null, 2));
@@ -360,5 +371,23 @@ export class UsersService {
                 fecha_utilizado: todayVehiculo.fecha_utilizado
             }
         };
+    }
+
+    async findByResetToken(token: string): Promise<User | undefined> {
+        console.log('Buscando usuario por token:', token);
+        const user = await this.userRepository.findOne({
+            where: {
+                resetPasswordToken: token,
+                disabled: false,
+                resetPasswordExpires: MoreThan(new Date())
+            }
+        });
+        console.log('Resultado de la búsqueda:', user ? {
+            id: user.id,
+            email: user.email,
+            resetPasswordExpires: user.resetPasswordExpires,
+            disabled: user.disabled
+        } : 'No encontrado');
+        return user;
     }
 }

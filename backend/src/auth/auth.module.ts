@@ -6,17 +6,20 @@ import { UsersModule } from '../users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/users.entity';
 import { Client } from 'src/client/client.entity';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Client, User]),
+    TypeOrmModule.forFeature([User, Client]),
     UsersModule,
+    MailModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'miClaveSecreta',
-      signOptions: { expiresIn: '1h' },
-    })
+      secret: process.env.JWT_SECRET || 'tuClaveSecretaSeguraw',
+      signOptions: { expiresIn: '24h' },
+    }),
   ],
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

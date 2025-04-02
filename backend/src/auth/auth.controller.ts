@@ -2,13 +2,23 @@ import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Post, Qu
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { LoginTecnicoDto } from './dto/loginTecnico.dto';
+import { MailService } from '../mail/mail.service';
+import { UsersService } from '../users/users.service';
+import * as crypto from 'crypto';
+import { HttpException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
 
-    constructor(private readonly authService: AuthService) {}
+    constructor(
+        private readonly authService: AuthService,
+        private readonly mailService: MailService,
+        private readonly usersService: UsersService
+    ) {}
 
     @ApiOperation({ summary: 'Iniciar sesión' })
     @ApiBody({
@@ -60,5 +70,99 @@ export class AuthController {
         return res.status(HttpStatus.OK).json(user);
     }
 
-  
+    @Post('forgot-password')
+    @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                email: { type: 'string', example: 'usuario@ejemplo.com' }
+            }
+        }
+    })
+    async forgotPassword(@Body() body: { email: string }) {
+        try {
+            const { email } = body;
+            
+            // Verificar si el usuario existe
+            const user = await this.usersService.findByEmail(email);
+            if (!user) {
+                throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+            }
+
+            // Generar token de recuperación
+            const token = crypto.randomBytes(32).toString('hex');
+            
+            // Guardar token y su fecha de expiración
+            user.resetPasswordToken = token;
+            user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hora
+            await this.usersService.updateUser(user.id, user);
+
+            // Enviar email
+            await this.mailService.sendPasswordRecoveryEmail(email, token);
+
+            return {
+                message: 'Se ha enviado un correo con las instrucciones para recuperar tu contraseña',
+                success: true
+            };
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Error al procesar la solicitud',
+                error.status || HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @Post('reset-password')
+    @ApiOperation({ summary: 'Restablecer contraseña' })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                token: { type: 'string' },
+                newPassword: { type: 'string' }
+            }
+        }
+    })
+    async resetPassword(@Body() body: { token: string; newPassword: string }) {
+        try {
+            console.log('Intentando restablecer contraseña con token:', body.token);
+            
+            const user = await this.usersService.findByResetToken(body.token);
+            console.log('Usuario encontrado:', user ? {
+                id: user.id,
+                email: user.email,
+                resetPasswordExpires: user.resetPasswordExpires
+            } : 'No encontrado');
+            
+            if (!user) {
+                throw new BadRequestException('Token inválido o expirado');
+            }
+
+            const now = new Date();
+            console.log('Fecha actual:', now);
+            console.log('Fecha de expiración del token:', user.resetPasswordExpires);
+
+            if (user.resetPasswordExpires < now) {
+                throw new BadRequestException('El token ha expirado');
+            }
+
+            // Hashear la nueva contraseña
+            const hashedPassword = await bcrypt.hash(body.newPassword, 10);
+            console.log('Contraseña hasheada correctamente');
+
+            // Actualizar contraseña y limpiar tokens
+            user.password = hashedPassword;
+            user.resetPasswordToken = null;
+            user.resetPasswordExpires = null;
+            
+            await this.usersService.updateUser(user.id, user);
+            console.log('Usuario actualizado correctamente');
+
+            return { message: 'Contraseña actualizada exitosamente' };
+        } catch (error) {
+            console.error('Error en resetPassword:', error);
+            throw new BadRequestException(error.message);
+        }
+    }
 }

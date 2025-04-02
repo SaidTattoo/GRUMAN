@@ -37,6 +37,7 @@ import { UserVehiculoModule } from './user-vehiculo/user-vehiculo.module';
 import { CausaRaizModule } from './causa-raiz/causa-raiz.module';
 import { ActivoFijoRepuestosModule } from './activo-fijo-repuestos/activo-fijo-repuestos.module';
 import { ChecklistClimaModule } from './checklist_clima/checklist_clima.module';
+import { MailModule } from './mail/mail.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -78,7 +79,7 @@ import { ChecklistClimaModule } from './checklist_clima/checklist_clima.module';
     SolicitarVisitaModule,
     EspecialidadModule,InspectionModule, FacturacionModule, OrdenServicioModule, UserVehiculoModule, CausaRaizModule,  
     ActivoFijoRepuestosModule, ChecklistClimaModule,
-  
+    MailModule
 /*     LocalesModule,
     SectoresTrabajoModule,
     ProgramacionModule */

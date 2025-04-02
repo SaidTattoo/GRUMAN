@@ -94,8 +94,8 @@
             <div class="d-flex align-items-center m-b-12">
               <mat-checkbox color="primary">Recordar este dispositivo</mat-checkbox>
               <a
-                [routerLink]="['/authentication/boxed-forgot-pwd']"
-                class="text-primary f-w-600 text-decoration-none m-l-auto f-s-14"
+                (click)="onForgotPassword()"
+                class="text-primary f-w-600 text-decoration-none m-l-auto f-s-14 cursor-pointer"
                 >¿Olvidaste tu contraseña?</a
               >
             </div>

@@ -84,5 +84,11 @@ export class User {
     dev_mode: boolean;
     @Column({ default: false })
     disabled: boolean;
+
+    @Column({ nullable: true })
+    resetPasswordToken: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    resetPasswordExpires: Date;
 }
   

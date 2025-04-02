@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, timeout, catchError, throwError } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../config';
 import { MenuService } from './menu.service';
@@ -12,8 +12,8 @@ import { NavItem } from '../layouts/full/vertical/sidebar/nav-item/nav-item';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl + 'auth';
-  private apiUrlPass = environment.apiUrl ; // URL de tu API de autenticación
+  private apiUrl = `${environment.apiUrl}/auth`;
+  private apiUrlPass = `${environment.apiUrl}/users`;
   private currentUserSubject: BehaviorSubject<any | null>;
   public currentUser: Observable<any | null>;
 
@@ -82,13 +82,37 @@ export class AuthService {
   }
   /* @Patch(':id/password') */
   changePassword(id: number, password: string): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrlPass}users/${id}/password`, { password });
+    return this.http.patch<any>(`${this.apiUrlPass}/${id}/password`, { password });
   }
 
+  forgotPassword(email: string): Observable<any> {
+    console.log('AuthService: Sending forgot password request to:', `${this.apiUrl}/forgot-password`);
+    return this.http.post<any>(`${this.apiUrl}/forgot-password`, { email })
+      .pipe(
+        tap(response => console.log('AuthService: Received response:', response)),
+        timeout(10000),
+        catchError(error => {
+          console.error('AuthService: Error in forgot password:', error);
+          if (error.name === 'TimeoutError') {
+            return throwError(() => new Error('La solicitud ha tardado demasiado tiempo. Por favor, intente nuevamente.'));
+          }
+          return throwError(() => error);
+        })
+      );
+  }
 
-
-
-
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/reset-password`, { token, newPassword })
+      .pipe(
+        timeout(10000),
+        catchError(error => {
+          if (error.name === 'TimeoutError') {
+            throw new Error('La solicitud ha tardado demasiado tiempo. Por favor, intente nuevamente.');
+          }
+          throw error;
+        })
+      );
+  }
 
   private adminNavItems: NavItem[] = [
     {

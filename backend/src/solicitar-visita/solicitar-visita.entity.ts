@@ -2,7 +2,7 @@ import { Client } from "src/client/client.entity";
 import { Locales } from "../locales/locales.entity";
 import { SectorTrabajo } from "../sectores-trabajo/sectores-trabajo.entity";
 import { TipoServicio } from "../tipo-servicio/tipo-servicio.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "src/users/users.entity";
 import { ItemRepuesto } from "src/inspection/entities/item-repuesto.entity";
 import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
@@ -10,6 +10,7 @@ import { CausaRaiz } from "src/causa-raiz/causa-raiz.entity";
 import { ActivoFijoRepuestos } from "src/activo-fijo-repuestos/entities/activo-fijo-repuestos.entity";
 import { ChecklistClima } from "src/checklist_clima/checklist_clima.entity";
 import { ItemEstado } from "src/inspection/entities/item-estado.entity";
+import { Facturacion } from "src/facturacion/facturacion.entity";
 
 export enum SolicitudStatus {
     PENDIENTE = 'pendiente',
@@ -209,5 +210,12 @@ export class SolicitarVisita {
 
   @OneToMany(() => ChecklistClima, checklist => checklist.solicitud)
   checklistsClima: ChecklistClima[];
+
+  @OneToOne(() => Facturacion)
+  @JoinColumn({ name: 'facturacion_id' })
+  facturacion: Facturacion;
+
+  @Column({ type: 'int', nullable: true })
+  facturacion_id: number;
 }
  

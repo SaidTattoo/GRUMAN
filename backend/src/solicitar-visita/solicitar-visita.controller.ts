@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { SolicitarVisitaService } from './solicitar-visita.service';
 
 import { SolicitarVisita } from './solicitar-visita.entity';
@@ -323,6 +323,26 @@ export class SolicitarVisitaController {
     @Body() data: Array<{itemId: number, estado: string, comentario?: string}>
   ) {
     return await this.solicitarVisitaService.manipularItemEstados(id, data);
+  }
+
+  @Post(':id/facturacion/:facturacionId')
+  async asociarConMesFacturacion(
+    @Param('id') id: number,
+    @Param('facturacionId') facturacionId: number
+  ) {
+    try {
+      const solicitud = await this.solicitarVisitaService.asociarConMesFacturacion(id, facturacionId);
+      return {
+        success: true,
+        message: 'Solicitud de visita asociada correctamente con el mes de facturación',
+        data: solicitud
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al asociar la solicitud con el mes de facturación');
+    }
   }
 
  /*  @Get('servicios-realizados')

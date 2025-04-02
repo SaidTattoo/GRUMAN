@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { SolicitarVisita, SolicitudStatus } from './solicitar-visita.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, Not } from 'typeorm';
+import { Repository, Between, Not, ILike, In } from 'typeorm';
 import { Client } from 'src/client/client.entity';
 import { Locales } from 'src/locales/locales.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
@@ -9,7 +9,6 @@ import { User } from 'src/users/users.entity';
 import { ItemRepuesto } from 'src/inspection/entities/item-repuesto.entity';
 import { ItemEstado } from 'src/inspection/entities/item-estado.entity';
 
-import { In } from 'typeorm';
 import { FacturacionService } from 'src/facturacion/facturacion.service';
 import { Repuesto } from 'src/repuestos/repuestos.entity';
 import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
@@ -18,6 +17,7 @@ import { ActivoFijoRepuestos } from '../activo-fijo-repuestos/entities/activo-fi
 import { ChecklistClima } from 'src/checklist_clima/checklist_clima.entity';
 import { ActivoFijoRepuestosService } from 'src/activo-fijo-repuestos/activo-fijo-repuestos.service';
 import { ItemRepuestoDataDto, ManipularRepuestosDto } from './dto/manipular-repuestos.dto';
+import { Facturacion } from 'src/facturacion/facturacion.entity';
 
 
 export interface FotoData {
@@ -137,7 +137,9 @@ export class SolicitarVisitaService {
         private detalleRepuestoActivoFijoRepository: Repository<DetalleRepuestoActivoFijo>,
         @InjectRepository(ChecklistClima)
         private checklistClimaRepository: Repository<ChecklistClima>,
-        private activoFijoRepuestosService: ActivoFijoRepuestosService
+        private activoFijoRepuestosService: ActivoFijoRepuestosService,
+        @InjectRepository(Facturacion)
+        private facturacionRepository: Repository<Facturacion>
     ) {}
 
     /**
@@ -179,50 +181,52 @@ export class SolicitarVisitaService {
             });
         }
         
-        // Solo validar una visita por mes por local si es de tipo programado o preventivo
-        if (solicitudVisita.tipo_mantenimiento === 'programado' &&  solicitudVisita.tipoServicioId === 3) {
-            // Obtener las facturaciones del cliente
-            const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
-            
-            // Obtener el mes y año de la fecha de ingreso
-            const fechaIngreso = new Date(solicitudVisita.fechaIngreso);
-            const mesFormateado = `${this.getMesNombre(fechaIngreso.getMonth())} ${fechaIngreso.getFullYear()}`;
-            
-            // Buscar el período de facturación por el mes formateado
-            const periodoCorrespondiente = facturacion.find(periodo => 
-                periodo.mes === mesFormateado
+        // Obtener las facturaciones del cliente
+        const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
+        
+        // Obtener el mes y año de la fecha de ingreso
+        const fechaIngreso = new Date(solicitudVisita.fechaIngreso);
+        const mesFormateado = `${this.getMesNombre(fechaIngreso.getMonth())} ${fechaIngreso.getFullYear()}`;
+        
+        // Buscar el período de facturación por el mes formateado
+        const periodoCorrespondiente = facturacion.find(periodo => 
+            periodo.mes === mesFormateado
+        );
+
+        if (!periodoCorrespondiente) {
+            throw new BadRequestException(
+                `No existe un período de facturación configurado para ${mesFormateado}. ` +
+                `Por favor, configure el período antes de crear la solicitud.`
             );
+        }
 
-            if (periodoCorrespondiente) {
-                // Buscar solicitudes del mismo tipo (programado o preventivo) para el mismo local en el mismo mes
-                const solicitudesExistentes = await this.solicitarVisitaRepository.find({
-                    where: {
-                        local: { id: solicitudVisita.local.id },
-                        tipo_mantenimiento: solicitudVisita.tipo_mantenimiento, // Buscar solo del mismo tipo
-                        fechaIngreso: Between(
-                            new Date(periodoCorrespondiente.fecha_inicio),
-                            new Date(periodoCorrespondiente.fecha_termino)
-                        )
-                    },
-                    relations: ['local']
-                });
+        // Si es mantenimiento programado o preventivo, validar una visita por mes por local
+        if (solicitudVisita.tipo_mantenimiento === 'programado' && solicitudVisita.tipoServicioId === 3) {
+            const solicitudesExistentes = await this.solicitarVisitaRepository.find({
+                where: {
+                    local: { id: solicitudVisita.local.id },
+                    tipo_mantenimiento: solicitudVisita.tipo_mantenimiento,
+                    fechaIngreso: Between(
+                        new Date(periodoCorrespondiente.fecha_inicio),
+                        new Date(periodoCorrespondiente.fecha_termino)
+                    )
+                },
+                relations: ['local']
+            });
 
-                if (solicitudesExistentes.length > 0) {
-                    const solicitudExistente = solicitudesExistentes[0];
-                    throw new BadRequestException(
-                        `Ya existe una visita de tipo ${solicitudExistente.tipo_mantenimiento} para el local "${solicitudVisita.local.nombre_local}" en ${mesFormateado}. ` +
-                        `(Solicitud #${solicitudExistente.id} del ${new Date(solicitudExistente.fechaIngreso).toLocaleDateString()}). ` +
-                        `Solo se permite una visita ${solicitudVisita.tipo_mantenimiento} por local por mes.`
-                    );
-                }
-            } else {
+            if (solicitudesExistentes.length > 0) {
+                const solicitudExistente = solicitudesExistentes[0];
                 throw new BadRequestException(
-                    `No existe un período de facturación configurado para ${mesFormateado}. ` +
-                    `Por favor, configure el período antes de crear la solicitud.`
+                    `Ya existe una visita de tipo ${solicitudExistente.tipo_mantenimiento} para el local "${solicitudVisita.local.nombre_local}" en ${mesFormateado}. ` +
+                    `(Solicitud #${solicitudExistente.id} del ${new Date(solicitudExistente.fechaIngreso).toLocaleDateString()}). ` +
+                    `Solo se permite una visita ${solicitudVisita.tipo_mantenimiento} por local por mes.`
                 );
             }
         }
-        
+
+        // Asociar el período de facturación a la solicitud
+        solicitudVisita.facturacion_id = periodoCorrespondiente.id_facturacion;
+
         // Si la solicitud está aprobada, asigna el aprobador
         if (solicitud.status === 'aprobada' && solicitud.aprobada_por_id) {
             solicitudVisita.status = SolicitudStatus.APROBADA;
@@ -254,7 +258,8 @@ export class SolicitarVisitaService {
                 'activoFijoRepuestos.activoFijo',
                 'activoFijoRepuestos.detallesRepuestos',
                 'activoFijoRepuestos.detallesRepuestos.repuesto',
-                'itemEstados'
+                'itemEstados',
+                'facturacion'
             ]
         });
 
@@ -268,7 +273,7 @@ export class SolicitarVisitaService {
 
     getSolicitudesVisita(): Promise<SolicitarVisita[]> {
         return this.solicitarVisitaRepository.find({ 
-          relations: ['local', 'client', 'tecnico_asignado'],
+          relations: ['local', 'client', 'tecnico_asignado', 'facturacion'],
           order: { fechaIngreso: 'DESC' }
         });
     }
@@ -707,10 +712,6 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
         tipoBusqueda: string, 
         tipo_mantenimiento: string
     ): Promise<SolicitarVisita[]> {
-        console.log('[Service] Iniciando getSolicitudesDelDia con params:', {
-            clientId, fechaInicio, fechaFin, mesFacturacion, tipoServicio, tipoBusqueda, tipo_mantenimiento
-        });
-        
         try {
             const whereClause: any = {
                 status: In([
@@ -736,7 +737,6 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
 
             // Add date filters with proper date handling
             if (tipoBusqueda === 'rangoFechas' && fechaInicio && fechaFin) {
-                // Convertir las fechas al formato correcto y ajustar las horas
                 const startDate = new Date(this.parseFecha(fechaInicio));
                 startDate.setHours(0, 0, 0, 0);
                 
@@ -746,26 +746,23 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
                 console.log('Fechas procesadas:', { startDate, endDate });
                 whereClause.fechaIngreso = Between(startDate, endDate);
             } else if (tipoBusqueda === 'mesFacturacion' && mesFacturacion) {
-                const [mes, año] = mesFacturacion.split(' ');
-                console.log('Mes y año recibidos:', { mes, año });
-                
-                const mesNumero = this.getMesNumero(mes);
-                console.log('Número de mes:', mesNumero);
-                
-                const primerDia = new Date(Date.UTC(parseInt(año), mesNumero, 1));
-                primerDia.setUTCHours(0, 0, 0, 0);
-                
-                const ultimoDia = new Date(Date.UTC(parseInt(año), mesNumero + 1, 0));
-                ultimoDia.setUTCHours(23, 59, 59, 999);
-
-                console.log('Rango de fechas calculado:', {
-                    primerDia: primerDia.toISOString(),
-                    ultimoDia: ultimoDia.toISOString(),
-                    mesNumero,
-                    año
+                // Buscar la facturación directamente por el mes
+                const facturaciones = await this.facturacionRepository.find({
+                    where: {
+                        mes: ILike(`%${mesFacturacion}%`)
+                    }
                 });
-                
-                whereClause.fechaIngreso = Between(primerDia, ultimoDia);
+
+                console.log('Facturaciones encontradas:', facturaciones);
+
+                if (facturaciones.length > 0) {
+                    whereClause.facturacion = { 
+                        id_facturacion: In(facturaciones.map(f => f.id_facturacion)) 
+                    };
+                } else {
+                    console.log(`No se encontró facturación para el mes ${mesFacturacion}`);
+                    return [];
+                }
             }
 
             // Add tipo_mantenimiento filter if provided
@@ -777,7 +774,7 @@ async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
 
             const data = await this.solicitarVisitaRepository.find({ 
                 where: whereClause,
-                relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
+                relations: ['local', 'client', 'facturacion', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
                 order: { id: 'ASC' }
             });
 
@@ -1180,6 +1177,41 @@ async manipularRepuestosYfotos(id: number, data: ManipularRepuestosDto) {
         await this.itemEstadoRepository.save(itemEstadosToSave);
 
         return await this.getSolicitudVisita(id);
+    }
+
+    async asociarConMesFacturacion(solicitudId: number, facturacionId: number): Promise<SolicitarVisita> {
+        const solicitud = await this.solicitarVisitaRepository.findOne({
+            where: { id: solicitudId },
+            relations: ['facturacion']
+        });
+
+        if (!solicitud) {
+            throw new NotFoundException(`Solicitud de visita con ID ${solicitudId} no encontrada`);
+        }
+
+        const facturacion = await this.facturacionRepository.findOne({
+            where: { id_facturacion: facturacionId },
+            relations: ['solicitud']
+        });
+
+        if (!facturacion) {
+            throw new NotFoundException(`Mes de facturación con ID ${facturacionId} no encontrado`);
+        }
+
+        // Verificar si la facturación ya está asociada a otra solicitud
+        if (facturacion.solicitud) {
+            throw new BadRequestException(`El mes de facturación ya está asociado a otra solicitud de visita`);
+        }
+
+        // Verificar si la solicitud ya está asociada a otro mes de facturación
+        if (solicitud.facturacion) {
+            throw new BadRequestException(`La solicitud de visita ya está asociada a otro mes de facturación`);
+        }
+
+        // Asociar la solicitud con el mes de facturación
+        solicitud.facturacion_id = facturacionId;
+        
+        return this.solicitarVisitaRepository.save(solicitud);
     }
 }
 

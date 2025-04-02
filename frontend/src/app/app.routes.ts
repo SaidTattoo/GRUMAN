@@ -7,6 +7,8 @@ import { EditarTecnicoComponent } from './pages/mantenedores/tecnicos/editar-tec
 import { ChangelogTimelineComponent } from './components/changelog-timeline/changelog-timeline.component';
 import { SolicitudesDeVisitaRoutes } from './pages/transacciones/solicitudes-de-visita/solicitudes-de-visita.routes';
 import { SolicitudesValidadasRoutes } from './pages/transacciones/solicitudes-de-visita/solicitudes-validadas/solicitudes-validadas.routes';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 export const routes: Routes = [
   {
@@ -312,10 +314,23 @@ export const routes: Routes = [
     children: [
       {
         path: 'auth',
-        loadChildren: () =>
-          import('./pages/authentication/authentication.routes').then(
-            (m) => m.AuthenticationRoutes
-          ),
+        children: [
+          {
+            path: 'forgot-password',
+            component: ForgotPasswordComponent
+          },
+          {
+            path: 'reset-password',
+            component: ResetPasswordComponent
+          },
+          {
+            path: '',
+            loadChildren: () =>
+              import('./pages/authentication/authentication.routes').then(
+                (m) => m.AuthenticationRoutes
+              ),
+          },
+        ]
       },
       {
         path: 'landingpage',
@@ -335,5 +350,10 @@ export const routes: Routes = [
     path: 'changelog',
     component: ChangelogTimelineComponent,
     data: { title: 'Historial de Actualizaciones' }
+  },
+  {
+    path: 'auth/reset-password',
+    component: ResetPasswordComponent,
+    title: 'Reset Password'
   }
 ];
