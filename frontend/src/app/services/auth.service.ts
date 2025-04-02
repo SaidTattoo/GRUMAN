@@ -12,8 +12,8 @@ import { NavItem } from '../layouts/full/vertical/sidebar/nav-item/nav-item';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/auth`;
-  private apiUrlPass = `${environment.apiUrl}/users`;
+  private apiUrl = `${environment.apiUrl}auth`;
+  private apiUrlPass = `${environment.apiUrl}users`;
   private currentUserSubject: BehaviorSubject<any | null>;
   public currentUser: Observable<any | null>;
 
