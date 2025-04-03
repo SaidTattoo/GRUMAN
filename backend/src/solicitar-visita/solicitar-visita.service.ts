@@ -181,17 +181,17 @@ export class SolicitarVisitaService {
             });
         }
         
-        // Obtener las facturaciones del cliente
-        const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
-        
-        // Obtener el mes y año de la fecha de ingreso
-        const fechaIngreso = new Date(solicitudVisita.fechaIngreso);
-        const mesFormateado = `${this.getMesNombre(fechaIngreso.getMonth())} ${fechaIngreso.getFullYear()}`;
-        
-        // Buscar el período de facturación por el mes formateado
-        const periodoCorrespondiente = facturacion.find(periodo => 
-            periodo.mes === mesFormateado
-        );
+            // Obtener las facturaciones del cliente
+            const facturacion = await this.facturacionService.listarFacturacionPorCliente(solicitudVisita.client.id);    
+            
+            // Obtener el mes y año de la fecha de ingreso
+            const fechaIngreso = new Date(solicitudVisita.fechaIngreso);
+            const mesFormateado = `${this.getMesNombre(fechaIngreso.getMonth())} ${fechaIngreso.getFullYear()}`;
+            
+            // Buscar el período de facturación por el mes formateado
+            const periodoCorrespondiente = facturacion.find(periodo => 
+                periodo.mes === mesFormateado
+            );
 
         if (!periodoCorrespondiente) {
             throw new BadRequestException(
@@ -202,31 +202,31 @@ export class SolicitarVisitaService {
 
         // Si es mantenimiento programado o preventivo, validar una visita por mes por local
         if (solicitudVisita.tipo_mantenimiento === 'programado' && solicitudVisita.tipoServicioId === 3) {
-            const solicitudesExistentes = await this.solicitarVisitaRepository.find({
-                where: {
-                    local: { id: solicitudVisita.local.id },
+                const solicitudesExistentes = await this.solicitarVisitaRepository.find({
+                    where: {
+                        local: { id: solicitudVisita.local.id },
                     tipo_mantenimiento: solicitudVisita.tipo_mantenimiento,
-                    fechaIngreso: Between(
-                        new Date(periodoCorrespondiente.fecha_inicio),
-                        new Date(periodoCorrespondiente.fecha_termino)
-                    )
-                },
-                relations: ['local']
-            });
+                        fechaIngreso: Between(
+                            new Date(periodoCorrespondiente.fecha_inicio),
+                            new Date(periodoCorrespondiente.fecha_termino)
+                        )
+                    },
+                    relations: ['local']
+                });
 
-            if (solicitudesExistentes.length > 0) {
-                const solicitudExistente = solicitudesExistentes[0];
-                throw new BadRequestException(
-                    `Ya existe una visita de tipo ${solicitudExistente.tipo_mantenimiento} para el local "${solicitudVisita.local.nombre_local}" en ${mesFormateado}. ` +
-                    `(Solicitud #${solicitudExistente.id} del ${new Date(solicitudExistente.fechaIngreso).toLocaleDateString()}). ` +
-                    `Solo se permite una visita ${solicitudVisita.tipo_mantenimiento} por local por mes.`
+                if (solicitudesExistentes.length > 0) {
+                    const solicitudExistente = solicitudesExistentes[0];
+                    throw new BadRequestException(
+                        `Ya existe una visita de tipo ${solicitudExistente.tipo_mantenimiento} para el local "${solicitudVisita.local.nombre_local}" en ${mesFormateado}. ` +
+                        `(Solicitud #${solicitudExistente.id} del ${new Date(solicitudExistente.fechaIngreso).toLocaleDateString()}). ` +
+                        `Solo se permite una visita ${solicitudVisita.tipo_mantenimiento} por local por mes.`
                 );
             }
         }
 
         // Asociar el período de facturación a la solicitud
         solicitudVisita.facturacion_id = periodoCorrespondiente.id_facturacion;
-
+        
         // Si la solicitud está aprobada, asigna el aprobador
         if (solicitud.status === 'aprobada' && solicitud.aprobada_por_id) {
             solicitudVisita.status = SolicitudStatus.APROBADA;
@@ -1190,22 +1190,11 @@ async manipularRepuestosYfotos(id: number, data: ManipularRepuestosDto) {
         }
 
         const facturacion = await this.facturacionRepository.findOne({
-            where: { id_facturacion: facturacionId },
-            relations: ['solicitud']
+            where: { id_facturacion: facturacionId }
         });
 
         if (!facturacion) {
             throw new NotFoundException(`Mes de facturación con ID ${facturacionId} no encontrado`);
-        }
-
-        // Verificar si la facturación ya está asociada a otra solicitud
-        if (facturacion.solicitudes) {
-            throw new BadRequestException(`El mes de facturación ya está asociado a otra solicitud de visita`);
-        }
-
-        // Verificar si la solicitud ya está asociada a otro mes de facturación
-        if (solicitud.facturacion) {
-            throw new BadRequestException(`La solicitud de visita ya está asociada a otro mes de facturación`);
         }
 
         // Asociar la solicitud con el mes de facturación

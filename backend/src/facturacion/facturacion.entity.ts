@@ -23,6 +23,6 @@ export class Facturacion {
   @Column({ type: 'int', default: 0 })
   hh: number;
 
-  @OneToMany(() => SolicitarVisita, (solicitud) => solicitud.facturacion)
+  @OneToMany(() => SolicitarVisita, solicitud => solicitud.facturacion)
   solicitudes: SolicitarVisita[];
 }
