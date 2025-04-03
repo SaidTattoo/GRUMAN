@@ -152,11 +152,12 @@ export class AuthController {
             console.log('Contraseña hasheada correctamente');
 
             // Actualizar contraseña y limpiar tokens
-            user.password = hashedPassword;
-            user.resetPasswordToken = null;
-            user.resetPasswordExpires = null;
+            await this.usersService.updateUser(user.id, {
+                password: hashedPassword,
+                resetPasswordToken: null,
+                resetPasswordExpires: null
+            });
             
-            await this.usersService.updateUser(user.id, user);
             console.log('Usuario actualizado correctamente');
 
             return { message: 'Contraseña actualizada exitosamente' };

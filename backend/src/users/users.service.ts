@@ -221,6 +221,11 @@ export class UsersService {
             if (updateUserDto.resetPasswordExpires !== undefined) {
                 updateData.resetPasswordExpires = updateUserDto.resetPasswordExpires;
             }
+            
+            // Manejar actualización de contraseña
+            if (updateUserDto.password) {
+                updateData.password = updateUserDto.password;
+            }
 
             console.log('Datos a actualizar:', JSON.stringify(updateData, null, 2));
 
