@@ -1,5 +1,5 @@
 import { Client } from "../client/client.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { SolicitarVisita } from "../solicitar-visita/solicitar-visita.entity";
 
 @Entity('facturacion')
@@ -23,6 +23,6 @@ export class Facturacion {
   @Column({ type: 'int', default: 0 })
   hh: number;
 
-  @OneToOne(() => SolicitarVisita, (solicitud) => solicitud.facturacion)
-  solicitud: SolicitarVisita;
+  @OneToMany(() => SolicitarVisita, (solicitud) => solicitud.facturacion)
+  solicitudes: SolicitarVisita[];
 }

@@ -211,7 +211,7 @@ export class SolicitarVisita {
   @OneToMany(() => ChecklistClima, checklist => checklist.solicitud)
   checklistsClima: ChecklistClima[];
 
-  @OneToOne(() => Facturacion)
+  @ManyToOne(() => Facturacion)
   @JoinColumn({ name: 'facturacion_id' })
   facturacion: Facturacion;
 

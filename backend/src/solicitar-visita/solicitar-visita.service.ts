@@ -1199,7 +1199,7 @@ async manipularRepuestosYfotos(id: number, data: ManipularRepuestosDto) {
         }
 
         // Verificar si la facturación ya está asociada a otra solicitud
-        if (facturacion.solicitud) {
+        if (facturacion.solicitudes) {
             throw new BadRequestException(`El mes de facturación ya está asociado a otra solicitud de visita`);
         }
 
