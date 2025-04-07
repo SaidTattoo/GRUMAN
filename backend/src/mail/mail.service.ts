@@ -28,9 +28,9 @@ export class MailService {
     const resetLink = `${frontendUrl}/auth/reset-password?token=${token}`;
 
     const mailOptions = {
-      from: '"GRUMAN Support" <ayuda@atlantispro.cl>',
+      from: '"Atlantis Support" <ayuda@atlantispro.cl>',
       to: email,
-      subject: 'Recuperación de Contraseña - GRUMAN',
+      subject: 'Recuperación de Contraseña - Atlantis',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1e88e5;">Recuperación de Contraseña</h2>
