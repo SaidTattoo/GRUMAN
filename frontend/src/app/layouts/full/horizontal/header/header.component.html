@@ -36,6 +36,16 @@
 
     <span class="flex-1-auto"></span>
 
+    <!-- Buscador -->
+    <div class="search-container">
+      <mat-form-field appearance="outline" class="search-input">
+        <input matInput
+               [formControl]="searchControl"
+               placeholder="Buscar...">
+        <mat-icon matPrefix class="search-icon">search</mat-icon>
+      </mat-form-field>
+    </div>
+
     <!-- Profile Menu Button -->
     <button mat-fab extended color="inherit" [matMenuTriggerFor]="profileMenu" aria-label="Perfil">
       <div class="d-flex align-items-center">

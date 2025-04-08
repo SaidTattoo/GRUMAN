@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, OnDestroy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { NgScrollbarModule } from 'ngx-scrollbar';
@@ -20,6 +20,7 @@ import { ChangelogService } from 'src/app/services/changelog.service';
 import { ChangelogDialogComponent } from 'src/app/components/changelog-dialog/changelog-dialog.component';
 import { MatBadgeModule } from '@angular/material/badge';
 import { ChangePasswordDialogComponent } from '../../../../components/change-password-dialog/change-password-dialog.component';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface notifications {
   id: number;
@@ -64,7 +65,8 @@ interface quicklinks {
     MatMenuModule,
     MatButtonModule,
     BrandingComponent,
-    MatBadgeModule
+    MatBadgeModule,
+    ReactiveFormsModule
   ],
   templateUrl: './header.component.html',
   styles: [`
@@ -107,6 +109,59 @@ interface quicklinks {
 ::ng-deep .company-menu .mat-menu-content {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+}
+
+.search-container {
+  margin-right: 24px;
+  width: 300px;
+}
+
+.search-input {
+  width: 100%;
+}
+
+.search-icon {
+  color: rgba(0, 0, 0, 0.54);
+  margin-right: 8px;
+}
+
+::ng-deep .search-input .mat-mdc-form-field-wrapper {
+  margin: 0;
+  padding: 0;
+}
+
+::ng-deep .search-input .mat-mdc-text-field-wrapper {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+::ng-deep .search-input .mat-mdc-form-field-outline {
+  display: none !important;
+}
+
+::ng-deep .search-input .mat-mdc-form-field-infix {
+  padding: 8px 0 !important;
+  min-height: unset !important;
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    width: 200px;
+    margin-right: 16px;
+  }
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+  background-color: white;
+  border-radius: 4px;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: rgba(0, 0, 0, 0.12);
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+  padding: 0.5em 0;
 }
   `],
 })
@@ -171,12 +226,16 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
 
   showBadge$ = this.changelogService.hasUnreadChanges$;
 
+  searchControl = new FormControl('');
+  isSearchExpanded = false;
+
   constructor(
     private vsidenav: CoreService,
     public dialog: MatDialog,
     private translate: TranslateService,
     private authService: AuthService,
-    private storage: StorageService ,private changelogService: ChangelogService
+    private storage: StorageService ,private changelogService: ChangelogService,
+    private router: Router
   ) {
     translate.setDefaultLang('en');
   }
@@ -224,6 +283,16 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
     });
 
     this.changelogService.checkUnreadChanges();
+
+    // Configurar el observable de búsqueda
+    this.searchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      if (searchTerm) {
+        this.performSearch(searchTerm);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -443,6 +512,28 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
         // Handle password change result if needed
       }
     });
+  }
+
+  toggleSearch(): void {
+    this.isSearchExpanded = !this.isSearchExpanded;
+    if (this.isSearchExpanded) {
+      setTimeout(() => {
+        const searchInput = document.querySelector('.search-input input') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+        }
+      });
+    } else {
+      this.searchControl.setValue('');
+    }
+  }
+
+  performSearch(searchTerm: string): void {
+    if (searchTerm.trim()) {
+      this.router.navigate(['/busqueda-global'], { 
+        queryParams: { q: searchTerm }
+      });
+    }
   }
 }
 

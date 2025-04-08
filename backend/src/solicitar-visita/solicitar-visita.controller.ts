@@ -390,4 +390,8 @@ export class SolicitarVisitaController {
         );
     }
   } */
+  @Get('buscar/:parametro')
+  async buscarSolicitud(@Param('parametro') parametro: string) {
+    return this.solicitarVisitaService.buscarSolicitud(parametro);
+  }
 }

@@ -159,4 +159,8 @@ export class SolicitarVisitaService {
       })
     );
   }
+
+  buscarSolicitud(parametro: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}solicitar-visita/buscar/${parametro}`);
+  }
 }

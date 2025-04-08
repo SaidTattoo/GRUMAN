@@ -9,6 +9,7 @@ import { SolicitudesDeVisitaRoutes } from './pages/transacciones/solicitudes-de-
 import { SolicitudesValidadasRoutes } from './pages/transacciones/solicitudes-de-visita/solicitudes-validadas/solicitudes-validadas.routes';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { BusquedaGlobalComponent } from './pages/busqueda-global/busqueda-global.component';
 
 export const routes: Routes = [
   {
@@ -304,6 +305,14 @@ export const routes: Routes = [
             { title: 'Dashboard', url: '/dashboards/dashboard1' },
             { title: 'Historial de Actualizaciones' }
           ]
+        }
+      },
+      {
+        path: 'busqueda-global',
+        component: BusquedaGlobalComponent,
+        data: { 
+          title: 'Búsqueda Global',
+         
         }
       }
     ],

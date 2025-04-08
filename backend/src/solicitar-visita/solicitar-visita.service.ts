@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { SolicitarVisita, SolicitudStatus } from './solicitar-visita.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, Not, ILike, In } from 'typeorm';
+import { Repository, Between, Not, ILike, In, Like, Raw } from 'typeorm';
 import { Client } from 'src/client/client.entity';
 import { Locales } from 'src/locales/locales.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
@@ -239,6 +239,54 @@ export class SolicitarVisitaService {
         // Guarda y retorna la solicitud creada
         return await this.solicitarVisitaRepository.save(solicitudVisita);
     }
+
+
+    //necesito un filtro que con una parametro busque por id, nombre de  cliente, nombre de local 
+
+    async buscarSolicitud(parametro: string): Promise<SolicitarVisita[]> {
+      try {
+        if (!parametro?.trim()) {
+          return [];
+        }
+        
+        const solicitudes = await this.solicitarVisitaRepository.find({
+          where: [
+            { id: Raw(alias => `CONVERT(${alias}, CHAR) LIKE :id`, { id: `%${parametro}%` }) },
+            { client: { nombre: ILike(`%${parametro}%`) } },
+            { local: { nombre_local: ILike(`%${parametro}%`) } },
+            { local: { direccion: ILike(`%${parametro}%`) } },
+            { tecnico_asignado: { 
+              name: ILike(`%${parametro}%`)
+            }},
+            { tecnico_asignado: { 
+              lastName: ILike(`%${parametro}%`)
+            }},
+            { tecnico_asignado_2: { 
+              name: ILike(`%${parametro}%`)
+            }},
+            { tecnico_asignado_2: { 
+              lastName: ILike(`%${parametro}%`)
+            }}
+          ],
+          relations: [
+            'local',
+            'client',
+            'tecnico_asignado',
+            'tecnico_asignado_2',
+            'tipoServicio'
+          ],
+          order: {
+            fechaIngreso: 'DESC'
+          }
+        });
+
+        return solicitudes;
+      } catch (error) {
+        console.error('Error en buscarSolicitud:', error);
+        throw new InternalServerErrorException('Error al buscar solicitudes');
+      }
+    }
+
 
     async getSolicitudVisita(id: number): Promise<SolicitarVisita> {
         const solicitud = await this.solicitarVisitaRepository.findOne({
