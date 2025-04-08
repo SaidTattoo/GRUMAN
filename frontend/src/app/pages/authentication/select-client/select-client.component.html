@@ -6,19 +6,60 @@
     <div class="row row-cols-2 row-cols-md-3 g-4 vh-100 w-100">
         <!-- Tarjeta -->
       @for (company of companies; track company.id) {
-      <div class="col p-4 ">
-        <!-- Tarjeta -->
+      <div class="col p-4">
         <mat-card 
-          class="h-100 d-flex align-items-center justify-content-center shadow cursor-pointer"
+          class="h-100 d-flex flex-column shadow cursor-pointer"
           (click)="selectCompany(company)">
-          <img
-            [src]="company.logo"
-            [alt]="company.nombre"
-            class="img-fluid"
-            style="max-width: 80%; max-height: 80%; object-fit: contain;"
-          />
+          <div class="company-logo-container">
+            <img
+              [src]="company.logo"
+              [alt]="company.nombre"
+              class="company-logo"
+            />
+          </div>
+          <div class="company-name">
+            <h3>{{company.nombre}}</h3>
+          </div>
         </mat-card>
       </div>
       }
     </div>
   </div>
+
+<style>
+  .company-logo-container {
+    height: 150px; /* Altura fija para todas las imágenes */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .company-logo {
+    max-width: 80%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .company-name {
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #eee;
+    background: #f8f9fa;
+  }
+
+  .company-name h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.2;
+  }
+
+  .cursor-pointer {
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .cursor-pointer:hover {
+    transform: translateY(-5px);
+  }
+</style>
