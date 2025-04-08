@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../material.module';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,8 +7,10 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { finalize } from 'rxjs/operators';
+import { finalize, catchError } from 'rxjs/operators';
+import { of, Subscription } from 'rxjs';
 import { HighlightPipe } from '../../shared/pipes/highlight.pipe';
+import { StorageService } from '../../services/storage.service';
 
 @Component({
   selector: 'app-busqueda-global',
@@ -23,6 +25,9 @@ import { HighlightPipe } from '../../shared/pipes/highlight.pipe';
               <div class="col-12">
                 @if (searchTerm) {
                   <h2>Resultados de búsqueda para: "{{searchTerm}}"</h2>
+                  @if (selectedCompany && selectedCompany.nombre !== 'GRUMAN') {
+                    <h4 class="text-muted">Filtrando resultados para: {{selectedCompany.nombre}}</h4>
+                  }
                 } @else {
                   <h2>Búsqueda Global</h2>
                 }
@@ -33,6 +38,21 @@ import { HighlightPipe } from '../../shared/pipes/highlight.pipe';
               <div class="loading-container">
                 <mat-spinner diameter="40"></mat-spinner>
                 <p>Buscando solicitudes...</p>
+              </div>
+            }
+
+            @if (error) {
+              <div class="error-container">
+                <mat-icon color="warn">error_outline</mat-icon>
+                <p>{{ error }}</p>
+                <div class="error-actions">
+                  <button mat-raised-button color="primary" (click)="buscar()">
+                    <mat-icon>refresh</mat-icon> Intentar nuevamente
+                  </button>
+                  <button mat-button color="warn" (click)="limpiarBusqueda()">
+                    <mat-icon>clear</mat-icon> Limpiar búsqueda
+                  </button>
+                </div>
               </div>
             }
 
@@ -95,15 +115,17 @@ import { HighlightPipe } from '../../shared/pipes/highlight.pipe';
                     class="hover-row"
                     (click)="verDetalle(row)"></tr>
 
-                <!-- Fila para cuando no hay datos -->
                 <tr class="mat-row" *matNoDataRow>
-                  <td class="mat-cell" colspan="7" style="text-align: center; padding: 2rem;">
+                  <td class="mat-cell" colspan="8" style="text-align: center; padding: 2rem;">
                     @if (isLoading) {
                       Buscando...
                     } @else if (!searchTerm) {
                       Ingrese un término en el buscador para comenzar
                     } @else {
                       No se encontraron resultados para "{{searchTerm}}"
+                      @if (selectedCompany && selectedCompany.nombre !== 'GRUMAN') {
+                        en {{selectedCompany.nombre}}
+                      }
                     }
                   </td>
                 </tr>
@@ -258,7 +280,7 @@ import { HighlightPipe } from '../../shared/pipes/highlight.pipe';
 }
   `]
 })
-export class BusquedaGlobalComponent implements OnInit, AfterViewInit {
+export class BusquedaGlobalComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -267,20 +289,35 @@ export class BusquedaGlobalComponent implements OnInit, AfterViewInit {
   isLoading = false;
   searchTerm = '';
   totalItems = 0;
+  error: string | null = null;
+  selectedCompany: any = null;
+  private userSubscription: Subscription;
+  private searchResults: any[] = []; // Almacenar resultados sin filtrar
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private solicitarVisitaService: SolicitarVisitaService
-  ) {}
+    private solicitarVisitaService: SolicitarVisitaService,
+    private snackBar: MatSnackBar,
+    private storage: StorageService
+  ) {
+    this.userSubscription = this.storage.user$.subscribe(user => {
+      const newSelectedCompany = user?.selectedCompany;
+      if (this.selectedCompany?.id !== newSelectedCompany?.id) {
+        this.selectedCompany = newSelectedCompany;
+        this.updateFilteredResults();
+      }
+    });
+  }
 
   ngOnInit() {
-    this.solicitudesDataSource = new MatTableDataSource<any>([]);
+    const currentUser = this.storage.getItem('currentUser');
+    this.selectedCompany = currentUser?.selectedCompany || null;
 
     this.route.queryParams.subscribe(params => {
       const term = params['q'] || '';
-      this.searchTerm = term;
-      if (term.trim()) {
+      this.searchTerm = this.sanitizeSearchTerm(term);
+      if (this.searchTerm) {
         this.buscar();
       } else {
         this.solicitudesDataSource.data = [];
@@ -292,23 +329,49 @@ export class BusquedaGlobalComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.solicitudesDataSource.paginator = this.paginator;
     this.solicitudesDataSource.sort = this.sort;
+  }
+
+  ngOnDestroy() {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
+  }
+
+  private updateFilteredResults() {
+    if (!this.searchResults.length) return;
+
+    if (this.selectedCompany && this.selectedCompany.nombre !== 'GRUMAN') {
+      const filteredResults = this.searchResults.filter(item => 
+        item.client?.id === this.selectedCompany.id || 
+        item.clientId === this.selectedCompany.id
+      );
+      this.solicitudesDataSource.data = filteredResults;
+      this.totalItems = filteredResults.length;
+    } else {
+      this.solicitudesDataSource.data = this.searchResults;
+      this.totalItems = this.searchResults.length;
+    }
 
     if (this.paginator) {
-      this.paginator._intl.itemsPerPageLabel = 'Items por página';
-      this.paginator._intl.nextPageLabel = 'Siguiente';
-      this.paginator._intl.previousPageLabel = 'Anterior';
-      this.paginator._intl.firstPageLabel = 'Primera página';
-      this.paginator._intl.lastPageLabel = 'Última página';
-      this.paginator._intl.getRangeLabel = (page: number, pageSize: number, length: number) => {
-        if (length === 0 || pageSize === 0) {
-          return `0 de ${length}`;
-        }
-        length = Math.max(length, 0);
-        const startIndex = page * pageSize;
-        const endIndex = startIndex < length ? Math.min(startIndex + pageSize, length) : startIndex + pageSize;
-        return `${startIndex + 1} - ${endIndex} de ${length}`;
-      };
+      this.paginator.pageIndex = 0;
     }
+  }
+
+  sanitizeSearchTerm(term: string): string {
+    return term.trim()
+              .replace(/[^\w\sñÑáéíóúÁÉÍÓÚ]/gi, '') // Permitir caracteres especiales españoles
+              .replace(/\s+/g, ' ');
+  }
+
+  limpiarBusqueda() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { q: null },
+      queryParamsHandling: 'merge'
+    });
+    this.searchTerm = '';
+    this.solicitudesDataSource.data = [];
+    this.error = null;
   }
 
   buscar() {
@@ -319,27 +382,37 @@ export class BusquedaGlobalComponent implements OnInit, AfterViewInit {
     }
     
     this.isLoading = true;
+    this.error = null;
 
-    this.solicitarVisitaService.buscarSolicitud(this.searchTerm)
+    const searchTerm = this.sanitizeSearchTerm(this.searchTerm);
+
+    if (!searchTerm) {
+      this.error = 'Por favor, ingrese un término de búsqueda válido.';
+      this.isLoading = false;
+      return;
+    }
+
+    this.solicitarVisitaService.buscarSolicitud(searchTerm)
       .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        })
+        catchError(error => {
+          console.error('Error al buscar solicitudes:', error);
+          if (error.code === 'ER_PARSE_ERROR') {
+            this.error = 'El término de búsqueda contiene caracteres no válidos. Por favor, intente con una búsqueda más simple.';
+          } else {
+            this.error = 'Hubo un error al realizar la búsqueda. Por favor, intente con otros términos o contacte al administrador.';
+          }
+          return of([]);
+        }),
+        finalize(() => this.isLoading = false)
       )
       .subscribe({
         next: (response) => {
-          this.solicitudesDataSource.data = response;
-          this.totalItems = response.length;
-          
-          if (this.paginator) {
-            this.paginator.pageIndex = 0;
-            this.paginator.pageSize = 5;
+          if (response && Array.isArray(response)) {
+            this.searchResults = response; // Guardar resultados sin filtrar
+            this.updateFilteredResults(); // Aplicar filtros según la compañía seleccionada
+          } else {
+            this.error = 'La respuesta del servidor no tiene el formato esperado.';
           }
-        },
-        error: (error) => {
-          console.error('Error al buscar solicitudes:', error);
-          this.solicitudesDataSource.data = [];
-          this.totalItems = 0;
         }
       });
   }
