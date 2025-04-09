@@ -24,8 +24,8 @@ export class CrearRepuestosComponent {
       articulo: ['', Validators.required],
       marca: ['', Validators.required],
       codigoBarra: ['', Validators.required],
-      precioNetoCompra: ['', [Validators.required, Validators.min(0)]],
-      sobreprecio: ['', [Validators.required, Validators.min(0)]],
+      precio_compra: ['', [Validators.required, Validators.min(0)]],
+      precio_venta: ['', [Validators.required, Validators.min(0)]],
     });
   }
 
@@ -33,16 +33,13 @@ export class CrearRepuestosComponent {
     if (this.form.valid) {
       const formValues = this.form.value;
   
-      // Convertir precios a números (asegurando que sean tipo número)
+      // Convertir precios a números
       const repuesto = {
         ...formValues,
-        precioNetoCompra: parseFloat(formValues.precioNetoCompra),
-        sobreprecio: parseFloat(formValues.sobreprecio),
+        precio_compra: parseFloat(formValues.precio_compra),
+        precio_venta: parseFloat(formValues.precio_venta),
       };
   
-      //console.log('Datos procesados para enviar:', repuesto);
-  
-      // Enviar datos al servicio
       this.repuestosService.crearRepuesto(repuesto).subscribe(
         (response) => {
           Swal.fire({
@@ -56,7 +53,7 @@ export class CrearRepuestosComponent {
           Swal.fire({
             icon: 'error',
             title: 'Oops...',
-            text: 'Algo salió mal al crear el repuesto.',
+            text: error.error.message || 'Algo salió mal al crear el repuesto.',
           });
           console.error('Error al crear el repuesto:', error);
         }
@@ -69,5 +66,8 @@ export class CrearRepuestosComponent {
       });
       //console.log('Formulario inválido');
     }
+  }
+  cancelar() {
+    this.router.navigate(['/mantenedores/repuestos']);
   }
 }

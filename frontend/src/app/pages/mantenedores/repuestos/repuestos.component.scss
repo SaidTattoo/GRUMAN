@@ -1,0 +1,90 @@
+.element-row {
+  border-bottom-width: 0;
+  cursor: pointer;
+}
+
+.element-row:not(.expanded):hover {
+  background: whitesmoke;
+}
+
+.element-row.expanded {
+  border-bottom-width: 0;
+}
+
+.element-detail {
+  overflow: hidden;
+}
+
+.client-prices-container {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.price-input {
+  width: 150px;
+  margin: 0;
+}
+
+::ng-deep {
+  .mat-mdc-row {
+    height: 48px;
+  }
+
+  .mat-mdc-header-row {
+    height: 48px;
+  }
+
+  .mat-mdc-cell {
+    padding: 8px 4px;
+  }
+
+  .mat-mdc-header-cell {
+    padding: 8px 4px;
+  }
+
+  .price-input .mat-mdc-form-field-wrapper {
+    padding-bottom: 0;
+    margin: 0;
+  }
+
+  .price-input .mat-mdc-text-field-wrapper {
+    padding: 0 8px;
+  }
+
+  .mat-mdc-card-header {
+    padding: 12px 16px;
+  }
+}
+
+.detail-row {
+  height: 0;
+}
+
+.mat-mdc-table {
+  width: 100%;
+}
+
+.mat-column-expand {
+  width: 48px;
+  padding-right: 4px;
+}
+
+tr.detail-row {
+  height: 0;
+}
+
+tr.element-row:not(.expanded-row):hover {
+  background: whitesmoke;
+}
+
+tr.element-row:not(.expanded-row):active {
+  background: #efefef;
+}

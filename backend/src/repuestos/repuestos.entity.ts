@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ClienteRepuesto } from 'src/cliente-repuesto/cliente-repuesto.entity';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+
 
 @Entity('repuestos')
 export class Repuesto {
@@ -17,17 +19,14 @@ export class Repuesto {
   @Column()
   codigoBarra: string;
   
-  @Column()
-  precio: number;
+  @Column('decimal', { precision: 10, scale: 2 })
+  precio_compra: number;
 
-  @Column()
-  precioNetoCompra: number;
-  @Column()
-  sobreprecio: number;
+  @Column('decimal', { precision: 10, scale: 2 })
+  precio_venta: number;
+
   
-  @Column()
-  precioIva: number;
 
-  @Column()
-  precioBruto: number;
+  @OneToMany(() => ClienteRepuesto, clienteRepuesto => clienteRepuesto.repuesto)
+  clienteRepuestos: ClienteRepuesto[];
 }

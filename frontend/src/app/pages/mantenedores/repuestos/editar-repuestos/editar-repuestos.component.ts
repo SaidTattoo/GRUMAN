@@ -30,8 +30,8 @@ export class EditarRepuestosComponent implements OnInit {
       articulo: ['', Validators.required],
       marca: ['', Validators.required],
       codigoBarra: ['', Validators.required],
-      precioNetoCompra: ['', [Validators.required, Validators.min(0)]],
-      sobreprecio: ['', [Validators.required, Validators.min(0)]],
+      precio_compra: ['', [Validators.required, Validators.min(0)]],
+      precio_venta: ['', [Validators.required, Validators.min(0)]],
     });
   }
 
@@ -46,31 +46,28 @@ export class EditarRepuestosComponent implements OnInit {
     if (this.form.valid) {
       const formValues = this.form.value;
   
-      // Convertir precios a números (asegurando que sean tipo número)
+      // Convertir precios a números
       const repuesto = {
         ...formValues,
-        precioNetoCompra: parseFloat(formValues.precioNetoCompra),
-        sobreprecio: parseFloat(formValues.sobreprecio),
+        precio_compra: parseFloat(formValues.precio_compra),
+        precio_venta: parseFloat(formValues.precio_venta),
       };
   
-      //console.log('Datos procesados para enviar:', repuesto);
-  
-      // Enviar datos al servicio
-      this.repuestosService.updateRepuesto(this.repuestoId, repuesto).subscribe(
-        (response) => {
+      this.repuestosService.actualizarRepuesto(this.repuestoId, repuesto).subscribe(
+        (response: any) => {
           Swal.fire({
-            icon: 'success',
-            title: 'Repuesto actualizado correctamente',
+            title: 'Éxito',
+            text: 'Repuesto actualizado correctamente',
+            icon: 'success'
           });
           this.router.navigate(['/mantenedores/repuestos']);
         },
-        (error) => {
+        (error: any) => {
           Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Algo salió mal al actualizar el repuesto.',
+            title: 'Error',
+            text: error.error.message || 'No se pudo actualizar el repuesto',
+            icon: 'error'
           });
-          console.error('Error al actualizar el repuesto:', error);
         }
       );
     } else {
@@ -79,7 +76,9 @@ export class EditarRepuestosComponent implements OnInit {
         title: 'Oops...',
         text: 'Por favor, completa todos los campos obligatorios.',
       });
-      //console.log('Formulario inválido');
     }
+  }
+  cancelar() {
+    this.router.navigate(['/mantenedores/repuestos']);
   }
 }

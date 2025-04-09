@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, HttpCode, BadRequestException } from '@nestjs/common';
 import { Repuesto } from './repuestos.entity';
 import { RepuestosService } from './repuestos.service';
 
@@ -25,5 +25,14 @@ export class RepuestosController {
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<Repuesto> {
     return this.repuestosService.findOne(id);
+  }
+  @Post('sincronizar-clientes')
+  @HttpCode(200)
+  async sincronizarClientesRepuestos(): Promise<{ creados: number }> {
+    try {
+      return await this.repuestosService.sincronizarClientesRepuestos();
+    } catch (error) {
+      throw new BadRequestException('Error al sincronizar los precios de clientes: ' + error.message);
+    }
   }
 }

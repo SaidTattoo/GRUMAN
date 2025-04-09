@@ -5,6 +5,7 @@ import { Locales } from '../locales/locales.entity';
 import { ActivoFijoLocal } from '../activo-fijo-local/activo-fijo-local.entity';
 import { TipoServicio } from '../tipo-servicio/tipo-servicio.entity';
 import { Facturacion } from '../facturacion/facturacion.entity';
+import { ClienteRepuesto } from '../cliente-repuesto/cliente-repuesto.entity';
 
 
 
@@ -64,4 +65,7 @@ export class Client {
 
   @OneToMany(() => Facturacion, (facturacion) => facturacion.cliente)
   facturaciones: Facturacion[];
+
+  @OneToMany(() => ClienteRepuesto, clienteRepuesto => clienteRepuesto.cliente)
+  clienteRepuestos: ClienteRepuesto[];
 }

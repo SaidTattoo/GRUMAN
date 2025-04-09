@@ -38,6 +38,7 @@ import { CausaRaizModule } from './causa-raiz/causa-raiz.module';
 import { ActivoFijoRepuestosModule } from './activo-fijo-repuestos/activo-fijo-repuestos.module';
 import { ChecklistClimaModule } from './checklist_clima/checklist_clima.module';
 import { MailModule } from './mail/mail.module';
+import { ClienteRepuestoModule } from './cliente-repuesto/cliente-repuesto.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -50,6 +51,7 @@ import { MailModule } from './mail/mail.module';
       database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      logging: true // Enable logging to see SQL queries
     }),
     DatabaseModule, 
     UsersModule, 
@@ -79,7 +81,8 @@ import { MailModule } from './mail/mail.module';
     SolicitarVisitaModule,
     EspecialidadModule,InspectionModule, FacturacionModule, OrdenServicioModule, UserVehiculoModule, CausaRaizModule,  
     ActivoFijoRepuestosModule, ChecklistClimaModule,
-    MailModule
+    MailModule,
+    ClienteRepuestoModule
 /*     LocalesModule,
     SectoresTrabajoModule,
     ProgramacionModule */

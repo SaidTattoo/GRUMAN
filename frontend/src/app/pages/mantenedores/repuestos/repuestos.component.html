@@ -1,9 +1,20 @@
 <mat-card class="cardWithShadow">
-  <mat-card-content class="p-24">
-    <div class="row justify-content-between m-b-8">
-      <div class="col-sm-4 col-lg-3">
-        <button mat-flat-button color="primary" (click)="openCrearRepuesto()">  Nuevo Repuesto</button>
-      </div>
+  <mat-card-header>
+    <mat-card-title>Repuestos</mat-card-title>
+  </mat-card-header>
+  <mat-card-content class="p-16">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <button mat-raised-button color="primary" (click)="openCrearRepuesto()">
+        <mat-icon>add</mat-icon>
+        Crear Repuesto
+      </button>
+      <button mat-raised-button color="primary" (click)="sincronizarClientesRepuestos()">
+        <mat-icon>sync</mat-icon>
+        Sincronizar Precios de Clientes
+      </button>
+    </div>
+
+    <div class="row justify-content-between mb-2">
       <div class="col-sm-4 col-lg-3">
         <mat-form-field appearance="outline" class="w-100 hide-hint">
           <input matInput (keyup)="applyFilter($event)" placeholder="Buscar" #input />
@@ -11,13 +22,17 @@
       </div>
     </div>
 
-    <div class="table-responsive m-t-30">
-      <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
-        <!-- ID Column -->
-     <!--    <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> ID </th>
-          <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.id}} </td>
-        </ng-container> -->
+    <div class="table-responsive">
+      <table mat-table [dataSource]="dataSource" matSort multiTemplateDataRows class="w-100 mat-elevation-z8">
+        <!-- Expand Column -->
+        <ng-container matColumnDef="expand">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-icon-button (click)="expandRow(element)">
+              <mat-icon>{{element === expandedElement ? 'expand_less' : 'expand_more'}}</mat-icon>
+            </button>
+          </td>
+        </ng-container>
 
         <!-- Familia Column -->
         <ng-container matColumnDef="familia">
@@ -42,31 +57,18 @@
           <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.codigoBarra}} </td>
         </ng-container>
         <!-- Precio Column -->
-        <ng-container matColumnDef="precio">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Precio Venta </th>
-          <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.precio| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
+
+        <!-- Precio de compra -->
+        <ng-container matColumnDef="precio_compra">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Precio de compra </th>
+          <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.precio_compra| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
         </ng-container>
-        <!-- Sobreprecio Column -->
-        <ng-container matColumnDef="sobreprecio">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Sobreprecio </th>
-          <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.sobreprecio| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
-        </ng-container>
-        
-        <!-- Precio Neto Compra Column -->
-        <ng-container matColumnDef="precioNetoCompra">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Precio Neto Compra </th>
-          <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.precioNetoCompra| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
+        <!-- Precio de venta -->
+        <ng-container matColumnDef="precio_venta">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Precio de venta </th>
+          <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.precio_venta| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
         </ng-container>
 
-        <!-- IVA Column -->
-        <ng-container matColumnDef="precioIva">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> IVA </th>
-          <td mat-cell *matCellDef="let element" class="p-l-0"> {{element.precioIva| currency:'CLP':'symbol':'1.0-0':'es-CL'}} </td>
-        </ng-container>
-        <ng-container matColumnDef="precioBruto">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Precio Bruto </th>
-          <td mat-cell *matCellDef="let element" class="p-l-0"> {{ element.precioBruto | currency:'CLP':'symbol':'1.0-0':'es-CL' }} </td>
-        </ng-container>
         <!-- Acciones -->
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14 p-l-0"> Acciones </th>
@@ -77,11 +79,73 @@
  -->          </td>
         </ng-container>
 
+        <!-- Expanded Content Column -->
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+            <div class="element-detail" [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'">
+              <div class="client-prices-container" *ngIf="element === expandedElement">
+                <h3>Precios por Cliente</h3>
+                <div class="loading-spinner" *ngIf="loadingClientPrices">
+                  <mat-spinner diameter="30"></mat-spinner>
+                </div>
+                <table mat-table [dataSource]="clientPricesDataSource" class="w-100" *ngIf="!loadingClientPrices">
+                  <ng-container matColumnDef="cliente">
+                    <th mat-header-cell *matHeaderCellDef> Cliente </th>
+                    <td mat-cell *matCellDef="let precio"> {{precio.cliente?.nombre}} </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="precio_venta">
+                    <th mat-header-cell *matHeaderCellDef> Precio Venta </th>
+                    <td mat-cell *matCellDef="let precio">
+                      <mat-form-field appearance="outline" class="price-input">
+                        <input matInput type="number" [(ngModel)]="precio.precio_venta">
+                      </mat-form-field>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="precio_compra">
+                    <th mat-header-cell *matHeaderCellDef> Precio Compra </th>
+                    <td mat-cell *matCellDef="let precio">
+                      <mat-form-field appearance="outline" class="price-input">
+                        <input matInput type="number" [(ngModel)]="precio.precio_compra">
+                      </mat-form-field>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef> Acciones </th>
+                    <td mat-cell *matCellDef="let precio">
+                      <button mat-icon-button color="primary" 
+                              (click)="updateClientPrice(precio)"
+                              matTooltip="Guardar cambios">
+                        <mat-icon>save</mat-icon>
+                      </button>
+                      <button mat-icon-button color="accent"
+                              (click)="verHistorial(precio)"
+                              matTooltip="Ver historial de cambios">
+                        <mat-icon>history</mat-icon>
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="['cliente', 'precio_venta', 'precio_compra', 'acciones']"></tr>
+                  <tr mat-row *matRowDef="let row; columns: ['cliente', 'precio_venta', 'precio_compra', 'acciones'];"></tr>
+                </table>
+              </div>
+            </div>
+          </td>
+        </ng-container>
 
         <!-- Header and Row Definitions -->
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            class="element-row"
+            [class.expanded-row]="expandedElement === row"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']"
+            class="detail-row"></tr>
       </table>
+
+      <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Seleccionar página"></mat-paginator>
     </div>
   </mat-card-content>
 </mat-card>
