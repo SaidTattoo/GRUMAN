@@ -20,6 +20,8 @@ import { DetalleRepuestoActivoFijo } from 'src/activo-fijo-repuestos/entities/de
 import { ChecklistClima } from 'src/checklist_clima/checklist_clima.entity';
 import { ActivoFijoRepuestosService } from 'src/activo-fijo-repuestos/activo-fijo-repuestos.service';
 import { ActivoFijoRepuestosModule } from 'src/activo-fijo-repuestos/activo-fijo-repuestos.module';
+import { ClienteRepuestoModule } from '../cliente-repuesto/cliente-repuesto.module';
+import { ClienteRepuesto } from '../cliente-repuesto/cliente-repuesto.entity';
 
 @Module({
   imports: [
@@ -38,10 +40,12 @@ import { ActivoFijoRepuestosModule } from 'src/activo-fijo-repuestos/activo-fijo
       CausaRaiz,
       ActivoFijoRepuestos,
       DetalleRepuestoActivoFijo,
-      ChecklistClima
+      ChecklistClima,
+      ClienteRepuesto
     ]),
     FacturacionModule,
-    ActivoFijoRepuestosModule
+    ActivoFijoRepuestosModule,
+    ClienteRepuestoModule
   ],
   providers: [SolicitarVisitaService],
   controllers: [SolicitarVisitaController],

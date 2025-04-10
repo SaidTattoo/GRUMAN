@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, InternalServerErrorException, Query } from '@nestjs/common';
 import { InspectionService } from './inspection.service';
 import { CreateSectionDto } from './dto/create-section.dto';
 import { CreateItemDto } from './dto/create-item.dto';
@@ -111,25 +111,23 @@ export class InspectionController {
         return this.inspectionService.removeSubItem(+sectionId, +itemId, +subItemId);
     }
 
-    @Post('sections/:sectionId/items/:itemId/repuestos')
-    addRepuestoToItem(
-        @Param('sectionId') sectionId: string,
-        @Param('itemId') itemId: string,
-        @Body() addRepuestoDto: AddRepuestoDto
+    @Get('sections/:sectionId/items/:itemId/repuestos')
+    async getRepuestosFromItem(
+        @Param('sectionId') sectionId: number,
+        @Param('itemId') itemId: number,
+        @Query('clienteId') clienteId?: number
     ) {
-        return this.inspectionService.addRepuestoToItem(
-            +sectionId,
-            +itemId,
-            addRepuestoDto
-        );
+        return await this.inspectionService.getRepuestosFromItem(sectionId, itemId, clienteId);
     }
 
-    @Get('sections/:sectionId/items/:itemId/repuestos')
-    getRepuestosFromItem(
-        @Param('sectionId') sectionId: string,
-        @Param('itemId') itemId: string
+    @Post('sections/:sectionId/items/:itemId/repuestos')
+    async addRepuestoToItem(
+        @Param('sectionId') sectionId: number,
+        @Param('itemId') itemId: number,
+        @Body() addRepuestoDto: AddRepuestoDto,
+        @Query('clienteId') clienteId?: number
     ) {
-        return this.inspectionService.getRepuestosFromItem(+sectionId, +itemId);
+        return await this.inspectionService.addRepuestoToItem(sectionId, itemId, addRepuestoDto, clienteId);
     }
 
     @Delete('sections/:sectionId/items/:itemId/repuestos/:repuestoId')

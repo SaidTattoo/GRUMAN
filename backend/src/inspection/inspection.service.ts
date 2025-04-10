@@ -13,6 +13,7 @@ import { AddRepuestoDto } from './dto/add-repuesto.dto';
 import { ItemRepuesto } from './entities/item-repuesto.entity';
 import { Repuesto } from '../repuestos/repuestos.entity';
 import { Not, IsNull } from 'typeorm';
+import { ClienteRepuestoService } from '../cliente-repuesto/cliente-repuesto.service';
 
 
 @Injectable()
@@ -29,7 +30,8 @@ export class InspectionService {
         @InjectRepository(ItemRepuesto)
         private itemRepuestoRepository: Repository<ItemRepuesto>,
         @InjectRepository(Repuesto)
-        private repuestoRepository: Repository<Repuesto>
+        private repuestoRepository: Repository<Repuesto>,
+        private clienteRepuestoService: ClienteRepuestoService
     ) {}
 
     async createSection(createSectionDto: CreateSectionDto) {
@@ -202,7 +204,8 @@ export class InspectionService {
     async addRepuestoToItem(
         sectionId: number,
         itemId: number,
-        addRepuestoDto: AddRepuestoDto
+        addRepuestoDto: AddRepuestoDto,
+        clienteId?: number
     ) {
         const item = await this.itemRepository.findOne({
             where: { id: itemId },
@@ -220,45 +223,84 @@ export class InspectionService {
         if (!repuesto) {
             throw new NotFoundException(`Repuesto not found`);
         }
-        console.log('addRepuestoDto', addRepuestoDto);
+
+        // Convertir los precios a números usando parseFloat
+        let precioVenta = parseFloat(repuesto.precio_venta.toString());
+        let precioCompra = parseFloat(repuesto.precio_compra.toString());
+
+        // Si se proporciona un clienteId, obtener los precios específicos del cliente
+        if (clienteId) {
+            const precioCliente = await this.clienteRepuestoService.findByClienteAndRepuesto(
+                clienteId,
+                repuesto.id
+            );
+
+            if (precioCliente) {
+                precioVenta = parseFloat(precioCliente.precio_venta.toString());
+                precioCompra = parseFloat(precioCliente.precio_compra.toString());
+            }
+        }
+
+        // Verificar que los precios sean números válidos
+        if (isNaN(precioVenta)) precioVenta = 0;
+        if (isNaN(precioCompra)) precioCompra = 0;
+
         const itemRepuesto = this.itemRepuestoRepository.create({
             itemId: item.id,
             repuestoId: repuesto.id,
             comentario: addRepuestoDto.comentario,
             cantidad: addRepuestoDto.cantidad || 1,
             estado: addRepuestoDto.estado || 'pendiente',
-            solicitarVisitaId: addRepuestoDto.solicitarVisitaId || null
+            solicitarVisitaId: addRepuestoDto.solicitarVisitaId || null,
+            precio_venta: precioVenta,
+            precio_compra: precioCompra
+        });
+
+        // Agregar log para debug
+        console.log('Precios a guardar:', {
+            precio_venta: precioVenta,
+            precio_compra: precioCompra,
+            repuesto_original: {
+                precio_venta: repuesto.precio_venta,
+                precio_compra: repuesto.precio_compra
+            }
         });
 
         return await this.itemRepuestoRepository.save(itemRepuesto);
     }
 
-    async getRepuestosFromItem(sectionId: number, itemId: number) {
-        const item = await this.itemRepository.findOne({
-            where: { id: itemId },
-            relations: [
-                'section',
-                'itemRepuestos',
-                'itemRepuestos.repuesto',
-                'itemRepuestos.solicitarVisita',
-                'itemRepuestos.solicitarVisita.activoFijoRepuestos',
-                'itemRepuestos.solicitarVisita.activoFijoRepuestos.detallesRepuestos',
-                'itemRepuestos.solicitarVisita.activoFijoRepuestos.activoFijo'
-            ]
+    async getRepuestosFromItem(sectionId: number, itemId: number, clienteId?: number) {
+        const repuestos = await this.itemRepuestoRepository.find({
+            where: {
+                itemId,
+                solicitarVisitaId: IsNull()
+            },
+            relations: ['repuesto']
         });
 
-        if (!item || item.section.id !== sectionId) {
-            throw new NotFoundException(`Item not found or does not belong to section`);
+        if (clienteId) {
+            // Si se proporciona un clienteId, obtener los precios específicos del cliente
+            const repuestosConPrecios = await Promise.all(
+                repuestos.map(async (repuesto) => {
+                    const precioCliente = await this.clienteRepuestoService.findByClienteAndRepuesto(
+                        clienteId,
+                        repuesto.repuesto.id
+                    );
+
+                    return {
+                        ...repuesto,
+                        repuesto: {
+                            ...repuesto.repuesto,
+                            precio_venta: precioCliente?.precio_venta ?? repuesto.repuesto.precio_venta,
+                            precio_compra: precioCliente?.precio_compra ?? repuesto.repuesto.precio_compra
+                        }
+                    };
+                })
+            );
+            return repuestosConPrecios;
         }
 
-        // Asegurarse de que los repuestos y sus relaciones estén cargados
-        const itemRepuestos = await this.itemRepuestoRepository.find({
-            where: { itemId: item.id },
-            relations: ['repuesto', 'solicitarVisita', 'solicitarVisita.activoFijoRepuestos'],
-            order: { id: 'DESC' }
-        });
-
-        return itemRepuestos;
+        return repuestos;
     }
 
     async removeRepuestoFromItem(

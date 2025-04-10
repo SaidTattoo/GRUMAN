@@ -382,7 +382,7 @@
                                 <div class="repuesto-row">
                                   <span><strong>Marca:</strong> {{ repuesto.repuesto?.marca || 'N/A' }}</span>
                                   <span><strong>Cantidad:</strong> {{ repuesto.cantidad }}</span>
-                                  <span><strong>Precio:</strong> ${{ repuesto.repuesto?.precio?.toLocaleString('es-CL') || '0' }}</span>
+                                  <span><strong>Precio:</strong> ${{ repuesto.precio_venta.toLocaleString('es-CL') || '0' }}</span>
                                   <span><strong>Total:</strong> ${{ ((repuesto.cantidad || 0) * (repuesto.repuesto?.precio || 0)).toLocaleString('es-CL') }}</span>
                                   
                                 </div>

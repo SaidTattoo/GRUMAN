@@ -25,6 +25,12 @@ export class ItemRepuesto {
     @Column({ default: 'pendiente' })
     estado: string;
 
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    precio_venta: number;
+
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    precio_compra: number;
+
     @ManyToOne(() => Repuesto, { eager: true })
     @JoinColumn({ name: 'repuestoId' })
     repuesto: Repuesto;

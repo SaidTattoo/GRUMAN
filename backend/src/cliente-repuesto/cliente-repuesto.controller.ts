@@ -21,6 +21,12 @@ export class ClienteRepuestoController {
         return await this.clienteRepuestoService.findByRepuesto(repuestoId);
     }
 
+    @Get('repuesto/:id/cliente/:clienteId')
+    @ApiOperation({ summary: 'Obtener precio por repuesto y cliente' })
+    async findByRepuestoAndCliente(@Param('id') repuestoId: number, @Param('clienteId') clienteId: number) {
+        return await this.clienteRepuestoService.findByClienteAndRepuesto(repuestoId, clienteId);
+    }
+
     @Get(':id/historial')
     @ApiOperation({ summary: 'Obtener historial de cambios de precios' })
     async getHistorial(@Param('id') id: number) {
