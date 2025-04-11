@@ -28,9 +28,49 @@
   padding: 16px;
 }
 
+.price-input-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.error-message {
+  position: absolute;
+  bottom: -24px;
+  left: 0;
+  color: #f44336;
+  font-size: 12px;
+  white-space: nowrap;
+  background-color: white;
+  padding: 2px 4px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  z-index: 1;
+}
+
 .price-input {
   width: 150px;
   margin: 0;
+
+  &.error-input {
+    .mat-mdc-form-field-outline {
+      color: #f44336;
+    }
+  }
+}
+
+.error-text {
+  color: #f44336;
+}
+
+.error-hint {
+  color: #f44336;
+  font-size: 11px;
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  white-space: nowrap;
 }
 
 ::ng-deep {
@@ -61,6 +101,63 @@
 
   .mat-mdc-card-header {
     padding: 12px 16px;
+  }
+
+  .tooltip-multiline {
+    white-space: pre-line !important;
+    font-size: 12px !important;
+    max-width: unset !important;
+  }
+
+  .tooltip-error {
+    white-space: pre-line !important;
+    font-size: 12px !important;
+    max-width: unset !important;
+    background-color: #f44336 !important;
+    color: white !important;
+  }
+
+  .mat-mdc-tooltip {
+    position: relative;
+    z-index: 1000;
+  }
+
+  .mat-mdc-button-disabled {
+    pointer-events: auto !important;
+    &:hover {
+      cursor: not-allowed;
+    }
+  }
+
+  .mat-mdc-form-field.error-input {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: #f44336 !important;
+    }
+  }
+
+  .mat-mdc-form-field-error {
+    font-size: 11px;
+    margin-top: -1em;
+  }
+
+  .mat-mdc-form-field-hint-wrapper {
+    padding: 0 !important;
+  }
+
+  .mat-mdc-form-field-hint {
+    font-size: 11px;
+  }
+
+  .price-input {
+    .mat-mdc-form-field-subscript-wrapper {
+      position: static;
+    }
+    
+    &.error-input .mat-mdc-form-field-hint {
+      color: #f44336;
+    }
   }
 }
 

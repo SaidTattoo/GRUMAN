@@ -1,0 +1,154 @@
+.search-div {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 24px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  transition: all 0.3s ease;
+
+  &.search-expanded {
+    width: 400px;
+  }
+
+  mat-chip-grid {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 8px;
+  }
+
+  .search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 8px;
+    font-size: 14px;
+    width: 100%;
+    min-width: 150px;
+
+    &::placeholder {
+      color: rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  .search-button {
+    color: rgba(0, 0, 0, 0.5);
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+  }
+
+  ::ng-deep .mat-mdc-chip-row {
+    background-color: #1e88e5 !important;
+    color: white !important;
+    height: 28px;
+    margin: 2px;
+
+    .mdc-evolution-chip__text-label {
+      color: white !important;
+    }
+
+    .mat-icon {
+      color: white !important;
+      opacity: 0.9;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    button[matChipRemove] {
+      color: white !important;
+      opacity: 0.9;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .search-div {
+    width: 200px;
+
+    &.search-expanded {
+      width: 300px;
+    }
+  }
+}
+
+// Estilos para el logo y contenedor del cliente
+.company-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.company-logo-placeholder {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  margin-right: 8px;
+  
+  .mat-icon {
+    font-size: 24px;
+    opacity: 0.7;
+  }
+}
+
+.company-container {
+  display: flex;
+  align-items: center;
+  max-height: 48px;
+  padding: 4px 8px;
+  
+  .company-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 200px;
+    
+    .company-name {
+      font-size: 14px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: rgba(0, 0, 0, 0.87);
+    }
+  }
+
+  &.mat-mdc-menu-item {
+    height: 56px;
+    
+    &.active {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
+::ng-deep {
+  .mat-mdc-menu-panel {
+    max-width: none !important;
+    
+    .mat-mdc-menu-content {
+      padding: 8px;
+    }
+  }
+} 

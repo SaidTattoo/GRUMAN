@@ -37,13 +37,30 @@
     <span class="flex-1-auto"></span>
 
     <!-- Buscador -->
-    <div class="search-container">
-      <mat-form-field appearance="outline" class="search-input">
-        <input matInput
+    <div [class.search-expanded]="isSearchExpanded" class="search-div">
+      <mat-chip-grid #chipGrid aria-label="Términos de búsqueda">
+        <mat-chip-row *ngFor="let param of searchParams" 
+                      (removed)="removeSearchParam(param)"
+                      [removable]="true">
+          {{param}}
+          <button matChipRemove [attr.aria-label]="'Remover ' + param">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+        <input [matChipInputFor]="chipGrid"
+               [matChipInputSeparatorKeyCodes]="[ENTER]"
+               placeholder="Agregar término de búsqueda..."
                [formControl]="searchControl"
-               placeholder="Buscar...">
-        <mat-icon matPrefix class="search-icon">search</mat-icon>
-      </mat-form-field>
+               class="search-input"
+               (focus)="isSearchExpanded = true"
+               (keydown.enter)="$event.preventDefault(); performSearch()">
+      </mat-chip-grid>
+      <button mat-icon-button
+              class="search-button"
+              matTooltip="Buscar"
+              (click)="performSearch()">
+        <mat-icon>search</mat-icon>
+      </button>
     </div>
 
     <!-- Profile Menu Button -->
@@ -98,14 +115,15 @@
       </ng-scrollbar>
     </mat-menu>
     <button 
-    mat-icon-button
-    [matBadge]="unreadChanges"
-    [matBadgeHidden]="unreadChanges === 0"
-    matBadgeColor="warn"
-    (click)="openChangelog()"
-  >
-    <mat-icon>update</mat-icon>
-  </button>
+      mat-icon-button
+      [matBadge]="(showBadge$ | async) ? '1' : '0'"
+      [matBadgeHidden]="!(showBadge$ | async)"
+      matBadgeColor="warn"
+      (mousedown)="$event.preventDefault()"
+      (click)="openChangelog()"
+    >
+      <mat-icon>update</mat-icon>
+    </button>
     <mat-menu #companyMenu="matMenu">
       @for (company of userCompanies; track company.id) {
         <button 
@@ -113,7 +131,7 @@
           (click)="onCompanySelect(company)"
           [class.active]="company.id === selectedCompany?.id"
           class="d-flex align-items-center"
-          style=" padding: 16px 24px;"
+          style="padding: 16px 24px;"
         >
           <div class="d-flex align-items-center">
             @if (company.logo) {

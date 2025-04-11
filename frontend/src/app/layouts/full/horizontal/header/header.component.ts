@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnDestroy, HostListener, ViewChild } from '@angular/core';
 import { FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,7 +13,6 @@ import { MaterialModule } from 'src/app/material.module';
 import { AuthService } from 'src/app/services/auth.service';
 import { CoreService } from 'src/app/services/core.service';
 import { BrandingComponent } from '../../vertical/sidebar/branding.component';
-import { navItems } from '../sidebar/sidebar-data';
 import { StorageService } from '../../../../services/storage.service';
 import { Subscription } from 'rxjs';
 import { ChangelogService } from 'src/app/services/changelog.service';
@@ -21,6 +20,8 @@ import { ChangelogDialogComponent } from 'src/app/components/changelog-dialog/ch
 import { MatBadgeModule } from '@angular/material/badge';
 import { ChangePasswordDialogComponent } from '../../../../components/change-password-dialog/change-password-dialog.component';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { MatChipsModule, MatChipGrid, MatChipInputEvent } from '@angular/material/chips';
+import { ENTER } from '@angular/cdk/keycodes';
 
 interface notifications {
   id: number;
@@ -66,106 +67,15 @@ interface quicklinks {
     MatButtonModule,
     BrandingComponent,
     MatBadgeModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatChipsModule
   ],
   templateUrl: './header.component.html',
-  styles: [`
-    .topbar {
-      height: auto !important;
-    }
-    .company-logo {
-      height: 60px !important;
-      width: auto !important;
-      object-fit: contain;
-      margin-right: 15px;
-    }
-    .profile-initials-circle {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #1e88e5;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
-    }
-    .profile-initials-circle-large {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background-color: #1e88e5;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
-      font-size: 1.2em;
-    }
-    ::ng-deep .company-menu {
-  max-height: none !important;
-}
-
-::ng-deep .company-menu .mat-menu-content {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.search-container {
-  margin-right: 24px;
-  width: 300px;
-}
-
-.search-input {
-  width: 100%;
-}
-
-.search-icon {
-  color: rgba(0, 0, 0, 0.54);
-  margin-right: 8px;
-}
-
-::ng-deep .search-input .mat-mdc-form-field-wrapper {
-  margin: 0;
-  padding: 0;
-}
-
-::ng-deep .search-input .mat-mdc-text-field-wrapper {
-  background-color: transparent !important;
-  padding: 0 !important;
-}
-
-::ng-deep .search-input .mat-mdc-form-field-outline {
-  display: none !important;
-}
-
-::ng-deep .search-input .mat-mdc-form-field-infix {
-  padding: 8px 0 !important;
-  min-height: unset !important;
-}
-
-@media (max-width: 768px) {
-  .search-container {
-    width: 200px;
-    margin-right: 16px;
-  }
-}
-
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
-  background-color: white;
-  border-radius: 4px;
-}
-
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
-  color: rgba(0, 0, 0, 0.12);
-}
-
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
-  padding: 0.5em 0;
-}
-  `],
+  styleUrls: ['./header.component.scss']
 })
 export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
+  @ViewChild('chipGrid') chipGrid!: MatChipGrid;
+  readonly ENTER = ENTER;
   searchText: string = '';
   userProfile:any;
   @Input() showToggle = true;
@@ -179,7 +89,6 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
   showFiller = false;
 
   logout() {
-   
     this.authService.logout();
   }
 
@@ -220,7 +129,6 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
   userCompanies: any[] = [];
   selectedCompany: any | null = null;
   private userSub: Subscription;
-  unreadChanges = 0;
   user: any = null;
   currentClient: any = null;
 
@@ -228,13 +136,17 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
 
   searchControl = new FormControl('');
   isSearchExpanded = false;
+  searchParams: string[] = [];
+
+  isDialogOpen = false;
 
   constructor(
     private vsidenav: CoreService,
     public dialog: MatDialog,
     private translate: TranslateService,
     private authService: AuthService,
-    private storage: StorageService ,private changelogService: ChangelogService,
+    private storage: StorageService,
+    private changelogService: ChangelogService,
     private router: Router
   ) {
     translate.setDefaultLang('en');
@@ -243,14 +155,6 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
   changeLanguage(lang: any): void {
     this.translate.use(lang.code);
     this.selectedLanguage = lang;
-  }
-
-  openDialog() {
-    const dialogRef = this.dialog.open(AppSearchDialogComponent);
-
-    dialogRef.afterClosed().subscribe((result) => {
-      //console.log(`Dialog result: ${result}`);
-    });
   }
 
   ngOnInit(): void {
@@ -269,30 +173,12 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.changelogService.hasUnreadChanges$.subscribe(
-      hasUnread => {
-        this.unreadChanges = hasUnread ? 1 : 0;
-        console.log('Has unread changes:', hasUnread);
-      }
-    );
-    
-    this.changelogService.checkUnreadChanges();
-
     this.authService.currentUser.subscribe(user => {
       this.user = user;
     });
 
+    // Verificar cambios no leídos al inicio
     this.changelogService.checkUnreadChanges();
-
-    // Configurar el observable de búsqueda
-    this.searchControl.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(searchTerm => {
-      if (searchTerm) {
-        this.performSearch(searchTerm);
-      }
-    });
   }
 
   ngOnDestroy(): void {
@@ -300,22 +186,25 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
       this.userSub.unsubscribe();
     }
   }
+
   openChangelog() {
     const dialogRef = this.dialog.open(ChangelogDialogComponent, {
       width: '600px',
-      maxHeight: '80vh'
+      maxHeight: '80vh',
+      disableClose: false
     });
 
+    // Solo actualizar cuando el diálogo se cierre completamente
     dialogRef.afterClosed().subscribe(() => {
       this.changelogService.checkUnreadChanges();
     });
   }
+
   onCompanySelect(company: any): void {
     const currentUser = this.storage.getItem('currentUser');
     const updatedUser = { 
       ...currentUser,
-      selectedCompany: company,
-      companies: currentUser.companies
+      selectedCompany: company
     };
     this.selectedCompany = company;
     this.storage.setItem('currentUser', updatedUser);
@@ -328,178 +217,6 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
       return initials.toUpperCase();
     }
     return '';
-  }
-
-  notifications: notifications[] = [
-    {
-      id: 1,
-      img: '/assets/images/profile/user-1.jpg',
-      title: 'Roman Joined the Team!',
-      subtitle: 'Congratulate him',
-    },
-    {
-      id: 2,
-      img: '/assets/images/profile/user-2.jpg',
-      title: 'New message received',
-      subtitle: 'Salma sent you new message',
-    },
-    {
-      id: 3,
-      img: '/assets/images/profile/user-3.jpg',
-      title: 'New Payment received',
-      subtitle: 'Check your earnings',
-    },
-    {
-      id: 4,
-      img: '/assets/images/profile/user-4.jpg',
-      title: 'Jolly completed tasks',
-      subtitle: 'Assign her new tasks',
-    },
-    {
-      id: 5,
-      img: '/assets/images/profile/user-5.jpg',
-      title: 'Roman Joined the Team!',
-      subtitle: 'Congratulate him',
-    },
-  ];
-
-  profiledd: profiledd[] = [
-    {
-      id: 1,
-      img: 'wallet',
-      color: 'primary',
-      title: 'My Profile',
-      subtitle: 'Account Settings',
-      link: '/',
-    },
-    {
-      id: 2,
-      img: 'shield',
-      color: 'success',
-      title: 'My Inbox',
-      subtitle: 'Messages & Email',
-      link: '/',
-    },
-    {
-      id: 3,
-      img: 'credit-card',
-      color: 'error',
-      title: 'My Tasks',
-      subtitle: 'To-do and Daily Tasks',
-      link: '/',
-    },
-  ];
-  apps: apps[] = [
-    {
-      id: 1,
-      img: '/assets/images/svgs/icon-dd-chat.svg',
-      title: 'Chat Application',
-      subtitle: 'Messages & Emails',
-      link: '/apps/chat',
-    },
-    {
-      id: 2,
-      img: '/assets/images/svgs/icon-dd-cart.svg',
-      title: 'Todo App',
-      subtitle: 'Completed task',
-      link: '/apps/todo',
-    },
-    {
-      id: 3,
-      img: '/assets/images/svgs/icon-dd-invoice.svg',
-      title: 'Invoice App',
-      subtitle: 'Get latest invoice',
-      link: '/apps/invoice',
-    },
-    {
-      id: 4,
-      img: '/assets/images/svgs/icon-dd-date.svg',
-      title: 'Calendar App',
-      subtitle: 'Get Dates',
-      link: '/apps/calendar',
-    },
-    {
-      id: 5,
-      img: '/assets/images/svgs/icon-dd-mobile.svg',
-      title: 'Contact Application',
-      subtitle: '2 Unsaved Contacts',
-      link: '/apps/contacts',
-    },
-    {
-      id: 6,
-      img: '/assets/images/svgs/icon-dd-lifebuoy.svg',
-      title: 'Tickets App',
-      subtitle: 'Create new ticket',
-      link: '/apps/tickets',
-    },
-    {
-      id: 7,
-      img: '/assets/images/svgs/icon-dd-message-box.svg',
-      title: 'Email App',
-      subtitle: 'Get new emails',
-      link: '/apps/email/inbox',
-    },
-    {
-      id: 8,
-      img: '/assets/images/svgs/icon-dd-application.svg',
-      title: 'Courses',
-      subtitle: 'Create new course',
-      link: '/apps/courses',
-    },
-  ];
-
-  quicklinks: quicklinks[] = [
-    {
-      id: 1,
-      title: 'Pricing Page',
-      link: '/theme-pages/pricing',
-    },
-    {
-      id: 2,
-      title: 'Authentication Design',
-      link: '/authentication/login',
-    },
-    {
-      id: 3,
-      title: 'Register Now',
-      link: '/authentication/side-register',
-    },
-    {
-      id: 4,
-      title: '404 Error Page',
-      link: '/authentication/error',
-    },
-    {
-      id: 5,
-      title: 'Notes App',
-      link: '/apps/notes',
-    },
-    {
-      id: 6,
-      title: 'Employee App',
-      link: '/apps/employee',
-    },
-    {
-      id: 7,
-      title: 'Todo Application',
-      link: '/apps/todo',
-    },
-    {
-      id: 8,
-      title: 'Treeview',
-      link: '/theme-pages/treeview',
-    },
-  ];
-
-  changeClient(client: any): void {
-    this.currentClient = client;
-    this.selectedCompany = client;
-    const currentUser = this.storage.getItem('currentUser');
-    const updatedUser = { 
-      ...currentUser,
-      selectedCompany: client
-    };
-    this.storage.setItem('currentUser', updatedUser);
   }
 
   openChangePasswordDialog() {
@@ -518,21 +235,56 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
     this.isSearchExpanded = !this.isSearchExpanded;
     if (this.isSearchExpanded) {
       setTimeout(() => {
-        const searchInput = document.querySelector('.search-input input') as HTMLInputElement;
+        const searchInput = document.querySelector('.search-input') as HTMLInputElement;
         if (searchInput) {
           searchInput.focus();
         }
-      });
-    } else {
+      }, 100);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  handleClick(event: Event) {
+    const searchDiv = document.querySelector('.search-div');
+    const target = event.target as HTMLElement;
+    
+    // No cerrar si el click fue en un chip, en el input o en el botón de búsqueda
+    if (target.closest('.mat-mdc-chip') || 
+        target.closest('.search-input') || 
+        target.closest('.search-button')) {
+      return;
+    }
+
+    if (!searchDiv?.contains(target)) {
+      this.isSearchExpanded = false;
       this.searchControl.setValue('');
     }
   }
 
-  performSearch(searchTerm: string): void {
-    if (searchTerm.trim()) {
-      this.router.navigate(['/busqueda-global'], { 
-        queryParams: { q: searchTerm }
+  performSearch(): void {
+    const value = this.searchControl.value?.trim();
+    
+    if (value) {
+      // Agregar el término completo como un solo badge
+      if (!this.searchParams.includes(value)) {
+        this.searchParams.push(value);
+      }
+      // Limpiar el input
+      this.searchControl.setValue('');
+    }
+
+    // Si hay términos acumulados, realizar la búsqueda
+    if (this.searchParams.length > 0) {
+      this.router.navigate(['/busqueda-global'], {
+        queryParams: { q: this.searchParams.join(' ') }
       });
+    }
+  }
+
+  removeSearchParam(param: string): void {
+    const index = this.searchParams.indexOf(param);
+    if (index >= 0) {
+      this.searchParams.splice(index, 1);
     }
   }
 }
@@ -553,7 +305,7 @@ export class AppSearchDialogComponent {
   searchText: string = '';
   navItems = navItemsPro;
 
-  navItemsData = navItems.filter((navitem) => navitem.displayName);
+  navItemsData = navItemsPro.filter((navitem) => navitem.displayName);
 
   // filtered = this.navItemsData.find((obj) => {
   //   return obj.displayName == this.searchinput;

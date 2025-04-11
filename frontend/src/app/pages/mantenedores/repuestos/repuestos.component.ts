@@ -19,6 +19,9 @@ import { registerLocaleData } from '@angular/common';
 import localeEsCl from '@angular/common/locales/es-CL';
 import { MatDialog } from '@angular/material/dialog';
 import { HistorialDialogComponent } from './historial-dialog/historial-dialog.component';
+import { finalize } from 'rxjs/operators';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 registerLocaleData(localeEsCl, 'es-CL');
 
@@ -37,7 +40,8 @@ registerLocaleData(localeEsCl, 'es-CL');
     MatIconModule,
     MatSlideToggleModule,
     FormsModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   templateUrl: './repuestos.component.html',
   styleUrl: './repuestos.component.scss',
@@ -57,6 +61,9 @@ export class RepuestosComponent {
   repuestos: any = [];
   expandedElement: any | null = null;
   loadingClientPrices = false;
+  originalPrices: { [key: number]: any } = {};
+  clientPrices: any[] = [];
+  loading = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -64,7 +71,8 @@ export class RepuestosComponent {
   constructor(
     private repuestosService: RepuestosService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -88,21 +96,66 @@ export class RepuestosComponent {
   }
 
   loadClientPrices(repuestoId: number) {
-    this.loadingClientPrices = true;
-    this.repuestosService.getClientePreciosForRepuesto(repuestoId).subscribe({
+    this.loading = true;
+    this.repuestosService.getClientePreciosForRepuesto(repuestoId).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe({
       next: (data) => {
+        this.clientPrices = data;
+        // Store original prices for comparison
+        this.originalPrices = data.reduce((acc, precio) => {
+          acc[precio.id] = { ...precio };
+          return acc;
+        }, {});
         this.clientPricesDataSource.data = data;
-        this.loadingClientPrices = false;
       },
       error: (error) => {
         console.error('Error loading client prices:', error);
-        this.loadingClientPrices = false;
-        Swal.fire('Error', 'No se pudieron cargar los precios por cliente', 'error');
+        this.snackBar.open('Error al cargar los precios por cliente', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
       }
     });
   }
 
+  hasPriceChanged(precio: any): boolean {
+    if (!this.originalPrices[precio.id]) return false;
+    
+    return this.originalPrices[precio.id].precio_venta !== precio.precio_venta ||
+           this.originalPrices[precio.id].precio_compra !== precio.precio_compra;
+  }
+
+  isPriceValid(precio: any): boolean {
+    return precio.precio_venta > precio.precio_compra;
+  }
+
+  getPriceValidationMessage(precio: any): string {
+    if (!this.hasPriceChanged(precio)) {
+      return `Precio actual: Venta: ${this.formatCurrency(precio.precio_venta)} - Compra: ${this.formatCurrency(precio.precio_compra)}`;
+    }
+
+    if (!this.isPriceValid(precio)) {
+      return `Error: El precio de venta debe ser mayor al precio de compra\nVenta: ${this.formatCurrency(precio.precio_venta)} - Compra: ${this.formatCurrency(precio.precio_compra)}`;
+    }
+
+    return `Guardar nuevo precio: Venta: ${this.formatCurrency(precio.precio_venta)} - Compra: ${this.formatCurrency(precio.precio_compra)}`;
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+  }
+
   async updateClientPrice(precio: any) {
+    if (!this.isPriceValid(precio)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de validación',
+        text: 'El precio de venta debe ser mayor al precio de compra'
+      });
+      return;
+    }
+
     Swal.fire({
       title: 'Guardando...',
       text: 'Actualizando precios del cliente',
@@ -119,6 +172,9 @@ export class RepuestosComponent {
 
     this.repuestosService.updateClienteRepuesto(precio.id, updateData).subscribe({
       next: () => {
+        // Actualizar los precios originales después de guardar exitosamente
+        this.originalPrices[precio.id] = { ...precio };
+        
         Swal.close();
         Swal.fire({
           icon: 'success',

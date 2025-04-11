@@ -97,18 +97,28 @@
                   <ng-container matColumnDef="precio_venta">
                     <th mat-header-cell *matHeaderCellDef> Precio Venta </th>
                     <td mat-cell *matCellDef="let precio">
-                      <mat-form-field appearance="outline" class="price-input">
-                        <input matInput type="number" [(ngModel)]="precio.precio_venta">
-                      </mat-form-field>
+                      <div class="price-input-container">
+                        <mat-form-field appearance="outline" class="price-input" [class.error-input]="hasPriceChanged(precio) && !isPriceValid(precio)">
+                          <input matInput type="number" [(ngModel)]="precio.precio_venta" [class.error-text]="hasPriceChanged(precio) && !isPriceValid(precio)">
+                        </mat-form-field>
+                        <div *ngIf="hasPriceChanged(precio) && !isPriceValid(precio)" class="error-message">
+                          El precio de venta debe ser mayor a {{formatCurrency(precio.precio_compra)}}
+                        </div>
+                      </div>
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="precio_compra">
                     <th mat-header-cell *matHeaderCellDef> Precio Compra </th>
                     <td mat-cell *matCellDef="let precio">
-                      <mat-form-field appearance="outline" class="price-input">
-                        <input matInput type="number" [(ngModel)]="precio.precio_compra">
-                      </mat-form-field>
+                      <div class="price-input-container">
+                        <mat-form-field appearance="outline" class="price-input" [class.error-input]="hasPriceChanged(precio) && !isPriceValid(precio)">
+                          <input matInput type="number" [(ngModel)]="precio.precio_compra" [class.error-text]="hasPriceChanged(precio) && !isPriceValid(precio)">
+                        </mat-form-field>
+                        <div *ngIf="hasPriceChanged(precio) && !isPriceValid(precio)" class="error-message">
+                          El precio de venta ({{formatCurrency(precio.precio_venta)}}) es menor o igual
+                        </div>
+                      </div>
                     </td>
                   </ng-container>
 
@@ -117,12 +127,14 @@
                     <td mat-cell *matCellDef="let precio">
                       <button mat-icon-button color="primary" 
                               (click)="updateClientPrice(precio)"
-                              matTooltip="Guardar cambios">
+                              [matTooltip]="getPriceValidationMessage(precio)"
+                              [matTooltipClass]="!isPriceValid(precio) && hasPriceChanged(precio) ? 'tooltip-error' : 'tooltip-multiline'"
+                              [disabled]="!hasPriceChanged(precio) || !isPriceValid(precio)">
                         <mat-icon>save</mat-icon>
                       </button>
                       <button mat-icon-button color="accent"
                               (click)="verHistorial(precio)"
-                              matTooltip="Ver historial de cambios">
+                              matTooltip="Ver historial de cambios de precio para {{precio.cliente?.nombre}}">
                         <mat-icon>history</mat-icon>
                       </button>
                     </td>
