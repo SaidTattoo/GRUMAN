@@ -57,9 +57,14 @@
       </mat-chip-grid>
       <button mat-icon-button
               class="search-button"
-              matTooltip="Buscar"
-              (click)="performSearch()">
-        <mat-icon>search</mat-icon>
+              [matTooltip]="searchParams.length ? 'Limpiar búsqueda' : 'Buscar'"
+              [color]="searchParams.length ? 'warn' : 'primary'"
+              (click)="searchParams.length ? clearSearch() : performSearch()">
+        @if (searchParams.length) {
+          <mat-icon>close</mat-icon>
+        } @else {
+          <mat-icon>search</mat-icon>
+        }
       </button>
     </div>
 

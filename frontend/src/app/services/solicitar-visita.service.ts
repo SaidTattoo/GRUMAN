@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { environment } from '../config';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
@@ -160,7 +160,32 @@ export class SolicitarVisitaService {
     );
   }
 
-  buscarSolicitud(parametro: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}solicitar-visita/buscar/${parametro}`);
+  buscarSolicitud(searchParams: string[]): Observable<any> {
+    if (!searchParams || searchParams.length === 0) {
+      return of([]);
+    }
+
+    // Filtrar parámetros vacíos y convertir a string
+    const parametros = searchParams
+      .filter(param => param && param.trim().length > 0)
+      .join(',');
+
+    if (!parametros) {
+      return of([]);
+    }
+
+    return this.http.get<any>(`${this.apiUrl}solicitar-visita/buscar/${parametros}`).pipe(
+      catchError(error => {
+        console.error('Error en la búsqueda:', error);
+        return throwError(() => new Error('Error al realizar la búsqueda. Por favor, intente nuevamente.'));
+      })
+    );
   }
+
+  downloadPdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}solicitar-visita/${id}/pdf`, {
+      responseType: 'blob'
+    });
+  }
+
 }

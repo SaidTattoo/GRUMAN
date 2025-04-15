@@ -12,6 +12,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-solicitudes-finalizadas',
@@ -26,7 +28,8 @@ import { EspecialidadesService } from 'src/app/services/especialidades.service';
     MatChipsModule,
     MatCardModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatTooltipModule
   ],
   template: `
     <mat-card class="cardWithShadow">
@@ -121,6 +124,18 @@ import { EspecialidadesService } from 'src/app/services/especialidades.service';
               </td>
             </ng-container>
 
+            <!-- PDF Column -->
+            <ng-container matColumnDef="pdf">
+              <th mat-header-cell *matHeaderCellDef>PDF</th>
+              <td mat-cell *matCellDef="let row">
+                <button mat-icon-button color="primary" 
+                        (click)="$event.stopPropagation(); downloadPdf(row)"
+                        matTooltip="Descargar PDF">
+                  <mat-icon>picture_as_pdf</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
@@ -182,7 +197,8 @@ export class SolicitudesFinalizadasComponent implements OnInit {
     'ticketGruman',
     'observaciones',
     'tecnico',
-    'acciones'
+    'acciones',
+    'pdf'
   ];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -256,5 +272,45 @@ export class SolicitudesFinalizadasComponent implements OnInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  downloadPdf(row: any) {
+    Swal.fire({
+      title: 'Generando PDF',
+      text: 'Por favor espere...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    this.solicitarVisitaService.downloadPdf(row.id).subscribe({
+      next: (blob: Blob) => {
+        if (blob.size === 0) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'El PDF generado está vacío'
+          });
+          return;
+        }
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `solicitud-${row.id}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        Swal.close();
+      },
+      error: (error) => {
+        console.error('Error descargando PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el PDF. Por favor intente nuevamente.'
+        });
+      }
+    });
   }
 } 

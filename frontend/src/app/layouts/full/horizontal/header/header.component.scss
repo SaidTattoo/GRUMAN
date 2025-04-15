@@ -1,24 +1,88 @@
 .search-div {
+  position: relative;
   display: flex;
   align-items: center;
-  background: white;
+  background-color: rgba(0, 0, 0, 0.04);
   border-radius: 24px;
-  padding: 4px 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+  height: 40px;
   width: 250px;
   transition: all 0.3s ease;
-
+  margin-right: 16px;
+  
   &.search-expanded {
     width: 400px;
   }
 
-  mat-chip-grid {
-    flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    min-height: 40px;
-    padding: 0 8px;
+  ::ng-deep {
+    .mat-mdc-chip-grid {
+      flex: 1;
+      padding: 0 8px;
+      background: transparent;
+      min-width: 0;
+      
+      .mdc-evolution-chip-set__chips {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        gap: 4px;
+        padding-bottom: 4px;
+        
+        &::-webkit-scrollbar {
+          display: none;
+        }
+      }
+    }
+
+    .mat-mdc-chip-row {
+      background-color: #1e88e5 !important;
+      color: white !important;
+      height: 28px;
+      font-size: 12px;
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 14px !important;
+      margin: 2px 0;
+
+      .mdc-evolution-chip__text-label {
+        color: white !important;
+      }
+
+      .mat-mdc-chip-action-label {
+        color: white !important;
+      }
+
+      .mdc-evolution-chip__action--primary {
+        color: white !important;
+      }
+
+      .mat-icon {
+        color: white !important;
+        opacity: 0.9;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        
+        &:hover {
+          opacity: 1;
+        }
+      }
+
+      button[matChipRemove] {
+        color: white !important;
+        opacity: 0.9;
+        margin-left: 4px;
+        
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
   }
 
   .search-input {
@@ -26,53 +90,36 @@
     outline: none;
     background: transparent;
     padding: 8px;
-    font-size: 14px;
     width: 100%;
-    min-width: 150px;
-
-    &::placeholder {
-      color: rgba(0, 0, 0, 0.5);
-    }
+    min-width: 80px;
   }
 
   .search-button {
-    color: rgba(0, 0, 0, 0.5);
-    transition: color 0.2s ease;
+    height: 32px;
+    min-width: 64px;
+    padding: 0 16px;
+    border-radius: 16px;
+    background-color: #1e88e5;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 8px;
+    margin-right: 4px;
+    line-height: 32px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover {
-      color: rgba(0, 0, 0, 0.8);
-    }
-  }
-
-  ::ng-deep .mat-mdc-chip-row {
-    background-color: #1e88e5 !important;
-    color: white !important;
-    height: 28px;
-    margin: 2px;
-
-    .mdc-evolution-chip__text-label {
-      color: white !important;
+      background-color: #1976d2;
     }
 
-    .mat-icon {
-      color: white !important;
-      opacity: 0.9;
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
-
-    button[matChipRemove] {
-      color: white !important;
-      opacity: 0.9;
-
-      &:hover {
-        opacity: 1;
-      }
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
     }
   }
 }
@@ -80,7 +127,6 @@
 @media (max-width: 768px) {
   .search-div {
     width: 200px;
-
     &.search-expanded {
       width: 300px;
     }

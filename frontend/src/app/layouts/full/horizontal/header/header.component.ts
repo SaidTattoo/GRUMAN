@@ -158,24 +158,40 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.userSub = this.storage.user$.subscribe(user => {
+    // Obtener los parámetros de búsqueda de la URL
+    const currentUrl = this.router.url;
+    const searchParams = new URLSearchParams(currentUrl.split('?')[1]);
+    const qParam = searchParams.get('q');
+    if (qParam) {
+      // Dividir por comas y limpiar cada término
+      this.searchParams = qParam.split(',').map(param => param.trim()).filter(param => param.length > 0);
+      this.isSearchExpanded = this.searchParams.length > 0;
+    }
+
+    // Resto del código existente del ngOnInit
+    this.userSub = this.authService.currentUser.subscribe(user => {
       if (user) {
+        this.user = user;
         this.userName = user.name;
-        this.userRole = user.profile;
+        this.userRole = user.role;
         this.userEmail = user.email;
         this.userCompanies = user.companies || [];
         
-        if (!this.userCompanies.find(c => c.id === this.selectedCompany?.id)) {
-          this.selectedCompany = this.userCompanies.length === 1 ? 
-            this.userCompanies[0] : 
-            user.selectedCompany || null;
+        // Si hay compañías disponibles, seleccionar la primera por defecto
+        if (this.userCompanies.length > 0) {
+          const storedCompanyId = this.storage.getItem('selectedCompanyId');
+          if (storedCompanyId) {
+            this.selectedCompany = this.userCompanies.find(c => c.id === parseInt(storedCompanyId)) || this.userCompanies[0];
+          } else {
+            this.selectedCompany = this.userCompanies[0];
+          }
         }
       }
     });
 
-    this.authService.currentUser.subscribe(user => {
-      this.user = user;
-    });
+    // Configurar el idioma por defecto
+    this.translate.setDefaultLang(this.selectedLanguage.code);
+    this.translate.use(this.selectedLanguage.code);
 
     // Verificar cambios no leídos al inicio
     this.changelogService.checkUnreadChanges();
@@ -276,7 +292,7 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
     // Si hay términos acumulados, realizar la búsqueda
     if (this.searchParams.length > 0) {
       this.router.navigate(['/busqueda-global'], {
-        queryParams: { q: this.searchParams.join(' ') }
+        queryParams: { q: this.searchParams.join(',') }
       });
     }
   }
@@ -285,6 +301,20 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
     const index = this.searchParams.indexOf(param);
     if (index >= 0) {
       this.searchParams.splice(index, 1);
+    }
+  }
+
+  clearSearch(): void {
+    this.searchParams = [];
+    this.searchControl.setValue('');
+    this.isSearchExpanded = false;
+    
+    // Si estamos en la página de búsqueda global, actualizar los parámetros de la URL
+    if (this.router.url.includes('/busqueda-global')) {
+      this.router.navigate(['/busqueda-global'], {
+        queryParams: {},
+        replaceUrl: true
+      });
     }
   }
 }

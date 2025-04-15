@@ -1,4 +1,5 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query, NotFoundException, InternalServerErrorException, BadRequestException, Res, Header } from '@nestjs/common';
+import { Response } from 'express';
 import { SolicitarVisitaService } from './solicitar-visita.service';
 
 import { SolicitarVisita } from './solicitar-visita.entity';
@@ -390,8 +391,46 @@ export class SolicitarVisitaController {
         );
     }
   } */
-  @Get('buscar/:parametro')
-  async buscarSolicitud(@Param('parametro') parametro: string) {
-    return this.solicitarVisitaService.buscarSolicitud(parametro);
+  @Get('buscar/:parametros')
+  async buscarSolicitud(@Param('parametros') parametros: string) {
+    try {
+      // Convertir el string de parámetros a un array
+      const parametrosArray = parametros.split(',').filter(param => param.trim());
+      return await this.solicitarVisitaService.buscarSolicitud(parametrosArray);
+    } catch (error) {
+      throw new InternalServerErrorException('Error al procesar la búsqueda: ' + error.message);
+    }
+  }
+
+  @Get(':id/pdf')
+  async generatePdf(
+    @Param('id') id: number,
+    @Res() res: Response
+  ) {
+    try {
+      const buffer = await this.solicitarVisitaService.generatePdf(id);
+      
+      if (!buffer || buffer.length === 0) {
+        throw new Error('PDF generado está vacío');
+      }
+
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename=solicitud-${id}.pdf`,
+        'Content-Length': buffer.length,
+        // Prevent caching
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+
+      res.end(buffer);
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al generar el PDF: ' + error.message);
+    }
   }
 }

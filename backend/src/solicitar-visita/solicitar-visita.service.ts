@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { SolicitarVisita, SolicitudStatus } from './solicitar-visita.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, Not, ILike, In, Like, Raw } from 'typeorm';
+import { Repository, Between, Not, ILike, In, Like, Raw, Brackets } from 'typeorm';
 import { Client } from 'src/client/client.entity';
 import { Locales } from 'src/locales/locales.entity';
 import { TipoServicio } from 'src/tipo-servicio/tipo-servicio.entity';
@@ -19,6 +19,12 @@ import { ActivoFijoRepuestosService } from 'src/activo-fijo-repuestos/activo-fij
 import { ItemRepuestoDataDto, ManipularRepuestosDto } from './dto/manipular-repuestos.dto';
 import { Facturacion } from 'src/facturacion/facturacion.entity';
 import { ClienteRepuesto } from 'src/cliente-repuesto/cliente-repuesto.entity';
+import * as PDFDocument from 'pdfkit';
+import * as path from 'path';
+import { join } from 'path';
+import * as fs from 'fs';
+import { format } from 'date-fns';
+import { existsSync, readFileSync } from 'fs';
 
 
 
@@ -247,47 +253,53 @@ export class SolicitarVisitaService {
 
     //necesito un filtro que con una parametro busque por id, nombre de  cliente, nombre de local 
 
-    async buscarSolicitud(parametro: string): Promise<SolicitarVisita[]> {
+    // necesito buscar por varios parametros que llegaran con este formato
+    //['176','juan','santiago']
+    //['176']
+    //['juan']
+    //['santiago']
+    //['176','juan']
+    //['176','santiago']
+    //['juan','santiago']
+    //['176','juan','santiago']
+
+    //osea pueden venir n cantidad de parametros 
+    async buscarSolicitud(parametros: string[]): Promise<SolicitarVisita[]> {
       try {
-        if (!parametro?.trim()) {
+        if (!parametros?.length) {
           return [];
         }
-        
-        const solicitudes = await this.solicitarVisitaRepository.find({
-          where: [
-            { id: Raw(alias => `CONVERT(${alias}, CHAR) LIKE :id`, { id: `%${parametro}%` }) },
-            { client: { nombre: ILike(`%${parametro}%`) } },
-            { local: { nombre_local: ILike(`%${parametro}%`) } },
-            { local: { direccion: ILike(`%${parametro}%`) } },
-            { tecnico_asignado: { 
-              name: ILike(`%${parametro}%`)
-            }},
-            { tecnico_asignado: { 
-              lastName: ILike(`%${parametro}%`)
-            }},
-            { tecnico_asignado_2: { 
-              name: ILike(`%${parametro}%`)
-            }},
-            { tecnico_asignado_2: { 
-              lastName: ILike(`%${parametro}%`)
-            }}
-          ],
-          relations: [
-            'local',
-            'client',
-            'tecnico_asignado',
-            'tecnico_asignado_2',
-            'tipoServicio'
-          ],
-          order: {
-            fechaIngreso: 'DESC'
-          }
-        });
 
+        const queryBuilder = this.solicitarVisitaRepository
+          .createQueryBuilder('solicitud')
+          .leftJoinAndSelect('solicitud.client', 'client')
+          .leftJoinAndSelect('solicitud.local', 'local')
+          .leftJoinAndSelect('solicitud.tecnico_asignado', 'tecnico_asignado')
+          .leftJoinAndSelect('solicitud.tecnico_asignado_2', 'tecnico_asignado_2')
+          .leftJoinAndSelect('solicitud.tipoServicio', 'tipoServicio')
+          .orderBy('solicitud.fechaIngreso', 'DESC');
+
+        // Procesar cada parámetro de búsqueda
+        parametros.forEach((param, i) => {
+            const key = `param${i}`;
+            queryBuilder.andWhere(new Brackets(qb => {
+              qb.where(`CAST(solicitud.id AS CHAR) LIKE :${key}`, { [key]: `%${param}%` })
+                .orWhere(`client.nombre LIKE :${key}`, { [key]: `%${param}%` })
+                .orWhere(`local.nombre_local LIKE :${key}`, { [key]: `%${param}%` })
+                .orWhere(`local.direccion LIKE :${key}`, { [key]: `%${param}%` })
+                .orWhere(`tecnico_asignado.name LIKE :${key}`, { [key]: `%${param}%` })
+                .orWhere(`tecnico_asignado.lastName LIKE :${key}`, { [key]: `%${param}%` })
+                .orWhere(`tecnico_asignado_2.name LIKE :${key}`, { [key]: `%${param}%` })
+                .orWhere(`tecnico_asignado_2.lastName LIKE :${key}`, { [key]: `%${param}%` });
+            }));
+          });
+
+        const solicitudes = await queryBuilder.getMany();
         return solicitudes;
+
       } catch (error) {
         console.error('Error en buscarSolicitud:', error);
-        throw new InternalServerErrorException('Error al buscar solicitudes');
+        throw new InternalServerErrorException('Error al buscar solicitudes: ' + error.message);
       }
     }
 
@@ -1291,5 +1303,147 @@ export class SolicitarVisitaService {
         
         return this.solicitarVisitaRepository.save(solicitud);
     }
+
+    async generatePdf(id: number): Promise<Buffer> {
+        try {
+          const solicitud = await this.solicitarVisitaRepository.findOne({
+            where: { id },
+            relations: [
+              'local', 'local.activoFijoLocales', 'client', 'tecnico_asignado', 'tecnico_asignado_2',
+              'itemRepuestos', 'itemRepuestos.repuesto', 'itemFotos', 'causaRaiz',
+              'activoFijoRepuestos', 'activoFijoRepuestos.activoFijo', 'activoFijoRepuestos.detallesRepuestos',
+              'activoFijoRepuestos.detallesRepuestos.repuesto']
+          });
+          if (!solicitud) throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+      
+          const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
+          const buffers: Buffer[] = [];
+          doc.on('data', buffers.push.bind(buffers));
+          let finalBuffer: Buffer | null = null;
+          doc.on('end', () => finalBuffer = Buffer.concat(buffers));
+      
+          const pageWidth = doc.page.width;
+          const marginLeft = 50;
+      
+          // Header: Logo + Title + Data
+          const logoPath = existsSync(join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg'))
+            ? join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg')
+            : join(__dirname, '..', 'images', 'atlantis_logo.jpg');
+          try {
+            if (existsSync(logoPath)) {
+              doc.image(logoPath, marginLeft, 40, { width: 60 });
+            }
+          } catch {}
+      
+          doc.font('Helvetica-Bold').fontSize(20).text('ATLANTIS', marginLeft + 80, 50);
+          doc.font('Helvetica').fontSize(10)
+            .text(`N° Solicitud: ${solicitud.id}`, marginLeft + 80, 75)
+            .text(`Inicio: ${format(new Date(solicitud.fecha_hora_inicio_servicio), 'dd/MM/yyyy HH:mm')}`, marginLeft + 80, 90)
+            .text(`Término: ${format(new Date(solicitud.fecha_hora_fin_servicio), 'dd/MM/yyyy HH:mm')}`, marginLeft + 80, 105);
+      
+          doc.moveTo(marginLeft, 130).lineTo(pageWidth - marginLeft, 130).stroke();
+          doc.moveDown(2);
+      
+          // Información general
+          doc.font('Helvetica-Bold').fontSize(12).text('DESCRIPCIÓN GENERAL DE LA SOLICITUD', marginLeft, undefined, { underline: true });
+          doc.moveDown(1);
+      
+          const tecnico1 = solicitud.tecnico_asignado;
+          const tecnico2 = solicitud.tecnico_asignado_2;
+      
+          const nombreTecnicos = [
+            tecnico1 ? `${tecnico1.name} ${tecnico1.lastName || ''}`.trim() : null,
+            tecnico2 ? `${tecnico2.name} ${tecnico2.lastName || ''}`.trim() : null
+          ].filter(Boolean).join(' y ') || 'No especificado';
+      
+          const info = [
+            [`CLIENTE`, solicitud.client?.nombre],
+            [`LOCAL`, solicitud.local?.nombre_local],
+            [`DIRECCIÓN`, solicitud.local?.direccion],
+            [`EQUIPO A INTERVENIR`, solicitud.observaciones || 'No especificado'],
+            [`TIPO DE SERVICIO`, solicitud.tipo_mantenimiento],
+            [`TÉCNICO EJECUTANTE`, nombreTecnicos]
+          ];
+      
+          doc.fontSize(10);
+          info.forEach(([label, value]) => {
+            doc.font('Helvetica-Bold').text(`${label}: `, marginLeft, undefined, { continued: true })
+               .font('Helvetica').text(value || '');
+          });
+      
+          // Firma
+          doc.moveDown(3);
+          doc.fontSize(11).font('Helvetica-Bold').text('Firma del Cliente:', marginLeft);
+          if (solicitud.firma_cliente) {
+            try {
+              const signatureBuffer = Buffer.from(solicitud.firma_cliente.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+              doc.image(signatureBuffer, marginLeft, doc.y + 10, { width: 180, height: 90 });
+              doc.moveDown(5);
+            } catch {
+              doc.font('Helvetica').text('Firma no disponible', marginLeft);
+            }
+          }
+          doc.fontSize(10).text(`Fecha: ${format(new Date(), 'dd/MM/yyyy')}`, marginLeft);
+      
+          // Repuestos utilizados
+          const repuestos = solicitud.itemRepuestos?.map(r => `- ${r.repuesto.familia}: ${r.repuesto.articulo} (${r.repuesto.marca})`).join('\n');
+          if (repuestos) {
+            doc.addPage();
+            doc.fontSize(12).font('Helvetica-Bold').text('REPUESTOS UTILIZADOS', marginLeft, undefined, { underline: true });
+            doc.moveDown();
+            doc.font('Helvetica').fontSize(10).text(repuestos, marginLeft);
+          }
+      
+          // Fotografías
+          const hasPhotos = solicitud.itemFotos?.some(f => f.fotos?.length);
+          if (hasPhotos) {
+            doc.addPage();
+            doc.fontSize(14).font('Helvetica-Bold').text('REGISTRO FOTOGRÁFICO', marginLeft, undefined, { underline: true });
+      
+            let y = 80, x = marginLeft;
+            const imageWidth = 120, imageHeight = 90, gap = 15;
+      
+            for (const item of solicitud.itemFotos) {
+              if (!item.fotos?.length) continue;
+              doc.fontSize(11).font('Helvetica-Bold').text(`Item ${item.itemId}`, x, y);
+              y += 15;
+              for (const fotoUrl of item.fotos) {
+                try {
+                  const filename = fotoUrl.split('/uploads/')[1];
+                  const path = join(process.cwd(), 'uploads', filename);
+                  if (!existsSync(path)) throw new Error(`No existe: ${path}`);
+      
+                  if (x + imageWidth > pageWidth - marginLeft) {
+                    x = marginLeft;
+                    y += imageHeight + gap;
+                  }
+                  if (y + imageHeight > doc.page.height - 60) {
+                    doc.addPage();
+                    y = 60; x = marginLeft;
+                  }
+                  doc.rect(x, y, imageWidth, imageHeight).stroke();
+                  doc.image(path, x, y, { fit: [imageWidth, imageHeight] });
+                  x += imageWidth + gap;
+                } catch (err) {
+                  doc.font('Helvetica').fontSize(8).text(`Error imagen: ${err.message}`, x, y);
+                  x += imageWidth + gap;
+                }
+              }
+              y += imageHeight + gap * 2;
+              x = marginLeft;
+            }
+          }
+      
+          doc.end();
+          return new Promise((resolve, reject) => {
+            doc.on('end', () => finalBuffer ? resolve(finalBuffer) : reject(new Error('PDF vacío')));
+          });
+        } catch (err) {
+          throw new InternalServerErrorException(`Error generando PDF: ${err.message}`);
+        }
+      }
+      
+      
+      
 }
 
