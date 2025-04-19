@@ -197,4 +197,127 @@
       padding: 8px;
     }
   }
+}
+
+.user-avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  color: white;
+  background-color: #1e88e5; // Default color
+  cursor: pointer;
+  font-size: 14px;
+  text-transform: uppercase;
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &.admin {
+    background-color: #7b1fa2; // Purple for admins
+  }
+
+  &.user {
+    background-color: #1e88e5; // Blue for regular users
+  }
+
+  &.tecnico {
+    background-color: #43a047; // Green for technicians
+  }
+
+  // Company-specific colors (can be expanded as needed)
+  &.company-gruman {
+    background-color: #f44336; // Red for Gruman
+  }
+
+  &.company-default {
+    background-color: #ff9800; // Orange for other companies
+  }
+}
+
+.user-profile {
+  min-width: 230px;
+  
+  .user-profile-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    
+    .user-name {
+      font-weight: 500;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    
+    .user-email {
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 14px;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+
+    .user-company {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.7);
+      font-weight: 500;
+      margin-bottom: 0;
+      padding: 6px 12px;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 16px;
+      display: inline-block;
+    }
+  }
+  
+  .profile-actions {
+    .mat-mdc-menu-item {
+      font-size: 14px;
+      
+      .mdc-list-item__primary-text {
+        display: flex;
+        align-items: center;
+      }
+      
+      mat-icon {
+        margin-right: 10px;
+      }
+    }
+  }
+}
+
+// Estilos para el selector de empresas
+.company-selector {
+  z-index: 1;
+}
+
+.company-select-btn {
+  min-width: 120px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 0 8px;
+  height: 36px;
+}
+
+::ng-deep .company-menu {
+  .mat-mdc-menu-item.selected {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.company-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.check-icon {
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+  color: #43a047;
 } 

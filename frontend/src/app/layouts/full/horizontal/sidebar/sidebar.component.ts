@@ -156,6 +156,36 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
         iconName: 'home-shield',
         bgcolor: 'primary',
         route: 'transacciones/servicios-realizados',
+      },{
+        displayName: 'Solicitudes',
+        iconName: 'clipboard-list',
+        children: [
+          {
+            displayName: 'Solicitudes de Visita Pendiente',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita',
+          },
+          {
+            displayName: 'Solicitudes de Visita Aprobadas',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita/aprobadas',
+          },
+          {
+            displayName: 'Solicitudes de Visita Rechazadas',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita/rechazadas',
+          },
+          {
+            displayName: 'Solicitudes de Visita Finalizadas',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita/finalizadas',
+          },
+          {
+            displayName: 'Solicitudes de Visita Validadas',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita/validadas',
+          }
+        ],
       },
      /*  {
         displayName: 'Lista de Servicios Realizados',
@@ -169,37 +199,7 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
           iconName: 'clipboard-list',
           bgcolor: 'primary',
           route: 'transacciones/solicitudes-del-dia',
-        },{
-            displayName: 'Solicitudes',
-            iconName: 'clipboard-list',
-            children: [
-              {
-                displayName: 'Solicitudes de Visita Pendiente',
-                iconName: 'home-shield',
-                route: 'transacciones/solicitudes-de-visita',
-              },
-              {
-                displayName: 'Solicitudes de Visita Aprobadas',
-                iconName: 'home-shield',
-                route: 'transacciones/solicitudes-de-visita/aprobadas',
-              },
-              {
-                displayName: 'Solicitudes de Visita Rechazadas',
-                iconName: 'home-shield',
-                route: 'transacciones/solicitudes-de-visita/rechazadas',
-              },
-              {
-                displayName: 'Solicitudes de Visita Finalizadas',
-                iconName: 'home-shield',
-                route: 'transacciones/solicitudes-de-visita/finalizadas',
-              },
-              {
-                displayName: 'Solicitudes de Visita Validadas',
-                iconName: 'home-shield',
-                route: 'transacciones/solicitudes-de-visita/validadas',
-              }
-            ],
-          },
+        },
           {
             displayName: 'Mantenedores',
             iconName: 'home-shield',

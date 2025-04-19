@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
@@ -16,6 +16,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from 'src/app/components/confirm-dialog/confirm-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Subscription } from 'rxjs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-solicitudes-validadas',
@@ -33,150 +36,183 @@ import { EspecialidadesService } from 'src/app/services/especialidades.service';
     MatFormFieldModule,
     MatInputModule,
     MatChipsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatProgressSpinnerModule
   ],
   template: `
     <mat-card class="cardWithShadow">
       <mat-card-content class="p-24">
         <div class="row justify-content-between m-b-8">
-          <div class="col-sm-4 col-lg-3">
-            <!-- Aquí podrías agregar un botón si lo necesitas -->
+          <div class="col-sm-8">
+            <h2 class="m-0">Solicitudes Validadas</h2>
+          
           </div>
-          <div class="col-sm-4 col-lg-3">
+          <div class="col-sm-4">
             <mat-form-field appearance="outline" class="w-100 hide-hint">
-              <input matInput (keyup)="applyFilter($event)" placeholder="Buscar por ticket" #input />
+              <mat-label>Buscar</mat-label>
+              <input matInput (keyup)="applyFilter($event)" placeholder="Buscar solicitud" #input>
+              <mat-icon matPrefix>search</mat-icon>
             </mat-form-field>
           </div>
         </div>
 
-        <div class="table-responsive m-t-30">
-          <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
-            <!-- ID Column -->
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
-              <td mat-cell *matCellDef="let row">{{row.id}}</td>
-            </ng-container>
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Cargando solicitudes...</p>
+        </div>
 
-            <!-- Logo Column -->
-            <ng-container matColumnDef="logo">
-              <th mat-header-cell *matHeaderCellDef>Logo</th>
-              <td mat-cell *matCellDef="let row" class="logo-cell">
-                <img 
-                  [src]="row.client?.logo || 'assets/images/no-image.png'" 
-                  [alt]="row.client?.nombre || 'Logo cliente'"
-                  class="client-logo"
-                  (error)="onImageError($event)">
-              </td>
-            </ng-container>
+        <!-- Tabla de datos o mensaje cuando no hay datos -->
+        <div *ngIf="!loading" class="m-t-16">
+          <!-- Mensaje cuando no hay datos -->
+          <div *ngIf="dataSource.data.length === 0" class="no-data-message">
+            <mat-icon>event_busy</mat-icon>
+            <p>No hay solicitudes validadas para mostrar</p>
+        
+            <p class="text-muted">Las solicitudes validadas aparecerán aquí cuando estén disponibles</p>
+          </div>
 
-            <!-- Fecha Column -->
-            <ng-container matColumnDef="fechaIngreso">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
-              <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
-            </ng-container>
+          <!-- Tabla con datos -->
+          <div *ngIf="dataSource.data.length > 0" class="table-responsive">
+            <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
+              <!-- ID Column -->
+              <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
+                <td mat-cell *matCellDef="let row">{{row.id}}</td>
+              </ng-container>
 
-            <!-- Cliente Column -->
-            <ng-container matColumnDef="cliente">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
-              <td mat-cell *matCellDef="let row">{{row.client?.nombre || 'No asignado'}}</td>
-            </ng-container>
+              <!-- Logo Column -->
+              <ng-container matColumnDef="logo">
+                <th mat-header-cell *matHeaderCellDef>Logo</th>
+                <td mat-cell *matCellDef="let row" class="logo-cell">
+                  <img 
+                    [src]="row.client?.logo || 'assets/images/no-image.png'" 
+                    [alt]="row.client?.nombre || 'Logo cliente'"
+                    class="client-logo"
+                    (error)="onImageError($event)">
+                </td>
+              </ng-container>
 
-            <!-- Local Column -->
-            <ng-container matColumnDef="local">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Local</th>
-              <td mat-cell *matCellDef="let row">{{row.local?.nombre_local || 'No asignado'}}</td>
-            </ng-container>
+              <!-- Fecha Column -->
+              <ng-container matColumnDef="fechaIngreso">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
+                <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
+              </ng-container>
 
-            <!-- Ticket Column -->
-            <ng-container matColumnDef="ticketGruman">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
-              <td mat-cell *matCellDef="let row">{{row.ticketGruman || 'Sin ticket'}}</td>
-            </ng-container>
+              <!-- Cliente Column -->
+              <ng-container matColumnDef="cliente">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
+                <td mat-cell *matCellDef="let row">{{row.client?.nombre || 'No asignado'}}</td>
+              </ng-container>
 
-            <!-- Especialidad Column -->
-            <ng-container matColumnDef="especialidad">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Especialidad</th>
-              <td mat-cell *matCellDef="let row">
-                {{especialidades[row.especialidad] || 'No especificada'}}
-              </td>
-            </ng-container>
+              <!-- Local Column -->
+              <ng-container matColumnDef="local">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Local</th>
+                <td mat-cell *matCellDef="let row">{{row.local?.nombre_local || 'No asignado'}}</td>
+              </ng-container>
 
-            <!-- Observaciones Column -->
-            <ng-container matColumnDef="observaciones">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Observaciones</th>
-              <td mat-cell *matCellDef="let row">
-                {{ row.observaciones?.length > 100 ? (row.observaciones | slice:0:50) + '...' : row.observaciones }}
-              </td>
-            </ng-container>
+              <!-- Ticket Column -->
+              <ng-container matColumnDef="ticketGruman">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
+                <td mat-cell *matCellDef="let row">{{row.ticketGruman || 'Sin ticket'}}</td>
+              </ng-container>
 
-            <!-- Técnico Column -->
-            <ng-container matColumnDef="tecnico">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Técnico</th>
-              <td mat-cell *matCellDef="let row">
-                {{row.tecnico_asignado ? row.tecnico_asignado.name + ' ' + row.tecnico_asignado.lastName : 'No asignado'}}
-              </td>
-            </ng-container>
+              <!-- Especialidad Column -->
+              <ng-container matColumnDef="especialidad">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Especialidad</th>
+                <td mat-cell *matCellDef="let row">
+                  {{especialidades[row.especialidad] || 'No especificada'}}
+                </td>
+              </ng-container>
 
-            <!-- Status Column -->
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
-              <td mat-cell *matCellDef="let row">
-                <mat-chip-listbox>
-                  <mat-chip [ngClass]="{
-                    'bg-warning': row.status === 'reabierta',
-                    'bg-success': row.status === 'validada'
-                  }">
-                    {{row.status === 'reabierta' ? 'Reabierta' : 'Validada'}}
-                  </mat-chip>
-                </mat-chip-listbox>
-              </td>
-            </ng-container>
+              <!-- Observaciones Column -->
+              <ng-container matColumnDef="observaciones">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Observaciones</th>
+                <td mat-cell *matCellDef="let row">
+                  {{ row.observaciones?.length > 100 ? (row.observaciones | slice:0:50) + '...' : row.observaciones }}
+                </td>
+              </ng-container>
 
-            <!-- Actions Column -->
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Acciones</th>
-              <td mat-cell *matCellDef="let row">
-                <button mat-icon-button color="primary" (click)="verDetalle(row.id); $event.stopPropagation()">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-              <!--   <button mat-icon-button 
-                        color="primary" 
-                        (click)="verHistorial(row); $event.stopPropagation()"
-                        matTooltip="Ver historial"
-                        matTooltipPosition="above"
-                        matTooltipShowDelay="500">
-                  <mat-icon>history</mat-icon>
-                </button> -->
-                <button  mat-icon-button 
-                         color="primary" 
-                         (click)="reabrirSolicitud(row); $event.stopPropagation()" 
-                         matTooltip="Reabrir solicitud"
+              <!-- Técnico Column -->
+              <ng-container matColumnDef="tecnico">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Técnico</th>
+                <td mat-cell *matCellDef="let row">
+                  {{row.tecnico_asignado ? row.tecnico_asignado.name + ' ' + row.tecnico_asignado.lastName : 'No asignado'}}
+                </td>
+              </ng-container>
+
+              <!-- Status Column -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+                <td mat-cell *matCellDef="let row">
+                  <mat-chip-listbox>
+                    <mat-chip [ngClass]="{
+                      'bg-warning': row.status === 'reabierta',
+                      'bg-success': row.status === 'validada'
+                    }">
+                      {{row.status === 'reabierta' ? 'Reabierta' : 'Validada'}}
+                    </mat-chip>
+                  </mat-chip-listbox>
+                </td>
+              </ng-container>
+
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                <td mat-cell *matCellDef="let row">
+                  <button mat-icon-button color="primary" (click)="verDetalle(row.id); $event.stopPropagation()" matTooltip="Ver detalle">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                <!--   <button mat-icon-button 
+                          color="primary" 
+                          (click)="verHistorial(row); $event.stopPropagation()"
+                          matTooltip="Ver historial"
+                          matTooltipPosition="above"
+                          matTooltipShowDelay="500">
+                    <mat-icon>history</mat-icon>
+                  </button> -->
+                  <button  mat-icon-button 
+                           color="primary" 
+                           (click)="reabrirSolicitud(row); $event.stopPropagation()" 
+                           matTooltip="Reabrir solicitud"
+                           matTooltipPosition="above"
+                           matTooltipShowDelay="500"
+                           [disabled]="row.status === 'reabierta'"
+                           [matTooltip]="row.status === 'reabierta' ? 'Solicitud ya reabierta' : 'Reabrir solicitud'">
+                    <mat-icon>open_in_browser</mat-icon>
+                  </button>
+                  <button mat-icon-button 
+                         color="accent"
+                         *ngIf="row.status === 'reabierta'"
+                         (click)="editarSolicitud(row); $event.stopPropagation()"
+                         matTooltip="Editar solicitud"
                          matTooltipPosition="above"
-                         matTooltipShowDelay="500"
-                         [disabled]="row.status === 'reabierta'"
-                         [matTooltip]="row.status === 'reabierta' ? 'Solicitud ya reabierta' : 'Reabrir solicitud'">
-                  <mat-icon>open_in_browser</mat-icon>
-                </button>
-                <button mat-icon-button 
-                       color="accent"
-                       *ngIf="row.status === 'reabierta'"
-                       (click)="editarSolicitud(row); $event.stopPropagation()"
-                       matTooltip="Editar solicitud"
-                       matTooltipPosition="above"
-                       matTooltipShowDelay="500">
-                  <mat-icon>edit</mat-icon>
-                </button>
-              </td>
-            </ng-container>
+                         matTooltipShowDelay="500">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="verDetalle(row.id)"></tr>
-          </table>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="verDetalle(row.id)"></tr>
+              
+              <!-- Row shown when there is no matching data from filter -->
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" colspan="11">
+                  <div class="no-data-message">
+                    <mat-icon>search_off</mat-icon>
+                    <p>No se encontraron coincidencias para "{{input.value}}"</p>
+                    <p class="text-muted">Intenta con otros términos de búsqueda</p>
+                  </div>
+                </td>
+              </tr>
+            </table>
 
-          <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
-                        [pageSize]="10"
-                        aria-label="Seleccionar página">
-          </mat-paginator>
+            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
+                          [pageSize]="10"
+                          aria-label="Seleccionar página">
+            </mat-paginator>
+          </div>
         </div>
       </mat-card-content>
     </mat-card>
@@ -232,9 +268,46 @@ import { EspecialidadesService } from 'src/app/services/especialidades.service';
     .mat-column-status {
       width: 120px;
     }
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+    }
+    .loading-container p {
+      margin-top: 16px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+    .no-data-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+      text-align: center;
+    }
+    .no-data-message mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      color: rgba(0, 0, 0, 0.3);
+    }
+    .no-data-message p {
+      margin: 4px 0;
+      color: rgba(0, 0, 0, 0.6);
+    }
+    .no-data-message p:first-of-type {
+      font-size: 18px;
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .text-muted {
+      color: rgba(0, 0, 0, 0.6);
+    }
   `]
 })
-export class SolicitudesValidadasComponent implements OnInit {
+export class SolicitudesValidadasComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'id',
     'logo',
@@ -250,6 +323,10 @@ export class SolicitudesValidadasComponent implements OnInit {
   ];
 
   dataSource: MatTableDataSource<any>;
+  loading = false;
+  allSolicitudes: any[] = [];
+  selectedCompany: any = null;
+  private companySubscription: Subscription | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -261,22 +338,49 @@ export class SolicitudesValidadasComponent implements OnInit {
     private especialidadesService: EspecialidadesService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private storage: StorageService
   ) {
     this.dataSource = new MatTableDataSource();
   }
 
   ngOnInit() {
+    // Obtener la compañía seleccionada inicialmente
+    const user = this.storage.getItem('currentUser');
+    if (user && user.selectedCompany) {
+      this.selectedCompany = user.selectedCompany;
+    }
+    
     this.loadEspecialidades();
     this.loadSolicitudes();
+    
+    // Suscribirse a cambios en la compañía seleccionada
+    this.companySubscription = this.storage.companyChange$.subscribe(company => {
+      this.selectedCompany = company;
+      this.filterByCompany();
+    });
+    
+    // Configurar cómo se filtra la tabla
     this.dataSource.filterPredicate = (data: any, filter: string) => {
-      return data.ticketGruman?.toLowerCase().includes(filter);
+      const searchTermFilter = data.ticketGruman?.toLowerCase().includes(filter.toLowerCase());
+      
+      // Si no hay filtro de búsqueda, solo aplicamos el filtro de compañía
+      if (!filter) return true;
+      
+      return searchTermFilter;
     };
   }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
+  
+  ngOnDestroy() {
+    // Limpiar la suscripción al destruir el componente
+    if (this.companySubscription) {
+      this.companySubscription.unsubscribe();
+    }
   }
 
   onImageError(event: any) {
@@ -298,18 +402,42 @@ export class SolicitudesValidadasComponent implements OnInit {
   }
 
   loadSolicitudes() {
+    this.loading = true;
     this.solicitarVisitaService.getSolicitudesValidadas().subscribe({
       next: (data) => {
         console.log('Datos recibidos:', data);
-        this.dataSource.data = data;
+        this.allSolicitudes = data;
+        this.filterByCompany();
+        this.loading = false;
       },
       error: (error) => {
         console.error('Error cargando solicitudes validadas:', error);
         this.snackBar.open('Error al cargar las solicitudes', 'Cerrar', {
           duration: 3000
         });
+        this.loading = false;
       }
     });
+  }
+  
+  filterByCompany() {
+    // Asegurarse de tener la empresa seleccionada actualizada
+    if (!this.selectedCompany) {
+      const user = this.storage.getItem('currentUser');
+      if (user && user.selectedCompany) {
+        this.selectedCompany = user.selectedCompany;
+      }
+    }
+    
+    if (this.selectedCompany && this.selectedCompany.id && this.selectedCompany.nombre !== 'GRUMAN') {
+      // Filtrar por la compañía seleccionada
+      this.dataSource.data = this.allSolicitudes.filter(
+        solicitud => solicitud.client && solicitud.client.id === this.selectedCompany.id
+      );
+    } else {
+      // Mostrar todas las solicitudes
+      this.dataSource.data = this.allSolicitudes;
+    }
   }
 
   formatDate(date: string) {

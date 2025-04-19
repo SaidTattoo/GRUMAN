@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
@@ -14,6 +14,9 @@ import { MatInputModule } from '@angular/material/input';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import Swal from 'sweetalert2';
+import { StorageService } from 'src/app/services/storage.service';
+import { Subscription } from 'rxjs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-solicitudes-finalizadas',
@@ -29,120 +32,153 @@ import Swal from 'sweetalert2';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatProgressSpinnerModule
   ],
   template: `
     <mat-card class="cardWithShadow">
       <mat-card-content class="p-24">
         <div class="row justify-content-between m-b-8">
-          <div class="col-sm-4 col-lg-3">
-            <!-- Aquí podrías agregar un botón si lo necesitas -->
+          <div class="col-sm-8">
+            <h2 class="m-0">Solicitudes Finalizadas</h2>
+          
           </div>
-          <div class="col-sm-4 col-lg-3">
+          <div class="col-sm-4">
             <mat-form-field appearance="outline" class="w-100 hide-hint">
-              <input matInput (keyup)="applyFilter($event)" placeholder="Buscar por ticket" #input />
+              <mat-label>Buscar</mat-label>
+              <input matInput (keyup)="applyFilter($event)" placeholder="Buscar solicitud" #input>
+              <mat-icon matPrefix>search</mat-icon>
             </mat-form-field>
           </div>
         </div>
 
-        <div class="table-responsive m-t-30">
-          <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
-            <!-- ID Column -->
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
-              <td mat-cell *matCellDef="let row">{{row.id}}</td>
-            </ng-container>
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Cargando solicitudes...</p>
+        </div>
 
-            <!-- Logo Column -->
-            <ng-container matColumnDef="logo">
-              <th mat-header-cell *matHeaderCellDef>Logo</th>
-              <td mat-cell *matCellDef="let row" class="logo-cell">
-                <img 
-                  [src]="row.client?.logo || 'assets/images/no-image.png'" 
-                  [alt]="row.client?.nombre || 'Logo cliente'"
-                  class="client-logo"
-                  (error)="onImageError($event)">
-              </td>
-            </ng-container>
+        <!-- Tabla de datos o mensaje cuando no hay datos -->
+        <div *ngIf="!loading" class="m-t-16">
+          <!-- Mensaje cuando no hay datos -->
+          <div *ngIf="dataSource.data.length === 0" class="no-data-message">
+            <mat-icon>event_busy</mat-icon>
+            <p>No hay solicitudes finalizadas para mostrar</p>
+          
+            <p class="text-muted">Las solicitudes finalizadas aparecerán aquí cuando estén disponibles</p>
+          </div>
 
-            <!-- Cliente Column -->
-            <ng-container matColumnDef="cliente">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
-              <td mat-cell *matCellDef="let row">{{row.client?.nombre || 'No asignado'}}</td>
-            </ng-container>
+          <!-- Tabla con datos -->
+          <div *ngIf="dataSource.data.length > 0" class="table-responsive">
+            <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
+              <!-- ID Column -->
+              <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
+                <td mat-cell *matCellDef="let row">{{row.id}}</td>
+              </ng-container>
 
-            <!-- Local Column -->
-            <ng-container matColumnDef="local">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Local</th>
-              <td mat-cell *matCellDef="let row">{{row.local?.nombre_local || 'No asignado'}}</td>
-            </ng-container>
+              <!-- Logo Column -->
+              <ng-container matColumnDef="logo">
+                <th mat-header-cell *matHeaderCellDef>Logo</th>
+                <td mat-cell *matCellDef="let row" class="logo-cell">
+                  <img 
+                    [src]="row.client?.logo || 'assets/images/no-image.png'" 
+                    [alt]="row.client?.nombre || 'Logo cliente'"
+                    class="client-logo"
+                    (error)="onImageError($event)">
+                </td>
+              </ng-container>
 
-            <!-- Fecha Column -->
-            <ng-container matColumnDef="fechaIngreso">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
-              <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
-            </ng-container>
+              <!-- Cliente Column -->
+              <ng-container matColumnDef="cliente">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
+                <td mat-cell *matCellDef="let row">{{row.client?.nombre || 'No asignado'}}</td>
+              </ng-container>
 
-            <!-- Especialidad Column -->
-            <ng-container matColumnDef="especialidad">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Especialidad</th>
-              <td mat-cell *matCellDef="let row">
-                {{especialidades[row.especialidad] || 'No especificada'}}
-              </td>
-            </ng-container>
+              <!-- Local Column -->
+              <ng-container matColumnDef="local">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Local</th>
+                <td mat-cell *matCellDef="let row">{{row.local?.nombre_local || 'No asignado'}}</td>
+              </ng-container>
 
-            <!-- Ticket Column -->
-            <ng-container matColumnDef="ticketGruman">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
-              <td mat-cell *matCellDef="let row">{{row.ticketGruman || 'Sin ticket'}}</td>
-            </ng-container>
+              <!-- Fecha Column -->
+              <ng-container matColumnDef="fechaIngreso">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
+                <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
+              </ng-container>
 
-            <!-- Observaciones Column -->
-            <ng-container matColumnDef="observaciones">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Observaciones</th>
-              <td mat-cell *matCellDef="let row">
-                {{ row.observaciones?.length > 100 ? (row.observaciones | slice:0:50) + '...' : row.observaciones }}
-              </td>
-            </ng-container>
+              <!-- Especialidad Column -->
+              <ng-container matColumnDef="especialidad">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Especialidad</th>
+                <td mat-cell *matCellDef="let row">
+                  {{especialidades[row.especialidad] || 'No especificada'}}
+                </td>
+              </ng-container>
 
-            <!-- Técnico Column -->
-            <ng-container matColumnDef="tecnico">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Técnico</th>
-              <td mat-cell *matCellDef="let row">
-                {{row.tecnico_asignado ? row.tecnico_asignado.name + ' ' + row.tecnico_asignado.lastName : 'No asignado'}}
-              </td>
-            </ng-container>
+              <!-- Ticket Column -->
+              <ng-container matColumnDef="ticketGruman">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
+                <td mat-cell *matCellDef="let row">{{row.ticketGruman || 'Sin ticket'}}</td>
+              </ng-container>
 
-            <!-- Acciones Column -->
-            <ng-container matColumnDef="acciones">
-              <th mat-header-cell *matHeaderCellDef>Acciones</th>
-              <td mat-cell *matCellDef="let row">
-                <button mat-raised-button color="primary" (click)="finalizarSolicitud(row)">
-                  <mat-icon>check_circle</mat-icon>
-                  Validar
-                </button>
-              </td>
-            </ng-container>
+              <!-- Observaciones Column -->
+              <ng-container matColumnDef="observaciones">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Observaciones</th>
+                <td mat-cell *matCellDef="let row">
+                  {{ row.observaciones?.length > 100 ? (row.observaciones | slice:0:50) + '...' : row.observaciones }}
+                </td>
+              </ng-container>
 
-            <!-- PDF Column -->
-            <ng-container matColumnDef="pdf">
-              <th mat-header-cell *matHeaderCellDef>PDF</th>
-              <td mat-cell *matCellDef="let row">
-                <button mat-icon-button color="primary" 
-                        (click)="$event.stopPropagation(); downloadPdf(row)"
-                        matTooltip="Descargar PDF">
-                  <mat-icon>picture_as_pdf</mat-icon>
-                </button>
-              </td>
-            </ng-container>
+              <!-- Técnico Column -->
+              <ng-container matColumnDef="tecnico">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Técnico</th>
+                <td mat-cell *matCellDef="let row">
+                  {{row.tecnico_asignado ? row.tecnico_asignado.name + ' ' + row.tecnico_asignado.lastName : 'No asignado'}}
+                </td>
+              </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
+              <!-- Acciones Column -->
+              <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                <td mat-cell *matCellDef="let row">
+                  <button mat-raised-button color="primary" (click)="finalizarSolicitud(row)">
+                    <mat-icon>check_circle</mat-icon>
+                    Validar
+                  </button>
+                </td>
+              </ng-container>
 
-          <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
-                [pageSize]="10"
-          aria-label="Seleccionar página"></mat-paginator>
+              <!-- PDF Column -->
+              <ng-container matColumnDef="pdf">
+                <th mat-header-cell *matHeaderCellDef>PDF</th>
+                <td mat-cell *matCellDef="let row">
+                  <button mat-icon-button color="primary" 
+                          (click)="$event.stopPropagation(); downloadPdf(row)"
+                          matTooltip="Descargar PDF">
+                    <mat-icon>picture_as_pdf</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              
+              <!-- Row shown when there is no matching data from filter -->
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" colspan="11">
+                  <div class="no-data-message">
+                    <mat-icon>search_off</mat-icon>
+                    <p>No se encontraron coincidencias para "{{input.value}}"</p>
+                    <p class="text-muted">Intenta con otros términos de búsqueda</p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
+                  [pageSize]="10"
+            aria-label="Seleccionar página"></mat-paginator>
+          </div>
         </div>
       </mat-card-content>
     </mat-card>
@@ -183,9 +219,46 @@ import Swal from 'sweetalert2';
     .hide-hint ::ng-deep .mat-mdc-form-field-subscript-wrapper {
       display: none;
     }
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+    }
+    .loading-container p {
+      margin-top: 16px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+    .no-data-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+      text-align: center;
+    }
+    .no-data-message mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      color: rgba(0, 0, 0, 0.3);
+    }
+    .no-data-message p {
+      margin: 4px 0;
+      color: rgba(0, 0, 0, 0.6);
+    }
+    .no-data-message p:first-of-type {
+      font-size: 18px;
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .text-muted {
+      color: rgba(0, 0, 0, 0.6);
+    }
   `]
 })
-export class SolicitudesFinalizadasComponent implements OnInit {
+export class SolicitudesFinalizadasComponent implements OnInit, OnDestroy {
   dataSource: MatTableDataSource<any>;
   displayedColumns: string[] = [
     'id',
@@ -200,6 +273,11 @@ export class SolicitudesFinalizadasComponent implements OnInit {
     'acciones',
     'pdf'
   ];
+  
+  loading = false;
+  allSolicitudes: any[] = [];
+  selectedCompany: any = null;
+  private companySubscription: Subscription | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -209,7 +287,8 @@ export class SolicitudesFinalizadasComponent implements OnInit {
   constructor(
     private solicitarVisitaService: SolicitarVisitaService,
     private especialidadesService: EspecialidadesService,
-    private router: Router
+    private router: Router,
+    private storage: StorageService
   ) {
     this.dataSource = new MatTableDataSource();
   }
@@ -217,22 +296,92 @@ export class SolicitudesFinalizadasComponent implements OnInit {
   ngOnInit(): void {
     this.loadEspecialidades();
     this.loadSolicitudes();
+    
+    // Obtener la compañía seleccionada inicialmente
+    const user = this.storage.getItem('currentUser');
+    if (user && user.selectedCompany) {
+      this.selectedCompany = user.selectedCompany;
+    }
+    
+    // Suscribirse a cambios en la compañía seleccionada
+    this.companySubscription = this.storage.companyChange$.subscribe(company => {
+      this.selectedCompany = company;
+      this.filterByCompany();
+    });
+    
+    // Configurar cómo se filtra la tabla
+    this.dataSource.filterPredicate = (data: any, filter: string) => {
+      const searchTermFilter = data.ticketGruman?.toLowerCase().includes(filter.toLowerCase());
+      
+      // Si no hay filtro de búsqueda, solo aplicamos el filtro de compañía
+      if (!filter) return true;
+      
+      return searchTermFilter;
+    };
   }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
+  
+  ngOnDestroy() {
+    // Limpiar la suscripción al destruir el componente
+    if (this.companySubscription) {
+      this.companySubscription.unsubscribe();
+    }
+  }
 
   loadSolicitudes() {
+    this.loading = true;
     this.solicitarVisitaService.getSolicitudesFinalizadas().subscribe({
       next: (data) => {
-        this.dataSource.data = data;
+        this.allSolicitudes = data;
+        // Aplicar filtro inmediatamente con la empresa actual
+        this.filterByCompany();
+        this.loading = false;
       },
       error: (error) => {
         console.error('Error cargando solicitudes:', error);
+        this.loading = false;
       }
     });
+  }
+  
+  filterByCompany() {
+    // Asegurarse de tener la empresa seleccionada actualizada
+    if (!this.selectedCompany) {
+      const user = this.storage.getItem('currentUser');
+      if (user && user.selectedCompany) {
+        this.selectedCompany = user.selectedCompany;
+      }
+    }
+    
+    // Si hay solicitudes cargadas, aplicar el filtro
+    if (this.allSolicitudes && this.allSolicitudes.length > 0) {
+      if (this.selectedCompany && this.selectedCompany.id) {
+        if (this.selectedCompany.nombre === 'GRUMAN' || this.selectedCompany.nombre === 'Administrador') {
+          // Para GRUMAN o Administrador, mostrar todas las solicitudes
+          this.dataSource.data = this.allSolicitudes;
+        } else {
+          // Filtrar por la compañía seleccionada
+          this.dataSource.data = this.allSolicitudes.filter(
+            solicitud => solicitud.client && solicitud.client.id === this.selectedCompany.id
+          );
+        }
+      } else {
+        // Si no hay compañía seleccionada, mostrar todas las solicitudes
+        this.dataSource.data = this.allSolicitudes;
+      }
+    } else {
+      // Si no hay solicitudes, establecer un array vacío
+      this.dataSource.data = [];
+    }
+    
+    // Resetear el paginador si está disponible
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
   }
 
   loadEspecialidades() {

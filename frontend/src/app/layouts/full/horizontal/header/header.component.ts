@@ -176,7 +176,7 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
         this.userRole = user.role;
         this.userEmail = user.email;
         this.userCompanies = user.companies || [];
-        
+        this.selectedCompany = user.selectedCompany || this.userCompanies[0];
         // Si hay compañías disponibles, seleccionar la primera por defecto
         if (this.userCompanies.length > 0) {
           const storedCompanyId = this.storage.getItem('selectedCompanyId');
@@ -218,12 +218,21 @@ export class AppHorizontalHeaderComponent implements OnInit, OnDestroy {
 
   onCompanySelect(company: any): void {
     const currentUser = this.storage.getItem('currentUser');
+    if (!currentUser) return; // Safety check
+  
     const updatedUser = { 
       ...currentUser,
       selectedCompany: company
     };
     this.selectedCompany = company;
-    this.storage.setItem('currentUser', updatedUser);
+    this.storage.setItem('currentUser', updatedUser); // Update the whole user object in storage
+    this.storage.setItem('selectedCompanyId', company.id.toString()); // Keep separate ID for potential quick checks
+    
+    // Emitir un evento para notificar a los componentes que deben actualizar sus datos
+    this.storage.emitCompanyChangeEvent(company);
+    
+    // Actualizar el estado del usuario en el StorageService
+    this.storage.updateUser(updatedUser);
   }
 
   getUserInitials(): string {

@@ -1,119 +1,145 @@
 <mat-card class="cardWithShadow">
     <mat-card-content class="p-24">
       <div class="row justify-content-between m-b-8">
-        <div class="col-sm-4 col-lg-3">
-          <!-- Aquí podrías agregar un botón si lo necesitas -->
+        <div class="col-sm-8">
+          <h2 class="m-0">Solicitudes Pendientes</h2>
+        
         </div>
-        <div class="col-sm-4 col-lg-3">
+        <div class="col-sm-4">
           <mat-form-field appearance="outline" class="w-100 hide-hint">
-            <input matInput (keyup)="applyFilter($event)" placeholder="Buscar por ticket" #input />
+            <mat-label>Buscar</mat-label>
+            <input matInput (keyup)="applyFilter($event)" placeholder="Buscar solicitud" #input>
+            <mat-icon matPrefix>search</mat-icon>
           </mat-form-field>
         </div>
       </div>
-  
-      <div class="table-responsive m-t-30">
-        <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
-          <!-- ID Column -->
-          <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
-            <td mat-cell *matCellDef="let element">{{element.id}}</td>
-          </ng-container>
-          
-          <!-- Logo Column -->
-          <ng-container matColumnDef="logo">
-            <th mat-header-cell *matHeaderCellDef>Logo</th>
-            <td mat-cell *matCellDef="let element" class="logo-cell">
-              <img 
-                [src]="element.client?.logo || 'assets/images/no-image.png'" 
-                [alt]="element.client?.nombre || 'Logo cliente'"
-                class="client-logo"
-                (error)="onImageError($event)">
-            </td>
-          </ng-container>
 
-          <!-- Cliente Column -->
-          <ng-container matColumnDef="cliente">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
-            <td mat-cell *matCellDef="let element">{{element.client?.nombre || 'No asignado'}}</td>
-          </ng-container>
+      <!-- Indicador de carga -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando solicitudes...</p>
+      </div>
 
-          <!-- Local Column -->
-          <ng-container matColumnDef="local">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Local</th>
-            <td mat-cell *matCellDef="let element">{{element.local?.nombre_local || 'No asignado'}}</td>
-          </ng-container>
+      <!-- Tabla de datos o mensaje cuando no hay datos -->
+      <div *ngIf="!loading" class="m-t-16">
+        <!-- Mensaje cuando no hay datos -->
+        <div *ngIf="dataSource.data.length === 0" class="no-data-message">
+          <mat-icon>event_busy</mat-icon>
+          <p>No hay solicitudes pendientes para mostrar</p>
+         
+          <p class="text-muted">Las solicitudes pendientes aparecerán aquí cuando estén disponibles</p>
+        </div>
 
-          <!-- Ticket Column -->
-          <ng-container matColumnDef="ticketGruman">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
-            <td mat-cell *matCellDef="let element">{{element.ticketGruman || 'Sin ticket'}}</td>
-          </ng-container>
+        <!-- Tabla con datos -->
+        <div *ngIf="dataSource.data.length > 0" class="table-responsive">
+          <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
+            <!-- ID Column -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
+              <td mat-cell *matCellDef="let element">{{element.id}}</td>
+            </ng-container>
+            
+            <!-- Logo Column -->
+            <ng-container matColumnDef="logo">
+              <th mat-header-cell *matHeaderCellDef>Logo</th>
+              <td mat-cell *matCellDef="let element" class="logo-cell">
+                <img 
+                  [src]="element.client?.logo || 'assets/images/no-image.png'" 
+                  [alt]="element.client?.nombre || 'Logo cliente'"
+                  class="client-logo"
+                  (error)="onImageError($event)">
+              </td>
+            </ng-container>
 
-          <!-- Fecha Ingreso Column -->
-          <ng-container matColumnDef="fechaIngreso">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
-            <td mat-cell *matCellDef="let element">
-              {{formatDate(element.fechaIngreso)}}
-            </td>
-          </ng-container>
+            <!-- Cliente Column -->
+            <ng-container matColumnDef="cliente">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
+              <td mat-cell *matCellDef="let element">{{element.client?.nombre || 'No asignado'}}</td>
+            </ng-container>
 
-          <!-- Observaciones Column -->
-          <ng-container matColumnDef="observaciones">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Observaciones</th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.observaciones?.length > 100 ? (element.observaciones | slice:0:50) + '...' : element.observaciones }}
-            </td>
-          </ng-container>
+            <!-- Local Column -->
+            <ng-container matColumnDef="local">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Local</th>
+              <td mat-cell *matCellDef="let element">{{element.local?.nombre_local || 'No asignado'}}</td>
+            </ng-container>
 
+            <!-- Ticket Column -->
+            <ng-container matColumnDef="ticketGruman">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
+              <td mat-cell *matCellDef="let element">{{element.ticketGruman || 'Sin ticket'}}</td>
+            </ng-container>
 
-          <!-- Estado Column -->
-          <ng-container matColumnDef="estado">  
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
-            <td mat-cell *matCellDef="let element">
-              <span class="badge rounded-pill" 
-                    [ngStyle]="{
-                      'background-color': element.status === 'aprobado' ? '#28a745' :
-                                        element.status === 'pendiente' ? '#ffc107' :
-                                        element.status === 'rechazado' ? '#dc3545' : '',
-                      'color': element.status === 'pendiente' ? '#000' : '#fff',
-                      'font-size': '12px',
-                      'padding': '6px 12px'
-                    }">
-                {{ element.status }}
-              </span>
-            </td>
-          </ng-container>
-          
-          <!-- Imágenes Column -->
-          <ng-container matColumnDef="imagenes">
-            <th mat-header-cell *matHeaderCellDef>Imágenes</th>
-            <td mat-cell *matCellDef="let element">{{ element.imagenes?.length || 0 }}</td>
-          </ng-container>
-  
-          <!-- Acciones Column -->
-          <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef>Acciones</th>
-            <td mat-cell *matCellDef="let element" class="p-l-0">
-              <button mat-icon-button (click)="verSolicitud(element)" color="primary">
-                <mat-icon>visibility</mat-icon>
-              </button> 
-            </td>
-          </ng-container>
-          
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-  
-          <!-- Row shown when there is no matching data. -->
-          <tr class="mat-row" *matNoDataRow>
-            <td class="mat-cell" colspan="8">No se encontraron solicitudes pendientes</td>
-          </tr>
-        </table>
+            <!-- Fecha Ingreso Column -->
+            <ng-container matColumnDef="fechaIngreso">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
+              <td mat-cell *matCellDef="let element">
+                {{formatDate(element.fechaIngreso)}}
+              </td>
+            </ng-container>
 
-        <mat-paginator 
-          [pageSizeOptions]="[5, 10, 25, 100]"
-          [pageSize]="10"
-          aria-label="Seleccionar página de solicitudes">
-        </mat-paginator>
+            <!-- Observaciones Column -->
+            <ng-container matColumnDef="observaciones">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Observaciones</th>
+              <td mat-cell *matCellDef="let element">
+                {{ element.observaciones?.length > 100 ? (element.observaciones | slice:0:50) + '...' : element.observaciones }}
+              </td>
+            </ng-container>
+
+            <!-- Estado Column -->
+            <ng-container matColumnDef="estado">  
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+              <td mat-cell *matCellDef="let element">
+                <span class="badge rounded-pill" 
+                      [ngStyle]="{
+                        'background-color': element.status === 'aprobado' ? '#28a745' :
+                                          element.status === 'pendiente' ? '#ffc107' :
+                                          element.status === 'rechazado' ? '#dc3545' : '',
+                        'color': element.status === 'pendiente' ? '#000' : '#fff',
+                        'font-size': '12px',
+                        'padding': '6px 12px'
+                      }">
+                  {{ element.status }}
+                </span>
+              </td>
+            </ng-container>
+            
+            <!-- Imágenes Column -->
+            <ng-container matColumnDef="imagenes">
+              <th mat-header-cell *matHeaderCellDef>Imágenes</th>
+              <td mat-cell *matCellDef="let element">{{ element.imagenes?.length || 0 }}</td>
+            </ng-container>
+    
+            <!-- Acciones Column -->
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef>Acciones</th>
+              <td mat-cell *matCellDef="let element" class="p-l-0">
+                <button mat-icon-button (click)="verSolicitud(element)" color="primary">
+                  <mat-icon>visibility</mat-icon>
+                </button> 
+              </td>
+            </ng-container>
+            
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    
+            <!-- Row shown when there is no matching data from filter -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" colspan="10">
+                <div class="no-data-message">
+                  <mat-icon>search_off</mat-icon>
+                  <p>No se encontraron coincidencias para "{{input.value}}"</p>
+                  <p class="text-muted">Intenta con otros términos de búsqueda</p>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <mat-paginator 
+            [pageSizeOptions]="[5, 10, 25, 100]"
+            [pageSize]="10"
+            aria-label="Seleccionar página de solicitudes">
+          </mat-paginator>
+        </div>
       </div>
     </mat-card-content>
   </mat-card>
