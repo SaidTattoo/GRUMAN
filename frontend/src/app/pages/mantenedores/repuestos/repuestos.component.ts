@@ -165,9 +165,10 @@ export class RepuestosComponent {
       }
     });
 
+    // Ensure values are converted to numbers
     const updateData = {
-      precio_venta: precio.precio_venta,
-      precio_compra: precio.precio_compra
+      precio_venta: parseFloat(precio.precio_venta),
+      precio_compra: parseFloat(precio.precio_compra)
     };
 
     this.repuestosService.updateClienteRepuesto(precio.id, updateData).subscribe({
