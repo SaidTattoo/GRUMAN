@@ -50,7 +50,15 @@ export class SelectClientComponent implements OnInit, OnDestroy {
       companies: currentUser.companies
     };
     
+    // Update user in the UserService
     this.userService.updateCurrentUser(updatedUser);
+    
+    // Also emit company change event through StorageService
+    this.storage.emitCompanyChangeEvent(selectedCompany);
+    
+    // Store the selected company ID separately for quick access
+    this.storage.setItem('selectedCompanyId', selectedCompany.id.toString());
+    
     this.router.navigate(['/dashboards']);
   }
 }

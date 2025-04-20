@@ -1443,7 +1443,68 @@ export class SolicitarVisitaService {
         }
       }
       
-      
+      async getContadores(): Promise<{
+        pendientes: number;
+        aprobadas: number;
+        finalizadas: number;
+        validadas: number;
+        rechazadas: number;
+        enServicio: number;
+        reabiertas: number;
+        total: number;
+    }> {
+        try {
+            const [
+                pendientes,
+                aprobadas,
+                finalizadas,
+                validadas,
+                rechazadas,
+                enServicio,
+                reabiertas,
+                total
+            ] = await Promise.all([
+                this.solicitarVisitaRepository.count({
+                    where: { status: SolicitudStatus.PENDIENTE }
+                }),
+                this.solicitarVisitaRepository.count({
+                    where: { status: SolicitudStatus.APROBADA }
+                }),
+                this.solicitarVisitaRepository.count({
+                    where: { status: SolicitudStatus.FINALIZADA }
+                }),
+                this.solicitarVisitaRepository.count({
+                    where: { status: SolicitudStatus.VALIDADA }
+                }),
+                this.solicitarVisitaRepository.count({
+                    where: { status: SolicitudStatus.RECHAZADA }
+                }),
+                this.solicitarVisitaRepository.count({
+                    where: { status: SolicitudStatus.EN_SERVICIO }
+                }),
+                this.solicitarVisitaRepository.count({
+                    where: { status: SolicitudStatus.REABIERTA }
+                }),
+                this.solicitarVisitaRepository.count()
+            ]);
+    
+            return {
+                pendientes,
+                aprobadas,
+                finalizadas,
+                validadas,
+                rechazadas,
+                enServicio,
+                reabiertas,
+                total
+            };
+        } catch (error) {
+            console.error('Error al obtener contadores:', error);
+            throw new InternalServerErrorException('Error al obtener contadores de solicitudes');
+        }
+    }
+    
+     
       
 }
 

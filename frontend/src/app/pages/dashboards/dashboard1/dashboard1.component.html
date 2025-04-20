@@ -11,7 +11,7 @@
           </div>
         </div>
       </mat-card-header>
-    <!--  <mat-card-content>
+   <mat-card-content>
         <div class="m-t-35 m-b-24">
           <div class="row">
             <div class="col-12">
@@ -22,8 +22,8 @@
                     <mat-card-content>
                       <mat-icon>assignment_late</mat-icon>
                       <div class="m-t-35">
-                        <h5 class="f-w-600 f-s-21 m-0">{{ count_reactivos_pendientes_autorizacion }}</h5>
-                        <span class="f-s-14">Reactivos Pendientes Autorización</span>
+                        <h5 class="f-w-600 f-s-21 m-0">{{ pendientes }}</h5>
+                        <span class="f-s-14"> Pendientes de Autorización</span>
                       </div>
                     </mat-card-content>
                   </mat-card>
@@ -33,10 +33,10 @@
                 <div class="card-container">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
-                      <mat-icon>build</mat-icon>
+                      <mat-icon>done_all</mat-icon>
                       <div class="m-t-35">
-                        <h5 class="f-w-600 f-s-21 m-0">{{ count_correctivos_pendientes_autorizacion }}</h5>
-                        <span class="f-s-14">Correctivos Pendientes Autorización</span>
+                        <h5 class="f-w-600 f-s-21 m-0">{{ aprobadas }}</h5>
+                        <span class="f-s-14">Solicitudes Aprobadas</span>
                       </div>
                     </mat-card-content>
                   </mat-card>
@@ -46,29 +46,29 @@
                 <div class="card-container">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
-                      <mat-icon>assignment_turned_in</mat-icon>
+                      <mat-icon> local_shipping</mat-icon>
                       <div class="m-t-35">
-                        <h5 class="f-w-600 f-s-21 m-0">{{ count_servicios_autorizados_pendientes_visita }}</h5>
-                        <span class="f-s-14">Servicios autorizados y pendientes de visita</span>
+                        <h5 class="f-w-600 f-s-21 m-0">{{ servicio }}</h5>
+                        <span class="f-s-14">En servicio</span>
                       </div>
                     </mat-card-content>
                   </mat-card>
                 </div>
-
+               
                
                 <div class="card-container">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
-                      <mat-icon>event</mat-icon>
+                      <mat-icon>flag_2</mat-icon>
                       <div class="m-t-35">
                         <h5 class="f-w-600 f-s-21 m-0">{{ count_proximas_visitas_preventivas }}</h5>
-                        <span class="f-s-14">Próxima Visita Preventiva</span>
+                        <span class="f-s-14">Finalizadas</span>
                       </div>
                     </mat-card-content>
                   </mat-card>
                 </div>
 
-               
+              <!--  
                 <div class="card-container">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
@@ -106,9 +106,9 @@
                     </mat-card-content>
                   </mat-card>
                 </div>
-
+ -->
               
-                <div class="card-container">
+             <!--    <div class="card-container">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
                       <mat-icon>trending_up</mat-icon>
@@ -118,12 +118,12 @@
                       </div>
                     </mat-card-content>
                   </mat-card>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
         </div>
-      </mat-card-content>-->
+      </mat-card-content>
     </mat-card>
   </div>
 </div>

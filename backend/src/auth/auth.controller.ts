@@ -1,14 +1,15 @@
-import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Post, Query, Res, UnauthorizedException, Req, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiTags, ApiResponse } from '@nestjs/swagger';
 import { LoginTecnicoDto } from './dto/loginTecnico.dto';
 import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
 import * as crypto from 'crypto';
 import { HttpException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+
 
 @ApiTags('auth')
 @Controller('auth')
@@ -165,5 +166,14 @@ export class AuthController {
             console.error('Error en resetPassword:', error);
             throw new BadRequestException(error.message);
         }
+    }
+
+    @Get('refresh-token')
+
+    @ApiOperation({ summary: 'Refresh JWT token' })
+    @ApiResponse({ status: 200, description: 'Returns a new token' })
+    async refreshToken(@Req() req: any) {
+        const token = this.authService.generateJwtToken(req.user);
+        return { token };
     }
 }

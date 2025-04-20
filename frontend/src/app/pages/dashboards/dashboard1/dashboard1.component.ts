@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 // components
 import { AppCongratulateCardComponent } from '../../../components/dashboard1/congratulate-card/congratulate-card.component';
@@ -13,11 +14,14 @@ import { AppVisitUsaComponent } from '../../../components/dashboard1/visit-usa/v
 import { AppLatestReviewsComponent } from '../../../components/dashboard1/latest-reviews/latest-reviews.component';
 import { MaterialModule } from 'src/app/material.module';
 import { DashboardService } from 'src/app/services/dashboard.service';
-enum TipoOrden {
-  PREVENTIVO = 2,
-  CORRECTIVO =7,
-  VISITA_TECNICA = 8,
-  REACTIVO = 1,
+import { StorageService } from 'src/app/services/storage.service';
+import { UserService } from 'src/app/core/services/user.service';
+import { Router } from '@angular/router';
+
+export enum TipoOrden {
+  PREVENTIVO = 'preventivo',
+  CORRECTIVO = 'correctivo',
+  REACTIVO = 'reactivo'
 }
 
 @Component({
@@ -78,8 +82,14 @@ enum TipoOrden {
     `,
   ],
 })
-export class AppDashboard1Component  implements OnInit{
-  constructor( private dashboardService: DashboardService ) { }
+export class AppDashboard1Component implements OnInit, OnDestroy {
+  constructor(
+    private dashboardService: DashboardService, 
+    private storageService: StorageService,
+    private userService: UserService,
+    private router: Router
+  ) { }
+
   cards = [
     { title: '14 Reactivo Pendientes Autorización', content: '', image: 'assets/images/cancel.png', icon: 'assignment_late' },
     { title: '133 Correctivo Pendientes Autorización', content: '', image: 'assets/images/computer.png', icon: 'build' },
@@ -102,9 +112,8 @@ export class AppDashboard1Component  implements OnInit{
     //console.log('Card clicked:', card);
   }
 
-
-  count_correctivos_pendientes_autorizacion = 133;
-  count_servicios_autorizados_pendientes_visita = 131;
+  aprobadas = 133;
+  servicio = 131;
   count_proximas_visitas_preventivas = 3;
   count_servicios_del_dia = 10;
   count_analisis_causa_raiz = 10;
@@ -113,52 +122,109 @@ export class AppDashboard1Component  implements OnInit{
   count_performance_reactivos = 10;
   count_gasto_total_acumulado = 10;
 
-  count_reactivos_pendientes_autorizacion = 14;
+  pendientes = 14;
+  user: any;
+  private companyChangeSubscription: Subscription;
+  private userSubscription: Subscription;
 
   getReactivosPendientesAutorizacion() {
    
   }
 
-    ngOnInit() {
-     /*  this.dashboardService.getOrdenesServicio().subscribe((data: any) => {
-        console.log(data);
-      });
-
-      this.dashboardService.getOrdenesServicioPorEstado('esperando_aprobacion', TipoOrden.CORRECTIVO).subscribe((data: any) => {
-        this.count_correctivos_pendientes_autorizacion = data;
-      });
-      this.dashboardService.getOrdenesServicioPorEstado('esperando_aprobacion', TipoOrden.REACTIVO).subscribe((data: any) => {
-        this.count_reactivos_pendientes_autorizacion = data;
-      });
-
-      this.dashboardService.getServiciosAutorizadosPendientesVisita().subscribe((data: any) => {
-        this.count_servicios_autorizados_pendientes_visita = data;
-      });
-
-      this.dashboardService.getProximasVisitasPreventivas().subscribe((data: any) => {
-        this.count_proximas_visitas_preventivas = data;
-      });
-
-      this.dashboardService.getServiciosDelDia().subscribe((data: any) => {
-        this.count_servicios_del_dia = data;
-      });
-
-      this.dashboardService.getCumplimientoPreventivos().subscribe((data: any) => {
-        this.count_cumplimiento_preventivos = data;
-      });
-
-      this.dashboardService.getGastosRepuestos().subscribe((data: any) => {
-        this.count_gastos_repostos = data;
-      });
-
-      this.dashboardService.getPerformanceReactivos().subscribe((data: any) => {
-        this.count_performance_reactivos = data;
-      });
-
-      this.dashboardService.getGastoTotalAcumulado().subscribe((data: any) => {
-        this.count_gasto_total_acumulado = data;
-      }); */
+  ngOnInit() {
+    // First get the most up-to-date user data from the UserService
+    this.user = this.userService.getCurrentUser();
+    
+    // If no user or no selected company, redirect to select-client
+    if (!this.user || !this.user.selectedCompany) {
+      console.log('No user or selected company found, redirecting to select-client');
+      this.router.navigate(['/authentication/select-client']);
+      return;
     }
+    
+    console.log('Dashboard initialized with company:', this.user.selectedCompany.nombre);
+    
+    // Load data with the current selected company
+    this.loadDashboardData();
+    
+    // Subscribe to user changes
+    this.userSubscription = this.userService.currentUser$.subscribe(user => {
+      if (user) {
+        this.user = user;
+        // Only reload if the user changes (not on initial subscription)
+        if (this.user.selectedCompany) {
+          console.log('User updated in dashboard');
+          this.loadDashboardData();
+        }
+      }
+    });
+    
+    // Subscribe to company change events
+    this.companyChangeSubscription = this.storageService.companyChange$.subscribe(
+      (company) => {
+        if (company) {
+          console.log('Company changed in dashboard:', company.nombre);
+          this.user.selectedCompany = company;
+          this.loadDashboardData();
+        }
+      }
+    );
+  }
+
+  ngOnDestroy() {
+    if (this.companyChangeSubscription) {
+      this.companyChangeSubscription.unsubscribe();
+    }
+    
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
+  }
+
+  private loadDashboardData() {
+    if (!this.user || !this.user.selectedCompany) {
+      console.warn('Cannot load dashboard data: No user or selected company');
+      return;
+    }
+    
+    console.log('Loading dashboard data for company:', this.user.selectedCompany.nombre);
+    
+    if (this.user.selectedCompany.nombre === 'GRUMAN' || this.user.selectedCompany.nombre === 'Administrador') {
+      this.dashboardService.getContadoresCantidad().subscribe((data: any) => {
+        console.log('Contadores for GRUMAN/Admin:', data);
+        this.updateDashboardCounters(data);
+      });
+    } else {
+      this.dashboardService.getContadoresCantidad(this.user.selectedCompany.id).subscribe((data: any) => {
+        console.log('Contadores for client:', this.user.selectedCompany.nombre, data);
+        this.updateDashboardCounters(data);
+      });
+    }
+
+    // Fetch client statistics
+    this.dashboardService.getEstadisticasCantidadPorCliente().subscribe((data: any) => {
+      console.log('Estadisticas por cliente', data);
+    });
+
+    // Fetch monthly statistics
+    this.dashboardService.getEstadisticasMensualesCantidad(new Date().getFullYear(), 
+      this.user.selectedCompany.nombre === 'GRUMAN' || this.user.selectedCompany.nombre === 'Administrador' 
+        ? undefined 
+        : this.user.selectedCompany.id
+    ).subscribe((data: any) => {
+      console.log('Estadisticas mensuales', data);
+    });
+  }
+
+  private updateDashboardCounters(data: any) {
+    this.pendientes = data.pendientes || 0;
+    this.aprobadas = data.aprobadas || 0;
+    this.servicio = data.enServicio || 0;
+    this.count_proximas_visitas_preventivas = data.finalizadas || 0;
+    this.count_servicios_del_dia = data.serviciosDelDia || 0;
+    this.count_analisis_causa_raiz = data.analisisCausaRaiz || 0;
+    this.count_cumplimiento_preventivos = data.cumplimientoPreventivos || 0;
+  }
 }
 
 

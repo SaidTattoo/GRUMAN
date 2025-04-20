@@ -18,43 +18,68 @@ export class StorageService {
     if (currentUser) {
       this.userSubject.next(currentUser);
     }
+    
+    // Check for stored company ID and ensure it's reflected in the current user
+    this.syncSelectedCompany();
+  }
+  
+  // Sincroniza el ID de la compañía seleccionada con el objeto de usuario
+  private syncSelectedCompany(): void {
+    const currentUser = this.getItem('currentUser');
+    const storedCompanyId = this.getItem('selectedCompanyId');
+    
+    if (currentUser && storedCompanyId && currentUser.companies) {
+      const selectedCompany = currentUser.companies.find(
+        (company: any) => company.id.toString() === storedCompanyId.toString()
+      );
+      
+      if (selectedCompany && (!currentUser.selectedCompany || currentUser.selectedCompany.id.toString() !== storedCompanyId.toString())) {
+        console.log('Syncing stored company ID with user object:', selectedCompany.nombre);
+        currentUser.selectedCompany = selectedCompany;
+        this.setItem('currentUser', currentUser);
+        this.userSubject.next(currentUser);
+      }
+    }
   }
 
   // Método para emitir un evento cuando cambia la empresa seleccionada
   emitCompanyChangeEvent(company: any): void {
+    console.log('Emitting company change event:', company.nombre);
     this.companyChangeSubject.next(company);
   }
 
   setItem(key: string, value: any): void {
     try {
-      if (typeof value === 'object') {
-        localStorage.setItem(key, JSON.stringify(value));
-      } else {
-        localStorage.setItem(key, value);
-      }
+      // Convert the value to a JSON string
+      const jsonValue = JSON.stringify(value);
+      // Store it
+      localStorage.setItem(key, jsonValue);
       
-      // Si se actualiza el usuario, actualizamos el BehaviorSubject
+      // If we're updating the current user, also update the subject
       if (key === 'currentUser') {
         this.userSubject.next(value);
       }
-    } catch (e) {
-      console.error('Error saving to localStorage', e);
+      
+      // If we're setting a selected company ID, ensure it matches the user object
+      if (key === 'selectedCompanyId') {
+        this.syncSelectedCompany();
+      }
+    } catch (error) {
+      console.error('Error saving to localStorage', error);
     }
   }
 
   getItem(key: string): any {
     try {
-      const item = localStorage.getItem(key);
-      if (!item) return null;
-      
-      try {
-        // Intentar parsear como JSON, si falla devolver el string
-        return JSON.parse(item);
-      } catch {
-        return item;
+      // Get the value from storage
+      const value = localStorage.getItem(key);
+      // If it exists, parse and return it
+      if (value) {
+        return JSON.parse(value);
       }
-    } catch (e) {
-      console.error('Error getting from localStorage', e);
+      return null;
+    } catch (error) {
+      console.error('Error retrieving from localStorage', error);
       return null;
     }
   }
@@ -63,34 +88,55 @@ export class StorageService {
     try {
       localStorage.removeItem(key);
       
-      // Si se elimina el usuario, actualizamos el BehaviorSubject
+      // If we're removing the current user, update the subject
       if (key === 'currentUser') {
         this.userSubject.next(null);
       }
-    } catch (e) {
-      console.error('Error removing from localStorage', e);
+    } catch (error) {
+      console.error('Error removing from localStorage', error);
     }
   }
 
   clear(): void {
-    localStorage.clear();
-    this.userSubject.next(null);
+    try {
+      localStorage.clear();
+      this.userSubject.next(null);
+    } catch (error) {
+      console.error('Error clearing localStorage', error);
+    }
   }
 
   updateUser(user: any): void {
-    // Actualizar tanto el localStorage como el BehaviorSubject
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    this.setItem('currentUser', user);
     this.userSubject.next(user);
-    console.log('Usuario actualizado en Storage Service:', user); // Para debugging
+    
+    // If the user has a selected company, ensure the selectedCompanyId is in sync
+    if (user && user.selectedCompany) {
+      this.setItem('selectedCompanyId', user.selectedCompany.id.toString());
+    }
   }
 
   getCurrentUser(): any {
-    return this.userSubject.value;
+    return this.getItem('currentUser');
   }
 
   getCurrentUserWithCompany(): any {
     const user = this.getItem('currentUser');
-    if (user && user.selectedCompany) {
+    if (user) {
+      // If user has no selected company but we have a stored company ID, try to set it
+      if (!user.selectedCompany && user.companies && user.companies.length > 0) {
+        const storedCompanyId = this.getItem('selectedCompanyId');
+        
+        if (storedCompanyId) {
+          const company = user.companies.find((c: any) => c.id.toString() === storedCompanyId.toString());
+          if (company) {
+            user.selectedCompany = company;
+            // Update storage and emit the change
+            this.updateUser(user);
+            this.emitCompanyChangeEvent(company);
+          }
+        }
+      }
       return user;
     }
     return null;

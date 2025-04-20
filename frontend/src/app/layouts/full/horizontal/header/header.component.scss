@@ -135,16 +135,16 @@
 
 // Estilos para el logo y contenedor del cliente
 .company-logo {
-  width: 40px;
-  height: 40px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
   border-radius: 4px;
   margin-right: 8px;
 }
 
 .company-logo-placeholder {
-  width: 40px;
-  height: 40px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,7 +153,7 @@
   margin-right: 8px;
   
   .mat-icon {
-    font-size: 24px;
+    font-size: 40px;
     opacity: 0.7;
   }
 }
@@ -320,4 +320,28 @@
   height: 16px;
   width: 16px;
   color: #43a047;
+}
+
+.profile-initials-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  background-color: #1e88e5; // Color azul de Material
+  color: white;
+}
+
+.profile-initials-circle-large {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  background-color: #1e88e5; // Color azul de Material
+  color: white;
 } 

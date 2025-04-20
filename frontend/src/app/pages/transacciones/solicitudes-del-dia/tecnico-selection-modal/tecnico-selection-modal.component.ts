@@ -61,8 +61,8 @@ interface DialogData {
       <button mat-button (click)="onNoClick()">Cancelar</button>
       <button mat-raised-button 
               color="primary" 
-              [disabled]="!tecnicoList.selectedOptions.selected[0]?.value"
-              (click)="onConfirm(tecnicoList.selectedOptions.selected[0]?.value)">
+              [disabled]="!tecnicoList.selectedOptions.selected[0].value"
+              (click)="onConfirm(tecnicoList.selectedOptions.selected[0].value)">
         Confirmar
       </button>
     </mat-dialog-actions>

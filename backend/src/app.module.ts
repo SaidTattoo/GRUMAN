@@ -39,6 +39,7 @@ import { ActivoFijoRepuestosModule } from './activo-fijo-repuestos/activo-fijo-r
 import { ChecklistClimaModule } from './checklist_clima/checklist_clima.module';
 import { MailModule } from './mail/mail.module';
 import { ClienteRepuestoModule } from './cliente-repuesto/cliente-repuesto.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -82,7 +83,8 @@ import { ClienteRepuestoModule } from './cliente-repuesto/cliente-repuesto.modul
     EspecialidadModule,InspectionModule, FacturacionModule, OrdenServicioModule, UserVehiculoModule, CausaRaizModule,  
     ActivoFijoRepuestosModule, ChecklistClimaModule,
     MailModule,
-    ClienteRepuestoModule
+    ClienteRepuestoModule,
+    DashboardModule
 /*     LocalesModule,
     SectoresTrabajoModule,
     ProgramacionModule */
