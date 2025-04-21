@@ -36,6 +36,10 @@ interface Repuesto {
   articulo: string;
   marca: string;
   precio: number;
+  precio_compra?: number;
+  precio_venta?: number;
+  clima?: boolean;
+  valor_uf?: boolean;
 }
 
 interface SubItem {
@@ -400,6 +404,9 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Inicializar explícitamente repuestos como objeto vacío para evitar errores
+    this.repuestos = {};
+    
     this.solicitudId = this.route.snapshot.paramMap.get('id') || '';
     
     // Detectar estado de la solicitud por URL
@@ -514,7 +521,11 @@ export class ModificarSolicitudComponent implements OnInit {
   loadRepuestos() {
     this.repuestosService.getRepuestos().subscribe({
       next: (data) => {
-        this.repuestos = data;
+        console.log('Repuestos cargados:', data);
+        this.repuestosList = data.map(r => ({
+          ...r,
+          precio: r.precio_venta || r.precio || 0 // Asegurarnos de que siempre haya un valor de precio
+        }));
       },
       error: (error) => {
         console.error('Error al cargar repuestos:', error);
@@ -681,19 +692,37 @@ export class ModificarSolicitudComponent implements OnInit {
         }
 
         // Actualizar el mapa de repuestos con los repuestos existentes
+        if (!this.repuestos) {
+          this.repuestos = {}; // Asegurar que repuestos esté inicializado
+        }
+        
         this.itemRepuestos.forEach(repuesto => {
           const itemId = repuesto.itemId;
+          
+          // Verificar si itemId es válido
+          if (itemId === undefined || itemId === null) {
+            console.warn('Se encontró un repuesto sin itemId válido:', repuesto);
+            return; // Saltar a la siguiente iteración
+          }
+          
           if (!this.repuestos[itemId]) {
             this.repuestos[itemId] = {
-              estado: repuesto.estado,
-              comentario: repuesto.comentario,
+              estado: repuesto.estado || 'no_conforme',
+              comentario: repuesto.comentario || '',
               fotos: repuesto.fotos || [],
-              repuestos: []
+              repuestos: [] // Inicializar como array vacío
             };
           }
+          
+          // Asegurar que repuestos sea un array
+          if (!this.repuestos[itemId].repuestos) {
+            this.repuestos[itemId].repuestos = [];
+          }
+          
+          // Ahora es seguro hacer push
           this.repuestos[itemId].repuestos.push({
-            cantidad: repuesto.cantidad,
-            comentario: repuesto.comentario,
+            cantidad: repuesto.cantidad || 0,
+            comentario: repuesto.comentario || '',
             repuesto: repuesto.repuesto
           });
         });
@@ -1154,7 +1183,7 @@ export class ModificarSolicitudComponent implements OnInit {
         .filter(r => r && r.repuesto) // Solo considerar repuestos válidos
         .reduce((total, repuesto) => {
             const cantidad = repuesto.cantidad || 0;
-            const precio = repuesto.repuesto?.precio || 0;
+            const precio = repuesto.precio_venta || repuesto.repuesto?.precio_venta || repuesto.repuesto?.precio || 0;
             return total + (cantidad * precio);
         }, 0);
   }

@@ -340,7 +340,7 @@
                             <mat-select [(ngModel)]="selectedRepuesto" [ngModelOptions]="{standalone: true}">
                               @for (repuesto of repuestosList; track repuesto.id) {
                                 <mat-option [value]="repuesto">
-                                  {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ repuesto.precio.toLocaleString('es-CL') }}
+                                  {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ (repuesto.precio_venta || repuesto.precio || 0).toLocaleString('es-CL') }}
                                 </mat-option>
                               }
                             </mat-select>
@@ -382,8 +382,8 @@
                                 <div class="repuesto-row">
                                   <span><strong>Marca:</strong> {{ repuesto.repuesto?.marca || 'N/A' }}</span>
                                   <span><strong>Cantidad:</strong> {{ repuesto.cantidad }}</span>
-                                  <span><strong>Precio:</strong> ${{ repuesto.precio_venta.toLocaleString('es-CL') || '0' }}</span>
-                                  <span><strong>Total:</strong> ${{ ((repuesto.cantidad || 0) * (repuesto.repuesto?.precio || 0)).toLocaleString('es-CL') }}</span>
+                                  <span><strong>Precio:</strong> ${{ (repuesto.precio_venta || repuesto.repuesto?.precio_venta || repuesto.repuesto?.precio || 0).toLocaleString('es-CL') }}</span>
+                                  <span><strong>Total:</strong> ${{ ((repuesto.cantidad || 0) * (repuesto.precio_venta || repuesto.repuesto?.precio_venta || repuesto.repuesto?.precio || 0)).toLocaleString('es-CL') }}</span>
                                   
                                 </div>
                               </div>
