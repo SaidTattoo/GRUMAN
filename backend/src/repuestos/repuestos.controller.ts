@@ -10,6 +10,10 @@ export class RepuestosController {
   async findAll(): Promise<Repuesto[]> {
     return this.repuestosService.findAll();
   }
+  @Get('clima')
+  async findAllClima(): Promise<Repuesto[]> {
+    return this.repuestosService.findAllClima();
+  }
   @Post()
   async create(@Body() repuesto: Repuesto): Promise<Repuesto> {
     return this.repuestosService.create(repuesto);

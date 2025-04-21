@@ -25,7 +25,12 @@ export class Repuesto {
   @Column('decimal', { precision: 10, scale: 2 })
   precio_venta: number;
 
-  
+  @Column({ default: false })
+  valor_uf :boolean
+
+  @Column({ default: false })
+  clima :boolean
+
 
   @OneToMany(() => ClienteRepuesto, clienteRepuesto => clienteRepuesto.repuesto)
   clienteRepuestos: ClienteRepuesto[];

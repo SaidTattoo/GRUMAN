@@ -277,7 +277,7 @@ export class RepuestosComponent {
   sincronizarClientesRepuestos() {
     Swal.fire({
       title: '¿Sincronizar precios?',
-      text: 'Se crearán precios para los clientes que no tengan precios asignados en los repuestos. ¿Desea continuar?',
+      text: 'Se crearán precios para los clientes que no tengan precios asignados en los repuestos. Los repuestos marcados como clima solo se sincronizarán con clientes que también tengan clima activado. ¿Desea continuar?',
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Sí, sincronizar',
@@ -286,7 +286,7 @@ export class RepuestosComponent {
       if (result.isConfirmed) {
         Swal.fire({
           title: 'Sincronizando...',
-          text: 'Por favor espere',
+          text: 'Por favor espere mientras se sincronizan los precios',
           allowOutsideClick: false,
           didOpen: () => {
             Swal.showLoading();
@@ -304,7 +304,7 @@ export class RepuestosComponent {
             } else {
               Swal.fire({
                 title: 'Éxito',
-                text: `Se han sincronizado ${response.creados} precios de clientes`,
+                text: `Se han sincronizado ${response.creados} precios de clientes. Los repuestos de clima solo se han asignado a clientes con clima activado.`,
                 icon: 'success'
               });
             }

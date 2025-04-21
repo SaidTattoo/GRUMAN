@@ -22,6 +22,10 @@ export class RepuestosService {
     return this.repuestosRepository.find();
   }
 
+  async findAllClima(): Promise<Repuesto[]> {
+    return this.repuestosRepository.find({ where: { clima: true } });
+  }
+
   async findOne(id: number): Promise<Repuesto | null> {
     return this.repuestosRepository.findOneBy({ id });
   }
@@ -96,6 +100,7 @@ export class RepuestosService {
       }
       
       let creados = 0;
+      console.log(`Iniciando sincronización de precios: ${repuestos.length} repuestos y ${clientes.length} clientes encontrados`);
 
       // Para cada repuesto
       for (const repuesto of repuestos) {
@@ -103,13 +108,23 @@ export class RepuestosService {
         const clientesExistentesIds = repuesto.clienteRepuestos
           .map(cr => cr.cliente.id);
 
-        // Encontrar clientes que no tienen precio para este repuesto
-        const clientesFaltantes = clientes.filter(
+        // Filtrar clientes que no tienen precio para este repuesto
+        let clientesFiltrados = clientes.filter(
           cliente => !clientesExistentesIds.includes(cliente.id)
         );
+        
+        // REGLA DE NEGOCIO: Si el repuesto es de tipo clima (clima=true), 
+        // solo sincronizar con clientes que también tengan clima=true.
+        // Esto asegura que los repuestos especializados de clima solo se asignen
+        // a los clientes que operan equipos de clima.
+        if (repuesto.clima === true) {
+          const countAntes = clientesFiltrados.length;
+          clientesFiltrados = clientesFiltrados.filter(cliente => cliente.clima === true);
+          console.log(`Repuesto ID ${repuesto.id} (${repuesto.articulo}) es de tipo clima. Filtrados ${countAntes - clientesFiltrados.length} clientes sin propiedad clima=true`);
+        }
 
-        // Crear cliente_repuesto para cada cliente faltante
-        for (const cliente of clientesFaltantes) {
+        // Crear cliente_repuesto para cada cliente filtrado
+        for (const cliente of clientesFiltrados) {
           try {
             await this.clienteRepuestoRepository.save({
               cliente: { id: cliente.id },
@@ -118,12 +133,14 @@ export class RepuestosService {
               precio_compra: repuesto.precio_compra
             });
             creados++;
+            console.log(`Creado precio para cliente ${cliente.id} (${cliente.nombre}) y repuesto ${repuesto.id} (${repuesto.articulo})`);
           } catch (error) {
             console.error(`Error al crear precio para cliente ${cliente.id} y repuesto ${repuesto.id}:`, error);
           }
         }
       }
 
+      console.log(`Sincronización completada. Se crearon ${creados} precios cliente-repuesto`);
       return { creados };
     } catch (error) {
       console.error('Error en sincronizarClientesRepuestos:', error);

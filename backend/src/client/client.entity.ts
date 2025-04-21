@@ -68,4 +68,9 @@ export class Client {
 
   @OneToMany(() => ClienteRepuesto, clienteRepuesto => clienteRepuesto.cliente)
   clienteRepuestos: ClienteRepuesto[];
+
+  @Column({ default: false })
+  clima :boolean
+
+
 }
