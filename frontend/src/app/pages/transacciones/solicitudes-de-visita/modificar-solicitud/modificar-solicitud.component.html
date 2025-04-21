@@ -171,7 +171,7 @@
       <mat-form-field appearance="fill">
         <mat-label>Fecha de Visita</mat-label>
         @if (solicitud?.status === 'validada' || isRechazada || isAprobada) {
-          <input matInput [value]="solicitud?.fechaVisita | date:'yyyy-MM-dd'" disabled>
+          <input matInput [value]="solicitud?.fechaVisita | date:'HH:mm dd-MM-yyyy'" disabled>
         } @else {
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <input matInput [matDatepicker]="picker" formControlName="fechaVisita" required style="flex: 1;">
@@ -232,12 +232,24 @@
     <div class="form-row" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
       <mat-form-field appearance="fill">
         <mat-label>Fecha/Hora Inicio Servicio</mat-label>
-        <input matInput formControlName="fecha_hora_inicio_servicio" [disabled]="solicitud?.status === 'validada' || isRechazada || isValidada">
+        <!-- Campo oculto para mantener el valor en el formulario -->
+        <input matInput formControlName="fecha_hora_inicio_servicio" style="display: none;">
+        <!-- Campo visible con formato personalizado -->
+        <input matInput 
+              [value]="solicitud?.fecha_hora_inicio_servicio | date:'dd-MM-yyyy  HH:mm'"
+              [disabled]="true"
+              [placeholder]="'Sin fecha de inicio'">
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Fecha/Hora Fin Servicio</mat-label>
-        <input matInput formControlName="fecha_hora_fin_servicio" [disabled]="solicitud?.status === 'validada' || isRechazada || isValidada">
+        <!-- Campo oculto para mantener el valor en el formulario -->
+        <input matInput formControlName="fecha_hora_fin_servicio" style="display: none;">
+        <!-- Campo visible con formato personalizado -->
+        <input matInput 
+              [value]="solicitud?.fecha_hora_fin_servicio | date:'dd-MM-yyyy  HH:mm'"
+              [disabled]="true"
+              [placeholder]="'Sin fecha de fin'">
       </mat-form-field>
     </div>
 
@@ -671,7 +683,7 @@
           <!-- Fecha de rechazo (Solo se mostrará si hay) -->
           @if (solicitud?.fecha_rechazo) {
             <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
-              <strong>Fecha:</strong> {{ solicitud.fecha_rechazo | date:'dd/MM/yyyy HH:mm' }}
+              <strong>Fecha:</strong> {{ solicitud.fecha_rechazo | date:'HH:mm dd-MM-yyyy' }}
             </div>
           }
           
@@ -697,7 +709,7 @@
       } @else {
         <div class="validation-message" style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
           <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
-          Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm' }}
+          Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'HH:mm dd-MM-yyyy' }}
         </div>
       }
     </div>
