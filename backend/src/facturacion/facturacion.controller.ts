@@ -67,4 +67,9 @@ export class FacturacionController {
   async generarFacturacionManual() {
     return await this.facturacionService.generarFacturacionMensualParaTodosLosClientes();
   }
+
+  @Get('buscar-facturacion/:mes/:id_cliente')
+  async buscarFacturacion(@Param('mes') mes: string, @Param('id_cliente') id_cliente: number) {
+    return this.facturacionService.findFacturacionByMesAndIdCliente(mes, id_cliente);
+  }
 }

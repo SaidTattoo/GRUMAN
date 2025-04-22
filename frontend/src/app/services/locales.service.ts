@@ -33,6 +33,10 @@ export class LocalesService {
     return this.http.get<{data: any[], total: number}>(url);
   }
 
+  getLocalByNombre(nombre: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}locales/nombre/${nombre}`);
+  }
+
   crearLocal(local: any): Observable<any> {
     //console.log('****', local);
     return this.http.post<any>(`${this.apiUrl}locales`, local);

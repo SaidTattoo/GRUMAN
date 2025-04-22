@@ -205,6 +205,11 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             iconName: 'home-shield',
             route: 'mantenedores',
             children: [
+                {
+                  displayName: 'Carga Masiva',
+                  iconName: 'home-shield',
+                  route: 'transacciones/solicitudes-de-visita/carga-masiva',
+                },
               {
                 displayName: 'Locales',
                 iconName: 'home-shield',

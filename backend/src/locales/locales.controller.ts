@@ -21,6 +21,10 @@ export class LocalesController {
       search
     });
   }
+  @Get('nombre/:nombre')
+  findByNombre(@Param('nombre') nombre: string): Promise<Locales | undefined> {
+    return this.localesService.findByNombre(nombre);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: number): Promise<Locales | undefined> {

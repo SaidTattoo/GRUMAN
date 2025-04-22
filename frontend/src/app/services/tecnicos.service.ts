@@ -30,6 +30,10 @@ export class TecnicosService {
     return this.http.put(`${this.apiUrl}users/${id}`, data);
   }
 
+  getTecnicosByRut(rut: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}users/tecnicos/rut/${rut}`);
+  }
+
 
   deleteTecnico(id: number) {
     return this.http.delete(`${this.apiUrl}users/tecnicos/${id}`);

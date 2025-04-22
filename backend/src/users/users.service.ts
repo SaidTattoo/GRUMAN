@@ -50,6 +50,10 @@ export class UsersService {
         }
     }
 
+    async findTecnicosByRut(rut: string): Promise<User[]> {
+        return this.userRepository.find({ where: { rut, disabled: false , profile: 'tecnico' }});
+    }
+
     async findOneTecnico(id: number): Promise<User | undefined> {
         return this.userRepository.findOne({ where: { id, disabled: false }, relations: ['clients',  'especialidades'] });
     }

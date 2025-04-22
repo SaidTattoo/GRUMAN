@@ -187,5 +187,7 @@ export class SolicitarVisitaService {
       responseType: 'blob'
     });
   }
-
+  subirCargaMasiva(datos: any[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}solicitar-visita/subir-carga-masiva`, datos);
+  }
 }

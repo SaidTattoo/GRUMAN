@@ -9,6 +9,7 @@ import { SolicitudesFinalizadasComponent } from './solicitudes-finalizadas/solic
 import { SolicitudesValidadasComponent } from './solicitudes-validadas/solicitudes-validadas.component';
 import { ModificarSolicitudComponent } from './modificar-solicitud/modificar-solicitud.component';
 import { VerSolicitudComponent } from './ver-solicitud/ver-solicitud.component';
+import { CargaMasivaComponent } from './carga-masiva/carga-masiva.component';
 
 export const SolicitudesDeVisitaRoutes: Routes = [
   {
@@ -80,5 +81,11 @@ export const SolicitudesDeVisitaRoutes: Routes = [
     data: {
       title: 'Ver Solicitud'
     }
-  }
+  },
+  {
+    path: 'carga-masiva',
+    component: CargaMasivaComponent,
+    data: {
+      title: 'Carga Masiva'
+  }}
 ];

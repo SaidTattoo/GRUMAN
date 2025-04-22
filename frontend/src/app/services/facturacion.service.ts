@@ -23,4 +23,8 @@ export class FacturacionService {
   generarFacturacionMensualManual() {
     return this.http.post(`${this.apiUrl}/generar-facturacion-manual`, {});
   }
+
+  buscarFacturacion(mes: string, id_cliente: number) {
+    return this.http.get(`${this.apiUrl}/buscar-facturacion/${mes}/${id_cliente}`);
+  }
 }

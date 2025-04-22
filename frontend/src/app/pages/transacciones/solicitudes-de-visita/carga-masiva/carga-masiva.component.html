@@ -1,0 +1,60 @@
+<div class="container">
+  <div class="page-header">
+    <h2>Carga Masiva de Solicitudes de Visita</h2>
+    <p class="description">
+      Utilice esta herramienta para cargar múltiples solicitudes de visita mediante un archivo Excel.
+    </p>
+  </div>
+
+  <!-- Input para seleccionar archivo -->
+  <input
+    type="file"
+    (change)="onFileSelected($event)"
+    accept=".xlsx, .xls"
+    #fileInput
+    style="display: none">
+  
+  <button 
+    mat-raised-button 
+    color="primary" 
+    (click)="fileInput.click()">
+    <mat-icon>upload_file</mat-icon>
+    Seleccionar Archivo
+  </button>
+  
+  <span *ngIf="fileName" class="ml-2">
+    {{fileName}}
+  </span>
+
+  <div class="mat-elevation-z8 mt-4" *ngIf="dataSource.length > 0">
+    <mat-table [dataSource]="dataSource" matSort>
+      <!-- Definición de columnas -->
+      <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
+        <mat-header-cell *matHeaderCellDef mat-sort-header> {{column}} </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element[column]}} </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+
+    <!-- Botón de enviar -->
+    <div class="actions-container mt-3 mb-3 text-right">
+      <button 
+        mat-raised-button 
+        color="accent" 
+        (click)="enviarDatos()"
+        [disabled]="dataSource.length === 0">
+        <mat-icon>send</mat-icon>
+        Enviar Datos
+      </button>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay datos -->
+  <mat-card *ngIf="!dataSource.length" class="mt-4">
+    <mat-card-content class="text-center">
+      <p>No hay datos para mostrar. Por favor, seleccione un archivo Excel.</p>
+    </mat-card-content>
+  </mat-card>
+</div>

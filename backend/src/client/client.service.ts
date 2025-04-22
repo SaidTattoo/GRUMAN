@@ -16,6 +16,10 @@ export class ClientService {
         private facturacionService: FacturacionService
     ) {}
 
+
+    //que busque sin inportar que sea Uppercase o Lowercase
+
+
     /** FINDALLCLIENTS */
     /** mostrar todos los clientes menos uno llamado GRUMAN */
     async findAllClients(): Promise<Client[]> {

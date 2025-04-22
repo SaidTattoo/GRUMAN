@@ -1442,8 +1442,62 @@ export class SolicitarVisitaService {
           throw new InternalServerErrorException(`Error generando PDF: ${err.message}`);
         }
       }
-      
-      
+
+      async subirCargaMasiva(datos: any[]): Promise<SolicitarVisita[]> {
+        const solicitudesCreadas: any[] = [];
+
+        try {
+            for (const dato of datos) {
+                // Validar que exista el local
+                const local = await this.localesRepository.findOne({
+                    where: { id: dato.localId }
+                });
+                if (!local) {
+                    throw new NotFoundException(`Local con ID ${dato.localId} no encontrado`);
+                }
+
+                // Validar que exista el cliente
+                const cliente = await this.clientRepository.findOne({
+                    where: { id: dato.clienteId }
+                });
+                if (!cliente) {
+                    throw new NotFoundException(`Cliente con ID ${dato.clienteId} no encontrado`);
+                }
+
+                // Crear la nueva solicitud
+                const nuevaSolicitud = this.solicitarVisitaRepository.create({
+                    client: cliente,
+                    local: local,
+                    fecha_hora_inicio_servicio: new Date(dato.fechaVisita),
+                    tecnico_asignado_id: dato.tecnico1Id,
+                    tecnico_asignado_id_2: dato.tecnico2Id,
+                    tipoServicioId: dato.tipoServicioId,
+                    sectorTrabajoId: dato.sectorTrabajoId,
+                    generada_por_id: dato.generada_por_id,
+                    aprobada_por_id: dato.aprobada_por_id,
+                    tipo_mantenimiento: dato.tipo_mantenimiento,
+                    status: dato.status,
+                    facturacion_id: dato.facturacion_id,
+                    observaciones: 'Solicitud generada por carga masiva',
+                    fechaVisita: new Date(dato.fechaVisita)
+                });
+
+                // Guardar la solicitud
+                const solicitudGuardada = await this.solicitarVisitaRepository.save(nuevaSolicitud);
+                solicitudesCreadas.push(solicitudGuardada);
+
+                console.log(`✅ Solicitud creada exitosamente para Local ${dato.localId} y Cliente ${dato.clienteId}`);
+            }
+
+            return solicitudesCreadas;
+
+        } catch (error) {
+            console.error('❌ Error en carga masiva:', error);
+            throw new InternalServerErrorException(
+                `Error al procesar carga masiva: ${error.message}`
+            );
+        }
+    }
       
 }
 

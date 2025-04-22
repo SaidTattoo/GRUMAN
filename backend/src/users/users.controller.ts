@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Put, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiTags, ApiResponse } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 @ApiTags('usuarios')
 @Controller('users')
@@ -28,6 +28,12 @@ export class UsersController {
             console.error('Error en findAllTecnicos:', error);
             throw error;
         }
+    }
+
+    @Get('tecnicos/:rut')
+    @ApiOperation({ summary: 'Obtener tecnicos por RUT' })
+    findTecnicosByRut(@Param('rut') rut: string): Promise<User[]> {
+        return this.usersService.findTecnicosByRut(rut);
     }
 
     @Get('client/:id')
@@ -163,6 +169,19 @@ export class UsersController {
     @ApiParam({ name: 'rut', type: String, description: 'RUT del técnico' })
     async changePasswordByRut(@Param('rut') rut: string, @Body() newPassword: any): Promise<User> {
         return this.usersService.changePasswordByRut(rut, newPassword); 
+    }
+
+    @Get('tecnicos/rut/:rut')
+    @ApiOperation({ summary: 'Get technicians by RUT' })
+    @ApiResponse({ status: 200, description: 'Returns technician information including name and last name' })
+    async getTecnicosByRut(@Param('rut') rut: string) {
+        const tecnicos = await this.usersService.findTecnicosByRut(rut);
+        return tecnicos.map(tecnico => ({
+            id: tecnico.id,
+            name: tecnico.name,
+            lastName: tecnico.lastName,
+            rut: tecnico.rut,
+        }));
     }
 }
             

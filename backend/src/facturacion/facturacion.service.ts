@@ -3,6 +3,7 @@ import { Facturacion } from './facturacion.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Client } from '../client/client.entity';
+import { Like } from 'typeorm';
 
 @Injectable()
 export class FacturacionService {
@@ -19,6 +20,21 @@ export class FacturacionService {
             'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
         ];
         return `${meses[fecha.getMonth()]} ${fecha.getFullYear()}`;
+    }
+
+    async findFacturacionByMesAndIdCliente(mes: string, id_cliente: number): Promise<Facturacion[]> {
+        console.log('Buscando facturación con mes:', mes, 'y cliente:', id_cliente);
+        
+        const facturaciones = await this.facturacionRepository.find({
+            where: { 
+                cliente: { id: id_cliente },
+                mes: mes // Buscar el mes exacto
+            },
+            relations: ['cliente'],
+        });
+        
+        console.log('Facturaciones encontradas:', facturaciones);
+        return facturaciones;
     }
 
     async crearFacturacion(

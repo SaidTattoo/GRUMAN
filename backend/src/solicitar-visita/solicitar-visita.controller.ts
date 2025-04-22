@@ -433,4 +433,8 @@ export class SolicitarVisitaController {
       throw new InternalServerErrorException('Error al generar el PDF: ' + error.message);
     }
   }
+  @Post('subir-carga-masiva')
+  async subirCargaMasiva(@Body() datos: any[]) {
+    return this.solicitarVisitaService.subirCargaMasiva(datos);
+  }
 }

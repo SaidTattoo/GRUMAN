@@ -19,6 +19,12 @@ export class LocalesService {
     private readonly clienteRepository: Repository<Client>,
   ) {}
 
+
+  async findByNombre(nombre: string): Promise<Locales | undefined> {
+    return this.localesRepository.findOne({ where: { nombre_local: nombre } });
+  }
+
+
   async findAll(options?: {
     page?: number;
     limit?: number;
