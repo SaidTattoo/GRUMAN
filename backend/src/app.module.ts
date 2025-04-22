@@ -52,7 +52,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
       database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
-      logging: true // Enable logging to see SQL queries
+      logging: false, // Desactiva todos los logs
     }),
     DatabaseModule, 
     UsersModule, 

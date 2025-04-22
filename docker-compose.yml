@@ -22,9 +22,11 @@ services:
       - mariadb
     env_file:
       - ./backend/.env
-    command: npm run start:dev
+    mem_limit: 6g
+    command: >
+      node --max-old-space-size=4096 node_modules/.bin/nest start --watch
     networks:
-      - gruman_network  
+      - gruman_network 
 
   mariadb:
     image: mariadb:latest
