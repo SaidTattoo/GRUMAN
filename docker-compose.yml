@@ -1,4 +1,5 @@
-version: '3'
+version: '3' # Asegúrate de que la versión sea adecuada para tu Docker Compose
+
 services:
   frontend:
     build:
@@ -6,7 +7,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app # Monta el código fuente del frontend
     networks:
       - gruman_network
 
@@ -16,35 +17,45 @@ services:
     ports:
       - "3000:3000"
     volumes:
+      # Monta tu código local en /app dentro del contenedor.
+      # Esto es útil para desarrollo, ya que los cambios se reflejan.
+      # Para producción, considera construir la imagen con el código
+      # y no usar este volumen para el código fuente completo.
       - ./backend:/app
-      - /app/node_modules
+      # Se elimina la línea '- /app/node_modules' para usar los módulos
+      # instalados dentro de la imagen durante el build.
     depends_on:
-      - mariadb
+      - mariadb # Asegura que la base de datos inicie antes que el backend
     env_file:
-      - ./backend/.env
-    mem_limit: 6g
-    command: >
-      node --max-old-space-size=4096 node_modules/.bin/nest start --watch
+      - ./backend/.env # Carga variables de entorno desde el archivo .env
+    # Añade la variable de entorno NODE_OPTIONS para aumentar el límite de memoria de Node.js
+    environment:
+      NODE_OPTIONS: '--max-old-space-size=4096' # Asigna 4GB de memoria heap. Ajusta '4096' según necesites (ej. 2048 para 2GB, 8192 para 8GB)
+    # Mantiene el comando original para desarrollo
+    command: npm run start:dev
     networks:
-      - gruman_network 
+      - gruman_network
 
   mariadb:
-    image: mariadb:latest
+    image: mariadb:latest # Usa la imagen oficial más reciente de MariaDB
     environment:
-      MYSQL_ROOT_PASSWORD: gruman
+      MYSQL_ROOT_PASSWORD: gruman # ¡Cambia esto en producción!
       MYSQL_DATABASE: gruman
       MYSQL_USER: gruman
-      MYSQL_PASSWORD: gruman
+      MYSQL_PASSWORD: gruman # ¡Cambia esto en producción!
     ports:
-      - "3306:3306"
+      - "3306:3306" # Expone el puerto de MariaDB
     volumes:
+      # Persiste los datos de la base de datos en un volumen nombrado
       - mariadb_data:/var/lib/mysql
     networks:
       - gruman_network
 
+# Define los volúmenes nombrados
 volumes:
-  mariadb_data:
+  mariadb_data: # Volumen para persistir los datos de MariaDB
 
+# Define las redes personalizadas
 networks:
   gruman_network:
-    driver: bridge
+    driver: bridge # Usa el driver de red bridge por defecto
