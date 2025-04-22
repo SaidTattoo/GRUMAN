@@ -298,7 +298,7 @@ export class SolicitarVisitaService {
         return solicitudes;
 
       } catch (error) {
-        console.error('Error en buscarSolicitud:', error);
+       
         throw new InternalServerErrorException('Error al buscar solicitudes: ' + error.message);
       }
     }
@@ -348,7 +348,7 @@ export class SolicitarVisitaService {
             relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
             order: { fechaIngreso: 'DESC' }
         });
-        console.log('[Solicitudes Aprobadas]:', JSON.stringify(data, null, 2));
+      
         return data;
     }
 
@@ -389,7 +389,7 @@ export class SolicitarVisitaService {
             relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
             order: { fechaIngreso: 'DESC' }
         });
-        console.log('[Solicitudes Rechazadas]:', JSON.stringify(data, null, 2));
+      
         return data;
     }
 
@@ -490,7 +490,7 @@ export class SolicitarVisitaService {
        
        // Siempre actualizar valorPorLocal si está definido en data (incluso si es 0)
        if (data?.valorPorLocal !== undefined) {
-           console.log('Actualizando valorPorLocal:', data.valorPorLocal);
+         
            updateData.valorPorLocal = data.valorPorLocal;
        }
        
@@ -510,7 +510,7 @@ export class SolicitarVisitaService {
             updateData.rechazada_por_id = data.rechazada_por_id;
         }
         
-        console.log('Actualizando solicitud con datos:', updateData);
+      
         await this.solicitarVisitaRepository.update(id, updateData);
         
         return this.solicitarVisitaRepository.findOne({ 
@@ -655,7 +655,7 @@ export class SolicitarVisitaService {
   
       return updated;
     } catch (error) {
-      console.error('❌ Error en finalizarServicio:', error);
+     
       throw new InternalServerErrorException(`Error al finalizar servicio: ${error.message}`);
     }
     }
@@ -708,7 +708,7 @@ export class SolicitarVisitaService {
     }
 
     async getSolicitudesDelDia(): Promise<SolicitarVisita[]> {
-        console.log('[Service] Iniciando getSolicitudesDelDia');
+       
         
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Start of day
@@ -716,20 +716,7 @@ export class SolicitarVisitaService {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
         
-        console.log('[Service] Parámetros de búsqueda:', {
-            today: today.toISOString(),
-            tomorrow: tomorrow.toISOString(),
-            statuses: [
-                SolicitudStatus.VALIDADA, 
-                SolicitudStatus.REABIERTA,
-                SolicitudStatus.EN_SERVICIO,
-                SolicitudStatus.FINALIZADA,
-                SolicitudStatus.APROBADA,
-                SolicitudStatus.RECHAZADA,
-                SolicitudStatus.PENDIENTE
-            ]
-        });
-
+        
         try {
             const data = await this.solicitarVisitaRepository.find({ 
                
@@ -749,20 +736,11 @@ export class SolicitarVisitaService {
                 order: { id: 'DESC' }
             });
 
-            console.log('[Service] Query ejecutada exitosamente');
-            console.log('[Service] Resultados:', {
-                totalRegistros: data.length,
-                primerRegistro: data[0] ? {
-                    id: data[0].id,
-                    fechaIngreso: data[0].fechaIngreso,
-                    status: data[0].status,
-                    tipoServicioId: data[0].tipoServicioId  // Usando el nombre correcto de la propiedad
-                } : null
-            });
+          
 
             return data || [];
         } catch (error) {
-            console.error('[Service] Error al ejecutar la consulta:', error);
+           
             throw error;
         }
     }
@@ -807,7 +785,7 @@ export class SolicitarVisitaService {
                 const endDate = new Date(this.parseFecha(fechaFin));
                 endDate.setHours(23, 59, 59, 999);
 
-                console.log('Fechas procesadas:', { startDate, endDate });
+              
                 whereClause.fechaIngreso = Between(startDate, endDate);
             } else if (tipoBusqueda === 'mesFacturacion' && mesFacturacion) {
                 // Buscar la facturación directamente por el mes
@@ -817,14 +795,14 @@ export class SolicitarVisitaService {
                     }
                 });
 
-                console.log('Facturaciones encontradas:', facturaciones);
+               
 
                 if (facturaciones.length > 0) {
                     whereClause.facturacion = { 
                         id_facturacion: In(facturaciones.map(f => f.id_facturacion)) 
                     };
                 } else {
-                    console.log(`No se encontró facturación para el mes ${mesFacturacion}`);
+                   
                     return [];
                 }
             }
@@ -834,7 +812,7 @@ export class SolicitarVisitaService {
                 whereClause.tipo_mantenimiento = tipo_mantenimiento;
             }
 
-            console.log('Where clause final:', whereClause);
+         
 
             const data = await this.solicitarVisitaRepository.find({ 
                 where: whereClause,
@@ -842,10 +820,10 @@ export class SolicitarVisitaService {
                 order: { id: 'ASC' }
             });
 
-            console.log(`Se encontraron ${data.length} registros`);
+         
             return data || [];
         } catch (error) {
-            console.error('[Service] Error al ejecutar la consulta:', error);
+            
             throw error;
         }
     }
@@ -875,7 +853,7 @@ export class SolicitarVisitaService {
     }
 
     async getSolicitudDelDiaPorCliente(clientId: number): Promise<SolicitarVisita[]> {
-        console.log('[Service] Iniciando getSolicitudDelDiaPorCliente');
+       
         
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Start of day
@@ -883,20 +861,7 @@ export class SolicitarVisitaService {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
         
-        console.log('[Service] Parámetros de búsqueda:', {
-            today: today.toISOString(),
-            tomorrow: tomorrow.toISOString(),
-            statuses: [
-                SolicitudStatus.VALIDADA, 
-                SolicitudStatus.REABIERTA,
-                SolicitudStatus.EN_SERVICIO,
-                SolicitudStatus.FINALIZADA,
-                SolicitudStatus.APROBADA,
-                SolicitudStatus.RECHAZADA,
-                SolicitudStatus.PENDIENTE
-            ]
-        });
-
+    
         try {
             const data = await this.solicitarVisitaRepository.find({ 
                 
@@ -917,28 +882,18 @@ export class SolicitarVisitaService {
                 order: { fechaIngreso: 'DESC' }
             });
 
-            console.log('[Service] Query ejecutada exitosamente');
-            console.log('[Service] Resultados:', {
-                totalRegistros: data.length,
-                primerRegistro: data[0] ? {
-                    id: data[0].id,
-                    fechaIngreso: data[0].fechaIngreso,
-                    status: data[0].status,
-                    observaciones: data[0].observaciones,
-                    tipoServicioId: data[0].tipoServicioId  // Usando el nombre correcto de la propiedad
-                } : null
-            });
+        
 
             return data || [];
         } catch (error) {
-            console.error('[Service] Error al ejecutar la consulta:', error);
+           
             throw error;
         }
     }
 
     async update(id: number, updateSolicitudVisitaDto: any) {
         try {
-            console.log('Updating solicitud with data:', updateSolicitudVisitaDto);
+        
             
             // Convertir campos vacíos a null si son numéricos
             if (updateSolicitudVisitaDto.especialidad === '') {
@@ -978,10 +933,10 @@ export class SolicitarVisitaService {
                 relations: ['itemRepuestos', 'causaRaiz', 'local', 'client', 'tecnico_asignado']
             });
 
-            console.log('Updated solicitud successfully:', result);
+           
             return result;
         } catch (error) {
-            console.error('Error updating solicitud:', error);
+         
             throw new InternalServerErrorException('Error updating solicitud');
         }
     }
@@ -1014,14 +969,14 @@ export class SolicitarVisitaService {
                 relations: ['tecnico_asignado', 'tecnico_asignado_2']
             });
         } catch (error) {
-            console.error('Error al asignar técnico:', error);
+        
             throw new InternalServerErrorException('Error al asignar técnico');
         }
     }
 
     async changeTecnico(solicitudId: number, tecnicoId: number, tipo: 'tecnico' | 'tecnico_2') {
         try {
-            console.log('Changing technician:', { solicitudId, tecnicoId, tipo });
+          
             
             const solicitud = await this.solicitarVisitaRepository.findOne({ 
                 where: { id: solicitudId },
@@ -1054,10 +1009,10 @@ export class SolicitarVisitaService {
                 relations: ['tecnico_asignado', 'tecnico_asignado_2']
             });
 
-            console.log('Updated solicitud:', updatedSolicitud);
+        
             return updatedSolicitud;
         } catch (error) {
-            console.error('Error changing technician:', error);
+          
             throw error instanceof BadRequestException 
                 ? error 
                 : new InternalServerErrorException('Error al cambiar técnico: ' + error.message);
@@ -1067,9 +1022,7 @@ export class SolicitarVisitaService {
 
 
     async manipularRepuestosYfotos(id: number, data: ManipularRepuestosDto) {
-    console.log("◢◤◢◤◢◤ INICIO DE PROCESAMIENTO ◢◤◢◤◢◤");
-    console.log('Solicitud ID:', id);
-    console.log('Payload recibido:', JSON.stringify(data, null, 2));
+
 
     const solicitud = await this.solicitarVisitaRepository.findOne({
         where: { id },
@@ -1090,7 +1043,7 @@ export class SolicitarVisitaService {
     }
 
     for (const [itemId, itemData] of Object.entries(data.repuestos) as [string, ItemRepuestoDataDto][]) {
-        console.log(`➡ Procesando item ${itemId}:`, itemData);
+     
 
         // Guardar fotos si existen
         if (itemData.fotos && itemData.fotos.length > 0) {
@@ -1107,10 +1060,10 @@ export class SolicitarVisitaService {
                 itemId: parseInt(itemId),
                 fotos: fotosValidas.map(foto => typeof foto === 'string' ? foto : foto.url)
             });
-            console.log(`📸 Fotos guardadas para item ${itemId}:`, fotosValidas);
+          
             }
         } catch (error) {
-            console.error('❌ Error al guardar fotos:', error);
+          
             throw new InternalServerErrorException(`Error al guardar fotos: ${error.message}`);
         }
         }
@@ -1123,9 +1076,9 @@ export class SolicitarVisitaService {
             comentario: itemData.comentario || '',
             estado: itemData.estado || 'pendiente'
         });
-        console.log(`📄 Estado y comentario guardados para item ${itemId}`);
+     
         } catch (error) {
-        console.error(`❌ Error al guardar estado para item ${itemId}:`, error);
+    
         throw new InternalServerErrorException(`Error al guardar estado del item: ${error.message}`);
         }
 
@@ -1133,7 +1086,7 @@ export class SolicitarVisitaService {
         if (Array.isArray(itemData.repuestos) && itemData.repuestos.length > 0) {
             for (const repuestoData of itemData.repuestos) {
                 if (!repuestoData.repuesto?.id) {
-                    console.warn(`⚠️ Repuesto omitido (sin id de repuesto) para item ${itemId}:`, repuestoData);
+                    
                     continue;
                 }
 
@@ -1182,17 +1135,14 @@ export class SolicitarVisitaService {
                     });
 
                     await this.itemRepuestoRepository.save(itemRepuesto);
-                    console.log(`✔ Repuesto guardado para item ${itemId} con precios:`, {
-                        precio_venta: precioVenta,
-                        precio_compra: precioCompra
-                    });
+                   
                 } catch (error) {
-                    console.error(`❌ Error al guardar repuesto para item ${itemId}:`, error);
+                   
                     throw new InternalServerErrorException(`Error al guardar repuesto: ${error.message}`);
                 }
             }
         } else {
-            console.log(`ℹ️ No se encontraron repuestos para item ${itemId}`);
+         
         }
     }
 
@@ -1212,7 +1162,7 @@ export class SolicitarVisitaService {
     }
 
     async manipularChecklistClimaRepuestos(id: number, data: FinalizarServicioDto) {
-        console.log("◢◤◢◤◢◤ INICIO DE MANIPULACION DE CHECKLIST CLIMA Y REPUESTOS ◢◤◢◤◢◤");
+      
         
         try {
             // Add firma_cliente to solicitud_visita
@@ -1247,7 +1197,7 @@ export class SolicitarVisitaService {
             });
 
         } catch (error) {
-            console.error('Error en manipularChecklistClimaRepuestos:', error);
+       
             throw new InternalServerErrorException(
                 `Error al procesar checklist clima y repuestos: ${error.message}`
             );
@@ -1486,13 +1436,13 @@ export class SolicitarVisitaService {
                 const solicitudGuardada = await this.solicitarVisitaRepository.save(nuevaSolicitud);
                 solicitudesCreadas.push(solicitudGuardada);
 
-                console.log(`✅ Solicitud creada exitosamente para Local ${dato.localId} y Cliente ${dato.clienteId}`);
+               
             }
 
             return solicitudesCreadas;
 
         } catch (error) {
-            console.error('❌ Error en carga masiva:', error);
+          
             throw new InternalServerErrorException(
                 `Error al procesar carga masiva: ${error.message}`
             );

@@ -358,7 +358,7 @@ export class CargaMasivaComponent implements OnInit {
         aprobada_por_id: 9999,
         tipo_mantenimiento: 'programado',
         status: 'aprobada',
-        facturacion_id: 999,
+        facturacion_id: item.facturacion_id,
         mesFacturacion: item.mesFacturacion
       };
     });

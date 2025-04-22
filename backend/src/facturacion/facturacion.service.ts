@@ -25,13 +25,13 @@ export class FacturacionService {
     async findFacturacionByMesAndIdCliente(mes: string, id_cliente: number): Promise<Facturacion[]> {
         console.log('Buscando facturación con mes:', mes, 'y cliente:', id_cliente);
         
-        const facturaciones = await this.facturacionRepository.find({
-            where: { 
-                cliente: { id: id_cliente },
-                mes: mes // Buscar el mes exacto
-            },
-            relations: ['cliente'],
-        });
+        const facturaciones = await this.facturacionRepository
+            .createQueryBuilder('facturacion')
+            .select(['facturacion.id', 'facturacion.mes'])
+            .where('facturacion.cliente = :clienteId', { clienteId: id_cliente })
+            .andWhere('facturacion.mes = :mes', { mes: mes })
+            .limit(1)
+            .getMany();
         
         console.log('Facturaciones encontradas:', facturaciones);
         return facturaciones;
