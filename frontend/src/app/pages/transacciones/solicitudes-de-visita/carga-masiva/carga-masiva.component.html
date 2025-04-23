@@ -1,4 +1,5 @@
-<div class="container">
+<mat-card class="cardWithShadow">
+  <mat-card-content class="p-24">
   <div class="page-header">
     <h2>Carga Masiva de Solicitudes de Visita</h2>
     <p class="description">
@@ -25,6 +26,10 @@
   <span *ngIf="fileName" class="ml-2">
     {{fileName}}
   </span>
+
+  <button mat-stroked-button color="primary" (click)="downloadSampleExcel()" class="mx-2">
+    <mat-icon>cloud_download</mat-icon> Descargar Plantilla Excel
+  </button>
 
   <div class="mat-elevation-z8 mt-4" *ngIf="dataSource.length > 0">
     <mat-table [dataSource]="dataSource" matSort>
@@ -57,4 +62,5 @@
       <p>No hay datos para mostrar. Por favor, seleccione un archivo Excel.</p>
     </mat-card-content>
   </mat-card>
-</div>
+</mat-card-content>
+</mat-card>

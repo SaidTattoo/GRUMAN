@@ -96,8 +96,8 @@
             <mat-form-field *ngIf="programacionForm.get('tipoBusqueda')?.value === 'mesFacturacion'">
                 <mat-label>Mes de Facturación</mat-label>
                 <mat-select formControlName="mesFacturacion">
-                    @for (mes of meses; track mes.valor) {
-                        <mat-option [value]="mes.valor">{{ mes.nombre }}</mat-option>
+                    @for (mes of meses; track mes.mes) {
+                        <mat-option [value]="mes.mes">{{ mes.mes }}</mat-option>
                     }
                 </mat-select>
             </mat-form-field>

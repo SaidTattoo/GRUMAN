@@ -20,6 +20,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
+import { FacturacionService } from 'src/app/services/facturacion.service';
 
 @Component({
   selector: 'app-servicios-realizados',
@@ -104,7 +105,8 @@ export class ServiciosRealizadosComponent implements OnInit {
     private serviciosRealizadosService: ServiciosRealizadosService,
     private clientesService: ClientesService,
     private storageService: StorageService,
-    private router: Router
+    private router: Router,
+    private facturacionService: FacturacionService
   ) {
     const userData = this.storageService.getCurrentUserWithCompany();
     if (userData && userData.selectedCompany) {
@@ -266,20 +268,29 @@ export class ServiciosRealizadosComponent implements OnInit {
   }
 
   getMeses() {
+    console.log('Obteniendo meses de facturación...');
+    
+    // Intentar obtener meses desde la API
+    this.facturacionService.obtenerMesesUnicos().subscribe((data: any) => {
+      this.meses = data;
+      console.log('Meses', this.meses);
+    });
+  }
+
+  // Método para generar meses a partir de un rango de fechas si la API falla
+  generarMesesDesdeRango() {
+    console.log('Generando meses localmente...');
     const fechaActual = new Date();
-    const fecha10AnosAtras = new Date(fechaActual.getFullYear() - 10, fechaActual.getMonth(), 1);
-    const meses = [];
-    const iterador = new Date(fechaActual.getTime());
-    while (iterador >= fecha10AnosAtras) {
-        const nombreMes = iterador.toLocaleString('default', { month: 'long' });
-        const año = iterador.getFullYear();
-        meses.push({ 
-            nombre: `${nombreMes} ${año}`,  // Ejemplo: "febrero 2025"
-            valor: `${nombreMes} ${año}`    // Usamos el mismo formato para el valor
-        });
-        iterador.setMonth(iterador.getMonth() - 1);
-    }
+    // Generar meses desde 2025 hasta 2026 para mantener el mismo formato que los datos existentes
+    const meses = [
+      'Enero 2025', 'Febrero 2025', 'Marzo 2025', 'Abril 2025', 'Mayo 2025',
+      'Junio 2025', 'Julio 2025', 'Agosto 2025', 'Septiembre 2025',
+      'Octubre 2025', 'Noviembre 2025', 'Diciembre 2025',
+      'Enero 2026', 'Febrero 2026', 'Marzo 2026', 'Abril 2026', 'Mayo 2026'
+    ];
+    
     this.meses = meses;
+    console.log('Meses generados localmente:', this.meses);
   }
 
   formatDate(date: string): string {

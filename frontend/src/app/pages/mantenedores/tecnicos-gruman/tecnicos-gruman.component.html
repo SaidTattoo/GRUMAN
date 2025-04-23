@@ -5,6 +5,25 @@
                 <button mat-flat-button  color="primary" (click)="createTecnicoGruman()">Nuevo Técnico</button>
             </div>
         </div>
+
+        <!-- Búsqueda -->
+        <div class="row mb-3">
+            <div class="col-md-6 mb-2">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Buscar por nombre</mat-label>
+                    <input matInput (keyup)="applyFilter($event, 'name')" placeholder="Ingrese nombre">
+                    <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+            </div>
+            <div class="col-md-6 mb-2">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Buscar por RUT</mat-label>
+                    <input matInput (keyup)="applyFilter($event, 'rut')" placeholder="Ingrese RUT">
+                    <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+
         <div class="table-responsive m-t-30">
             <mat-table [dataSource]="dataSource" class="w-100">
                 <!-- Nombre Column -->
@@ -12,9 +31,12 @@
                     <mat-header-cell *matHeaderCellDef> Nombre </mat-header-cell>
                     <mat-cell *matCellDef="let element"> {{element.name}} {{element.lastName}} </mat-cell>
                 </ng-container>
-
+                <ng-container matColumnDef="rut">
+                    <mat-header-cell *matHeaderCellDef> Rut </mat-header-cell>
+                    <mat-cell *matCellDef="let element"> {{element.rut | rutFormat}} </mat-cell>
+                </ng-container>
                 <!-- Especialidades Column -->
-                <ng-container matColumnDef="especialidades">
+                <ng-container matColumnDef="especialidades"> 
                     <mat-header-cell *matHeaderCellDef> Especialidades </mat-header-cell>
                     <mat-cell *matCellDef="let element"> {{getEspecialidadesNombres(element.especialidades)}} </mat-cell>
                 </ng-container>

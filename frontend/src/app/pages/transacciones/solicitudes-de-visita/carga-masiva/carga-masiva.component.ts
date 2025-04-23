@@ -133,7 +133,7 @@ export class CargaMasivaComponent implements OnInit {
     private clientesService: ClientesService,
     private solicitarVisitaService: SolicitarVisitaService,
     private facturacionService: FacturacionService,
-
+    private http: HttpClient,
     private snackBar: MatSnackBar
   ) { }
 
@@ -383,6 +383,38 @@ export class CargaMasivaComponent implements OnInit {
         duration: 3000
       });
     }
+  }
+
+  /**
+   * Downloads a sample Excel template for bulk loading
+   */
+  downloadSampleExcel(): void {
+    const filename = 'mock carga masiva .xlsx';
+    const filePath = `assets/demo/${filename}`;
+    
+    this.http.get(filePath, { responseType: 'blob' })
+      .subscribe({
+        next: (blob: Blob) => {
+          // Create a download link and trigger it
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = filename;
+          link.click();
+          
+          // Clean up
+          window.URL.revokeObjectURL(downloadUrl);
+          this.snackBar.open('Plantilla descargada correctamente', 'Cerrar', {
+            duration: 3000
+          });
+        },
+        error: (error) => {
+          console.error('Error al descargar plantilla:', error);
+          this.snackBar.open('Error al descargar la plantilla', 'Cerrar', {
+            duration: 3000
+          });
+        }
+      });
   }
 } 
 

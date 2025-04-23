@@ -14,6 +14,7 @@ import { TecnicosService } from 'src/app/services/tecnicos.service';
 import Swal from 'sweetalert2';
 import { StorageService } from 'src/app/services/storage.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { UsersService } from 'src/app/services/users.service';
 
 @Component({
   selector: 'app-editar-cliente-usuario',
@@ -216,7 +217,8 @@ export class EditarClienteUsuarioComponent implements OnInit {
     private clientesService: ClientesService,
     private tecnicosService: TecnicosService,
     private storage: StorageService,
-    private authService: AuthService
+    private authService: AuthService,
+    private usersService: UsersService
   ) {
     this.clienteUsuarioForm = this.fb.group({
       perfil: ['', Validators.required],
@@ -242,8 +244,10 @@ export class EditarClienteUsuarioComponent implements OnInit {
   }
 
   loadUsuario() {
-    this.tecnicosService.getTecnico(this.userId).subscribe({
+    console.log('Cargando usuario:', this.userId);
+    this.usersService.getUserById(this.userId).subscribe({
       next: (usuario: any) => {
+        console.log('Usuario cargado:', usuario);
         this.clienteUsuarioForm.patchValue({
           perfil: usuario.profile,
           name: usuario.name,

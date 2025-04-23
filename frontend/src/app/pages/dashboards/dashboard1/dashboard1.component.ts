@@ -17,6 +17,7 @@ import { DashboardService } from 'src/app/services/dashboard.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/core/services/user.service';
 import { Router } from '@angular/router';
+import { FacturacionService } from 'src/app/services/facturacion.service';
 
 export enum TipoOrden {
   PREVENTIVO = 'preventivo',
@@ -87,7 +88,8 @@ export class AppDashboard1Component implements OnInit, OnDestroy {
     private dashboardService: DashboardService, 
     private storageService: StorageService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private facturacionService: FacturacionService
   ) { }
 
   cards = [
@@ -124,6 +126,7 @@ export class AppDashboard1Component implements OnInit, OnDestroy {
 
   pendientes = 14;
   user: any;
+  facturaciones: any[] = [];
   private companyChangeSubscription: Subscription;
   private userSubscription: Subscription;
 
@@ -131,7 +134,7 @@ export class AppDashboard1Component implements OnInit, OnDestroy {
    
   }
 
-  ngOnInit() {
+  ngOnInit()  {
     // First get the most up-to-date user data from the UserService
     this.user = this.userService.getCurrentUser();
     
@@ -141,6 +144,8 @@ export class AppDashboard1Component implements OnInit, OnDestroy {
       this.router.navigate(['/authentication/select-client']);
       return;
     }
+
+    this.obtenerFacturaciones();
     
     console.log('Dashboard initialized with company:', this.user.selectedCompany.nombre);
     
@@ -169,6 +174,13 @@ export class AppDashboard1Component implements OnInit, OnDestroy {
         }
       }
     );
+  }
+
+  obtenerFacturaciones() {
+    this.facturacionService.obtenerFacturaciones().subscribe((data: any) => {
+      this.facturaciones = data;
+      console.log('Facturaciones', this.facturaciones);
+    });
   }
 
   ngOnDestroy() {

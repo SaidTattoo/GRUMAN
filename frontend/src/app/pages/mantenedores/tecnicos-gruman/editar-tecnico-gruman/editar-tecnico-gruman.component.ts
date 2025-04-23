@@ -11,6 +11,7 @@ import { EspecialidadesService } from 'src/app/services/especialidades.service';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { UsersService } from 'src/app/services/users.service';
 
 @Component({
   selector: 'app-editar-tecnico-gruman',
@@ -32,7 +33,8 @@ export class EditarTecnicoGrumanComponent {
     private router: Router,
     private route: ActivatedRoute,
     private clientesService: ClientesService,
-    private userServices: TecnicosService  ) {
+    private userServices: UsersService,
+    private tecnicoService: TecnicosService  ) {
     this.tecnicoForm = this.fb.group({
       name: ['', Validators.required],
       lastName: ['', Validators.required],
@@ -70,25 +72,17 @@ export class EditarTecnicoGrumanComponent {
     });
   }
   cargarDatosTecnico(id: number) {
-    this.userServices.getTecnico(id).subscribe({
-      next: (tecnico: any) => {
-        this.tecnicoForm.patchValue({
-          name: tecnico.name,
-          lastName: tecnico.lastName,
-          email: tecnico.email,
-          rut: tecnico.rut,
-          especialidades: tecnico.especialidades.map((esp: any) => esp.id),
-        });
-        
-     /*    this.tecnicoForm.get('password')?.clearValidators();
-        this.tecnicoForm.get('confirmPassword')?.clearValidators(); */
-        this.tecnicoForm.get('password')?.updateValueAndValidity();
-        this.tecnicoForm.get('confirmPassword')?.updateValueAndValidity();
-      },
-      error: (error) => {
-        Swal.fire('Error', 'No se pudo cargar los datos del técnico', 'error');
-      }
+    this.userServices.getUserById(id).subscribe((tecnico: any) => {
+      console.log('Datos del técnico cargados:', tecnico);
+      this.tecnicoForm.patchValue({
+        name: tecnico.name,
+        lastName: tecnico.lastName,
+        email: tecnico.email,
+        rut: tecnico.rut,
+        especialidades: tecnico.especialidades?.map((esp: any) => esp.id) || []
+      });
     });
+    
   }
   onSubmit() {
     if (this.tecnicoForm.valid) {
@@ -113,9 +107,9 @@ export class EditarTecnicoGrumanComponent {
             delete userData.password;
           }
 
-          const action = this.tecnicoId 
-            ? this.userServices.updateTecnicoGruman(this.tecnicoId, userData)
-            : this.userServices.createTecnico(userData);
+         const action = this.tecnicoId 
+            ? this.tecnicoService.updateTecnicoGruman(this.tecnicoId, userData)
+            : this.tecnicoService.createTecnico(userData); 
 
           action.subscribe({
             next: (response: any) => {

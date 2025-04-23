@@ -23,7 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class TecnicosComponent implements OnInit {
 
-  displayedColumns: string[] = ['nombre', 'acciones'];
+  displayedColumns: string[] = ['nombre', 'rut', 'email', 'acciones'];
   dataSource = new MatTableDataSource<any>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
