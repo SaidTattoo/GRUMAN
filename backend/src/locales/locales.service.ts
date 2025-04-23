@@ -42,7 +42,8 @@ export class LocalesService {
       .leftJoinAndSelect('local.region', 'region')
       .leftJoinAndSelect('comuna.provincia', 'comunaProvincia')
       .leftJoinAndSelect('comunaProvincia.region', 'comunaProvinciaRegion')
-      .where('local.deleted = :deleted', { deleted: false });
+      .where('local.deleted = :deleted', { deleted: false })
+      .andWhere('client.deleted = :clientDeleted', { clientDeleted: false });
     
     // Aplicar filtro por cliente si se proporciona
     if (clientId) {
@@ -72,7 +73,12 @@ export class LocalesService {
   
   async findOne(id: number): Promise<Locales | undefined> {
     return this.localesRepository.findOne({ 
-      where: { id },
+      where: { 
+        id,
+        client: {
+          deleted: false
+        }
+      },
       relations: [
         'client', 
         'sectoresTrabajo',
@@ -158,10 +164,13 @@ export class LocalesService {
   async delete(id: number): Promise<void> {
     await this.localesRepository.update(id, { deleted: true });
   }
-  getLocalesByCliente(clientId: number): Promise<Locales[]> {
+  async getLocalesByCliente(clientId: number): Promise<Locales[]> {
     return this.localesRepository.find({
       where: {
-        client: { id: clientId }, // Filtra por la propiedad id del cliente
+        client: { 
+          id: clientId,
+          deleted: false
+        },
         deleted: false,
       },
       order: { id: 'DESC' },

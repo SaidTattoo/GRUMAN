@@ -28,7 +28,14 @@ export class UsersService {
     /** findOne - Obtener un usuario por ID */
     async findOne(id: number): Promise<User | undefined> {
         return this.userRepository.findOne({ 
-            where: { id, disabled: false , name: Not('Atlantis_IA') }, 
+            where: { 
+                id, 
+                disabled: false,
+                name: Not('Atlantis_IA'),
+                clients: {
+                    deleted: false
+                }
+            }, 
             relations: ['clients', 'especialidades'] 
         });
     }

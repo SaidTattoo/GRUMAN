@@ -116,11 +116,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
               </ng-container>
               <ng-container matColumnDef="generado_por">
                 <th mat-header-cell *matHeaderCellDef>Generado por</th>
-                <td mat-cell *matCellDef="let row">{{row.generada_por.name}} {{row.generada_por.lastName}}</td>
+                <td mat-cell *matCellDef="let row">  {{row.generada_por ? (row.generada_por.name + ' ' + row.generada_por.lastName) : 'Sin usuario'}}</td>
               </ng-container>
               <ng-container matColumnDef="rechazado_por">
                 <th mat-header-cell *matHeaderCellDef>Rechazado por</th>
-                <td mat-cell *matCellDef="let row">{{row.rechazada_por.name}} {{row.rechazada_por.lastName}}</td>
+                <td mat-cell *matCellDef="let row">{{row.rechazada_por.name || ''}} {{row.rechazada_por.lastName || ''}}</td>
               </ng-container>
               <!-- Ticket Column -->
               <ng-container matColumnDef="ticketGruman">
