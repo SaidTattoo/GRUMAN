@@ -5,6 +5,7 @@ import { environment } from '../config';
 @Injectable({
   providedIn: 'root'
 })
+
 export class ActivoFijoLocalService {
 
   constructor( private http: HttpClient ) { }

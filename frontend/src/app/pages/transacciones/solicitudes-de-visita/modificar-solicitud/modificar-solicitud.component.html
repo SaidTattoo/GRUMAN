@@ -188,11 +188,9 @@
     <div class="form-row">
       <mat-form-field appearance="fill">
         <mat-label>Ticket</mat-label>
-        @if (isValidated() || isRechazada || isValidada || isAprobada) {
+      
           <input matInput [value]="solicitud?.ticketGruman" disabled>
-        } @else {
-          <input matInput formControlName="ticketGruman">
-        }
+      
       </mat-form-field>
 
       <mat-form-field appearance="fill">

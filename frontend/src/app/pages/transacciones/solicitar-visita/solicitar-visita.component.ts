@@ -66,6 +66,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   clientId: number;
   private storageSubscription: Subscription;
   client: Client | null = null;
+  private currentUserId: number;
 
   constructor(
    private userService: UserService,
@@ -94,12 +95,18 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     // Obtener el cliente seleccionado del localStorage o de un servicio
     const selectedClient = localStorage.getItem('selectedClient');
     this.client = selectedClient ? JSON.parse(selectedClient) : null;
+
+    // Initialize currentUserId from storage
+    const userData = this.storage.getCurrentUser();
+    console.log('userData', userData)
+    this.currentUserId = userData?.id;
   }
 
   ngOnInit(): void {
     this.storageSubscription = this.storage.user$.subscribe(user => {
       if (user && user.selectedCompany) {
         this.clientId = user.selectedCompany.id;
+        this.currentUserId = user.id;
         // Obtener los datos del cliente
         this.clientesService.getCliente(this.clientId).subscribe(
           (clientData) => {
@@ -165,7 +172,8 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         ticketGruman: values.ticketGruman,
         observaciones: values.observaciones,
         fechaIngreso: values.fechaIngreso,
-        imagenes: imagenesLimpias, // Usar las URLs limpias
+        imagenes: imagenesLimpias,
+        generada_por_id: this.currentUserId
       };
 
       this.solicitarVisitaService.crearSolicitudVisita(solicitud).subscribe({

@@ -81,22 +81,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
                 <td mat-cell *matCellDef="let row">{{row.id}}</td>
               </ng-container>
 
-              <!-- Logo Column -->
-              <ng-container matColumnDef="logo">
-                <th mat-header-cell *matHeaderCellDef>Logo</th>
-                <td mat-cell *matCellDef="let row" class="logo-cell">
-                  <img 
-                    [src]="row.client?.logo || 'assets/images/no-image.png'" 
-                    [alt]="row.client?.nombre || 'Logo cliente'"
-                    class="client-logo"
-                    (error)="onImageError($event)">
-                </td>
-              </ng-container>
+             
 
               <!-- Fecha Column -->
               <ng-container matColumnDef="fechaIngreso">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
-                <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
+                <td mat-cell *matCellDef="let row">{{row.fechaIngreso  | date:'dd/MM/yyyy '}}</td>
               </ng-container>
 
               <!-- Cliente Column -->
@@ -116,7 +106,18 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
                 <td mat-cell *matCellDef="let row">{{row.ticketGruman || 'Sin ticket'}}</td>
               </ng-container>
-
+              <ng-container matColumnDef="generado_por">
+                <th mat-header-cell *matHeaderCellDef>Generado por</th>
+                <td mat-cell *matCellDef="let row">{{row.generada_por.name}} {{row.generada_por.lastName}}</td>
+              </ng-container>
+              <ng-container matColumnDef="validada_por">
+                <th mat-header-cell *matHeaderCellDef>Validada por</th>
+                <td mat-cell *matCellDef="let row">{{row.validada_por.name}} {{row.validada_por.lastName}}</td>
+              </ng-container>
+              <ng-container matColumnDef="fecha_hora_validacion">
+                <th mat-header-cell *matHeaderCellDef>Fecha y hora validación</th>
+                <td mat-cell *matCellDef="let row">{{row.fecha_hora_validacion  | date:'dd/MM/yyyy HH:mm'}} </td>
+              </ng-container>
               <!-- Especialidad Column -->
               <ng-container matColumnDef="especialidad">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Especialidad</th>
@@ -310,12 +311,15 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 export class SolicitudesValidadasComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'id',
-    'logo',
+   
     'cliente',
     'local',
     'fechaIngreso',
     'ticketGruman',
     'especialidad',
+    'generado_por',
+    'validada_por',
+    'fecha_hora_validacion',
     'observaciones',
     'tecnico',
     'status',
@@ -362,12 +366,13 @@ export class SolicitudesValidadasComponent implements OnInit, OnDestroy {
     
     // Configurar cómo se filtra la tabla
     this.dataSource.filterPredicate = (data: any, filter: string) => {
-      const searchTermFilter = data.ticketGruman?.toLowerCase().includes(filter.toLowerCase());
-      
-      // Si no hay filtro de búsqueda, solo aplicamos el filtro de compañía
-      if (!filter) return true;
-      
-      return searchTermFilter;
+      const searchStr = filter.toLowerCase();
+      return (
+        data.id?.toString().includes(searchStr) ||                    // Filtrar por ID
+        data.ticketGruman?.toLowerCase().includes(searchStr) ||       // Filtrar por ticket
+        data.client?.nombre?.toLowerCase().includes(searchStr) ||     // Filtrar por nombre del cliente
+        data.local?.nombre_local?.toLowerCase().includes(searchStr)   // Filtrar por nombre del local
+      );
     };
   }
 

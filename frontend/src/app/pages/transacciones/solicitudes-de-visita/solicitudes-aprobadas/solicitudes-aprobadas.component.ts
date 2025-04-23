@@ -120,7 +120,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
                 <td mat-cell *matCellDef="let row">{{row.ticketGruman || 'Sin ticket'}}</td>
               </ng-container>
-
+              <ng-container matColumnDef="generada_por">
+                <th mat-header-cell *matHeaderCellDef>Generado por</th>
+                <td mat-cell *matCellDef="let row">{{row.generada_por.name}} {{row.generada_por.lastName}}</td>
+              </ng-container>
               <!-- Observaciones Column -->
               <ng-container matColumnDef="observaciones">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Observaciones</th>
@@ -252,6 +255,7 @@ export class SolicitudesAprobadasComponent implements OnInit, OnDestroy {
     'fechaIngreso',
     'ticketGruman',
     'especialidad',
+    'generada_por',
     'observaciones',
     'tecnico',
     'acciones'

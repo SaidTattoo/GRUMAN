@@ -54,7 +54,7 @@ import { MatTableDataSource } from '@angular/material/table';
   `]
 })
 export class SolicitudesDelDiaComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'cliente', 'local', 'tipoServicio',  'estado', 'tecnico', 'tecnico_2' ];
+  displayedColumns: string[] = ['id', 'cliente', 'local', 'tipoServicio',   'estado','generado_por', 'tecnico', 'tecnico_2' ];
   dataSource: MatTableDataSource<any>;
   private originalData: any[] = [];
 

@@ -114,7 +114,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
                   {{especialidades[row.especialidad] || 'No especificada'}}
                 </td>
               </ng-container>
-
+              <ng-container matColumnDef="generado_por">
+                <th mat-header-cell *matHeaderCellDef>Generado por</th>
+                <td mat-cell *matCellDef="let row">{{row.generada_por.name}} {{row.generada_por.lastName}}</td>
+              </ng-container>
+              <ng-container matColumnDef="rechazado_por">
+                <th mat-header-cell *matHeaderCellDef>Rechazado por</th>
+                <td mat-cell *matCellDef="let row">{{row.rechazada_por.name}} {{row.rechazada_por.lastName}}</td>
+              </ng-container>
               <!-- Ticket Column -->
               <ng-container matColumnDef="ticketGruman">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
@@ -262,6 +269,8 @@ export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit, On
     'ticketGruman',
     'especialidad',
     'observaciones',
+    'generado_por',
+    'rechazado_por',
     'motivo_rechazo',
     'acciones'
   ];

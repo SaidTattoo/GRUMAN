@@ -177,7 +177,7 @@ export class SolicitarVisitaService {
         solicitudVisita.fechaIngreso = solicitud.fechaIngreso;
         solicitudVisita.imagenes = solicitud.imagenes;
         solicitudVisita.tipo_mantenimiento = solicitud.tipo_mantenimiento;
-
+        solicitudVisita.generada_por_id = solicitud.generada_por_id;
         // Asigna el técnico si fue especificado
         if (solicitud.tecnico_asignado_id) {
             solicitudVisita.tecnico_asignado = await this.userRepository.findOne({ 
@@ -323,7 +323,8 @@ export class SolicitarVisitaService {
                 'activoFijoRepuestos.detallesRepuestos',
                 'activoFijoRepuestos.detallesRepuestos.repuesto',
                 'itemEstados',
-                'facturacion'
+                'facturacion',
+                'generada_por'
             ]
         });
 
@@ -338,7 +339,7 @@ export class SolicitarVisitaService {
     getSolicitudesVisita(): Promise<SolicitarVisita[]> {
         return this.solicitarVisitaRepository.find({ 
           where: {  estado: true  },
-          relations: ['local', 'client', 'tecnico_asignado', 'facturacion'],
+          relations: ['local', 'client', 'tecnico_asignado', 'generada_por' ,'facturacion'],
           order: { fechaIngreso: 'DESC' }
         });
     }
@@ -346,7 +347,7 @@ export class SolicitarVisitaService {
     async getSolicitudesAprobadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { status: In([SolicitudStatus.APROBADA, SolicitudStatus.APROBADA]) , estado: true},
-            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
+            relations: ['local', 'generada_por', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
             order: { fechaIngreso: 'DESC' }
         });
       
@@ -388,7 +389,7 @@ export class SolicitarVisitaService {
     async getSolicitudesRechazadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { status: SolicitudStatus.RECHAZADA },
-            relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
+            relations: ['local', 'client', 'tecnico_asignado', 'generada_por','rechazada_por', 'tecnico_asignado_2'],
             order: { fechaIngreso: 'DESC' }
         });
       
@@ -422,7 +423,8 @@ export class SolicitarVisitaService {
                 'activoFijoRepuestos',
                 'activoFijoRepuestos.activoFijo',
                 'activoFijoRepuestos.detallesRepuestos',
-                'activoFijoRepuestos.detallesRepuestos.repuesto'
+                'activoFijoRepuestos.detallesRepuestos.repuesto',
+                'generada_por'
             ],
             order: { id: 'DESC' }
         });
@@ -430,25 +432,31 @@ export class SolicitarVisitaService {
     }
     
     async getSolicitudesValidadas(): Promise<SolicitarVisita[]> {
-        const data = await this.solicitarVisitaRepository.find({ 
-            where: { status: In([SolicitudStatus.VALIDADA, SolicitudStatus.REABIERTA]), estado: true },
-            relations: [
-                'local',
-                'local.activoFijoLocales',
-                'client',
-                'tecnico_asignado',
-                'tecnico_asignado_2',
-                'itemRepuestos',
-                'itemRepuestos.repuesto',
-                'itemFotos',
-                'causaRaiz',
-                'activoFijoRepuestos',
-                'activoFijoRepuestos.activoFijo',
-                'activoFijoRepuestos.detallesRepuestos',
-                'activoFijoRepuestos.detallesRepuestos.repuesto'
-            ],
-            order: { fechaIngreso: 'DESC' }
-        });
+        const data = await this.solicitarVisitaRepository
+            .createQueryBuilder('solicitud')
+            .leftJoinAndSelect('solicitud.local', 'local')
+            .leftJoinAndSelect('local.activoFijoLocales', 'activoFijoLocales')
+            .leftJoinAndSelect('solicitud.client', 'client')
+            .leftJoinAndSelect('solicitud.tecnico_asignado', 'tecnico_asignado')
+            .leftJoinAndSelect('solicitud.tecnico_asignado_2', 'tecnico_asignado_2')
+            .leftJoinAndSelect('solicitud.itemRepuestos', 'itemRepuestos')
+            .leftJoinAndSelect('itemRepuestos.repuesto', 'repuesto')
+            .leftJoinAndSelect('solicitud.itemFotos', 'itemFotos')
+            .leftJoinAndSelect('solicitud.causaRaiz', 'causaRaiz')
+            .leftJoinAndSelect('solicitud.generada_por', 'generada_por')
+            .leftJoinAndSelect('solicitud.activoFijoRepuestos', 'activoFijoRepuestos')
+            .leftJoinAndSelect('activoFijoRepuestos.activoFijo', 'activoFijo')
+            .leftJoinAndSelect('activoFijoRepuestos.detallesRepuestos', 'detallesRepuestos')
+            .leftJoinAndSelect('detallesRepuestos.repuesto', 'detallesRepuesto')
+            .leftJoin('solicitud.validada_por', 'validada_por')
+            .addSelect(['validada_por.id', 'validada_por.name', 'validada_por.lastName'])
+            .where({
+                status: In([SolicitudStatus.VALIDADA, SolicitudStatus.REABIERTA]),
+                estado: true
+            })
+            .orderBy('solicitud.fechaIngreso', 'DESC')
+            .getMany();
+
         return data;
     }
 
@@ -535,9 +543,29 @@ export class SolicitarVisitaService {
     }
 
     //quiero obtener la cantidad de solicitudes pendientes
-    async getPendientes(): Promise<number> {
-        const pendientes = await this.solicitarVisitaRepository.count({
-            where: { status: SolicitudStatus.PENDIENTE, estado: true }
+    async getPendientes(): Promise<SolicitarVisita[]> {
+        const pendientes = await this.solicitarVisitaRepository.find({
+            where: { 
+                status: SolicitudStatus.PENDIENTE, 
+                estado: true 
+            },
+            relations: [
+                'local',
+                'client',
+                'tecnico_asignado',
+                'tecnico_asignado_2',
+                'checklistsClima',
+                'itemRepuestos',
+                'itemFotos',
+                'causaRaiz',
+                'activoFijoRepuestos',
+                'itemEstados',
+                'facturacion',
+                'generada_por'
+            ],
+            order: { 
+                id: 'DESC' 
+            }
         });
         return pendientes;
     }
@@ -735,7 +763,7 @@ export class SolicitarVisitaService {
                     estado: true,
                     fechaIngreso: Between(today, tomorrow)
                 },
-                relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
+                relations: ['local', 'client', 'generada_por', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
                 order: { id: 'DESC' }
             });
 
@@ -820,7 +848,7 @@ export class SolicitarVisitaService {
 
             const data = await this.solicitarVisitaRepository.find({ 
                 where: whereClause,
-                relations: ['local', 'client', 'facturacion', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
+                relations: ['local', 'client', 'generada_por','facturacion', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
                 order: { id: 'ASC' }
             });
 
@@ -884,8 +912,8 @@ export class SolicitarVisitaService {
                     
                     fechaIngreso: Between(today, tomorrow)
                 },
-                relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
-                order: { fechaIngreso: 'DESC' }
+                relations: ['local', 'client', 'generada_por','tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
+                order: { fechaIngreso: 'DESC' } 
             });
 
         
@@ -1453,7 +1481,7 @@ export class SolicitarVisitaService {
                 `Error al procesar carga masiva: ${error.message}`
             );
         }
-    }
-      
+    }   
+        
 }
 

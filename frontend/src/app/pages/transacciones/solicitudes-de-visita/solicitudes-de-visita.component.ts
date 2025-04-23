@@ -90,10 +90,11 @@ export class SolicitudesDeVisitaComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'id',
     'fechaIngreso',	
-    'logo',
+  
     'cliente',
     'local',
     'ticketGruman',
+    'generado_por',
     'observaciones',
     'estado',
     'imagenes',

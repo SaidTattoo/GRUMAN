@@ -48,7 +48,7 @@ import { StorageService } from 'src/app/services/storage.service';
   `]
 })
 export class SolicitudesDelDiaClienteComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'local', 'tipoServicio', 'observaciones', 'estado' ];
+  displayedColumns: string[] = ['id', 'local', 'tipoServicio','generado_por', 'observaciones', 'estado' ];
   dataSource: any[] = [];
 
   constructor(
