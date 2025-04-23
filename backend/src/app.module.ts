@@ -40,6 +40,7 @@ import { ChecklistClimaModule } from './checklist_clima/checklist_clima.module';
 import { MailModule } from './mail/mail.module';
 import { ClienteRepuestoModule } from './cliente-repuesto/cliente-repuesto.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { MesesFacturacionModule } from './meses_facturacion/meses_facturacion.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -84,7 +85,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
     ActivoFijoRepuestosModule, ChecklistClimaModule,
     MailModule,
     ClienteRepuestoModule,
-    DashboardModule
+    DashboardModule,
+    MesesFacturacionModule
 /*     LocalesModule,
     SectoresTrabajoModule,
     ProgramacionModule */

@@ -26,6 +26,9 @@ export class FacturacionController {
     return this.facturacionService.listarFacturacionPorCliente(id_cliente);
   }
 
+
+
+
   @Put(':id')
   async actualizarMesDeFacturacion(
     @Param('id') id: number, 
@@ -71,5 +74,27 @@ export class FacturacionController {
   @Get('buscar-facturacion/:mes/:id_cliente')
   async buscarFacturacion(@Param('mes') mes: string, @Param('id_cliente') id_cliente: number) {
     return this.facturacionService.findFacturacionByMesAndIdCliente(mes, id_cliente);
+  }
+  @Get('listar')
+  async obtenerFacturaciones() {
+      try {
+          return await this.facturacionService.obtenerFacturaciones();
+      } catch (error) {
+          console.error('Error en el controlador:', error);
+          throw error;
+      }
+  }
+
+  @Get('obtener-meses-unicos')
+  async obtenerMesesUnicos() {
+      try {
+          console.log('Endpoint obtener-meses-unicos invocado');
+          const meses = await this.facturacionService.obtenerMesesUnicos();
+          console.log('Meses retornados desde el controlador:', meses);
+          return meses;
+      } catch (error) {
+          console.error('Error en el controlador obtenerMesesUnicos:', error);
+          throw error;
+      }
   }
 }

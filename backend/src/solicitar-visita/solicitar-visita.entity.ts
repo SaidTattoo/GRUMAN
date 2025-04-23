@@ -185,13 +185,11 @@ export class SolicitarVisita {
   registroVisita: string;
 
   @Column({
-    type: 'varchar',
-    length: 100,
+    type: 'boolean',
     name: 'estado',
-    nullable: true,
-    default: null
+    default: true
   })
-  estado: string;
+  estado: boolean;
 
   // Relación con CausaRaiz
   @ManyToOne(() => CausaRaiz, { nullable: true })

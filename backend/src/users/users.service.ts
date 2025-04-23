@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Client } from 'src/client/client.entity';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,14 +20,15 @@ export class UsersService {
     ) {}
 
     /** findAllUsers */
+    //treaer a todos los usuarios menos al ' name = Atlantis_IA'
     async findAllUsers(): Promise<User[]> {
-        return this.userRepository.find({ where: { disabled: false , profile: 'user' }, relations: ['clients'] });
+        return this.userRepository.find({ where: { disabled: false , profile: 'user' , name: Not('Atlantis_IA') }, relations: ['clients'] });
     }
 
     /** findOne - Obtener un usuario por ID */
     async findOne(id: number): Promise<User | undefined> {
         return this.userRepository.findOne({ 
-            where: { id, disabled: false }, 
+            where: { id, disabled: false , name: Not('Atlantis_IA') }, 
             relations: ['clients', 'especialidades'] 
         });
     }
@@ -38,7 +39,8 @@ export class UsersService {
             const tecnicos = await this.userRepository.find({ 
                 where: { 
                     profile: 'tecnico', 
-                    disabled: false 
+                    disabled: false ,
+                    name: Not('Atlantis_IA')
                 }, 
                 relations: ['especialidades'] 
             });
@@ -289,7 +291,7 @@ export class UsersService {
     async getTecnicoClientes(id: number) {
         // Primero, busquemos al usuario sin restricciones para debug
         const usuario = await this.userRepository.findOne({
-            where: { id: id },
+            where: { id: id , name: Not('Atlantis_IA')},
             relations: ['clients']
         });
 

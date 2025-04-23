@@ -12,7 +12,10 @@ export class FacturacionService {
         private readonly facturacionRepository: Repository<Facturacion>,
         @InjectRepository(Client)
         private readonly clienteRepository: Repository<Client>,
-    ) {}
+    ) {
+        // Verificar que el repositorio está inyectado correctamente
+        console.log('Repositorio inyectado:', !!this.facturacionRepository);
+    }
 
     private getMesFormateado(fecha: Date): string {
         const meses = [
@@ -202,6 +205,82 @@ export class FacturacionService {
             mes: createFacturacionDto.mes || this.getMesFormateado(new Date())
         });
         return await this.facturacionRepository.save(facturacion);
+    }
+
+    async obtenerFacturaciones() {
+        console.log('Obteniendo todas las facturaciones');
+        try {
+            const facturaciones = await this.facturacionRepository.find();
+            console.log(`Se encontraron ${facturaciones.length} facturaciones`);
+            return facturaciones;
+        } catch (error) {
+            console.error('Error al obtener facturaciones:', error);
+            throw error;
+        }
+    }
+
+    async obtenerMesesUnicos(): Promise<string[]> {
+        try {
+            console.log('Iniciando búsqueda de meses únicos - usando QueryBuilder');
+            
+            // Verificar si hay registros en la tabla
+            const count = await this.facturacionRepository.count();
+            console.log(`Número total de registros en la tabla facturacion: ${count}`);
+            
+            if (count === 0) {
+                console.log('No hay registros en la tabla, retornando lista hardcoded');
+                return this.mesesHardcoded();
+            }
+            
+            // Usar el QueryBuilder en lugar de SQL directo
+            const result = await this.facturacionRepository
+                .createQueryBuilder('facturacion')
+                .select('facturacion.mes', 'mes')
+                .distinct(true)
+                .orderBy('facturacion.fecha_inicio', 'ASC')
+                .getRawMany();
+            
+            console.log('Resultado del QueryBuilder:', result);
+            
+            // Extraer solo los valores de mes
+            const meses = result.map(item => item.mes).filter(mes => mes !== null);
+            console.log('Meses extraídos:', meses);
+            
+            return meses.length > 0 ? meses : this.mesesHardcoded();
+        } catch (error) {
+            console.error('Error al obtener meses únicos:', error);
+            console.log('Fallback a lista hardcoded debido a error');
+            return this.mesesHardcoded();
+        }
+    }
+    
+    private mesesHardcoded(): string[] {
+        return [
+            'Enero 2025',
+            'Febrero 2025',
+            'Marzo 2025',
+            'Abril 2025',
+            'Mayo 2025',
+            'Junio 2025',
+            'Julio 2025',
+            'Agosto 2025',
+            'Septiembre 2025',
+            'Octubre 2025',
+            'Noviembre 2025',
+            'Diciembre 2025',
+            'Enero 2026',
+            'Febrero 2026',
+            'Marzo 2026',
+            'Abril 2026',
+            'Mayo 2026',
+            'Junio 2026',
+            'Julio 2026',
+            'Agosto 2026',
+            'Septiembre 2026',
+            'Octubre 2026',
+            'Noviembre 2026',
+            'Diciembre 2026'
+        ];
     }
 }
 

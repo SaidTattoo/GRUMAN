@@ -306,7 +306,7 @@ export class SolicitarVisitaService {
 
     async getSolicitudVisita(id: number): Promise<SolicitarVisita> {
         const solicitud = await this.solicitarVisitaRepository.findOne({
-            where: { id },
+            where: { id: id, estado: true },
             relations: [
                 'local',
                 'local.activoFijoLocales',
@@ -337,6 +337,7 @@ export class SolicitarVisitaService {
 
     getSolicitudesVisita(): Promise<SolicitarVisita[]> {
         return this.solicitarVisitaRepository.find({ 
+          where: {  estado: true  },
           relations: ['local', 'client', 'tecnico_asignado', 'facturacion'],
           order: { fechaIngreso: 'DESC' }
         });
@@ -344,7 +345,7 @@ export class SolicitarVisitaService {
 
     async getSolicitudesAprobadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
-            where: { status: In([SolicitudStatus.APROBADA, SolicitudStatus.APROBADA]) },
+            where: { status: In([SolicitudStatus.APROBADA, SolicitudStatus.APROBADA]) , estado: true},
             relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2'],
             order: { fechaIngreso: 'DESC' }
         });
@@ -364,6 +365,7 @@ export class SolicitarVisitaService {
         const data = await this.solicitarVisitaRepository.find({ 
             where: { 
                 tecnico_asignado: { rut },
+                estado: true,
                 fechaVisita: Between(today, tomorrow),
                 status: In([SolicitudStatus.APROBADA, SolicitudStatus.EN_SERVICIO]) 
             },
@@ -406,7 +408,7 @@ export class SolicitarVisitaService {
 
     async getSolicitudesFinalizadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
-            where: { status: In([SolicitudStatus.FINALIZADA, SolicitudStatus.FINALIZADA]) },
+            where: { status: In([SolicitudStatus.FINALIZADA, SolicitudStatus.FINALIZADA]), estado: true },
             relations: [
                 'local',
                 'local.activoFijoLocales',
@@ -429,7 +431,7 @@ export class SolicitarVisitaService {
     
     async getSolicitudesValidadas(): Promise<SolicitarVisita[]> {
         const data = await this.solicitarVisitaRepository.find({ 
-            where: { status: In([SolicitudStatus.VALIDADA, SolicitudStatus.REABIERTA]) },
+            where: { status: In([SolicitudStatus.VALIDADA, SolicitudStatus.REABIERTA]), estado: true },
             relations: [
                 'local',
                 'local.activoFijoLocales',
@@ -535,7 +537,7 @@ export class SolicitarVisitaService {
     //quiero obtener la cantidad de solicitudes pendientes
     async getPendientes(): Promise<number> {
         const pendientes = await this.solicitarVisitaRepository.count({
-            where: { status: SolicitudStatus.PENDIENTE }
+            where: { status: SolicitudStatus.PENDIENTE, estado: true }
         });
         return pendientes;
     }
@@ -730,6 +732,7 @@ export class SolicitarVisitaService {
                         SolicitudStatus.RECHAZADA,
                         SolicitudStatus.PENDIENTE
                     ]),
+                    estado: true,
                     fechaIngreso: Between(today, tomorrow)
                 },
                 relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
@@ -764,7 +767,8 @@ export class SolicitarVisitaService {
                     SolicitudStatus.APROBADA,
                     SolicitudStatus.RECHAZADA,
                     SolicitudStatus.PENDIENTE
-                ])
+                ]),
+                estado: true
             };
 
             // Add client filter if provided
@@ -876,6 +880,8 @@ export class SolicitarVisitaService {
                         SolicitudStatus.RECHAZADA,
                         SolicitudStatus.PENDIENTE
                     ]),
+                    estado: true,
+                    
                     fechaIngreso: Between(today, tomorrow)
                 },
                 relations: ['local', 'client', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
