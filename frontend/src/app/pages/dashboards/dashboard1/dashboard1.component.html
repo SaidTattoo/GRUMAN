@@ -68,20 +68,42 @@
                   </mat-card>
                 </div>
 
-              <!--  
                 <div class="card-container">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
-                      <mat-icon>today</mat-icon>
+                      <mat-icon>cancel</mat-icon>
                       <div class="m-t-35">
-                        <h5 class="f-w-600 f-s-21 m-0">{{ count_servicios_del_dia }}</h5>
-                        <span class="f-s-14">Servicios del día</span>
+                        <h5 class="f-w-600 f-s-21 m-0">{{rechazadas}}</h5>
+                        <span class="f-s-14">Rechazadas</span>
                       </div>
                     </mat-card-content>
                   </mat-card>
                 </div>
-             
-             
+
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
+                    <mat-card-content>
+                      <mat-icon>verified</mat-icon>
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">{{validadas}}</h5>
+                        <span class="f-s-14">Validadas</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+
+                <div class="card-container">
+                  <mat-card class="cardWithShadow bg-primary text-white">
+                    <mat-card-content>
+                      <mat-icon>sync</mat-icon>
+                      <div class="m-t-35">
+                        <h5 class="f-w-600 f-s-21 m-0">{{atendida_en_proceso}}</h5>
+                        <span class="f-s-14">En Proceso</span>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+             <!--
                 <div class="card-container">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>

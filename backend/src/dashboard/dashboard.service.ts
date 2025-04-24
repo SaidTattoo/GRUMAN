@@ -8,7 +8,9 @@ import { Client } from '../client/client.entity';
 export class DashboardService {
     constructor(
         @InjectRepository(SolicitarVisita)
-        private solicitarVisitaRepository: Repository<SolicitarVisita>
+        private solicitarVisitaRepository: Repository<SolicitarVisita>,
+        @InjectRepository(Client)
+        private clientRepository: Repository<Client>
     ) {}
 
     /**
@@ -121,6 +123,12 @@ export class DashboardService {
             .addSelect('SUM(CASE WHEN solicitud.status = :rechazado THEN 1 ELSE 0 END)', 'rechazadas')
             .addSelect('SUM(CASE WHEN solicitud.status = :finalizado THEN 1 ELSE 0 END)', 'finalizadas')
             .addSelect('SUM(CASE WHEN solicitud.status IN (:validada, :reabierta) THEN 1 ELSE 0 END)', 'validadas')
+            .addSelect('SUM(CASE WHEN solicitud.status = :archivada THEN 1 ELSE 0 END)', 'archivadas')
+            .addSelect(`SUM(CASE 
+                WHEN solicitud.status = :aprobado 
+                AND solicitud.fecha_hora_inicio_servicio IS NOT NULL 
+                AND solicitud.fecha_hora_fin_servicio IS NULL 
+                THEN 1 ELSE 0 END)`, 'enProceso')
             .leftJoin('solicitud.client', 'client')
             .groupBy('client.id')
             .addGroupBy('client.nombre')
@@ -131,7 +139,8 @@ export class DashboardService {
                 rechazado: 'rechazado',
                 finalizado: 'finalizado',
                 validada: 'validada',
-                reabierta: 'reabierta'
+                reabierta: 'reabierta',
+                archivada: 'archivada'
             })
             .getRawMany();
 
@@ -158,38 +167,53 @@ export class DashboardService {
                     endDate 
                 });
             
+            // Solo aplicar el filtro de cliente si no es GRUMAN
             if (clientId) {
-                queryBuilder.andWhere('client.id = :clientId', { clientId });
+                const client = await this.clientRepository.findOne({ where: { id: clientId } });
+                if (client && client.nombre.toUpperCase() !== 'GRUMAN') {
+                    queryBuilder.andWhere('client.id = :clientId', { clientId });
+                }
             }
             
             const total = await queryBuilder.getCount();
             
-            const pendientes = await this.solicitarVisitaRepository.count({
-                where: {
-                    status: SolicitudStatus.PENDIENTE,
+            // Función auxiliar para contar solicitudes
+            const countSolicitudes = async (status: string | string[], includeReabierta = false) => {
+                const whereConditions: any = {
                     fechaIngreso: Between(startDate, endDate),
-                    client: { id: clientId }
-                },
-                relations: ['client']
-            });
-            
-            const aprobadas = await this.solicitarVisitaRepository.count({
-                where: {
-                    status: SolicitudStatus.APROBADA,
-                    fechaIngreso: Between(startDate, endDate),
-                    client: { id: clientId }
-                },
-                relations: ['client']
-            });
-            
-            const finalizadas = await this.solicitarVisitaRepository.count({
-                where: {    
-                    status: SolicitudStatus.FINALIZADA,
-                    fechaIngreso: Between(startDate, endDate),
-                    client: { id: clientId }
-                },
-                relations: ['client']
-            });
+                };
+
+                if (clientId) {
+                    const client = await this.clientRepository.findOne({ where: { id: clientId } });
+                    if (client && client.nombre.toUpperCase() !== 'GRUMAN') {
+                        whereConditions.client = { id: clientId };
+                    }
+                }
+
+                if (Array.isArray(status)) {
+                    return await this.solicitarVisitaRepository.count({
+                        where: status.map(s => ({
+                            ...whereConditions,
+                            status: s
+                        })),
+                        relations: ['client']
+                    });
+                } else {
+                    whereConditions.status = status;
+                    return await this.solicitarVisitaRepository.count({
+                        where: whereConditions,
+                        relations: ['client']
+                    });
+                }
+            };
+
+            const pendientes = await countSolicitudes(SolicitudStatus.PENDIENTE);
+            const aprobadas = await countSolicitudes(SolicitudStatus.APROBADA);
+            const finalizadas = await countSolicitudes(SolicitudStatus.FINALIZADA);
+            const rechazadas = await countSolicitudes(SolicitudStatus.RECHAZADA);
+            const validadas = await countSolicitudes([SolicitudStatus.VALIDADA, SolicitudStatus.REABIERTA]);
+            const atendida_en_proceso = await countSolicitudes(SolicitudStatus.ATENDIDA_EN_PROCESO);
+            const en_servicio = await countSolicitudes(SolicitudStatus.EN_SERVICIO);
             
             meses.push({
                 mes: mes + 1,
@@ -197,7 +221,11 @@ export class DashboardService {
                 total,
                 pendientes,
                 aprobadas,
-                finalizadas
+                finalizadas,
+                rechazadas,
+                validadas,
+                atendida_en_proceso,
+                en_servicio
             });
         }
         

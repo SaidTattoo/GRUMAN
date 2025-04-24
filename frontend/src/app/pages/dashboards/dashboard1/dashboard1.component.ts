@@ -25,6 +25,16 @@ export enum TipoOrden {
   REACTIVO = 'reactivo'
 }
 
+interface DashboardData {
+  pendientes: number;
+  aprobadas: number;
+  servicio: number;
+  finalizadas: number;
+  validadas: number;
+  rechazadas: number;
+  atendida_en_proceso: number;
+}
+
 @Component({
   selector: 'app-dashboard1',
   standalone: true,
@@ -123,7 +133,9 @@ export class AppDashboard1Component implements OnInit, OnDestroy {
   count_gastos_repostos = 10;
   count_performance_reactivos = 10;
   count_gasto_total_acumulado = 10;
-
+  validadas= 0;
+  rechazadas= 0;
+  atendida_en_proceso = 0;
   pendientes = 14;
   user: any;
   facturaciones: any[] = [];
@@ -202,14 +214,24 @@ export class AppDashboard1Component implements OnInit, OnDestroy {
     console.log('Loading dashboard data for company:', this.user.selectedCompany.nombre);
     
     if (this.user.selectedCompany.nombre === 'GRUMAN' || this.user.selectedCompany.nombre === 'Administrador') {
-      this.dashboardService.getContadoresCantidad().subscribe((data: any) => {
-        console.log('Contadores for GRUMAN/Admin:', data);
-        this.updateDashboardCounters(data);
+      this.dashboardService.getContadoresCantidad().subscribe({
+        next: (data: any) => {
+          console.log('Contadores for GRUMAN/Admin:', data);
+          this.updateDashboardCounters(data);
+        },
+        error: (error) => {
+          console.error('Error loading dashboard data:', error);
+        }
       });
     } else {
-      this.dashboardService.getContadoresCantidad(this.user.selectedCompany.id).subscribe((data: any) => {
-        console.log('Contadores for client:', this.user.selectedCompany.nombre, data);
-        this.updateDashboardCounters(data);
+      this.dashboardService.getContadoresCantidad(this.user.selectedCompany.id).subscribe({
+        next: (data: any) => {
+          console.log('Contadores for client:', this.user.selectedCompany.nombre, data);
+          this.updateDashboardCounters(data);
+        },
+        error: (error) => {
+          console.error('Error loading dashboard data:', error);
+        }
       });
     }
 
@@ -229,13 +251,22 @@ export class AppDashboard1Component implements OnInit, OnDestroy {
   }
 
   private updateDashboardCounters(data: any) {
-    this.pendientes = data.pendientes || 0;
-    this.aprobadas = data.aprobadas || 0;
-    this.servicio = data.enServicio || 0;
-    this.count_proximas_visitas_preventivas = data.finalizadas || 0;
+    console.log('Raw dashboard data:', data);
+    console.log('atendida_en_proceso raw value:', data.atendida_en_proceso);
+    
+    // Convertir strings a números y manejar valores nulos
+    this.pendientes = Number(data.pendientes) || 0;
+    this.aprobadas = Number(data.aprobadas) || 0;
+    this.servicio = Number(data.servicio) || 0;
+    this.count_proximas_visitas_preventivas = Number(data.finalizadas) || 0;
     this.count_servicios_del_dia = data.serviciosDelDia || 0;
     this.count_analisis_causa_raiz = data.analisisCausaRaiz || 0;
     this.count_cumplimiento_preventivos = data.cumplimientoPreventivos || 0;
+    this.validadas = Number(data.validadas) || 0;
+    this.rechazadas = Number(data.rechazadas) || 0;
+    this.atendida_en_proceso = Number(data.atendida_en_proceso) || 0;
+    
+    console.log('Processed atendida_en_proceso:', this.atendida_en_proceso);
   }
 }
 
