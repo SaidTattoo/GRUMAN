@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query, NotFoundException, InternalServerErrorException, BadRequestException, Res, Header } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query, NotFoundException, InternalServerErrorException, BadRequestException, Res, Header, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
 import { Response } from 'express';
 import { SolicitarVisitaService } from './solicitar-visita.service';
 
@@ -166,6 +166,30 @@ export class SolicitarVisitaController {
             HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
+  }
+
+  @Get('solicitudes-visita-multifiltro')
+  async getSolicitudesVisitaMultifiltro(
+    @Query('clienteId') clienteId?: string,
+    @Query('status') status?: string,
+    @Query('tipoMantenimiento') tipoMantenimiento?: string,
+    @Query('mesFacturacion') mesFacturacion?: string,
+    @Query('fechaDesde') fechaDesde?: string,
+    @Query('fechaHasta') fechaHasta?: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number, // Valor por defecto 1, convierte a número
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit?: number, // Valor por defecto 10, convierte a número
+  ) {
+    const params = {
+      clienteId,
+      status,
+      tipoMantenimiento,
+      mesFacturacion,
+      fechaDesde,
+      fechaHasta,
+      page,
+      limit
+    };
+    return this.solicitarVisitaService.getSolicitudesVisitaMultifiltro(params);
   }
 
   @Get(':id')

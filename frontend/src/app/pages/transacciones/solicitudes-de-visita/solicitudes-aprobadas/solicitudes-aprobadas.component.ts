@@ -92,7 +92,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
               <!-- Fecha Column -->
               <ng-container matColumnDef="fechaIngreso">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
-                <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
+                <td mat-cell *matCellDef="let row">{{row.fechaIngreso | date:'dd/MM/yyyy'}}</td>
               </ng-container>
 
               <!-- Cliente Column -->

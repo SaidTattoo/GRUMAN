@@ -104,7 +104,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
               <!-- Fecha Column -->
               <ng-container matColumnDef="fechaIngreso">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
-                <td mat-cell *matCellDef="let row">{{formatDate(row.fechaIngreso)}}</td>
+                <td mat-cell *matCellDef="let row">{{row.fechaIngreso | date:'dd/MM/yyyy'}}</td>
               </ng-container>
 
               <!-- Especialidad Column -->
