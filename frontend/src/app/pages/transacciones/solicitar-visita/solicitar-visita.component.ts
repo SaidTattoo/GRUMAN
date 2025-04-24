@@ -175,7 +175,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         imagenes: imagenesLimpias,
         generada_por_id: this.currentUserId
       };
-
+      console.log('solicitud', solicitud)
       this.solicitarVisitaService.crearSolicitudVisita(solicitud).subscribe({
         next: (response) => {
           console.log('Visita creada:', response);

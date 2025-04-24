@@ -28,7 +28,14 @@ export class UsersService {
     /** findOne - Obtener un usuario por ID */
     async findOne(id: number): Promise<User | undefined> {
         return this.userRepository.findOne({ 
-            where: { id, disabled: false , name: Not('Atlantis_IA') }, 
+            where: { 
+                id, 
+                disabled: false,
+                name: Not('Atlantis_IA'),
+                clients: {
+                    deleted: false
+                }
+            }, 
             relations: ['clients', 'especialidades'] 
         });
     }
@@ -62,15 +69,26 @@ export class UsersService {
 
     /** FINDALLUSERS WHERE CLIENTE  */
     async findAllUsersByClient(clientId: number): Promise<User[]> {
-        return this.userRepository.find({ where: { clients: { id: clientId }, disabled: false }, relations: ['clients'] });
+        return this.userRepository.find({ where: { clients: { id: clientId , deleted:false}, disabled: false }, relations: ['clients'] });
     }
 
     /** FINDONEUSER */
     async findOneUser(rut: string): Promise<User | undefined> {
-        return this.userRepository.findOne({ where: { rut, disabled: false }, relations: ['clients'] });
+        return this.userRepository.findOne({ where: { rut, disabled: false , clients: {
+            deleted: false
+        }}, relations: ['clients'] });
     }
     async findByEmail(email: string): Promise<User | undefined> {
-        return this.userRepository.findOne({ where: { email, disabled: false }, relations: ['clients'] });
+        return this.userRepository.findOne({ 
+            where: { 
+                email, 
+                disabled: false,
+                clients: {
+                    deleted: false
+                }
+            }, 
+            relations: ['clients'] 
+        });
     }
     async findByRut(rut: string): Promise<User | undefined> {
         return this.userRepository.findOne({ where: { rut, disabled: false }, relations: ['clients', 'especialidades' ,] });

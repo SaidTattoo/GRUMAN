@@ -190,4 +190,7 @@ export class SolicitarVisitaService {
   subirCargaMasiva(datos: any[]): Observable<any> {
     return this.http.post(`${this.apiUrl}solicitar-visita/subir-carga-masiva`, datos);
   }
+  getSolicitudesVisitaMultifiltro(params: any): Observable<any> {
+    return this.http.get(`${this.apiUrl}solicitar-visita/solicitudes-visita-multifiltro`, { params });
+  }
 }

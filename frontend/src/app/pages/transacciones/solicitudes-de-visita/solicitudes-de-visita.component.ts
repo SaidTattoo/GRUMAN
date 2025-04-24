@@ -214,8 +214,11 @@ export class SolicitudesDeVisitaComponent implements OnInit, OnDestroy {
     }
   }
 
-  verSolicitud(element: any) {
-    this.router.navigate(['/transacciones/solicitudes-de-visita/ver-solicitud/pendiente', element.id]);
+  verSolicitud(solicitud: any): void {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/transacciones/solicitudes-de-visita/ver-solicitud/pendiente', solicitud.id])
+    );
+    window.open(url, '_blank');
   }
 
   onImageError(event: any) {

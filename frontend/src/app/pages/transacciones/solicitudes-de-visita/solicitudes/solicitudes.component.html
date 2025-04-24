@@ -1,0 +1,141 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content class="p-24">
+  
+
+    <!-- Filtros de búsqueda -->
+    <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+      <div class="row mb-3">
+        <!-- Cliente -->
+        <div class="col-md-4 mb-3" *ngIf="isGruman">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Cliente</mat-label>
+            <mat-select formControlName="clienteId">
+              <mat-option value="">Todos</mat-option>
+              <ng-container *ngFor="let cliente of clientes">
+                <mat-option *ngIf="cliente.nombre.toUpperCase() !== 'GRUMAN'" [value]="cliente.id">
+                  {{ cliente.nombre }}
+                </mat-option>
+              </ng-container>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end">
+        <button type="button" mat-button (click)="resetFilters()">
+          Limpiar Filtros
+        </button>
+        <button type="submit" mat-raised-button color="primary">
+          <mat-icon>search</mat-icon>
+          Buscar
+        </button>
+      </div>
+    </form>
+
+    <!-- Botones de acción -->
+    <div class="action-buttons my-3">
+      <button mat-stroked-button color="primary" (click)="exportarExcel()">
+        <mat-icon>file_download</mat-icon>
+        Exportar a Excel
+      </button>
+    </div>
+
+    <!-- Tabla de solicitudes -->
+  
+      
+
+      <table mat-table [dataSource]="dataSource" matSort class="w-100">
+        <!-- ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Numero de solicitud</th>
+          <td mat-cell *matCellDef="let element">{{ element.id }}</td>
+        </ng-container>
+
+        <!-- Cliente Column -->
+        <ng-container matColumnDef="cliente">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
+          <td mat-cell *matCellDef="let element">{{ element.client?.nombre }}</td>
+        </ng-container>
+
+        <!-- Local Column -->
+        <ng-container matColumnDef="local">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Local</th>
+          <td mat-cell *matCellDef="let element">{{ element.local?.nombre_local }}</td>
+        </ng-container>
+
+        <!-- Fecha Visita Column -->
+        <ng-container matColumnDef="fechaVisita">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Visita</th>
+          <td mat-cell *matCellDef="let element">{{ element.fechaVisita | date:'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <!-- Técnico Column -->
+        <ng-container matColumnDef="tecnico">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Técnico</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.tecnico_asignado ? (element.tecnico_asignado.name + ' ' + element.tecnico_asignado.lastName) : 'Sin técnico asignado' }}
+          </td>
+        </ng-container>
+
+        <!-- Tipo Mantenimiento Column -->
+        <ng-container matColumnDef="tipoMantenimiento">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+          <td mat-cell *matCellDef="let element">
+            <span [ngClass]="getTipoMantenimientoClass(element.tipo_mantenimiento)">
+              {{ getTipoMantenimientoLabel(element.tipo_mantenimiento) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Estado Column -->
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+          <td mat-cell *matCellDef="let element">
+            <span [ngClass]="getEstadoClass(element.status)">
+              {{ getEstadoLabel(element.status) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Mes Facturación Column -->
+        <ng-container matColumnDef="mesFacturacion">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Mes Facturación</th>
+          <td mat-cell *matCellDef="let element">{{ element.facturacion?.mes || 'No asignado' }}</td>
+        </ng-container>
+
+        <!-- Acciones Column -->
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-icon-button color="primary" matTooltip="Ver Detalles" (click)="verDetalle(element)">
+              <mat-icon>visibility</mat-icon>
+            </button>
+           
+           
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="totalItems"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        [pageIndex]="pageIndex"
+        (page)="loadSolicitudes($event)"
+        aria-label="Seleccionar página">
+      </mat-paginator>
+
+      <!-- No data template -->
+      <div class="no-data-container" *ngIf="!dataSource?.data?.length && !loading">
+        <p>No se encontraron solicitudes con los filtros seleccionados.</p>
+      </div>
+   
+
+   <!--  <div class="loading-overlay" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div> -->
+  </mat-card-content>
+</mat-card>

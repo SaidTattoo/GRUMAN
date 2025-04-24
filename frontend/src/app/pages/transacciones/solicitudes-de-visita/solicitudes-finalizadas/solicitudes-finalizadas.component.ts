@@ -111,7 +111,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
               </ng-container>
               <ng-container matColumnDef="generado_por">
                 <th mat-header-cell *matHeaderCellDef>Generado por</th>
-                <td mat-cell *matCellDef="let row">{{row.generada_por.name}} {{row.generada_por.lastName}}</td>
+                <td mat-cell *matCellDef="let row"> {{row.generada_por ? (row.generada_por.name + ' ' + row.generada_por.lastName) : 'Sin usuario'}}</td>
               </ng-container>
               <!-- Observaciones Column -->
               <ng-container matColumnDef="observaciones">

@@ -159,9 +159,15 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
         iconName: 'clipboard-list',
         children: [
           {
-            displayName: 'Visita pendiente',
-            iconName: 'clock',
-            route: 'transacciones/solicitudes-de-visita',
+            displayName: 'Gestión de Solicitudes',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita/solicitudes',
+          },
+          {
+            displayName: 'Solicitudes de Visita Pendiente',
+            iconName: 'home-shield',
+            route: 'transacciones/solicitudes-de-visita/pendientes',
+          
           },
           {
             displayName: 'Visita aprobadas',

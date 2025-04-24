@@ -1,0 +1,144 @@
+.container {
+  padding: 24px;
+  position: relative;
+  min-height: calc(100vh - 64px);
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .loading-text {
+    margin-top: 16px;
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+}
+
+.search-card {
+  margin-bottom: 24px;
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+
+    mat-form-field {
+      flex: 1;
+      min-width: 200px;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 24px;
+
+    button {
+      min-width: 120px;
+
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+.results-card {
+  mat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  table {
+    width: 100%;
+
+    .mat-column-actions {
+      width: 48px;
+      text-align: center;
+    }
+
+    .mat-column-status {
+      width: 120px;
+    }
+  }
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  
+  &.badge-pending {
+    background-color: #ffd740;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &.badge-approved {
+    background-color: #69f0ae;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &.badge-rejected {
+    background-color: #ff5252;
+    color: white;
+  }
+
+  &.badge-completed {
+    background-color: #b39ddb;
+    color: white;
+  }
+}
+
+mat-paginator {
+  margin-top: 16px;
+}
+
+@media (max-width: 599px) {
+  .container {
+    padding: 16px;
+  }
+
+  .search-card {
+    .form-row {
+      flex-direction: column;
+      gap: 0;
+
+      mat-form-field {
+        width: 100%;
+      }
+    }
+
+    .form-actions {
+      flex-direction: column;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  .results-card {
+    table {
+      .mat-column-actions,
+      .mat-column-status {
+        width: auto;
+      }
+    }
+  }
+}

@@ -10,13 +10,21 @@ import { SolicitudesValidadasComponent } from './solicitudes-validadas/solicitud
 import { ModificarSolicitudComponent } from './modificar-solicitud/modificar-solicitud.component';
 import { VerSolicitudComponent } from './ver-solicitud/ver-solicitud.component';
 import { CargaMasivaComponent } from './carga-masiva/carga-masiva.component';
+import { SolicitudesComponent } from './solicitudes/solicitudes.component';
 
 export const SolicitudesDeVisitaRoutes: Routes = [
   {
-    path: '',
+    path: 'pendientes',
     component: SolicitudesDeVisitaComponent,
     data: {
-      title: 'Solicitudes de Visita'
+      title: 'Solicitudes de Visita Pendientes'
+    }
+  }, 
+  {
+    path: 'solicitudes',
+    component: SolicitudesComponent,
+    data: {
+      title: 'Gestión de Solicitudes'
     }
   },
   {
@@ -87,5 +95,6 @@ export const SolicitudesDeVisitaRoutes: Routes = [
     component: CargaMasivaComponent,
     data: {
       title: 'Carga Masiva'
-  }}
+    }
+  }
 ];

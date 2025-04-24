@@ -294,7 +294,8 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
         // Mantener el status original del formulario ('programada')
         const programacionData = {
           ...formData,
-          aprobada_por_id: this.currentUser?.id
+          aprobada_por_id: this.currentUser?.id,
+          generada_por_id: this.currentUser?.id
         };
         
         this.solicitarVisitaService.crearSolicitudVisita(programacionData)
