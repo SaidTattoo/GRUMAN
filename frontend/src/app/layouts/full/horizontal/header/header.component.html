@@ -3,35 +3,30 @@
     <div class="d-none d-sm-flex">
       <app-branding></app-branding>
     </div>
-    
+
     @if(userCompanies && userCompanies.length === 1) {
-      <div>
-        <div class="d-flex align-items-center">
-          @if (selectedCompany?.logo) {
-            <img [src]="selectedCompany.logo" alt="logo" class="company-logo me-4">
-          }
-          <span class="f-s-14 mat-body-1">{{ userCompanies[0].nombre }}</span>
-        </div>
+    <div>
+      <div class="d-flex align-items-center">
+        @if (selectedCompany?.logo) {
+        <img [src]="selectedCompany.logo" alt="logo" class="company-logo me-4">
+        }
+        <span class="f-s-14 mat-body-1">{{ userCompanies[0].nombre }}</span>
       </div>
+    </div>
     }
-    
+
     @if(userCompanies && userCompanies.length > 1) {
-      <div class="m-l-auto d-flex align-items-center justify-content-center">
-        <div class="d-flex align-items-center">
-          @if (selectedCompany?.logo) {
-            <img [src]="selectedCompany.logo" alt="logo" class="company-logo me-4">
-          }
-          <span class="me-2">{{ selectedCompany?.nombre || 'Seleccionar Cliente' }}</span>
-        </div>
-        <button 
-          mat-icon-button 
-          [matMenuTriggerFor]="companyMenu" 
-          class="ms-2" 
-          matTooltip="Cambiar Cliente"
-        >
-          <mat-icon>swap_horiz</mat-icon>
-        </button>
+    <div class="m-l-auto d-flex align-items-center justify-content-center">
+      <div class="d-flex align-items-center">
+        @if (selectedCompany?.logo) {
+        <img [src]="selectedCompany.logo" alt="logo" class="company-logo me-4">
+        }
+        <span class="me-2">{{ selectedCompany?.nombre || 'Seleccionar Cliente' }}</span>
       </div>
+      <button mat-icon-button [matMenuTriggerFor]="companyMenu" class="ms-2" matTooltip="Cambiar Cliente">
+        <mat-icon>swap_horiz</mat-icon>
+      </button>
+    </div>
     }
 
     <span class="flex-1-auto"></span>
@@ -39,31 +34,23 @@
     <!-- Buscador -->
     <div [class.search-expanded]="isSearchExpanded" class="search-div">
       <mat-chip-grid #chipGrid aria-label="Términos de búsqueda">
-        <mat-chip-row *ngFor="let param of searchParams" 
-                      (removed)="removeSearchParam(param)"
-                      [removable]="true">
+        <mat-chip-row *ngFor="let param of searchParams" (removed)="removeSearchParam(param)" [removable]="true">
           {{param}}
           <button matChipRemove [attr.aria-label]="'Remover ' + param">
             <mat-icon>cancel</mat-icon>
           </button>
         </mat-chip-row>
-        <input [matChipInputFor]="chipGrid"
-               [matChipInputSeparatorKeyCodes]="[ENTER]"
-               placeholder="Agregar término de búsqueda..."
-               [formControl]="searchControl"
-               class="search-input"
-               (focus)="isSearchExpanded = true"
-               (keydown.enter)="$event.preventDefault(); performSearch()">
+        <input [matChipInputFor]="chipGrid" [matChipInputSeparatorKeyCodes]="[ENTER]"
+          placeholder="Agregar término de búsqueda..." [formControl]="searchControl" class="search-input"
+          (focus)="isSearchExpanded = true" (keydown.enter)="$event.preventDefault(); performSearch()">
       </mat-chip-grid>
-      <button mat-icon-button
-              class="search-button"
-              [matTooltip]="searchParams.length ? 'Limpiar búsqueda' : 'Buscar'"
-              [color]="searchParams.length ? 'warn' : 'primary'"
-              (click)="searchParams.length ? clearSearch() : performSearch()">
+      <button mat-icon-button class="search-button" [matTooltip]="searchParams.length ? 'Limpiar búsqueda' : 'Buscar'"
+        [color]="searchParams.length ? 'warn' : 'primary'"
+        (click)="searchParams.length ? clearSearch() : performSearch()">
         @if (searchParams.length) {
-          <mat-icon>close</mat-icon>
+        <mat-icon>close</mat-icon>
         } @else {
-          <mat-icon>search</mat-icon>
+        <mat-icon>search</mat-icon>
         }
       </button>
     </div>
@@ -85,10 +72,9 @@
 
     <!-- Profile Menu -->
     <mat-menu #profileMenu="matMenu" xPosition="before" class="topbar-dd cardWithShadow">
-      <ng-scrollbar class="position-relative" style="height:290px">
-        <div class="p-x-32 p-y-16">
-          <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">Perfil de usuario</h6>
-          <div class="d-flex align-items-center p-b-24 b-b-1 m-t-16">
+      <ng-scrollbar class="position-relative" style="height: 220px;">
+        <div class="p-x-10 p-y-16">
+          <div class="d-flex align-items-center p-y-10 b-b-1 b-t-1 m-t-5">
             <div class="profile-initials-circle-large" style="background-color: #1e88e5; color: white;">
               {{ getUserInitials() }}
             </div>
@@ -103,59 +89,42 @@
           </div>
 
           <!-- Botón Cambiar Contraseña -->
-          <div class="p-y-12">
+          <div class="p-y-5 m-t-10">
             <button mat-flat-button color="accent" class="w-100 m-b-12" (click)="openChangePasswordDialog()">
               <mat-icon class="m-r-8">lock</mat-icon>
               Cambiar Contraseña
             </button>
-          </div>
-
-          <!-- Botón Salir -->
-          <div class="p-y-12">
-            <button (click)="logout()" mat-flat-button color="primary" class="w-100">
+            <button (click)="logout()" mat-flat-button color="primary" class="w-100 m-t-5">
               Salir
             </button>
           </div>
         </div>
       </ng-scrollbar>
     </mat-menu>
-    <button 
-      mat-icon-button
-      [matBadge]="(showBadge$ | async) ? '1' : '0'"
-      [matBadgeHidden]="!(showBadge$ | async)"
-      matBadgeColor="warn"
-      (mousedown)="$event.preventDefault()"
-      (click)="openChangelog()"
-    >
+    <button mat-icon-button [matBadge]="(showBadge$ | async) ? '1' : '0'" [matBadgeHidden]="!(showBadge$ | async)"
+      matBadgeColor="warn" (mousedown)="$event.preventDefault()" (click)="openChangelog()">
       <mat-icon>update</mat-icon>
     </button>
     <mat-menu #companyMenu="matMenu">
       @for (company of userCompanies; track company.id) {
-        <button 
-          mat-menu-item 
-          (click)="onCompanySelect(company)"
-          [class.active]="company.id === selectedCompany?.id"
-          class="d-flex align-items-center"
-          style="padding: 16px 24px;"
-        >
-          <div class="d-flex align-items-center">
-            @if (company.logo) {
-              <img 
-                [src]="company.logo" 
-                alt="logo" 
-                style="margin-right: 16px; width: 48px; height: 48px; object-fit: contain; border: 1px solid #eee;"
-              >
-            } @else {
-              <div style="margin-right: 16px; width: 48px; height: 48px; border: 1px solid #eee; display: flex; align-items: center; justify-content: center;">
-                <mat-icon style="font-size: 32px; opacity: 0.7;">business</mat-icon>
-              </div>
-            }
-            <div class="ms-4">
-              <span style="font-size: 14px; color: rgba(0,0,0,0.87);">{{company.nombre}}</span>
-            </div>
+      <button mat-menu-item (click)="onCompanySelect(company)" [class.active]="company.id === selectedCompany?.id"
+        class="d-flex align-items-center" style="padding: 16px 24px;">
+        <div class="d-flex align-items-center">
+          @if (company.logo) {
+          <img [src]="company.logo" alt="logo"
+            style="margin-right: 16px; width: 48px; height: 48px; object-fit: contain; border: 1px solid #eee;">
+          } @else {
+          <div
+            style="margin-right: 16px; width: 48px; height: 48px; border: 1px solid #eee; display: flex; align-items: center; justify-content: center;">
+            <mat-icon style="font-size: 32px; opacity: 0.7;">business</mat-icon>
           </div>
-         
-        </button>
+          }
+          <div class="ms-4">
+            <span style="font-size: 14px; color: rgba(0,0,0,0.87);">{{company.nombre}}</span>
+          </div>
+        </div>
+
+      </button>
       }
     </mat-menu>
   </div>

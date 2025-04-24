@@ -6,7 +6,7 @@ export const GENERAR_PROGRAMACION_ROUTES: Routes = [
         path: '',
         component: GenerarProgramacionComponent,
         data: {
-            title: 'Generar Programación'
+            title: 'Generar programación'
         }
     }
 ]

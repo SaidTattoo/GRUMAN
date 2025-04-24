@@ -20,7 +20,7 @@ const hasGrumanCompany = (user: any): boolean => {
   if (!user || !user.companies) {
     return false;
   }
-  
+
   return user.companies.some((company: any) =>
     company.nombre.toLowerCase() === 'gruman'.toLowerCase()
   );
@@ -52,12 +52,12 @@ export const navItems: NavItem[] = [
     route: 'dashboards',
     bgcolor: 'primary',
 
-  },{
+  }, {
     displayName: 'Programación',
     iconName: 'calendar',
     children: [
       {
-        displayName: 'Generar Programación',
+        displayName: 'Generar programación',
         iconName: 'home-shield',
         bgcolor: 'primary',
         route: 'generar-programacion',
@@ -74,7 +74,7 @@ export const navItems: NavItem[] = [
         bgcolor: 'primary',
         route: 'transacciones/solicitud-aprobacion-correctiva',
       },
-     
+
       {
         displayName: 'Listado de solicitudes de aprobación de correctiva',
         iconName: 'home-shield',
@@ -82,7 +82,7 @@ export const navItems: NavItem[] = [
         route: 'transacciones/listado-solicitud-aprobacion-correctiva',
       },
     ]
-  },{
+  }, {
     displayName: 'Servicios realizados',
     iconName: 'home-shield',
     bgcolor: 'primary',
@@ -95,72 +95,72 @@ export const navItems: NavItem[] = [
   },
   ...(showMantenedores
     ? [
-        {
-          displayName: 'Mantenedores',
-          iconName: 'home-shield',
-          route: 'mantenedores',
-          children: [
-            {
-              displayName: 'Locales',
-              iconName: 'home-shield',
-              route: 'mantenedores/locales',
-            },{
-              displayName: 'Moviles',
-              iconName: ' delivery_truck_speed',
-              route: 'mantenedores/vehiculos',
-            },
-            {
-              displayName: 'Tipo Activo',
-              iconName: 'home-shield',
-              route: 'mantenedores/tipo-activo',
-            },
-            {
-              displayName: 'Tecnicos',
-              iconName: 'home-shield',
-              route: 'mantenedores/tecnicos',
-            },
-            {
-              displayName: 'Repuestos',
-              iconName: 'home-shield',
-              route: 'mantenedores/repuestos',
-            },
-            {
-              displayName: 'Clientes',
-              iconName: 'home-shield',
-              route: 'mantenedores/clientes',
-            },
-            {
-              displayName: 'Cliente Usuarios',
-              iconName: 'home-shield',
-              route: 'mantenedores/cliente-usuarios',
-            },
-            {
-              displayName: 'Listado de Documentos',
-              iconName: 'home-shield',
-              route: 'mantenedores/documentos',
-            },
-            {
-              displayName: 'Tipo Documento',
-              iconName: 'home-shield',
-              route: 'mantenedores/documentos/tipo-documento',
-            },
-            {
-              displayName: 'Tipo Servicio',
-              iconName: 'home-shield',
-              route: 'mantenedores/tipo-servicio',
-            },
-            {
-              displayName: 'Sectores de Trabajo',
-              iconName: 'home-shield',
-              route: 'mantenedores/sectores-trabajo',
-            },
-            {
-              displayName: 'Servicios',
-              iconName: 'home-shield',
-              route: 'mantenedores/servicios',
-            },
-          ],
-        },
-      ]
+      {
+        displayName: 'Mantenedores',
+        iconName: 'home-shield',
+        route: 'mantenedores',
+        children: [
+          {
+            displayName: 'Locales',
+            iconName: 'home-shield',
+            route: 'mantenedores/locales',
+          }, {
+            displayName: 'Moviles',
+            iconName: ' delivery_truck_speed',
+            route: 'mantenedores/vehiculos',
+          },
+          {
+            displayName: 'Tipo Activo',
+            iconName: 'home-shield',
+            route: 'mantenedores/tipo-activo',
+          },
+          {
+            displayName: 'Tecnicos',
+            iconName: 'home-shield',
+            route: 'mantenedores/tecnicos',
+          },
+          {
+            displayName: 'Repuestos',
+            iconName: 'home-shield',
+            route: 'mantenedores/repuestos',
+          },
+          {
+            displayName: 'Clientes',
+            iconName: 'home-shield',
+            route: 'mantenedores/clientes',
+          },
+          {
+            displayName: 'Cliente Usuarios',
+            iconName: 'home-shield',
+            route: 'mantenedores/cliente-usuarios',
+          },
+          {
+            displayName: 'Listado de Documentos',
+            iconName: 'home-shield',
+            route: 'mantenedores/documentos',
+          },
+          {
+            displayName: 'Tipo Documento',
+            iconName: 'home-shield',
+            route: 'mantenedores/documentos/tipo-documento',
+          },
+          {
+            displayName: 'Tipo Servicio',
+            iconName: 'home-shield',
+            route: 'mantenedores/tipo-servicio',
+          },
+          {
+            displayName: 'Sectores de Trabajo',
+            iconName: 'home-shield',
+            route: 'mantenedores/sectores-trabajo',
+          },
+          {
+            displayName: 'Servicios',
+            iconName: 'home-shield',
+            route: 'mantenedores/servicios',
+          },
+        ],
+      },
+    ]
     : []),
 ];
