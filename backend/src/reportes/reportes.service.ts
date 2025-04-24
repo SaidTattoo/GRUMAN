@@ -13,8 +13,8 @@ export class ReportesService {
     private readonly activoFijoLocalRepository: Repository<ActivoFijoLocal>,
   ) { }
 
-  async getReportesActivos(): Promise<ReportesActivos[]> {
-    const query = `
+  async getReportesActivos(companyId: string | null): Promise<ReportesActivos[]> {
+    let query = `
       SELECT
         afl.codigo_activo as codigo_equipo,
         l.id as local,
@@ -50,10 +50,20 @@ export class ReportesService {
         )
       ) sv ON sv.codigo_activo = afl.codigo_activo
       LEFT JOIN checklist_clima cc ON cc.solicitudId = sv.id
+    `;
+
+    if (companyId) {
+      query += `
+        WHERE afl.clientId = ${parseInt(companyId)}
+      `;
+    }
+
+    query += `
       GROUP BY afl.codigo_activo
       ORDER BY sv.fechaVisita DESC;
     `;
 
+    console.log(query)
     return await this.reportesRepository.query(query);
   }
 }

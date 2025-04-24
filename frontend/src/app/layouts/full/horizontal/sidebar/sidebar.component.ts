@@ -16,6 +16,12 @@ import { Subscription, interval } from 'rxjs';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
 import { StorageService } from 'src/app/services/storage.service';
 
+interface User {
+  selectedCompany?: {
+    nombre: string;
+  };
+}
+
 @Component({
   selector: 'app-horizontal-sidebar',
   standalone: true,
@@ -57,20 +63,14 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateNavItems(user: any): void {
-    const hasGrumanCompany = (user: any): boolean => {
-      if (!user?.selectedCompany) {
-        return false;
-      }
-      return (
-        user.selectedCompany.nombre.toLowerCase() === 'gruman'.toLowerCase()
-      );
+  updateNavItems(user: User): void {
+    const isGrumanCompany = (companyName: string | undefined): boolean => {
+      if (!companyName) return false;
+      return companyName.toLowerCase().trim() === 'gruman';
     };
 
-    const showMantenedores = hasGrumanCompany(user);
-    console.log('showMantenedores:', showMantenedores);
-    console.log('selectedCompany:', user?.selectedCompany);
-    const showSolicitarVisita = !hasGrumanCompany(user);
+    const showMantenedores = isGrumanCompany(user?.selectedCompany?.nombre);
+    const showSolicitarVisita = !showMantenedores;
 
     // Agregar formato de fecha
     const today = new Date();
@@ -167,7 +167,7 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             displayName: 'Solicitudes de Visita Pendiente',
             iconName: 'home-shield',
             route: 'transacciones/solicitudes-de-visita/pendientes',
-          
+
           },
           {
             displayName: 'Visita aprobadas',
@@ -191,6 +191,17 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
           },
         ],
       },
+      {
+        displayName: 'Reportes',
+        iconName: 'file-search',
+        children: [
+          {
+            displayName: 'Reporte de activos',
+            iconName: 'file-delta',
+            route: 'reportes/reporte-de-activos',
+          },
+        ],
+      },
       /*  {
          displayName: 'Lista de Servicios Realizados',
          iconName: 'home-shield',
@@ -211,7 +222,7 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 route: 'transacciones/servicios-realizados',
               },
               {
-                displayName: `Servicios del día | ${formattedDate}`,
+                displayName: `Servicios del día | ${formattedDate}`,
                 iconName: 'calendar',
                 route: 'transacciones/solicitudes-del-dia',
               },

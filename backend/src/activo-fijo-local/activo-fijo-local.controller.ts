@@ -6,6 +6,7 @@ import {
     Param,
     Post,
     Put,
+    Query,
     Res,
 } from '@nestjs/common';
 import { ActivoFijoLocalService } from './activo-fijo-local.service';
@@ -27,9 +28,9 @@ export class ActivoFijoLocalController {
     }
 
     @Get('excel')
-    async generarExcel(@Res() res: Response) {
+    async generarExcel(@Res() res: Response, @Query('companyId') companyId: string) {
         try {
-            const activos = await this.reportesService.getReportesActivos();
+            const activos = await this.reportesService.getReportesActivos(companyId);
 
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Activos Fijos');
