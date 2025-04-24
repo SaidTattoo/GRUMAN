@@ -825,18 +825,14 @@ export class SolicitarVisitaService {
     }
 
     async getSolicitudesDelDia(): Promise<SolicitarVisita[]> {
-       
-        
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Start of day
         
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
         
-        
         try {
             const data = await this.solicitarVisitaRepository.find({ 
-               
                 where: { 
                     status: In([
                         SolicitudStatus.VALIDADA, 
@@ -844,21 +840,16 @@ export class SolicitarVisitaService {
                         SolicitudStatus.EN_SERVICIO,
                         SolicitudStatus.FINALIZADA, 
                         SolicitudStatus.APROBADA,
-                       /*SolicitudStatus.RECHAZADA,
-                       SolicitudStatus.PENDIENTE*/
                     ]),
                     estado: true,
-                    fechaIngreso: Between(today, tomorrow)
+                    fechaVisita: Between(today, tomorrow)
                 },
                 relations: ['local', 'client', 'generada_por', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
                 order: { id: 'DESC' }
             });
 
-          
-
             return data || [];
         } catch (error) {
-           
             throw error;
         }
     }
