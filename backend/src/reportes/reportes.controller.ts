@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ReportesService } from './reportes.service';
 import { ReportesActivos } from './entities/reportes-activos.entity';
 
@@ -7,7 +7,7 @@ export class ReportesController {
   constructor(private readonly reportesService: ReportesService) { }
 
   @Get('reportes_activo')
-  async getReportesActivos(): Promise<ReportesActivos[]> {
-    return this.reportesService.getReportesActivos();
+  async getReportesActivos(@Query('companyId') companyId: string): Promise<ReportesActivos[]> {
+    return this.reportesService.getReportesActivos(companyId);
   }
 }

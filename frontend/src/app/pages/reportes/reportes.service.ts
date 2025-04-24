@@ -9,8 +9,9 @@ import { environment } from 'src/environments/environment';
 export class ReportesService {
   constructor(private readonly http: HttpClient) { }
 
-  generarReporteExcel(): Observable<Blob> {
+  generarReporteExcel(companyId: string | null): Observable<Blob> {
     return this.http.get(`${environment.apiUrl}/activo-fijo-local/excel`, {
+      params: { companyId: companyId ?? "" },
       responseType: 'blob'
     });
   }
