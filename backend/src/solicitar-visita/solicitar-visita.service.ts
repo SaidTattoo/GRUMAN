@@ -839,13 +839,13 @@ export class SolicitarVisitaService {
                
                 where: { 
                     status: In([
-                     /*    SolicitudStatus.VALIDADA, 
+                        SolicitudStatus.VALIDADA, 
                         SolicitudStatus.REABIERTA,
                         SolicitudStatus.EN_SERVICIO,
-                        SolicitudStatus.FINALIZADA, */
+                        SolicitudStatus.FINALIZADA, 
                         SolicitudStatus.APROBADA,
-                       /*  SolicitudStatus.RECHAZADA,
-                        SolicitudStatus.PENDIENTE */
+                       /*SolicitudStatus.RECHAZADA,
+                       SolicitudStatus.PENDIENTE*/
                     ]),
                     estado: true,
                     fechaIngreso: Between(today, tomorrow)
@@ -875,10 +875,10 @@ export class SolicitarVisitaService {
         try {
             const whereClause: any = {
                 status: In([
-                   /*  SolicitudStatus.VALIDADA, 
+                   SolicitudStatus.VALIDADA, 
                     SolicitudStatus.REABIERTA,
                     SolicitudStatus.EN_SERVICIO,
-                    SolicitudStatus.FINALIZADA, */
+                    SolicitudStatus.FINALIZADA, 
                     SolicitudStatus.APROBADA,
                   /*   SolicitudStatus.RECHAZADA,
                     SolicitudStatus.PENDIENTE */
