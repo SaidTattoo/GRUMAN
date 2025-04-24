@@ -212,6 +212,17 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             ]
           },
           {
+            displayName: 'Reportes',
+            iconName: 'file-search',
+            children: [
+              {
+                displayName: 'Reporte de activos',
+                iconName: 'file-delta',
+                route: 'reportes/reporte-de-activos',
+              },
+            ],
+          },
+          {
             displayName: 'Mantenedores',
             iconName: 'user-cog',
             route: 'mantenedores',
@@ -227,12 +238,12 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 route: 'mantenedores/locales',
               },
               {
-                displayName: 'Moviles',
+                displayName: 'Móviles',
                 iconName: 'car',
                 route: 'mantenedores/vehiculos',
               },
               {
-                displayName: 'Tecnicos Gruman',
+                displayName: 'Técnicos Gruman',
                 iconName: 'users',
                 route: 'mantenedores/tecnicos-gruman',
               },
@@ -247,7 +258,7 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 route: 'mantenedores/usuarios',
               },
               {
-                displayName: 'Tecnicos moviles',
+                displayName: 'Técnicos móviles',
                 iconName: 'user-bolt',
                 route: 'mantenedores/tecnicos-moviles',
               },
@@ -307,17 +318,6 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 displayName: 'Mes de facturación',
                 iconName: 'receipt-2',
                 route: 'mantenedores/mes-de-facturacion',
-              },
-            ],
-          },
-          {
-            displayName: 'Reportes',
-            iconName: 'file-search',
-            children: [
-              {
-                displayName: 'Reporte de activos',
-                iconName: 'file-delta',
-                route: 'reportes/reporte-de-activos',
               },
             ],
           },
