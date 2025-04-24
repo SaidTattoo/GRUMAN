@@ -41,6 +41,7 @@ import { MailModule } from './mail/mail.module';
 import { ClienteRepuestoModule } from './cliente-repuesto/cliente-repuesto.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { MesesFacturacionModule } from './meses_facturacion/meses_facturacion.module';
+import { ReportesModule } from './reportes/reportes.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -55,9 +56,9 @@ import { MesesFacturacionModule } from './meses_facturacion/meses_facturacion.mo
       synchronize: true,
       logging: false, // Desactiva todos los logs
     }),
-    DatabaseModule, 
-    UsersModule, 
-    AuthModule, 
+    DatabaseModule,
+    UsersModule,
+    AuthModule,
     TipoActivoModule,
     RegionesComunasModule,
     ClientModule,
@@ -77,21 +78,22 @@ import { MesesFacturacionModule } from './meses_facturacion/meses_facturacion.mo
       rootPath: join(__dirname, '..', 'uploads'), // Asegúrate de que esta ruta es correcta
       serveRoot: '/uploads', // Esto asegura que las rutas comiencen con /uploads
     }),
-    
+
     ActivoFijoLocalModule,
     UploadV2Module,
     SolicitarVisitaModule,
-    EspecialidadModule,InspectionModule, FacturacionModule, OrdenServicioModule, UserVehiculoModule, CausaRaizModule,  
+    EspecialidadModule, InspectionModule, FacturacionModule, OrdenServicioModule, UserVehiculoModule, CausaRaizModule,
     ActivoFijoRepuestosModule, ChecklistClimaModule,
     MailModule,
     ClienteRepuestoModule,
     DashboardModule,
-    MesesFacturacionModule
-/*     LocalesModule,
-    SectoresTrabajoModule,
-    ProgramacionModule */
+    MesesFacturacionModule,
+    ReportesModule
+    /*     LocalesModule,
+        SectoresTrabajoModule,
+        ProgramacionModule */
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

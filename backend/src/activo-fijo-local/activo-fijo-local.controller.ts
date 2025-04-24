@@ -12,11 +12,13 @@ import { ActivoFijoLocalService } from './activo-fijo-local.service';
 import { ActivoFijoLocal } from './activo-fijo-local.entity';
 import * as ExcelJS from 'exceljs';
 import { Response } from 'express';
+import { ReportesService } from '../reportes/reportes.service';
 
 @Controller('activo-fijo-local')
 export class ActivoFijoLocalController {
     constructor(
         private readonly activoFijoLocalService: ActivoFijoLocalService,
+        private readonly reportesService: ReportesService,
     ) { }
 
     @Post()
@@ -27,33 +29,43 @@ export class ActivoFijoLocalController {
     @Get('excel')
     async generarExcel(@Res() res: Response) {
         try {
-            const activos = await this.activoFijoLocalService.getAllActivoFijoLocal();
+            const activos = await this.reportesService.getReportesActivos();
 
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Activos Fijos');
 
             worksheet.columns = [
-                { header: 'ID', key: 'id', width: 10 },
-                { header: 'Tipo Equipo', key: 'tipo_equipo', width: 20 },
+                { header: 'Código Equipo', key: 'codigo_equipo', width: 10 },
+                { header: 'Local', key: 'local', width: 20 },
+                { header: 'Equipo', key: 'equipo', width: 15 },
+                { header: 'Tipo Equipo', key: 'tipo_equipo', width: 15 },
                 { header: 'Marca', key: 'marca', width: 15 },
-                { header: 'Potencia', key: 'potencia_equipo', width: 15 },
+                { header: 'Potencia', key: 'potencia', width: 15 },
                 { header: 'Refrigerante', key: 'refrigerante', width: 15 },
-                { header: 'Tipo', key: 'on_off_inverter', width: 15 },
+                { header: 'On-Off/Inverter', key: 'on_off_inverter', width: 15 },
                 { header: 'Suministra', key: 'suministra', width: 15 },
-                { header: 'Código', key: 'codigo_activo', width: 15 },
+                { header: 'Estado operativo (si/no)', key: 'estado_operativo', width: 15 },
+                { header: 'Ultima OT', key: 'ultima_ot', width: 15 },
+                { header: 'Observación', key: 'observacion', width: 15 },
+                { header: 'Fecha', key: 'fecha', width: 15 },
             ];
 
             activos.forEach((activo) => {
-                worksheet.addRow({
-                    id: activo.id,
-                    tipo_equipo: activo.tipo_equipo,
-                    marca: activo.marca,
-                    potencia_equipo: activo.potencia_equipo,
-                    refrigerante: activo.refrigerante,
-                    on_off_inverter: activo.on_off_inverter,
-                    suministra: activo.suministra,
-                    codigo_activo: activo.codigo_activo,
-                });
+                worksheet.addRow([
+                    activo.codigo_equipo,
+                    activo.local,
+                    activo.equipo,
+                    activo.tipo_equipo,
+                    activo.marca,
+                    activo.potencia,
+                    activo.refrigerante,
+                    activo.on_off_inverter,
+                    activo.suministra,
+                    activo.estado_operativo,
+                    activo.ultima_ot,
+                    activo.observacion,
+                    activo.fecha,
+                ]);
             });
 
             worksheet.getRow(1).font = { bold: true };
