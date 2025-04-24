@@ -7,7 +7,7 @@ export const REPORTES_ROUTES: Routes = [
     path: 'reporte-de-activos',
     component: ActivosComponent,
     data: {
-      title: 'Reportes activos',
+      title: 'Reportes de activos',
     },
   },
 ];
