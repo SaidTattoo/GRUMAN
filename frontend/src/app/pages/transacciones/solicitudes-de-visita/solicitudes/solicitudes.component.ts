@@ -427,12 +427,12 @@ export class SolicitudesComponent implements OnInit {
       return {
         'ID': item.id,
         'Cliente': item.client?.nombre || '',
-        'Local': item.local?.nombre || '',
-        'Fecha Visita': new DatePipe('es-CL').transform(item.fecha_visita, 'dd/MM/yyyy'),
-        'Técnico': item.tecnico_asignado ? `${item.tecnico_asignado.nombre} ${item.tecnico_asignado.apellido}` : '',
+        'Local': item.local?.nombre_local || '',
+        'Fecha Visita': new DatePipe('es-CL').transform(item.fechaVisita, 'dd/MM/yyyy'),
+        'Técnico': item.tecnico_asignado ? `${item.tecnico_asignado.name} ${item.tecnico_asignado.lastName}` : '',
         'Tipo Mantenimiento': this.getTipoMantenimientoLabel(item.tipo_mantenimiento),
         'Estado': this.getEstadoLabel(item.status),
-        'Mes Facturación': item.facturacion?.mes || 'No asignado'
+        /* 'Mes Facturación': item.facturacion?.mes || 'No asignado' */
       };
     });
   }
