@@ -1,0 +1,47 @@
+.full-width-table {
+  width: 100%;
+}
+
+.mat-table {
+  width: 100%;
+  font-size: 12px;
+}
+
+.mat-header-cell,
+.mat-cell {
+  padding: 0 8px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.mat-column-acciones {
+  flex: 0 0 100px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.mat-header-row {
+  min-height: 30px;
+}
+
+.mat-row {
+  min-height: 32px;
+}
+
+.mat-icon-button {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+}
+
+.mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+}

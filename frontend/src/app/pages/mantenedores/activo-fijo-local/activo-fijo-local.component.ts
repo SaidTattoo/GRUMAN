@@ -16,16 +16,16 @@ import Swal from 'sweetalert2';
   styleUrl: './activo-fijo-local.component.scss'
 })
 export class ActivoFijoLocalComponent implements OnInit {
-  displayedColumns: string[] = ['cliente', 'local', 'tipoActivo','tipoEquipo','marca','PotenciaEquipo','refrigerante','on-off-inverter','suministra','codigo', 'acciones'];
+  displayedColumns: string[] = ['cliente', 'local', 'tipoActivo', 'tipoEquipo', 'marca', 'PotenciaEquipo', 'refrigerante', 'on-off-inverter', 'suministra', 'codigo', 'acciones'];
   dataSource: MatTableDataSource<any> = new MatTableDataSource<any>();
 
-  constructor(private activoFijoLocalService: ActivoFijoLocalService, private router: Router) {}
+  constructor(private activoFijoLocalService: ActivoFijoLocalService, private router: Router) { }
 
-  ngOnInit(): void { 
+  ngOnInit(): void {
     this.activoFijoLocalService.listar().subscribe(data => {
       this.dataSource.data = data;
     });
-   }
+  }
 
 
 
@@ -53,6 +53,10 @@ export class ActivoFijoLocalComponent implements OnInit {
   }
   crear() {
     this.router.navigate(['/mantenedores/activo-fijo-local/crear']);
+  }
+
+  generarReporte() {
+    alert('Generar reporte');
   }
 
 }

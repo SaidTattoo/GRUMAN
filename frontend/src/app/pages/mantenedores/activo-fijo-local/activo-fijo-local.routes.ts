@@ -4,20 +4,23 @@ import { CrearActivoFijoLocalComponent } from "./crear-activo-fijo-local/crear-a
 import { EditarActivoFijoLocalComponent } from "./editar-activo-fijo-local/editar-activo-fijo-local.component";
 
 export const ACTIVO_FIJO_LOCAL_ROUTES: Routes = [
-    { path: '', 
+    {
+        path: '',
         component: ActivoFijoLocalComponent,
         data: {
-            title: 'Activo Fijo Local', 
+            title: 'Activo fijo local',
         }
     },
-    { path: 'crear', component: CrearActivoFijoLocalComponent,
+    {
+        path: 'crear', component: CrearActivoFijoLocalComponent,
         data: {
-            title: 'Crear Activo Fijo Local', 
+            title: 'Crear activo fijo local',
         }
-     },
-     { path: 'editar/:id', component: EditarActivoFijoLocalComponent,
+    },
+    {
+        path: 'editar/:id', component: EditarActivoFijoLocalComponent,
         data: {
-            title: 'Editar Activo Fijo Local', 
+            title: 'Editar activo fijo local',
         }
-     } 
+    }
 ];

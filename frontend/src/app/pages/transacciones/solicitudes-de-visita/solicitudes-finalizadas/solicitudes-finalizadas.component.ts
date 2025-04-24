@@ -265,7 +265,7 @@ export class SolicitudesFinalizadasComponent implements OnInit, OnDestroy {
     'acciones',
     'pdf'
   ];
-  
+
   loading = false;
   allSolicitudes: any[] = [];
   selectedCompany: any = null;
@@ -288,19 +288,19 @@ export class SolicitudesFinalizadasComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadEspecialidades();
     this.loadSolicitudes();
-    
+
     // Obtener la compañía seleccionada inicialmente
     const user = this.storage.getItem('currentUser');
     if (user && user.selectedCompany) {
       this.selectedCompany = user.selectedCompany;
     }
-    
+
     // Suscribirse a cambios en la compañía seleccionada
     this.companySubscription = this.storage.companyChange$.subscribe(company => {
       this.selectedCompany = company;
       this.filterByCompany();
     });
-    
+
     // Configurar cómo se filtra la tabla
     this.dataSource.filterPredicate = (data: any, filter: string) => {
       const searchStr = filter.toLowerCase();
@@ -317,7 +317,7 @@ export class SolicitudesFinalizadasComponent implements OnInit, OnDestroy {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
-  
+
   ngOnDestroy() {
     // Limpiar la suscripción al destruir el componente
     if (this.companySubscription) {
@@ -340,7 +340,7 @@ export class SolicitudesFinalizadasComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
   filterByCompany() {
     // Asegurarse de tener la empresa seleccionada actualizada
     if (!this.selectedCompany) {
@@ -349,7 +349,7 @@ export class SolicitudesFinalizadasComponent implements OnInit, OnDestroy {
         this.selectedCompany = user.selectedCompany;
       }
     }
-    
+
     // Si hay solicitudes cargadas, aplicar el filtro
     if (this.allSolicitudes && this.allSolicitudes.length > 0) {
       if (this.selectedCompany && this.selectedCompany.id) {
@@ -370,7 +370,7 @@ export class SolicitudesFinalizadasComponent implements OnInit, OnDestroy {
       // Si no hay solicitudes, establecer un array vacío
       this.dataSource.data = [];
     }
-    
+
     // Resetear el paginador si está disponible
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
@@ -436,7 +436,7 @@ export class SolicitudesFinalizadasComponent implements OnInit, OnDestroy {
           });
           return;
         }
-        
+
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;

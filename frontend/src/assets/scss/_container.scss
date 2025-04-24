@@ -73,9 +73,10 @@ html .mat-drawer-container {
   overflow-x: auto;
 
   td,
+  th,
   mat-cell {
     white-space: nowrap;
-    padding: 16px;
+    padding: 5px;
   }
 }
 

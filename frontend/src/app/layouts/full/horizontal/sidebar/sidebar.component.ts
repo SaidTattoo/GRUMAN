@@ -47,12 +47,10 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
     this.router.events.subscribe(
       () => (this.parentActive = this.router.url.split('/')[1])
     );
-   
-
   }
 
   ngOnInit(): void {
-    this.storageSubscription = this.storage.user$.subscribe(user => {
+    this.storageSubscription = this.storage.user$.subscribe((user) => {
       if (user) {
         this.updateNavItems(user);
       }
@@ -64,20 +62,22 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
       if (!user?.selectedCompany) {
         return false;
       }
-      return user.selectedCompany.nombre.toLowerCase() === 'gruman'.toLowerCase();
+      return (
+        user.selectedCompany.nombre.toLowerCase() === 'gruman'.toLowerCase()
+      );
     };
-  
+
     const showMantenedores = hasGrumanCompany(user);
     console.log('showMantenedores:', showMantenedores);
     console.log('selectedCompany:', user?.selectedCompany);
     const showSolicitarVisita = !hasGrumanCompany(user);
-  
+
     // Agregar formato de fecha
     const today = new Date();
     const formattedDate = today.toLocaleDateString('es-CL', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     });
 
     this.navItems = [
@@ -107,56 +107,54 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             iconName: 'calendar',
             children: [
               {
-                displayName: 'Generar Programación',
-                iconName: 'home-shield',
+                displayName: 'Generar programación',
+                iconName: 'plus',
                 bgcolor: 'primary',
                 route: 'generar-programacion',
               },
               {
-                displayName: 'Listado de Programación',
-                iconName: 'home-shield',
+                displayName: 'Listado de programación',
+                iconName: 'list',
                 bgcolor: 'primary',
                 route: 'transacciones/listado-programacion',
               },
-             
+
               {
                 displayName: 'Solicitud de aprobación de correctiva',
-                iconName: 'home-shield',
+                iconName: 'checkbox',
                 bgcolor: 'primary',
                 route: 'transacciones/solicitud-aprobacion-correctiva',
               },
               {
-                displayName: 'Listado de solicitudes de aprobación de correctiva',
-                iconName: 'home-shield',
+                displayName:
+                  'Listado de solicitudes de aprobación de correctiva',
+                iconName: 'list-check',
                 bgcolor: 'primary',
-                route: 'transacciones/listado-solicitud-aprobacion-correctiva',
+                route:
+                  'transacciones/listado-solicitud-aprobacion-correctiva',
               },
             ],
           },
-          ]
+        ]
         : []),
       ...(showSolicitarVisita
         ? [
-            {
-              displayName: 'Solicitar Visita',
-              iconName: 'calendar-check',
-              route: 'transacciones/solicitar-visita',
-              bgcolor: 'primary',
-            },
-            {
-              displayName: `Servicios del día ${formattedDate}`,
-              iconName: 'home-shield',
-              bgcolor: 'primary',
-              route: 'transacciones/solicitudes-del-dia-cliente',
-            },
-          ]
+          {
+            displayName: 'Solicitar Visita',
+            iconName: 'calendar-check',
+            route: 'transacciones/solicitar-visita',
+            bgcolor: 'primary',
+          },
+          {
+            displayName: `Servicios del día ${formattedDate}`,
+            iconName: 'calendar',
+            bgcolor: 'primary',
+            route: 'transacciones/solicitudes-del-dia-cliente',
+          },
+        ]
         : []),
+
       {
-        displayName: 'Servicios realizados ',
-        iconName: 'home-shield',
-        bgcolor: 'primary',
-        route: 'transacciones/servicios-realizados',
-      },{
         displayName: 'Solicitudes',
         iconName: 'clipboard-list',
         children: [
@@ -169,148 +167,171 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             displayName: 'Solicitudes de Visita Pendiente',
             iconName: 'home-shield',
             route: 'transacciones/solicitudes-de-visita/pendientes',
+          
           },
           {
-            displayName: 'Solicitudes de Visita Aprobadas',
-            iconName: 'home-shield',
+            displayName: 'Visita aprobadas',
+            iconName: 'checkbox',
             route: 'transacciones/solicitudes-de-visita/aprobadas',
           },
           {
-            displayName: 'Solicitudes de Visita Rechazadas',
-            iconName: 'home-shield',
+            displayName: 'Visita rechazadas',
+            iconName: 'ban',
             route: 'transacciones/solicitudes-de-visita/rechazadas',
           },
           {
-            displayName: 'Solicitudes de Visita Finalizadas',
-            iconName: 'home-shield',
+            displayName: 'Visita finalizadas',
+            iconName: 'flag-check',
             route: 'transacciones/solicitudes-de-visita/finalizadas',
           },
           {
-            displayName: 'Solicitudes de Visita Validadas',
-            iconName: 'home-shield',
+            displayName: 'Visita validadas',
+            iconName: 'user-check',
             route: 'transacciones/solicitudes-de-visita/validadas',
-          }
+          },
         ],
       },
-     /*  {
-        displayName: 'Lista de Servicios Realizados',
-        iconName: 'home-shield',
-        bgcolor: 'primary',
-        route: 'transacciones/lista-servicios-realizados',
-      }, */
+      /*  {
+         displayName: 'Lista de Servicios Realizados',
+         iconName: 'home-shield',
+         bgcolor: 'primary',
+         route: 'transacciones/lista-servicios-realizados',
+       }, */
       ...(showMantenedores
-        ? [ {
-          displayName: `Servicios del día ${formattedDate}`,
-          iconName: 'clipboard-list',
-          bgcolor: 'primary',
-          route: 'transacciones/solicitudes-del-dia',
-        },
+        ? [
+
           {
-            displayName: 'Mantenedores',
-            iconName: 'home-shield',
+            displayName: 'Servicios',
+            iconName: 'server',
             route: 'mantenedores',
             children: [
-                {
-                  displayName: 'Carga Masiva',
-                  iconName: 'home-shield',
-                  route: 'transacciones/solicitudes-de-visita/carga-masiva',
-                },
+              {
+                displayName: 'Servicios realizados ',
+                iconName: 'phone-check',
+                route: 'transacciones/servicios-realizados',
+              },
+              {
+                displayName: `Servicios del día | ${formattedDate}`,
+                iconName: 'calendar',
+                route: 'transacciones/solicitudes-del-dia',
+              },
+            ]
+          },
+          {
+            displayName: 'Reportes',
+            iconName: 'file-search',
+            children: [
+              {
+                displayName: 'Reporte de activos',
+                iconName: 'file-delta',
+                route: 'reportes/reporte-de-activos',
+              },
+            ],
+          },
+          {
+            displayName: 'Mantenedores',
+            iconName: 'user-cog',
+            route: 'mantenedores',
+            children: [
+              {
+                displayName: 'Carga masiva',
+                iconName: 'upload',
+                route: 'transacciones/solicitudes-de-visita/carga-masiva',
+              },
               {
                 displayName: 'Locales',
-                iconName: 'home-shield',
+                iconName: 'building-store',
                 route: 'mantenedores/locales',
               },
               {
-                displayName: 'Moviles',
+                displayName: 'Móviles',
                 iconName: 'car',
                 route: 'mantenedores/vehiculos',
-              },{
-                displayName: 'Tecnicos Gruman',
-                iconName: 'home-shield',
+              },
+              {
+                displayName: 'Técnicos Gruman',
+                iconName: 'users',
                 route: 'mantenedores/tecnicos-gruman',
               },
               {
-                displayName: 'Tipo Activo',
-                iconName: 'home-shield',
+                displayName: 'Tipo activo',
+                iconName: 'package',
                 route: 'mantenedores/tipo-activo',
               },
               {
                 displayName: 'Usuarios del sistema',
-                iconName: 'user',
+                iconName: 'users-group',
                 route: 'mantenedores/usuarios',
               },
               {
-                displayName: 'Tecnicos Moviles',
-                iconName: 'home-shield',
+                displayName: 'Técnicos móviles',
+                iconName: 'user-bolt',
                 route: 'mantenedores/tecnicos-moviles',
               },
               {
                 displayName: 'Repuestos',
-                iconName: 'home-shield',
+                iconName: 'tool',
                 route: 'mantenedores/repuestos',
               },
               {
                 displayName: 'Clientes',
-                iconName: 'home-shield',
+                iconName: 'briefcase',
                 route: 'mantenedores/clientes',
-              },  
+              },
               {
                 displayName: 'Inspecciones',
-                iconName: 'file-description',
+                iconName: 'scan',
                 route: 'mantenedores/lista-de-inspecciones',
               },
-              /*   {
-                  displayName: 'Cliente Usuarios',
-                  iconName: 'home-shield',
-                  route: 'mantenedores/cliente-usuarios',
-                }, */
+
               {
-                displayName: 'Listado de Documentos',
+                displayName: 'Listado de documentos',
                 iconName: 'file-description',
                 route: 'mantenedores/documentos',
               },
               {
-                displayName: 'Tipo Documento',
-                iconName: 'home-shield',
+                displayName: 'Tipo documento',
+                iconName: 'files',
                 route: 'mantenedores/documentos/tipo-documento',
               },
               {
-                displayName: 'Tipo Servicio',
-                iconName: 'home-shield',
+                displayName: 'Tipo servicio',
+                iconName: 'server-2',
                 route: 'mantenedores/tipo-servicio',
               },
               {
-                displayName: 'Sectores de Trabajo',
-                iconName: 'home-shield',
+                displayName: 'Sectores de trabajo',
+                iconName: 'map-pin',
                 route: 'mantenedores/sectores-trabajo',
               },
               {
-                displayName: 'Causas Raíz',
-                iconName: 'home-shield',
+                displayName: 'Causas raíz',
+                iconName: 'file-search',
                 route: 'mantenedores/causa-raiz',
               },
-             
+
               {
-                displayName: 'Activo Fijo Local',
-                iconName: 'home-shield',
+                displayName: 'Activo fijo local',
+                iconName: 'building-warehouse',
                 route: 'mantenedores/activo-fijo-local',
-              },{
-                displayName: 'Especialidades',
-                iconName: 'home-shield',
-                route: 'mantenedores/especialidades',
-              } ,
+              },
               {
-                displayName: 'Mes de Facturación',
-                iconName: 'home-shield',
+                displayName: 'Especialidades',
+                iconName: 'propeller',
+                route: 'mantenedores/especialidades',
+              },
+              {
+                displayName: 'Mes de facturación',
+                iconName: 'receipt-2',
                 route: 'mantenedores/mes-de-facturacion',
-              }
+              },
             ],
           },
-          ]
+        ]
         : []),
     ];
   }
-  
+
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();
@@ -323,6 +344,4 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
     }
     this.mobileQuery.removeListener(this._mobileQueryListener);
   }
-
-
-}  
+}

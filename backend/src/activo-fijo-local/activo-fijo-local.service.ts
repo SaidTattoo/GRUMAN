@@ -8,17 +8,25 @@ export class ActivoFijoLocalService {
     constructor(
         @InjectRepository(ActivoFijoLocal)
         private activoFijoLocalRepository: Repository<ActivoFijoLocal>,
-    ) {}
+    ) { }
 
-    async createActivoFijoLocal(activoFijoLocal: ActivoFijoLocal): Promise<ActivoFijoLocal> {
+    async createActivoFijoLocal(
+        activoFijoLocal: ActivoFijoLocal,
+    ): Promise<ActivoFijoLocal> {
         return this.activoFijoLocalRepository.save(activoFijoLocal);
     }
 
     async getActivoFijoLocalById(id: number): Promise<ActivoFijoLocal> {
-        return this.activoFijoLocalRepository.findOne({ where: { id }, relations: ['client', 'locales', 'tipoActivo' ] });
+        return this.activoFijoLocalRepository.findOne({
+            where: { id },
+            relations: ['client', 'locales', 'tipoActivo'],
+        });
     }
 
-    async updateActivoFijoLocal(id: number, activoFijoLocal: ActivoFijoLocal): Promise<ActivoFijoLocal> {
+    async updateActivoFijoLocal(
+        id: number,
+        activoFijoLocal: ActivoFijoLocal,
+    ): Promise<ActivoFijoLocal> {
         await this.activoFijoLocalRepository.update(id, activoFijoLocal);
         return this.activoFijoLocalRepository.findOne({ where: { id } });
     }
@@ -28,6 +36,8 @@ export class ActivoFijoLocalService {
     }
 
     async getAllActivoFijoLocal(): Promise<ActivoFijoLocal[]> {
-        return this.activoFijoLocalRepository.find({ relations: ['client', 'locales', 'tipoActivo' ] });
+        return this.activoFijoLocalRepository.find({
+            relations: ['client', 'locales', 'tipoActivo'],
+        });
     }
 }
