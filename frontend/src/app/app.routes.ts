@@ -22,13 +22,20 @@ export const routes: Routes = [
     component: FullComponent,
     children: [
       {
+        path: 'reportes',
+        loadChildren: () =>
+          import('./pages/reportes/reportes.routes').then(
+            (m) => m.REPORTES_ROUTES
+          ),
+      },
+      {
         path: 'mantenedores/locales',
         loadChildren: () =>
           import('./pages/mantenedores/locales/locales.routes').then(
             (m) => m.LOCALES_ROUTES
           ),
       },
-     
+
       {
         path: 'mantenedores/especialidades',
         loadChildren: () =>
@@ -49,7 +56,7 @@ export const routes: Routes = [
           import('./pages/mantenedores/vehiculos/vehiculos.routes').then(
             (m) => m.VEHICULOS_ROUTES
           ),
-      },{
+      }, {
         path: 'mantenedores/tecnicos-moviles',
         loadChildren: () =>
           import('./pages/mantenedores/tecnicos-moviles/tecnicos-moviles.routes').then(
@@ -62,7 +69,7 @@ export const routes: Routes = [
           import('./pages/mantenedores/tipo-activo/tipo-activo.routes').then(
             (m) => m.TIPO_ACTIVO_ROUTES
           ),
-      },{
+      }, {
         path: 'mantenedores/usuarios',
         loadChildren: () =>
           import('./pages/mantenedores/tecnicos/tecnicos.routes').then(
@@ -96,13 +103,13 @@ export const routes: Routes = [
           import('./pages/mantenedores/documentos/documentos.routes').then(
             (m) => m.DOCUMENTOS_ROUTES
           ),
-      },{
+      }, {
         path: 'mantenedores/tipo-servicio',
         loadChildren: () =>
           import('./pages/mantenedores/tipo-servicio/tipo-servicio.routes').then(
             (m) => m.TIPO_SERVICIO_ROUTES
           ),
-      },{
+      }, {
         path: 'mantenedores/sectores-trabajo',
         loadChildren: () =>
           import('./pages/mantenedores/sectores-trabajo/sectores-trabajo.routes').then(
@@ -299,7 +306,7 @@ export const routes: Routes = [
       {
         path: 'changelog',
         component: ChangelogTimelineComponent,
-        data: { 
+        data: {
           title: 'Historial de Actualizaciones',
           urls: [
             { title: 'Dashboard', url: '/dashboards/dashboard1' },
@@ -310,9 +317,9 @@ export const routes: Routes = [
       {
         path: 'busqueda-global',
         component: BusquedaGlobalComponent,
-        data: { 
+        data: {
           title: 'Búsqueda Global',
-         
+
         }
       }
     ],

@@ -57,7 +57,7 @@
           }
         }
         > .childBox {
-          width: 600px;
+          width: auto;
 
           > .ddmenu {
             width: 49%;
@@ -103,7 +103,7 @@
             background-color: rgba($success, 0.1);
           }
         }
-        
+
         &.warning {
           &:hover,
           &:hover > .activeMenu,
@@ -125,7 +125,7 @@
           }
         }
       }
-      
+
       &:hover > .activeMenu,
       .activeMenu {
         color: $textPrimary;
@@ -140,7 +140,11 @@
         border-radius: $border-radius;
         box-shadow: $cardshadow;
         position: absolute;
-        width: 250px;
+        min-width: 200px; // ancho mínimo base
+        width: max-content; // se ajusta al contenido
+        white-space: nowrap; // evita que el texto se rompa
+        max-height: 400px;
+        overflow-y: auto;
 
         .ddmenu {
           display: none;
