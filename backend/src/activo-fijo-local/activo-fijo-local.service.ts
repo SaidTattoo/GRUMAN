@@ -30,5 +30,4 @@ export class ActivoFijoLocalService {
     async getAllActivoFijoLocal(): Promise<ActivoFijoLocal[]> {
         return this.activoFijoLocalRepository.find({ relations: ['client', 'locales', 'tipoActivo' ] });
     }
-
 }

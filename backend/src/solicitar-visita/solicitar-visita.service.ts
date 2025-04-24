@@ -336,6 +336,93 @@ export class SolicitarVisitaService {
     }
 
 
+    //obtener solicitudes con paginacion y filtros de cliente, estado, tipo de mantenimiento, mes de facturacion decha desde y fecha hasta puede haber solo un filtro o estar todos los filtros
+    //tambien quiero paginacion por la cantidad de solicitudes que vienen
+    
+    async getSolicitudesVisitaMultifiltro(params: any): Promise<{ data: SolicitarVisita[]; total: number }> {
+        const { 
+            clienteId, 
+            status, 
+            tipoMantenimiento, 
+            mesFacturacion, 
+            fechaDesde, 
+            fechaHasta,
+            page = 1,
+            limit = 10
+        } = params;
+
+        try {
+            const queryBuilder = this.solicitarVisitaRepository
+                .createQueryBuilder('solicitud')
+                .select([
+                    'solicitud.id',
+                    'solicitud.fechaIngreso',
+                    'solicitud.tipo_mantenimiento',
+                    'solicitud.status',
+                    'local.id',
+                    'local.nombre_local',
+                    'client.id',
+                    'client.nombre',
+                    'tecnico_asignado.name',
+                    'tecnico_asignado.lastName',
+                    'facturacion.mes',
+                    'solicitud.fechaVisita'
+                ])
+                .leftJoin('solicitud.local', 'local')
+                .leftJoin('solicitud.client', 'client')
+                .leftJoin('solicitud.tecnico_asignado', 'tecnico_asignado')
+                .leftJoin('solicitud.facturacion', 'facturacion')
+                .where('solicitud.estado = :estado', { estado: true })
+                .orderBy('solicitud.id', 'DESC');
+
+            if (clienteId) {
+                queryBuilder.andWhere('client.id = :clienteId', { clienteId });
+            }
+
+            if (status) {
+                queryBuilder.andWhere('solicitud.status = :status', { status });
+            }
+
+            if (tipoMantenimiento) {
+                queryBuilder.andWhere('solicitud.tipo_mantenimiento = :tipoMantenimiento', { tipoMantenimiento });
+            }
+
+            if (mesFacturacion) {
+                queryBuilder.andWhere('facturacion.mes = :mesFacturacion', { mesFacturacion });
+            }
+
+            if (fechaDesde) {
+                const fechaDesdeObj = new Date(fechaDesde);
+                fechaDesdeObj.setHours(0, 0, 0, 0);
+                queryBuilder.andWhere('solicitud.fechaIngreso >= :fechaDesde', { fechaDesde: fechaDesdeObj });
+            }
+
+            if (fechaHasta) {
+                const fechaHastaObj = new Date(fechaHasta);
+                fechaHastaObj.setHours(23, 59, 59, 999);
+                queryBuilder.andWhere('solicitud.fechaIngreso <= :fechaHasta', { fechaHasta: fechaHastaObj });
+            }
+
+            const total = await queryBuilder.getCount();
+
+            queryBuilder
+                .skip((page - 1) * limit)
+                .take(limit);
+
+            const solicitudes = await queryBuilder.getMany();
+
+            return {
+                data: solicitudes,
+                total
+            };
+        } catch (error) {
+            console.error('Error en getSolicitudesVisitaMultifiltro:', error);
+            throw new Error('Error al obtener las solicitudes de visita');
+        }
+    }
+    
+
+
     getSolicitudesVisita(): Promise<SolicitarVisita[]> {
         return this.solicitarVisitaRepository.find({ 
           where: {  estado: true  },
@@ -752,13 +839,13 @@ export class SolicitarVisitaService {
                
                 where: { 
                     status: In([
-                        SolicitudStatus.VALIDADA, 
+                     /*    SolicitudStatus.VALIDADA, 
                         SolicitudStatus.REABIERTA,
                         SolicitudStatus.EN_SERVICIO,
-                        SolicitudStatus.FINALIZADA,
+                        SolicitudStatus.FINALIZADA, */
                         SolicitudStatus.APROBADA,
-                        SolicitudStatus.RECHAZADA,
-                        SolicitudStatus.PENDIENTE
+                       /*  SolicitudStatus.RECHAZADA,
+                        SolicitudStatus.PENDIENTE */
                     ]),
                     estado: true,
                     fechaIngreso: Between(today, tomorrow)
@@ -788,13 +875,13 @@ export class SolicitarVisitaService {
         try {
             const whereClause: any = {
                 status: In([
-                    SolicitudStatus.VALIDADA, 
+                   /*  SolicitudStatus.VALIDADA, 
                     SolicitudStatus.REABIERTA,
                     SolicitudStatus.EN_SERVICIO,
-                    SolicitudStatus.FINALIZADA,
+                    SolicitudStatus.FINALIZADA, */
                     SolicitudStatus.APROBADA,
-                    SolicitudStatus.RECHAZADA,
-                    SolicitudStatus.PENDIENTE
+                  /*   SolicitudStatus.RECHAZADA,
+                    SolicitudStatus.PENDIENTE */
                 ]),
                 estado: true
             };
