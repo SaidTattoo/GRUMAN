@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,6 +21,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { FacturacionService } from 'src/app/services/facturacion.service';
+import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-servicios-realizados',
@@ -120,7 +122,7 @@ export class ServiciosRealizadosComponent implements OnInit {
   private initForm() {
     this.programacionForm = this.fb.group({
       clientId: [''],
-      tipoServicio: ['todos'],
+      tipoServicio: [null],
       tipo_mantenimiento: ['todos'],
       diaSeleccionadoInicio: [null],
       diaSeleccionadoTermino: [null],
@@ -145,7 +147,7 @@ export class ServiciosRealizadosComponent implements OnInit {
           this.tiposServicio = [];
         }
         // Resetear el tipo de servicio cuando cambia el cliente
-        this.programacionForm.get('tipoServicio')?.reset();
+        this.programacionForm.get('tipoServicio')?.setValue(null);
       });
     }
 
@@ -179,13 +181,19 @@ export class ServiciosRealizadosComponent implements OnInit {
       // Filtrar servicios activos y no eliminados
       this.tiposServicio = cliente.tipoServicio.filter(
         (servicio: any) => servicio.activo && !servicio.deleted
-      );
+      ).map((servicio: any) => ({
+        id: servicio.id,
+        nombre: servicio.nombre_servicio || servicio.nombre // Fallback to nombre if nombre_servicio doesn't exist
+      }));
       console.log('Tipos de servicio cargados:', this.tiposServicio);
     } else if (!this.isGruman) {
       // Si no es Gruman, buscar en la compañía seleccionada
       this.tiposServicio = this.selectedCompany.tipoServicio?.filter(
         (servicio: any) => servicio.activo && !servicio.deleted
-      ) || [];
+      ).map((servicio: any) => ({
+        id: servicio.id,
+        nombre: servicio.nombre_servicio || servicio.nombre
+      })) || [];
     }
   }
 
@@ -316,5 +324,68 @@ export class ServiciosRealizadosComponent implements OnInit {
     );
     // Abrir en una nueva pestaña
     window.open(url, '_blank');
+  }
+
+  exportarExcel(): void {
+    if (!this.serviciosRealizados || this.serviciosRealizados.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sin datos',
+        text: 'No hay datos para exportar a Excel'
+      });
+      return;
+    }
+
+    // Preparar los datos para la exportación
+    const datosParaExportar = this.serviciosRealizados.map(servicio => ({
+      'Número de Solicitud': servicio.id,
+      'Cliente': servicio.client?.nombre || 'No asignado',
+      'Local': servicio.local?.nombre_local || 'No asignado',
+      'Fecha de Visita': this.formatDate(servicio.fechaVisita),
+      'Tipo de Servicio': servicio.tipoServicio?.nombre || 'No especificado',
+      'Técnico': servicio.tecnico_asignado ? `${servicio.tecnico_asignado.name} ${servicio.tecnico_asignado.lastName}` : 'No asignado',
+      'Técnico 2': servicio.tecnico_asignado_2 ? `${servicio.tecnico_asignado_2.name} ${servicio.tecnico_asignado_2.lastName}` : 'No asignado',
+      'Tipo Mantenimiento': servicio.tipo_mantenimiento || 'No especificado',
+      'Estado': servicio.status || 'No definido',
+      'Mes Facturación': servicio.facturacion?.mes || 'No asignado',
+      'Observaciones': servicio.observaciones || 'Sin observaciones'
+    }));
+
+    // Crear el libro de trabajo y la hoja
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosParaExportar);
+
+    // Ajustar el ancho de las columnas
+    const wscols = [
+      { wch: 10 },  // Número de Solicitud
+      { wch: 30 },  // Cliente
+      { wch: 30 },  // Local
+      { wch: 15 },  // Fecha de Visita
+      { wch: 25 },  // Tipo de Servicio
+      { wch: 30 },  // Técnico
+      { wch: 30 },  // Técnico 2
+      { wch: 20 },  // Tipo Mantenimiento
+      { wch: 15 },  // Estado
+      { wch: 20 },  // Mes Facturación
+      { wch: 50 }   // Observaciones
+    ];
+    ws['!cols'] = wscols;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Servicios Realizados');
+
+    // Generar el archivo y descargarlo
+    const fechaActual = new Date().toISOString().split('T')[0];
+    const nombreArchivo = `Servicios_Realizados_${fechaActual}.xlsx`;
+    XLSX.writeFile(wb, nombreArchivo);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      icon: 'success',
+      title: 'Exportación exitosa',
+      text: 'El archivo Excel se ha descargado correctamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
   }
 }

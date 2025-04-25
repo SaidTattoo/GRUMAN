@@ -17,6 +17,7 @@ import Swal from 'sweetalert2';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-solicitudes-finalizadas',
@@ -41,7 +42,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         <div class="row justify-content-between m-b-8">
           <div class="col-sm-8">
             <h2 class="m-0">Solicitudes Finalizadas</h2>
-          
           </div>
           <div class="col-sm-4">
             <mat-form-field appearance="outline" class="w-100 hide-hint">
@@ -50,6 +50,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
               <mat-icon matPrefix>search</mat-icon>
             </mat-form-field>
           </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="action-buttons my-3">
+          <button mat-stroked-button color="primary" (click)="exportarExcel()">
+            <mat-icon>file_download</mat-icon>
+            Exportar a Excel
+          </button>
         </div>
 
         <!-- Indicador de carga -->
@@ -453,6 +461,65 @@ export class SolicitudesFinalizadasComponent implements OnInit, OnDestroy {
           text: 'No se pudo generar el PDF. Por favor intente nuevamente.'
         });
       }
+    });
+  }
+
+  exportarExcel() {
+    if (!this.dataSource || !this.dataSource.data || this.dataSource.data.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sin datos',
+        text: 'No hay datos para exportar a Excel'
+      });
+      return;
+    }
+
+    // Preparar los datos para la exportación
+    const datosParaExportar = this.dataSource.data.map(solicitud => ({
+      'Número de Solicitud': solicitud.id,
+      'Cliente': solicitud.client?.nombre || 'No asignado',
+      'Local': solicitud.local?.nombre_local || 'No asignado',
+      'Fecha de Ingreso': this.formatDate(solicitud.fechaIngreso),
+      'Especialidad': this.especialidades[solicitud.especialidad] || 'No especificada',
+      'Ticket Gruman': solicitud.ticketGruman || 'Sin ticket',
+      'Generado por': solicitud.generada_por ? `${solicitud.generada_por.name} ${solicitud.generada_por.lastName}` : 'Sin usuario',
+      'Observaciones': solicitud.observaciones || 'Sin observaciones',
+      'Técnico': solicitud.tecnico_asignado ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}` : 'No asignado'
+    }));
+
+    // Crear el libro de trabajo y la hoja
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosParaExportar);
+
+    // Ajustar el ancho de las columnas
+    const wscols = [
+      { wch: 10 }, // Número de Solicitud
+      { wch: 30 }, // Cliente
+      { wch: 30 }, // Local
+      { wch: 15 }, // Fecha de Ingreso
+      { wch: 20 }, // Especialidad
+      { wch: 15 }, // Ticket Gruman
+      { wch: 30 }, // Generado por
+      { wch: 50 }, // Observaciones
+      { wch: 30 }  // Técnico
+    ];
+    ws['!cols'] = wscols;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes Finalizadas');
+
+    // Generar el archivo y descargarlo
+    const fechaActual = new Date().toISOString().split('T')[0];
+    const nombreArchivo = `Solicitudes_Finalizadas_${fechaActual}.xlsx`;
+    XLSX.writeFile(wb, nombreArchivo);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      icon: 'success',
+      title: 'Exportación exitosa',
+      text: 'El archivo Excel se ha descargado correctamente',
+      timer: 2000,
+      showConfirmButton: false
     });
   }
 } 

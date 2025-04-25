@@ -12,6 +12,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { VehiculosService } from 'src/app/services/vehiculos.service';
 import { CrearVehiculoComponent } from './crear-vehiculo/crear-vehiculo.component';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 interface Vehiculo {
   id: number;
@@ -22,7 +24,10 @@ interface Vehiculo {
   documentacion: {
     revision_tecnica: string;
     gases: string;
+    seguro_obligatorio: string;
+    padron_vehicular: string;
   };
+  activo: boolean;
 }
 const ELEMENT_DATA: any[] = [
   {
@@ -132,6 +137,67 @@ export class VehiculosComponent implements OnInit {
   eliminarVehiculo(id: number){
     this.vehiculosService.deleteVehiculo(id).subscribe(() => {
       this.ngOnInit();
+    });
+  }
+
+  exportarExcel(): void {
+    if (!this.dataSource.data || (this.dataSource.data as any[]).length === 0) {
+      Swal.fire({
+        title: 'Advertencia',
+        text: 'No hay datos para exportar',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar'
+      });
+      return;
+    }
+
+    // Preparar los datos para exportar
+    const datosParaExportar = (this.dataSource.data as Vehiculo[]).map(vehiculo => ({
+      'Móvil': vehiculo.movil || 'No asignado',
+      'Patente': vehiculo.patente || 'No asignado',
+      'Marca': vehiculo.marca || 'No asignado',
+      'Modelo': vehiculo.modelo || 'No asignado',
+      'Estado': vehiculo.activo ? 'Activo' : 'Inactivo',
+      'Revisión Técnica': vehiculo.documentacion?.revision_tecnica || 'No disponible',
+      'Certificado de Gases': vehiculo.documentacion?.gases || 'No disponible',
+      'Seguro Obligatorio': vehiculo.documentacion?.seguro_obligatorio || 'No disponible',
+      'Padrón Vehicular': vehiculo.documentacion?.padron_vehicular || 'No disponible'
+    }));
+
+    // Crear el libro de trabajo y la hoja
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(datosParaExportar);
+
+    // Establecer anchos de columna
+    const wscols = [
+      { wch: 15 }, // Móvil
+      { wch: 12 }, // Patente
+      { wch: 15 }, // Marca
+      { wch: 20 }, // Modelo
+      { wch: 10 }, // Estado
+      { wch: 20 }, // Revisión Técnica
+      { wch: 20 }, // Certificado de Gases
+      { wch: 20 }, // Seguro Obligatorio
+      { wch: 20 }  // Padrón Vehicular
+  
+    ];
+    ws['!cols'] = wscols;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Vehículos');
+
+    // Generar el archivo y descargarlo
+    const fecha = new Date().toISOString().split('T')[0];
+    const fileName = `Vehiculos_${fecha}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      title: 'Éxito',
+      text: 'El archivo Excel se ha descargado correctamente',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
     });
   }
 }

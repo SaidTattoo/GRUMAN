@@ -11,6 +11,14 @@
       </div>
     </div>
 
+    <!-- Botón de exportar -->
+    <div class="action-buttons mb-3">
+      <button mat-stroked-button color="primary" (click)="exportarExcel()">
+        <mat-icon>file_download</mat-icon>
+        Exportar a Excel
+      </button>
+    </div>
+
     <div class="table-responsive m-t-30">
       <table mat-table [dataSource]="dataSource" class="w-100 mat-elevation-z8">
         <!-- ID Column -->

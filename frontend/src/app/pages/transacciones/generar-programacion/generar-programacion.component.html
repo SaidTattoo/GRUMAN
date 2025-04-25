@@ -7,12 +7,22 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="clientId" placeholder="Seleccionar Cliente">
-              <mat-option *ngFor="let cliente of clientes" [value]="cliente.id">
+            <input type="text"
+                   placeholder="Seleccionar Cliente"
+                   matInput
+                   formControlName="clientId"
+                   [matAutocomplete]="auto"
+                   (focus)="onClienteFocus()"
+                   (input)="filtrarClientes($event)">
+            <mat-autocomplete #auto="matAutocomplete" 
+                            [displayWith]="displayFn"
+                            [autoActiveFirstOption]="true"
+                            (opened)="onClienteFocus()">
+              <mat-option *ngFor="let cliente of filteredClientes | async" [value]="cliente.id">
                 {{ cliente.nombre }}
               </mat-option>
-            </mat-select>
-            @if (programacionForm.get('clientId')?.touched && programacionForm.get('clienteId')?.invalid) {
+            </mat-autocomplete>
+            @if (programacionForm.get('clientId')?.touched && programacionForm.get('clientId')?.invalid) {
             <mat-error>
               {{ getErrorMessage('clientId') }}
             </mat-error>
@@ -27,12 +37,22 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="localId" placeholder="Seleccionar Local">
-              <mat-option *ngFor="let local of locales" [value]="local.id">
+            <input type="text"
+                   placeholder="Seleccionar Local"
+                   matInput
+                   formControlName="localId"
+                   [matAutocomplete]="autoLocal"
+                   (focus)="onLocalFocus()"
+                   (input)="filtrarLocales($event)">
+            <mat-autocomplete #autoLocal="matAutocomplete" 
+                            [displayWith]="displayLocalFn"
+                            [autoActiveFirstOption]="true"
+                            (opened)="onLocalFocus()">
+              <mat-option *ngFor="let local of filteredLocales | async" [value]="local.id">
                 {{ local.nombre_local }}
               </mat-option>
-            </mat-select>
-              @if (programacionForm.get('localId')?.touched && programacionForm.get('localId')?.invalid) {
+            </mat-autocomplete>
+            @if (programacionForm.get('localId')?.touched && programacionForm.get('localId')?.invalid) {
             <mat-error>
               {{ getErrorMessage('localId') }}
             </mat-error>
@@ -47,23 +67,50 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="tipoServicioId" placeholder="Seleccionar Tipo de Servicio" 
-                      [disabled]="!programacionForm.get('clientId')?.value || !tiposServicio.length">
-              @if (!programacionForm.get('clientId')?.value) {
-                <mat-option disabled>Primero seleccione un cliente</mat-option>
-              } @else if (tiposServicio.length) {
-                <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
-                  {{ tipo.nombre }}
-                </mat-option>
-              } @else {
-                <mat-option disabled>No hay tipos de servicio disponibles para este cliente</mat-option>
-              }
-            </mat-select>
-            @if (programacionForm.get('tipoServicioId')?.touched && programacionForm.get('tipoServicioId')?.invalid) {
-            <mat-error>
-              {{ getErrorMessage('tipoServicioId') }}
+            <mat-label>Tipo de Servicio</mat-label>
+            <input type="text"
+                   matInput
+                   formControlName="tipoServicioId"
+                   [matAutocomplete]="autoTipoServicio"
+                   (focus)="onTipoServicioFocus()"
+                   (input)="filtrarTipoServicio($event)">
+            <mat-autocomplete #autoTipoServicio="matAutocomplete" [displayWith]="displayTipoServicioFn">
+              <mat-option *ngFor="let tipo of filteredTipoServicio | async" [value]="tipo.id">
+                {{tipo.nombre}}
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="programacionForm.get('tipoServicioId')?.hasError('required')">
+              El tipo de servicio es requerido
             </mat-error>
-            }
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Especialidad *</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Especialidad</mat-label>
+            <input type="text"
+                   placeholder="Seleccionar Especialidad"
+                   matInput
+                   formControlName="especialidadId"
+                   [matAutocomplete]="autoEspecialidad"
+                   (focus)="onEspecialidadFocus()"
+                   (input)="filtrarEspecialidades($event)">
+            <mat-autocomplete #autoEspecialidad="matAutocomplete" 
+                            [displayWith]="displayEspecialidadFn"
+                            [autoActiveFirstOption]="true"
+                            (opened)="onEspecialidadFocus()">
+              <mat-option *ngFor="let esp of filteredEspecialidades | async" [value]="esp.id">
+                {{ esp.nombre }}
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="programacionForm.get('especialidadId')?.touched && programacionForm.get('especialidadId')?.invalid">
+              {{ getErrorMessage('especialidadId') }}
+            </mat-error>
           </mat-form-field>
         </div>
       </div>
@@ -110,17 +157,27 @@
         </div>
       </div>
 
-   <div class="row">
+      <div class="row">
         <div class="col-sm-4 d-flex align-items-center">
           <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Técnico *</mat-label>
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="tecnico_asignado_id" placeholder="Seleccionar Técnico">
-              <mat-option *ngFor="let tecnico of tecnicos" [value]="tecnico.id">
+            <input type="text"
+                   placeholder="Seleccionar Técnico"
+                   matInput
+                   formControlName="tecnico_asignado_id"
+                   [matAutocomplete]="autoTecnico1"
+                   (focus)="onTecnico1Focus()"
+                   (input)="filtrarTecnicos1($event)">
+            <mat-autocomplete #autoTecnico1="matAutocomplete" 
+                            [displayWith]="displayTecnicoFn"
+                            [autoActiveFirstOption]="true"
+                            (opened)="onTecnico1Focus()">
+              <mat-option *ngFor="let tecnico of filteredTecnicos1 | async" [value]="tecnico.id">
                 {{ tecnico.name }} {{ tecnico.lastName }}
               </mat-option>
-            </mat-select>
+            </mat-autocomplete>
             @if (programacionForm.get('tecnico_asignado_id')?.touched && programacionForm.get('tecnico_asignado_id')?.invalid) {
             <mat-error>
               {{ getErrorMessage('tecnico_asignado_id') }}
@@ -128,18 +185,29 @@
             }
           </mat-form-field>
         </div>
-      </div> 
+      </div>
+
       <div class="row">
         <div class="col-sm-4 d-flex align-items-center">
           <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Técnico 2 (Opcional)</mat-label>
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="tecnico_asignado_id_2" placeholder="Seleccionar Técnico 2">
-              <mat-option *ngFor="let tecnico of getTecnicosDisponiblesParaSegundoSelect()" [value]="tecnico.id">
+            <input type="text"
+                   placeholder="Seleccionar Técnico 2"
+                   matInput
+                   formControlName="tecnico_asignado_id_2"
+                   [matAutocomplete]="autoTecnico2"
+                   (focus)="onTecnico2Focus()"
+                   (input)="filtrarTecnicos2($event)">
+            <mat-autocomplete #autoTecnico2="matAutocomplete" 
+                            [displayWith]="displayTecnicoFn"
+                            [autoActiveFirstOption]="true"
+                            (opened)="onTecnico2Focus()">
+              <mat-option *ngFor="let tecnico of filteredTecnicos2 | async" [value]="tecnico.id">
                 {{ tecnico.name }} {{ tecnico.lastName }}
               </mat-option>
-            </mat-select>
+            </mat-autocomplete>
             @if (programacionForm.get('tecnico_asignado_id_2')?.touched && programacionForm.get('tecnico_asignado_id_2')?.invalid) {
             <mat-error>
               {{ getErrorMessage('tecnico_asignado_id_2') }}
@@ -147,7 +215,7 @@
             }
           </mat-form-field>
         </div>
-      </div> 
+      </div>
 
       <div class="row">
         <div class="col-sm-4 d-flex align-items-center">

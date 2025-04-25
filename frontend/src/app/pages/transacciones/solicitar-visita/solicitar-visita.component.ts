@@ -22,6 +22,10 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
 import { environment } from 'src/app/config';
+import { Observable, Subject, of } from 'rxjs';
+import { map, startWith, takeUntil } from 'rxjs/operators';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { S } from '@angular/cdk/keycodes';
 
 
 interface Client {
@@ -48,6 +52,7 @@ interface Especialidad {
     MatDatepickerModule,
     MatInputModule,
     MatIconModule,
+    MatAutocompleteModule,
   ],
   templateUrl: './solicitar-visita.component.html',
   styleUrls: ['./solicitar-visita.component.scss'],
@@ -67,6 +72,10 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   private storageSubscription: Subscription;
   client: Client | null = null;
   private currentUserId: number;
+  filteredLocales: Observable<any[]>;
+  private destroy$ = new Subject<void>();
+  filteredEspecialidades: Observable<Especialidad[]>;
+  filteredTipoServicio: Observable<any[]>;
 
   constructor(
    private userService: UserService,
@@ -86,7 +95,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       localId: [null, Validators.required],
       clientId: [null],
       sectorTrabajoId: [null, Validators.required],
-      especialidad: [null],
+      especialidad: [null, [Validators.required]],
       ticketGruman: [''],
       observaciones: [''],
       fechaIngreso: [null],
@@ -119,12 +128,17 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         this.loadEspecialidades();
       }
     });
+    this.setupLocalAutocomplete();
+    this.setupEspecialidadAutocomplete();
+    this.setupTipoServicioAutocomplete();
   }
 
   ngOnDestroy(): void {
     if (this.storageSubscription) {
       this.storageSubscription.unsubscribe();
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   async subirImagenes(visitaId: number): Promise<string[]> {
@@ -157,6 +171,13 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   onSubmit() {
     if (this.visitaForm.valid) {
       const values = this.visitaForm.getRawValue();
+      const selectedLocal = values.localId;
+      const selectedEspecialidad = values.especialidad;
+
+      // Get current date and time
+      const now = new Date();
+      const selectedDate = new Date(values.fechaIngreso);
+      selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
 
       // Limpiar las URLs de las imágenes antes de enviar
       const imagenesLimpias = this.urlImage.map(url => 
@@ -165,17 +186,19 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
 
       const solicitud = {
         tipoServicioId: Number(values.tipoServicioId),
-        localId: Number(values.localId),
+        localId: selectedLocal?.id || null,
         sectorTrabajoId: Number(values.sectorTrabajoId),
         clientId: this.clientId,
-        especialidad: Number(values.especialidad),
+        especialidad: selectedEspecialidad?.id || null,
         ticketGruman: values.ticketGruman,
         observaciones: values.observaciones,
-        fechaIngreso: values.fechaIngreso,
+        fechaIngreso: selectedDate.toISOString(), // Send as ISO string with current time
         imagenes: imagenesLimpias,
         generada_por_id: this.currentUserId
       };
+      
       console.log('solicitud', solicitud)
+    
       this.solicitarVisitaService.crearSolicitudVisita(solicitud).subscribe({
         next: (response) => {
           console.log('Visita creada:', response);
@@ -277,5 +300,111 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   removeImage(index: number) {
     this.selectedFiles.splice(index, 1);
     delete this.previewUrls[index];
+  }
+
+  private setupLocalAutocomplete() {
+    // Initialize filteredLocales
+    this.filteredLocales = this.visitaForm.get('localId')!.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterLocales(value))
+    );
+  }
+
+  private _filterLocales(value: any): any[] {
+    if (!this.locales) return [];
+    
+    const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+    return this.locales.filter(local => 
+      local.nombre_local.toLowerCase().includes(filterValue)
+    );
+  }
+
+  onLocalFocus() {
+    this.filteredLocales = new Observable(observer => {
+      observer.next(this.locales);
+    });
+  }
+
+  displayLocalFn(local: any): string {
+    return local ? local.nombre_local : '';
+  }
+
+  filtrarLocales(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
+    this.filteredLocales = new Observable(observer => {
+      observer.next(
+        this.locales.filter(local =>
+          local.nombre_local.toLowerCase().includes(filterValue)
+        )
+      );
+    });
+  }
+
+  private setupEspecialidadAutocomplete() {
+    this.filteredEspecialidades = this.visitaForm.get('especialidad')!.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterEspecialidades(value))
+    );
+  }
+
+  private _filterEspecialidades(value: any): Especialidad[] {
+    if (!this.especialidades) return [];
+    
+    const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+    return this.especialidades.filter(esp => 
+      esp.nombre.toLowerCase().includes(filterValue)
+    );
+  }
+
+  onEspecialidadFocus() {
+    this.filteredEspecialidades = new Observable(observer => {
+      observer.next(this.especialidades);
+    });
+  }
+
+  displayEspecialidadFn(especialidad: any): string {
+    return especialidad ? especialidad.nombre : '';
+  }
+
+  filtrarEspecialidades(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
+    this.filteredEspecialidades = new Observable(observer => {
+      observer.next(
+        this.especialidades.filter(esp =>
+          esp.nombre.toLowerCase().includes(filterValue)
+        )
+      );
+    });
+  }
+
+  private setupTipoServicioAutocomplete() {
+    this.filteredTipoServicio = this.visitaForm.get('tipoServicioId')!.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterTipoServicio(value))
+    );
+  }
+
+  private _filterTipoServicio(value: any): any[] {
+    if (!this.tipoServicio) return [];
+    
+    const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+    return this.tipoServicio.filter(tipo => 
+      tipo.nombre.toLowerCase().includes(filterValue)
+    );
+  }
+
+  onTipoServicioFocus() {
+    this.filteredTipoServicio = of(this.tipoServicio);
+  }
+
+  displayTipoServicioFn = (tipo: any): string => {
+    return tipo ? tipo.nombre : '';
+  }
+
+  filtrarTipoServicio(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
+    this.filteredTipoServicio = of(this.tipoServicio.filter(tipo =>
+      tipo.nombre.toLowerCase().includes(filterValue)
+    ));
   }
 }

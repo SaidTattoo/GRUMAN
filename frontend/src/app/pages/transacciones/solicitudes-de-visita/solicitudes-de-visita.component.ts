@@ -13,6 +13,8 @@ import { Router, RouterModule } from '@angular/router';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-solicitudes-de-visita',
@@ -82,6 +84,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     }
     .text-muted {
       color: rgba(0, 0, 0, 0.6);
+    }
+    .action-buttons {
+      margin: 16px 0;
+    }
+    .action-buttons button {
+      margin-right: 8px;
     }
   `]
 })
@@ -232,6 +240,67 @@ export class SolicitudesDeVisitaComponent implements OnInit, OnDestroy {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  exportarExcel(): void {
+    if (!this.dataSource || !this.dataSource.data || this.dataSource.data.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sin datos',
+        text: 'No hay datos para exportar a Excel'
+      });
+      return;
+    }
+
+    // Preparar los datos para la exportación
+    const datosParaExportar = this.dataSource.data.map(solicitud => ({
+      'Número de Solicitud': solicitud.id,
+      'Cliente': solicitud.client?.nombre || 'No asignado',
+      'Local': solicitud.local?.nombre_local || 'No asignado',
+      'Fecha de Ingreso': this.formatDate(solicitud.fechaIngreso),
+      'Ticket Gruman': solicitud.ticketGruman || 'Sin ticket',
+      'Especialidad': solicitud.especialidad || 'No especificada',
+      'Generado por': solicitud.generada_por ? `${solicitud.generada_por.name} ${solicitud.generada_por.lastName}` : 'Sin usuario',
+      'Estado': solicitud.status || 'No definido',
+      'Técnico': solicitud.tecnico_asignado ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}` : 'No asignado',
+      'Observaciones': solicitud.observaciones || 'Sin observaciones'
+    }));
+
+    // Crear el libro de trabajo y la hoja
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosParaExportar);
+
+    // Ajustar el ancho de las columnas
+    const wscols = [
+      { wch: 10 }, // Número de Solicitud
+      { wch: 30 }, // Cliente
+      { wch: 30 }, // Local
+      { wch: 15 }, // Fecha de Ingreso
+      { wch: 15 }, // Ticket Gruman
+      { wch: 20 }, // Especialidad
+      { wch: 30 }, // Generado por
+      { wch: 15 }, // Estado
+      { wch: 30 }, // Técnico
+      { wch: 50 }  // Observaciones
+    ];
+    ws['!cols'] = wscols;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes de Visita');
+
+    // Generar el archivo y descargarlo
+    const fechaActual = new Date().toISOString().split('T')[0];
+    const nombreArchivo = `Solicitudes_de_Visita_${fechaActual}.xlsx`;
+    XLSX.writeFile(wb, nombreArchivo);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      icon: 'success',
+      title: 'Exportación exitosa',
+      text: 'El archivo Excel se ha descargado correctamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
   }
 }
 

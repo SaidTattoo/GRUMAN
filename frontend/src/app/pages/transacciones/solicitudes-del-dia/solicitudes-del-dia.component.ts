@@ -13,6 +13,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import Swal from 'sweetalert2';
 import { MatTableDataSource } from '@angular/material/table';
 import { StorageService } from 'src/app/services/storage.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-solicitudes-del-dia',
@@ -287,5 +288,66 @@ export class SolicitudesDelDiaComponent implements OnInit {
         await Swal.fire('Error', 'No se pudo cambiar el estado de la solicitud', 'error');
       }
     }
+  }
+
+  exportarExcel() {
+    if (!this.dataSource || !this.dataSource.data || this.dataSource.data.length === 0) {
+      Swal.fire({
+        title: 'No hay datos',
+        text: 'No hay solicitudes para exportar',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar'
+      });
+      return;
+    }
+
+    // Preparar los datos para el Excel
+    const datosParaExportar = this.dataSource.data.map(solicitud => ({
+      'Número de Solicitud': solicitud.id,
+      'Cliente': solicitud.client?.nombre || 'No asignado',
+      'Local': solicitud.local?.nombre_local || 'No asignado',
+      'Tipo de Servicio': solicitud.tipoServicio?.nombre || 'No asignado',
+      'Estado': solicitud.status || 'No asignado',
+      'Generado por': `${solicitud.generada_por?.name || ''} ${solicitud.generada_por?.lastName || ''}`,
+      'Técnico': solicitud.tecnico_asignado ? 
+        `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}` : 
+        'No asignado',
+      'Técnico 2': solicitud.tecnico_asignado_2 ? 
+        `${solicitud.tecnico_asignado_2.name} ${solicitud.tecnico_asignado_2.lastName}` : 
+        'No asignado'
+    }));
+
+    // Crear el libro de Excel
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(datosParaExportar);
+
+    // Ajustar el ancho de las columnas
+    const columnsWidths = [
+      { wch: 15 }, // Número de Solicitud
+      { wch: 30 }, // Cliente
+      { wch: 30 }, // Local
+      { wch: 25 }, // Tipo de Servicio
+      { wch: 15 }, // Estado
+      { wch: 30 }, // Generado por
+      { wch: 30 }, // Técnico
+      { wch: 30 }, // Técnico 2
+    ];
+    worksheet['!cols'] = columnsWidths;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Solicitudes del Día');
+
+    // Generar el archivo y descargarlo
+    const fecha = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `Solicitudes_Del_Dia_${fecha}.xlsx`);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      title: '¡Éxito!',
+      text: 'El archivo Excel se ha descargado correctamente',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    });
   }
 } 

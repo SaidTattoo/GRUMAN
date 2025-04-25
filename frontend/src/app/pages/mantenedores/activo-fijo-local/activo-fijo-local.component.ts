@@ -8,6 +8,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { ActivoFijoLocalService } from 'src/app/services/activo-fijo-local.service';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
+
 @Component({
   selector: 'app-activo-fijo-local',
   standalone: true,
@@ -27,12 +29,71 @@ export class ActivoFijoLocalComponent implements OnInit {
     });
   }
 
+  exportarExcel(): void {
+    if (!this.dataSource.data || this.dataSource.data.length === 0) {
+      Swal.fire({
+        title: 'Advertencia',
+        text: 'No hay datos para exportar',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar'
+      });
+      return;
+    }
 
+    // Preparar los datos para exportar
+    const datosParaExportar = this.dataSource.data.map(item => ({
+      'Cliente': item.client?.nombre || 'No asignado',
+      'Local': item.locales?.nombre_local || 'No asignado',
+      'Tipo Activo': item.tipoActivo?.name || 'No asignado',
+      'Tipo Equipo': item.tipo_equipo || 'No asignado',
+      'Marca': item.marca || 'No asignado',
+      'Potencia Equipo': item.potencia_equipo || 'No asignado',
+      'Refrigerante': item.refrigerante || 'No asignado',
+      'On-Off/Inverter': item.on_off_inverter || 'No asignado',
+      'Suministra': item.suministra || 'No asignado',
+      'Código': item.codigo_activo || 'No asignado'
+    }));
+
+    // Crear el libro de trabajo y la hoja
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(datosParaExportar);
+
+    // Establecer anchos de columna
+    const wscols = [
+      { wch: 20 }, // Cliente
+      { wch: 20 }, // Local
+      { wch: 15 }, // Tipo Activo
+      { wch: 15 }, // Tipo Equipo
+      { wch: 15 }, // Marca
+      { wch: 15 }, // Potencia Equipo
+      { wch: 15 }, // Refrigerante
+      { wch: 15 }, // On-Off/Inverter
+      { wch: 15 }, // Suministra
+      { wch: 15 }  // Código
+    ];
+    ws['!cols'] = wscols;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Activos Fijos');
+
+    // Generar el archivo y descargarlo
+    const fecha = new Date().toISOString().split('T')[0];
+    const fileName = `Activos_Fijos_${fecha}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      title: 'Éxito',
+      text: 'El archivo Excel se ha descargado correctamente',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  }
 
   editar(activoFijoLocal: any) {
     this.router.navigate(['/mantenedores/activo-fijo-local/editar', activoFijoLocal.id]);
   }
-
 
   eliminar(activoFijoLocal: any) {
     Swal.fire({

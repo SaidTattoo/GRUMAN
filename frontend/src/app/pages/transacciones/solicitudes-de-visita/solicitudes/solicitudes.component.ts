@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -142,7 +142,7 @@ import { format } from 'date-fns';
     }
   `]
 })
-export class SolicitudesComponent implements OnInit {
+export class SolicitudesComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
   
@@ -401,57 +401,60 @@ export class SolicitudesComponent implements OnInit {
   }
 
   exportarExcel(): void {
-    if (!this.dataSource.data.length) {
-      this.snackBar.open('No hay datos para exportar', 'Cerrar', {
-        duration: 3000
+    if (!this.dataSource || !this.dataSource.data || this.dataSource.data.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sin datos',
+        text: 'No hay datos para exportar a Excel'
       });
       return;
     }
 
-    const dataToExport = this.prepareDataForExport();
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Solicitudes');
-    
-    // Autoajustar ancho de columnas
-    const maxWidth = 50;
-    const colWidths = this.calculateColumnWidths(dataToExport);
-    worksheet['!cols'] = colWidths.map(width => ({ width: Math.min(width, maxWidth) }));
-    
-    // Generar archivo
-    XLSX.writeFile(workbook, 'Solicitudes_de_Visita.xlsx');
-  }
+    // Preparar los datos para la exportación
+    const datosParaExportar = this.dataSource.data.map(solicitud => ({
+      'Número de Solicitud': solicitud.id,
+      'Cliente': solicitud.client?.nombre || 'No asignado',
+      'Local': solicitud.local?.nombre_local || 'No asignado',
+      'Fecha Visita': this.formatDate(solicitud.fechaVisita),
+      'Técnico': solicitud.tecnico_asignado ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}` : 'Sin técnico asignado',
+      'Tipo Mantenimiento': this.getTipoMantenimientoLabel(solicitud.tipo_mantenimiento),
+      'Estado': this.getEstadoLabel(solicitud.status),
+      'Mes Facturación': solicitud.facturacion?.mes || 'No asignado'
+    }));
 
-  private prepareDataForExport(): any[] {
-    return this.dataSource.data.map(item => {
-      return {
-        'ID': item.id,
-        'Cliente': item.client?.nombre || '',
-        'Local': item.local?.nombre_local || '',
-        'Fecha Visita': new DatePipe('es-CL').transform(item.fechaVisita, 'dd/MM/yyyy'),
-        'Técnico': item.tecnico_asignado ? `${item.tecnico_asignado.name} ${item.tecnico_asignado.lastName}` : '',
-        'Tipo Mantenimiento': this.getTipoMantenimientoLabel(item.tipo_mantenimiento),
-        'Estado': this.getEstadoLabel(item.status),
-        /* 'Mes Facturación': item.facturacion?.mes || 'No asignado' */
-      };
-    });
-  }
+    // Crear el libro de trabajo y la hoja
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosParaExportar);
 
-  private calculateColumnWidths(data: any[]): number[] {
-    if (!data.length) return [];
-    
-    const headers = Object.keys(data[0]);
-    const widths = headers.map(header => header.length);
-    
-    data.forEach(row => {
-      headers.forEach((header, i) => {
-        const cellValue = String(row[header] || '');
-        widths[i] = Math.max(widths[i], cellValue.length);
-      });
+    // Ajustar el ancho de las columnas
+    const wscols = [
+      { wch: 10 }, // Número de Solicitud
+      { wch: 30 }, // Cliente
+      { wch: 30 }, // Local
+      { wch: 15 }, // Fecha Visita
+      { wch: 30 }, // Técnico
+      { wch: 20 }, // Tipo Mantenimiento
+      { wch: 15 }, // Estado
+      { wch: 20 }  // Mes Facturación
+    ];
+    ws['!cols'] = wscols;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
+
+    // Generar el archivo y descargarlo
+    const fechaActual = new Date().toISOString().split('T')[0];
+    const nombreArchivo = `Solicitudes_${fechaActual}.xlsx`;
+    XLSX.writeFile(wb, nombreArchivo);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      icon: 'success',
+      title: 'Exportación exitosa',
+      text: 'El archivo Excel se ha descargado correctamente',
+      timer: 2000,
+      showConfirmButton: false
     });
-    
-    // Convertir a ancho aproximado de caracteres
-    return widths.map(w => w + 2);
   }
 
   private formatDate(date: Date){
@@ -556,5 +559,9 @@ export class SolicitudesComponent implements OnInit {
         });
       }
     });
+  }
+
+  ngOnDestroy() {
+    // Cleanup code if needed
   }
 }

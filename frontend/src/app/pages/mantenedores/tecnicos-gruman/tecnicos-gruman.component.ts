@@ -12,6 +12,7 @@ import { RutFormatPipe } from 'src/app/pipes/rut-format.pipe';
 import { TecnicosService } from 'src/app/services/tecnicos.service';
 import { UsersService } from 'src/app/services/users.service';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-tecnicos-gruman',
@@ -125,5 +126,59 @@ export class TecnicosGrumanComponent implements OnInit {
   }
   cambiarPassword(tecnico: any) {
     this.router.navigate(['/mantenedores/usuarios/cambiar-password', { tecnico: tecnico.id }]);
+  }
+
+  exportarExcel(): void {
+    if (!this.dataSource || this.dataSource.length === 0) {
+      Swal.fire({
+        title: 'Advertencia',
+        text: 'No hay datos para exportar',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar'
+      });
+      return;
+    }
+
+    // Preparar los datos para exportar
+    const datosParaExportar = this.dataSource.map(tecnico => ({
+      'Nombre': `${tecnico.name} ${tecnico.lastName}`,
+      'RUT': tecnico.rut,
+      'Especialidades': this.getEspecialidadesNombres(tecnico.especialidades),
+      'Email': tecnico.email || 'No asignado',
+      'Teléfono': tecnico.telefono || 'No asignado',
+     
+    }));
+
+    // Crear el libro de trabajo y la hoja
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(datosParaExportar);
+
+    // Establecer anchos de columna
+    const wscols = [
+      { wch: 30 }, // Nombre
+      { wch: 15 }, // RUT
+      { wch: 40 }, // Especialidades
+      { wch: 30 }, // Email
+      { wch: 15 }, // Teléfono
+     
+    ];
+    ws['!cols'] = wscols;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Técnicos');
+
+    // Generar el archivo y descargarlo
+    const fecha = new Date().toISOString().split('T')[0];
+    const fileName = `Tecnicos_${fecha}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      title: 'Éxito',
+      text: 'El archivo Excel se ha descargado correctamente',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    });
   }
 }

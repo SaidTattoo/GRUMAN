@@ -8,21 +8,21 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="tipoServicioId" placeholder="Seleccione tipo de servicio"
-                      [disabled]="!tipoServicio.length"
-                      [value]="'no-disponible'">
-              @if (tipoServicio.length) {
-                @for (tipo of tipoServicio; track tipo.id) {
-                  @if (tipo.nombre.toLowerCase() !== 'preventivo') {
-                    <mat-option [value]="tipo.id">
-                      {{tipo.nombre}}
-                    </mat-option>
-                  }
-                }
-              } @else {
-                <mat-option value="no-disponible" disabled>No hay tipos de servicio disponibles para este cliente</mat-option>
-              }
-            </mat-select>
+            <mat-label>Tipo de Servicio</mat-label>
+            <input type="text"
+                   matInput
+                   formControlName="tipoServicioId"
+                   [matAutocomplete]="autoTipoServicio"
+                   (focus)="onTipoServicioFocus()"
+                   (keyup)="filtrarTipoServicio($event)">
+            <mat-autocomplete #autoTipoServicio="matAutocomplete" [displayWith]="displayTipoServicioFn">
+              <mat-option *ngFor="let tipo of filteredTipoServicio | async" [value]="tipo">
+                {{tipo.nombre}}
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="visitaForm.get('tipoServicioId')?.hasError('required')">
+              El tipo de servicio es requerido
+            </mat-error>
           </mat-form-field>
         </div>
       </div>
@@ -34,13 +34,22 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="localId" placeholder="Seleccionar Local">
-              @for (local of locales; track local.id) {
-                <mat-option [value]="local.id">
-                  {{local.nombre_local}}
-                </mat-option>
-              }
-            </mat-select>
+            <mat-label>Local</mat-label>
+            <input type="text"
+                   matInput
+                   formControlName="localId"
+                   [matAutocomplete]="autoLocal"
+                   (keyup)="filtrarLocales($event)"
+                   (focus)="onLocalFocus()"
+                   placeholder="Buscar local">
+            <mat-error *ngIf="visitaForm.get('localId')?.hasError('required')">
+              El local es requerido
+            </mat-error>
+            <mat-autocomplete #autoLocal="matAutocomplete" [displayWith]="displayLocalFn">
+              <mat-option *ngFor="let local of filteredLocales | async" [value]="local">
+                {{local.nombre_local}}
+              </mat-option>
+            </mat-autocomplete>
           </mat-form-field>
         </div>
       </div>
@@ -70,11 +79,21 @@
         </div>
         <div class="col-sm-8">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-select formControlName="especialidad">
-              <mat-option *ngFor="let esp of especialidades" [value]="esp.id">
-                {{esp.nombre}}
+            <mat-label>Especialidad</mat-label>
+            <input type="text"
+                   matInput
+                   formControlName="especialidad"
+                   [matAutocomplete]="autoEspecialidad"
+                   (focus)="onEspecialidadFocus()"
+                   (keyup)="filtrarEspecialidades($event)">
+            <mat-autocomplete #autoEspecialidad="matAutocomplete" [displayWith]="displayEspecialidadFn">
+              <mat-option *ngFor="let especialidad of filteredEspecialidades | async" [value]="especialidad">
+                {{especialidad.nombre}}
               </mat-option>
-            </mat-select>
+            </mat-autocomplete>
+            <mat-error *ngIf="visitaForm.get('especialidad')?.hasError('required')">
+              La especialidad es requerida
+            </mat-error>
           </mat-form-field>
         </div>
       </div>

@@ -14,6 +14,8 @@ import { Router } from '@angular/router';
 import { ClientesService } from 'src/app/services/clientes.service';
 import { LocalesService } from 'src/app/services/locales.service';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-locales',
@@ -28,7 +30,8 @@ import Swal from 'sweetalert2';
     MatIconModule,
     MatPaginatorModule,
     MatSelectModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatTooltipModule
   ],
   templateUrl: './locales.component.html',
   styleUrl: './locales.component.scss'
@@ -154,6 +157,73 @@ export class LocalesComponent implements OnInit {
           }
         });
       }
+    });
+  }
+
+  exportarExcel() {
+    if (!this.dataSource || !this.dataSource.data || this.dataSource.data.length === 0) {
+      Swal.fire({
+        title: 'No hay datos',
+        text: 'No hay locales para exportar',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar'
+      });
+      return;
+    }
+
+    // Preparar los datos para el Excel
+    const datosParaExportar = this.dataSource.data.map(local => ({
+      'Cliente': local.client?.nombre || 'No asignado',
+      'Nombre Local': local.nombre_local || 'No asignado',
+      'Dirección': local.direccion || 'No asignado',
+      'Comuna': local.comuna?.comuna_nombre || 'No asignado',
+      'Región': local.region?.region_nombre || 'No asignado',
+      'Sobreprecio': `${local.sobreprecio || 0}%`,
+      'Valor Local': local.valorPorLocal ? `$${local.valorPorLocal.toLocaleString('es-CL')}` : '$0',
+      'Teléfono': local.telefono || 'No asignado',
+      'Email Local': local.email_local || 'No asignado',
+      'Email Encargado': local.email_encargado || 'No asignado',
+      'Nombre Encargado': local.nombre_encargado || 'No asignado',
+      'Latitud': local.latitud || 'No asignado',
+      'Longitud': local.longitud || 'No asignado'
+    }));
+
+    // Crear el libro de Excel
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(datosParaExportar);
+
+    // Ajustar el ancho de las columnas
+    const columnsWidths = [
+      { wch: 30 }, // Cliente
+      { wch: 30 }, // Nombre Local
+      { wch: 40 }, // Dirección
+      { wch: 20 }, // Comuna
+      { wch: 25 }, // Región
+      { wch: 15 }, // Sobreprecio
+      { wch: 15 }, // Valor Local
+      { wch: 15 }, // Teléfono
+      { wch: 30 }, // Email Local
+      { wch: 30 }, // Email Encargado
+      { wch: 30 }, // Nombre Encargado
+      { wch: 15 }, // Latitud
+      { wch: 15 }, // Longitud
+    ];
+    worksheet['!cols'] = columnsWidths;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Locales');
+
+    // Generar el archivo y descargarlo
+    const fecha = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `Locales_${fecha}.xlsx`);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      title: '¡Éxito!',
+      text: 'El archivo Excel se ha descargado correctamente',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
     });
   }
 }

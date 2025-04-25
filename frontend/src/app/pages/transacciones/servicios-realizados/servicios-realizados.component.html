@@ -15,7 +15,7 @@
       <form [formGroup]="programacionForm" (ngSubmit)="onSubmit()">
         <!-- Selector de clientes solo para Gruman -->
         @if (isGruman) {
-          <mat-form-field class="w-100">
+          <mat-form-field appearance="outline" class="w-100">
             <mat-label>Cliente</mat-label>
             <mat-select formControlName="clientId">
               <mat-option>Seleccione un cliente</mat-option>
@@ -29,13 +29,13 @@
         }
 
         <!-- Selector de tipo de servicio -->
-        <mat-form-field class="w-100">
+        <mat-form-field appearance="outline" class="w-100">
           <mat-label>Tipo de Servicio</mat-label>
           <mat-select formControlName="tipoServicio">
-            <mat-option>Seleccione un tipo de servicio</mat-option>
-            @for (tipo of tiposServicio; track tipo.id) {
-              <mat-option [value]="tipo.id">{{tipo.nombre}}</mat-option>
-            }
+            <mat-option value="todos">Todos</mat-option>
+            <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
+              {{ tipo.nombre }}
+            </mat-option>
           </mat-select>
           <mat-error *ngIf="programacionForm.get('tipoServicio')?.hasError('required')">
             Debe seleccionar un tipo de servicio
@@ -43,7 +43,7 @@
         </mat-form-field>
 
         <!-- Selector de tipo de solicitud -->
-        <mat-form-field class="w-100">
+        <mat-form-field appearance="outline" class="w-100">
           <mat-label>Tipo de Solicitud</mat-label>
           <mat-select formControlName="tipoSolicitud">
             <mat-option>Seleccione un tipo de solicitud</mat-option>
@@ -89,18 +89,17 @@
 
         <!-- Mes de Facturación -->
         <div class="row" *ngIf="programacionForm.get('tipoBusqueda')?.value === 'mesFacturacion'">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Mes de Facturación</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field *ngIf="programacionForm.get('tipoBusqueda')?.value === 'mesFacturacion'">
+          <div class="col-12 d-flex justify-content-center">
+            <div class="col-md-4">
+              <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Mes de Facturación</mat-label>
                 <mat-select formControlName="mesFacturacion">
-                    @for (mes of meses; track mes.mes) {
-                        <mat-option [value]="mes.mes">{{ mes.mes }}</mat-option>
-                    }
+                  @for (mes of meses; track mes.mes) {
+                    <mat-option [value]="mes.mes">{{ mes.mes }}</mat-option>
+                  }
                 </mat-select>
-            </mat-form-field>
+              </mat-form-field>
+            </div>
           </div>
         </div>
 
@@ -135,7 +134,15 @@
     </mat-card-header>
 
     <mat-card-content class="p-24">
-      <div >
+      <!-- Botón de exportar al principio -->
+      <div class="action-buttons mb-3">
+        <button mat-stroked-button color="primary" (click)="exportarExcel()">
+          <mat-icon>file_download</mat-icon>
+          Exportar a Excel
+        </button>
+      </div>
+
+      <div>
         <table mat-table [dataSource]="serviciosRealizados" class="w-100">
           <!-- ID Column -->
           <ng-container matColumnDef="id">

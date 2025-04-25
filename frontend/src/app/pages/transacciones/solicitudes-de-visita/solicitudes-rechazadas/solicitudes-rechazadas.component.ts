@@ -16,6 +16,8 @@ import { EspecialidadesService } from 'src/app/services/especialidades.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-solicitudes-rechazadas',
@@ -41,7 +43,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         <div class="row justify-content-between m-b-8">
           <div class="col-sm-8">
             <h2 class="m-0">Solicitudes Rechazadas</h2>
-         
           </div>
           <div class="col-sm-4">
             <mat-form-field appearance="outline" class="w-100 hide-hint">
@@ -50,6 +51,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
               <mat-icon matPrefix>search</mat-icon>
             </mat-form-field>
           </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="action-buttons my-3">
+          <button mat-stroked-button color="primary" (click)="exportarExcel()">
+            <mat-icon>file_download</mat-icon>
+            Exportar a Excel
+          </button>
         </div>
 
         <!-- Indicador de carga -->
@@ -64,7 +73,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
           <div *ngIf="dataSource.data.length === 0" class="no-data-message">
             <mat-icon>event_busy</mat-icon>
             <p>No hay solicitudes rechazadas para mostrar</p>
-          
             <p class="text-muted">Las solicitudes rechazadas aparecerán aquí cuando estén disponibles</p>
           </div>
 
@@ -388,8 +396,7 @@ export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit, On
     return new Date(date).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-    
+      day: 'numeric'
     });
   }
 
@@ -408,5 +415,66 @@ export class SolicitudesRechazadasComponent implements OnInit, AfterViewInit, On
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  exportarExcel() {
+    if (!this.dataSource || !this.dataSource.data || this.dataSource.data.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sin datos',
+        text: 'No hay datos para exportar a Excel'
+      });
+      return;
+    }
+
+    // Preparar los datos para la exportación
+    const datosParaExportar = this.dataSource.data.map(solicitud => ({
+      'Número de Solicitud': solicitud.id,
+      'Cliente': solicitud.client?.nombre || 'No asignado',
+      'Local': solicitud.local?.nombre_local || 'No asignado',
+      'Fecha de Ingreso': this.formatDate(solicitud.fechaIngreso),
+      'Ticket Gruman': solicitud.ticketGruman || 'Sin ticket',
+      'Especialidad': this.especialidades[solicitud.especialidad] || 'No especificada',
+      'Generado por': solicitud.generada_por ? `${solicitud.generada_por.name} ${solicitud.generada_por.lastName}` : 'Sin usuario',
+      'Rechazado por': solicitud.rechazada_por ? `${solicitud.rechazada_por.name} ${solicitud.rechazada_por.lastName}` : 'No especificado',
+      'Motivo de Rechazo': solicitud.observacion_rechazo || 'Sin motivo especificado',
+      'Observaciones': solicitud.observaciones || 'Sin observaciones'
+    }));
+
+    // Crear el libro de trabajo y la hoja
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosParaExportar);
+
+    // Ajustar el ancho de las columnas
+    const wscols = [
+      { wch: 10 }, // Número de Solicitud
+      { wch: 30 }, // Cliente
+      { wch: 30 }, // Local
+      { wch: 15 }, // Fecha de Ingreso
+      { wch: 15 }, // Ticket Gruman
+      { wch: 20 }, // Especialidad
+      { wch: 30 }, // Generado por
+      { wch: 30 }, // Rechazado por
+      { wch: 50 }, // Motivo de Rechazo
+      { wch: 50 }  // Observaciones
+    ];
+    ws['!cols'] = wscols;
+
+    // Agregar la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes Rechazadas');
+
+    // Generar el archivo y descargarlo
+    const fechaActual = new Date().toISOString().split('T')[0];
+    const nombreArchivo = `Solicitudes_Rechazadas_${fechaActual}.xlsx`;
+    XLSX.writeFile(wb, nombreArchivo);
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      icon: 'success',
+      title: 'Exportación exitosa',
+      text: 'El archivo Excel se ha descargado correctamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
   }
 } 

@@ -14,6 +14,14 @@
         </div>
       </div>
 
+      <!-- Botones de acción -->
+      <div class="action-buttons my-3">
+        <button mat-stroked-button color="primary" (click)="exportarExcel()">
+          <mat-icon>file_download</mat-icon>
+          Exportar a Excel
+        </button>
+      </div>
+
       <!-- Indicador de carga -->
       <div *ngIf="loading" class="loading-container">
         <mat-spinner diameter="40"></mat-spinner>
