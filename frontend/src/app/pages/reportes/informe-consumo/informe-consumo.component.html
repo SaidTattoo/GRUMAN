@@ -1,0 +1,111 @@
+<mat-card class="cardWithShadow">
+  <mat-card-header>
+    <div class="d-flex justify-content-start align-items-baseline gap-5">
+      <mat-form-field appearance="outline">
+        <mat-label>Selecciona cliente</mat-label>
+        <input type="text" placeholder="Pick one" aria-label="Number" matInput [formControl]="firstControl"
+          [matAutocomplete]="auto" />
+        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+          @for(firstoption of filteredOptions | async; track
+          firstoption) {
+          <mat-option [value]="firstoption">
+            {{ firstoption }}
+          </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="margin: 0 10px;">
+        <mat-label>Fecha de inicio</mat-label>
+        <input matInput [matDatepicker]="pickerInicio" />
+        <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+        <mat-datepicker #pickerInicio></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="margin-right: 10px;">
+        <mat-label>Fecha de fin</mat-label>
+        <input matInput [matDatepicker]="pickerFin" />
+        <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFin></mat-datepicker>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" class="mt-2">
+        Buscar
+      </button>
+    </div>
+  </mat-card-header>
+  <mat-card-content class="p-24">
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+      <!-- Requerimiento Column -->
+      <ng-container matColumnDef="requerimiento">
+        <th mat-header-cell *matHeaderCellDef> Requerimiento </th>
+        <td mat-cell *matCellDef="let element"> {{element.requerimiento}} </td>
+      </ng-container>
+
+      <!-- Servicio Column -->
+      <ng-container matColumnDef="servicio">
+        <th mat-header-cell *matHeaderCellDef> Servicio </th>
+        <td mat-cell *matCellDef="let element"> {{element.servicio}} </td>
+      </ng-container>
+
+      <!-- Local Column -->
+      <ng-container matColumnDef="local">
+        <th mat-header-cell *matHeaderCellDef> Local </th>
+        <td mat-cell *matCellDef="let element"> {{element.local}} </td>
+      </ng-container>
+
+      <!-- Repuesto Column -->
+      <ng-container matColumnDef="repuesto">
+        <th mat-header-cell *matHeaderCellDef> Repuesto </th>
+        <td mat-cell *matCellDef="let element"> {{element.repuesto}} </td>
+      </ng-container>
+
+      <!-- Cliente Column -->
+      <ng-container matColumnDef="cliente">
+        <th mat-header-cell *matHeaderCellDef> Cliente </th>
+        <td mat-cell *matCellDef="let element"> {{element.cliente}} </td>
+      </ng-container>
+
+      <!-- Cantidad Column -->
+      <ng-container matColumnDef="cantidad">
+        <th mat-header-cell *matHeaderCellDef> Cantidad </th>
+        <td mat-cell *matCellDef="let element"> {{element.cantidad}} </td>
+      </ng-container>
+
+      <!-- Precio Compra Column -->
+      <ng-container matColumnDef="precioCompra">
+        <th mat-header-cell *matHeaderCellDef> Precio Compra </th>
+        <td mat-cell *matCellDef="let element"> {{element.precioCompra | currency}} </td>
+      </ng-container>
+
+      <!-- Precio Venta Column -->
+      <ng-container matColumnDef="precioVenta">
+        <th mat-header-cell *matHeaderCellDef> Precio Venta </th>
+        <td mat-cell *matCellDef="let element"> {{element.precioVenta | currency}} </td>
+      </ng-container>
+
+      <!-- Valor Column -->
+      <ng-container matColumnDef="valor">
+        <th mat-header-cell *matHeaderCellDef> Valor </th>
+        <td mat-cell *matCellDef="let element"> {{element.valor | currency}} </td>
+      </ng-container>
+
+      <!-- Fecha Column -->
+      <ng-container matColumnDef="fecha">
+        <th mat-header-cell *matHeaderCellDef> Fecha </th>
+        <td mat-cell *matCellDef="let element"> {{element.fecha | date}} </td>
+      </ng-container>
+
+      <!-- Visita Tecnico Column -->
+      <ng-container matColumnDef="visitaTecnico">
+        <th mat-header-cell *matHeaderCellDef> Visita Técnico </th>
+        <td mat-cell *matCellDef="let element"> {{element.visitaTecnico}} </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+  </mat-card-content>
+</mat-card>
