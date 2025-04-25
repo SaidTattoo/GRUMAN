@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { ActivosComponent } from "./activos/activos.component";
 import { InformeConsumoComponent } from "./informe-consumo/informe-consumo.component";
+import { InformeConsumoFacturacionComponent } from "./informe-consumo-facturacion/informe-consumo-facturacion.component";
 
 export const REPORTES_ROUTES: Routes = [
   {
@@ -19,7 +20,7 @@ export const REPORTES_ROUTES: Routes = [
   },
   {
     path: 'repuestos-por-mes',
-    component: InformeConsumoComponent,
+    component: InformeConsumoFacturacionComponent,
     data: {
       title: 'Reporte de repuestos por mes',
     },
