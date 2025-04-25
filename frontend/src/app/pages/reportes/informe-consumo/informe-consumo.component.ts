@@ -13,11 +13,11 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { CommonModule } from '@angular/common';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, CurrencyPipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { StorageService } from 'src/app/services/storage.service';
 import { InformeConsumoService } from './informe-consumo.service';
-
+import { MatTooltipModule } from '@angular/material/tooltip';
 export interface ConsumoData {
   requerimiento: string;
   tipo_servicio: string;
@@ -52,7 +52,9 @@ export interface ConsumoData {
     MatAutocompleteModule,
     ReactiveFormsModule,
     AsyncPipe,
-    MatPaginatorModule
+    MatPaginatorModule,
+    CurrencyPipe,
+    MatTooltipModule
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },

@@ -11,10 +11,17 @@ export const REPORTES_ROUTES: Routes = [
     },
   },
   {
-    path: 'informe-de-consumo',
+    path: 'repuestos-por-dia',
     component: InformeConsumoComponent,
     data: {
-      title: 'Informe de consumo',
+      title: 'Reporte de repuestos por día',
+    },
+  },
+  {
+    path: 'repuestos-por-mes',
+    component: InformeConsumoComponent,
+    data: {
+      title: 'Reporte de repuestos por mes',
     },
   },
 ];

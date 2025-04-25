@@ -243,9 +243,14 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 route: 'reportes/reporte-de-activos',
               },
               {
-                displayName: 'Informe de consumo',
+                displayName: 'Reporte de repuestos por día',
                 iconName: 'graph',
-                route: 'reportes/informe-de-consumo',
+                route: 'reportes/repuestos-por-dia',
+              },
+              {
+                displayName: 'Reporte de repuestos por mes',
+                iconName: 'calendar',
+                route: 'reportes/repuestos-por-mes',
               },
             ],
           },
