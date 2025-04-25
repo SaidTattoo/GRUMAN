@@ -11,6 +11,7 @@ import { ModificarSolicitudComponent } from './modificar-solicitud/modificar-sol
 import { VerSolicitudComponent } from './ver-solicitud/ver-solicitud.component';
 import { CargaMasivaComponent } from './carga-masiva/carga-masiva.component';
 import { SolicitudesComponent } from './solicitudes/solicitudes.component';
+import { SolicitudesAtendidasEnProcesoComponent } from './solicitudes-atendidas-en-proceso/solicitudes-atendidas-en-proceso.component';
 
 export const SolicitudesDeVisitaRoutes: Routes = [
   {
@@ -53,6 +54,13 @@ export const SolicitudesDeVisitaRoutes: Routes = [
     component: SolicitudesValidadasComponent,
     data: {
       title: 'Solicitudes Validadas'
+    }
+  },
+  {
+    path: 'atendidas-en-proceso',
+    component: SolicitudesAtendidasEnProcesoComponent,
+    data: {
+      title: 'Solicitudes Atendidas en Proceso'
     }
   },
   {

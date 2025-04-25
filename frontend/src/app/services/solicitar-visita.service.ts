@@ -21,7 +21,9 @@ export class SolicitarVisitaService {
     return this.http.get<any>(`${this.apiUrl}solicitar-visita`);
   }
 
- 
+  getSolicitudesAtendidasEnProceso(){
+    return this.http.get<any>(`${this.apiUrl}solicitar-visita/atendidas_proceso`);
+  }
   getSolicitudesAprobadas(): Observable<any> {
     console.log('Solicitando aprobadas...');
     return this.http.get<any>(`${this.apiUrl}solicitar-visita/aprobadas`).pipe(
@@ -192,5 +194,14 @@ export class SolicitarVisitaService {
   }
   getSolicitudesVisitaMultifiltro(params: any): Observable<any> {
     return this.http.get(`${this.apiUrl}solicitar-visita/solicitudes-visita-multifiltro`, { params });
+  }
+
+
+  deleteSolicitud(id:number){
+    return this.http.delete(`${this.apiUrl}solicitar-visita/${id}`)
+  }
+
+  cambiarEstado(id: number, estado: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}solicitar-visita/${id}/estado`, { status: estado });
   }
 }

@@ -112,7 +112,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
               </ng-container>
               <ng-container matColumnDef="validada_por">
                 <th mat-header-cell *matHeaderCellDef>Validada por</th>
-                <td mat-cell *matCellDef="let row">{{row.validada_por.name  || ''}} {{row.validada_por.lastName  || ''}}</td>
+                <td mat-cell *matCellDef="let row"> {{row.validada_por ? (row.validada_por.name + ' ' + row.validada_por.lastName) : 'Sin usuario'}}</td>
               </ng-container>
               <ng-container matColumnDef="fecha_hora_validacion">
                 <th mat-header-cell *matHeaderCellDef>Fecha y hora validación</th>

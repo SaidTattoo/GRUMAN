@@ -852,10 +852,10 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
 
     async getSolicitudesDelDia(): Promise<SolicitarVisita[]> {
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Start of day
+        today.setHours(0, 0, 0, 0); // Inicio del día (00:00:00)
         
-        const endOfDay = new Date(today);
-        endOfDay.setHours(23, 59, 59, 999); 
+        const endOfDayPlusFourHours = new Date(today);
+        endOfDayPlusFourHours.setHours(28, 0, 0, 0); // Fin del día + 4 horas (04:00:00 del día siguiente)
         
         try {
             const data = await this.solicitarVisitaRepository.find({ 
@@ -869,18 +869,17 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                         SolicitudStatus.ATENDIDA_EN_PROCESO 
                     ]),
                     estado: true,
-                    fechaVisita: Between(today, endOfDay)
+                    fechaVisita: Between(today, endOfDayPlusFourHours)
                 },
                 relations: ['local', 'client', 'generada_por', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
                 order: { id: 'DESC' }
             });
-
+    
             return data || [];
         } catch (error) {
             throw error;
         }
     }
-
     async getSolicitudesDelDia2(
         clientId: string, 
         fechaInicio: string, 

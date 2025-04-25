@@ -189,6 +189,11 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             iconName: 'user-check',
             route: 'transacciones/solicitudes-de-visita/validadas',
           },
+          {
+              displayName:'Visitas atendidas en proceso',
+              iconName: 'user-check',
+              route:'transacciones/solicitudes-de-visita/atendidas-en-proceso'
+          }
         ],
       },
       {

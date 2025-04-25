@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query, NotFoundException, InternalServerErrorException, BadRequestException, Res, Header, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Get, Param, Put, Query, NotFoundException, InternalServerErrorException, BadRequestException, Res, Header, DefaultValuePipe, ParseIntPipe, Delete, Patch } from '@nestjs/common';
 import { Response } from 'express';
 import { SolicitarVisitaService } from './solicitar-visita.service';
 
@@ -77,6 +77,12 @@ export class SolicitarVisitaController {
   @Get('finalizadas')
   async getSolicitudesFinalizadas() {
     return this.solicitarVisitaService.getSolicitudesFinalizadas();
+  }
+
+
+  @Get('atendidas_proceso')
+  async getSolicitudesAtendidasProceso() {
+    return this.solicitarVisitaService.getSolicitudesAtendidasProceso();
   }
 
   @Get('validadas')
@@ -460,5 +466,25 @@ export class SolicitarVisitaController {
   @Post('subir-carga-masiva')
   async subirCargaMasiva(@Body() datos: any[]) {
     return this.solicitarVisitaService.subirCargaMasiva(datos);
+  }
+  @Delete(':id')
+  async deleteSolicitud(@Param('id') id: number) {  
+    return this.solicitarVisitaService.deleteSolicitud(id);
+  }
+
+  @Patch(':id/estado')
+  async cambiarEstado(
+    @Param('id') id: number,
+    @Body() data: { status: string }
+  ) {
+    try {
+      await this.solicitarVisitaService.cambiarEstadoSolicitud(id, data.status);
+      return {
+        success: true,
+        message: 'Estado actualizado correctamente'
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Error al cambiar el estado de la solicitud');
+    }
   }
 }

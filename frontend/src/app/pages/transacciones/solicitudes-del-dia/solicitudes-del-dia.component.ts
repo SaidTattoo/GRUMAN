@@ -12,6 +12,7 @@ import { TecnicoSelectionModalComponent } from './tecnico-selection-modal/tecnic
 import { MatTooltipModule } from '@angular/material/tooltip';
 import Swal from 'sweetalert2';
 import { MatTableDataSource } from '@angular/material/table';
+import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
   selector: 'app-solicitudes-del-dia',
@@ -54,15 +55,19 @@ import { MatTableDataSource } from '@angular/material/table';
   `]
 })
 export class SolicitudesDelDiaComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'cliente', 'local', 'tipoServicio',   'estado','generado_por', 'tecnico', 'tecnico_2' ];
+  displayedColumns: string[] = ['id', 'cliente', 'local', 'tipoServicio',   'estado','generado_por', 'tecnico', 'tecnico_2' ,'acciones'];
   dataSource: MatTableDataSource<any>;
   private originalData: any[] = [];
+  currentUser: any;
 
   constructor(
     private solicitarVisitaService: SolicitarVisitaService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private storage: StorageService
   ) {
     this.dataSource = new MatTableDataSource();
+    this.currentUser = this.storage.getCurrentUser();
+    console.log('Constructor CurrentUser:', this.currentUser);
   }
 
   ngOnInit() {
@@ -204,5 +209,83 @@ export class SolicitudesDelDiaComponent implements OnInit {
         });
       }
     });
+  }
+
+  canDeleteSolicitud(solicitud: any): boolean {
+    // Agregamos logs para debug
+    console.log('Current User:', this.currentUser);
+    console.log('Generada Por:', solicitud.generada_por);
+    console.log('Status:', solicitud.status);
+    
+    // Estados permitidos para eliminar
+    const allowedStatuses = [
+      'aprobada',
+      'en_servicio',
+      'atendida_en_proceso',
+      'pendiente'
+    ];
+    
+    // Verificar tanto el usuario como el status
+    const isOwner = this.currentUser?.id === solicitud.generada_por?.id;
+    const hasValidStatus = allowedStatuses.includes(solicitud.status?.toLowerCase());
+    
+    const canDelete = isOwner && hasValidStatus;
+    console.log('Can Delete:', canDelete, '(isOwner:', isOwner, ', hasValidStatus:', hasValidStatus, ')');
+    
+    return canDelete;
+  }
+
+  deleteSolicitud(solicitud: any): void {
+    if (!this.canDeleteSolicitud(solicitud)) {
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `¿Deseas eliminar la solicitud #${solicitud.id}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+         this.solicitarVisitaService.deleteSolicitud(solicitud.id ).subscribe({
+          next: () => {
+            Swal.fire('Eliminado', 'La solicitud ha sido eliminada', 'success');
+            this.cargarSolicitudesDelDia();
+          },
+          error: (error) => {
+            console.error('Error deleting solicitud:', error);
+            Swal.fire('Error', 'No se pudo eliminar la solicitud', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  canChangeToAtendidaEnProceso(element: any): boolean {
+    return element.status?.toLowerCase() === 'en_servicio';
+  }
+
+  async cambiarAAtendidaEnProceso(element: any) {
+    const result = await Swal.fire({
+      title: '¿Cambiar estado?',
+      text: `¿Deseas cambiar el estado de la solicitud #${element.id} a "Atendida en Proceso"?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cambiar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await this.solicitarVisitaService.cambiarEstado(element.id, 'atendida_en_proceso').toPromise();
+        await Swal.fire('¡Éxito!', 'El estado ha sido actualizado', 'success');
+        this.cargarSolicitudesDelDia();
+      } catch (error) {
+        console.error('Error al cambiar estado:', error);
+        await Swal.fire('Error', 'No se pudo cambiar el estado de la solicitud', 'error');
+      }
+    }
   }
 } 
