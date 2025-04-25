@@ -13,24 +13,24 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { CommonModule } from '@angular/common';
-
 import { AsyncPipe } from '@angular/common';
-
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { StorageService } from 'src/app/services/storage.service';
+import { InformeConsumoService } from './informe-consumo.service';
 
 export interface ConsumoData {
   requerimiento: string;
-  servicio: string;
+  tipo_servicio: string;
   local: string;
   repuesto: string;
   cliente: string;
+  cliente_id: string;
   cantidad: number;
-  precioCompra: number;
-  precioVenta: number;
-  valor: number;
-  fecha: Date;
-  visitaTecnico: string;
+  precio_compra: number;
+  precio_venta_cliente: number;
+  valor_cliente: number;
+  fechaVisita: Date;
+  nombre_tecnico: string;
 }
 
 @Component({
@@ -62,49 +62,61 @@ export interface ConsumoData {
   styleUrl: './informe-consumo.component.scss'
 })
 export class InformeConsumoComponent implements OnInit {
-  constructor(private storage: StorageService) { }
-
-  private user: any;
-  private storageSubscription: Subscription;
-
+  informeForm: FormGroup;
+  filteredOptions: Observable<string[]>;
   dataSource = new MatTableDataSource<ConsumoData>([]);
   @ViewChild(MatPaginator) paginator: MatPaginator;
-
-  firstControl = new FormControl('');
+  private user: any;
+  private storageSubscription: Subscription;
   firstoption: string[] = [];
-  filteredOptions: Observable<string[]>;
-  options: string[] = ['Cliente 1', 'Cliente 2', 'Cliente 3'];
+  originalOptions: string[] = [];
+  selectedCompanyName: string = '';
 
   displayedColumns: string[] = [
     'requerimiento',
-    'servicio',
+    'tipo_servicio',
     'local',
     'repuesto',
     'cliente',
     'cantidad',
-    'precioCompra',
-    'precioVenta',
-    'valor',
-    'fecha',
-    'visitaTecnico'
+    'precio_compra',
+    'precio_venta_cliente',
+    'valor_cliente',
+    'fechaVisita',
+    'nombre_tecnico'
   ];
 
-  startDate = new Date();
-  endDate = new Date();
+  constructor(
+    private fb: FormBuilder,
+    private storage: StorageService,
+    private informeConsumoService: InformeConsumoService
+  ) {
+    this.informeForm = this.fb.group({
+      cliente: ['', Validators.required],
+      fechaInicio: [null, Validators.required],
+      fechaFin: [null, Validators.required]
+    });
+
+    this.filteredOptions = this.informeForm.get('cliente')!.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        if (!value) {
+          return this.originalOptions;
+        }
+        return this._filter(value);
+      })
+    );
+  }
 
   ngOnInit() {
     this.storageSubscription = this.storage.user$.subscribe((user) => {
       if (user) {
         this.user = user;
         this.firstoption = this.user.companies.map((company: any) => company.nombre.toLowerCase() === 'gruman' ? 'TODOS' : company.nombre);
+        this.originalOptions = [...this.firstoption];
       }
     });
-    // first option
-    this.filteredOptions = this.firstControl.valueChanges.pipe(
-      startWith(''),
-      map((value) => this._filter(value || ''))
-    );
-    this.loadSampleData();
+
   }
 
   ngAfterViewInit() {
@@ -113,26 +125,58 @@ export class InformeConsumoComponent implements OnInit {
 
   private _filter(value: string): string[] {
     const filterValue = value.toLowerCase();
-    return this.options.filter(option => option.toLowerCase().includes(filterValue));
+    return this.originalOptions.filter(option => option.toLowerCase().includes(filterValue));
   }
 
-  private loadSampleData() {
-    const sampleData: ConsumoData[] = [
-      {
-        requerimiento: 'REQ001',
-        servicio: 'Mantenimiento',
-        local: 'Local 1',
-        repuesto: 'Repuesto A',
-        cliente: 'Cliente 1',
-        cantidad: 2,
-        precioCompra: 100,
-        precioVenta: 150,
-        valor: 300,
-        fecha: new Date(),
-        visitaTecnico: 'Técnico 1'
+  onCompanySelected(event: any) {
+    if (!event.option.value) {
+      this.informeForm.patchValue({
+        cliente: null
+      });
+      this.selectedCompanyName = '';
+      return;
+    }
+
+    const selectedCompany = this.user.companies.find((company: any) => company.nombre === event.option.value);
+    this.selectedCompanyName = event.option.value;
+    this.informeForm.patchValue({
+      cliente: selectedCompany ? selectedCompany.id : null
+    });
+  }
+
+  setFilter() {
+    if (this.informeForm.invalid) {
+      alert('Por favor, complete todos los campos requeridos');
+      return;
+    }
+
+    const { cliente, fechaInicio, fechaFin } = this.informeForm.value;
+    const fechaInicioStr = this.formatDate(fechaInicio);
+    const fechaFinStr = this.formatDate(fechaFin);
+
+    this.informeConsumoService.getInformeConsumo(
+      fechaInicioStr,
+      fechaFinStr,
+      cliente
+    ).subscribe(
+      (data: any) => {
+        this.dataSource.data = data[0];
       },
-      // Agrega más datos de ejemplo según sea necesario
-    ];
-    this.dataSource.data = sampleData;
+      (error: any) => {
+        console.error('Error al obtener el informe:', error);
+      }
+    );
+  }
+
+  private formatDate(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  clearClient() {
+    this.informeForm.patchValue({
+      cliente: null
+    });
+    this.selectedCompanyName = '';
+    this.informeForm.get('cliente')?.setValue('');
   }
 }
