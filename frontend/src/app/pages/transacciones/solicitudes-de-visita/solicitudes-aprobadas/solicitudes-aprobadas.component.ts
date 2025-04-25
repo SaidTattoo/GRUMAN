@@ -86,22 +86,17 @@ import Swal from 'sweetalert2';
                 <td mat-cell *matCellDef="let row">{{row.id}}</td>
               </ng-container>
 
-              <!-- Logo Column -->
-              <ng-container matColumnDef="logo">
-                <th mat-header-cell *matHeaderCellDef>Logo</th>
-                <td mat-cell *matCellDef="let row" class="logo-cell">
-                  <img 
-                    [src]="row.client?.logo || 'assets/images/no-image.png'" 
-                    [alt]="row.client?.nombre || 'Logo cliente'"
-                    class="client-logo"
-                    (error)="onImageError($event)">
-                </td>
-              </ng-container>
+           
 
               <!-- Fecha Column -->
               <ng-container matColumnDef="fechaIngreso">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
                 <td mat-cell *matCellDef="let row">{{row.fechaIngreso | date:'dd/MM/yyyy'}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="fechaVisita">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Visita</th>
+                <td mat-cell *matCellDef="let row">{{row.fechaVisita | date:'dd/MM/yyyy'}}</td>
               </ng-container>
 
               <!-- Cliente Column -->
@@ -260,10 +255,10 @@ import Swal from 'sweetalert2';
 export class SolicitudesAprobadasComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'id',
-    'logo',
     'cliente',
     'local',
     'fechaIngreso',
+    'fechaVisita',
     'ticketGruman',
     'especialidad',
     'generada_por',

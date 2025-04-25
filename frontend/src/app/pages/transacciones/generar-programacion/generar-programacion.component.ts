@@ -341,91 +341,63 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.programacionForm.valid) {
-      const formValues = this.programacionForm.value;
-      
-      // Get the selected date and current time
-      const selectedDate = new Date(formValues.fechaIngreso);
-      const now = new Date();
-      
-      // Set the time components from the current time
-      selectedDate.setHours(now.getHours());
-      selectedDate.setMinutes(now.getMinutes());
-      selectedDate.setSeconds(now.getSeconds());
-      selectedDate.setMilliseconds(now.getMilliseconds());
-
-      // Find selected items for display
-      const selectedCliente = this.clientes.find(c => c.id === formValues.clientId);
-      const selectedLocal = this.locales.find(l => l.id === formValues.localId);
-      const selectedTipoServicio = this.tiposServicio.find(t => t.id === formValues.tipoServicioId);
-      const selectedEspecialidad = this.especialidades.find(e => e.id === formValues.especialidadId);
-      const selectedTecnico1 = this.tecnicos.find(t => t.id === formValues.tecnico_asignado_id);
-      const selectedTecnico2 = formValues.tecnico_asignado_id_2 ? this.tecnicos.find(t => t.id === formValues.tecnico_asignado_id_2) : null;
-      const selectedVehiculo = this.vehiculos.find(v => v.id === formValues.vehiculoId);
-
-      // Format the date with the current time
-      const dateTimeStr = selectedDate.toLocaleString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-
-      Swal.fire({
-        title: '¿Confirmar programación?',
-        html: `
-          <div class="text-left">
-            <p><strong>Cliente:</strong> ${selectedCliente?.nombre || 'No seleccionado'}</p>
-            <p><strong>Local:</strong> ${selectedLocal?.nombre_local || 'No seleccionado'}</p>
-            <p><strong>Tipo de Servicio:</strong> ${selectedTipoServicio?.nombre || 'No seleccionado'}</p>
-            <p><strong>Especialidad:</strong> ${selectedEspecialidad?.nombre || 'No seleccionada'}</p>
-            <p><strong>Técnico Principal:</strong> ${selectedTecnico1 ? `${selectedTecnico1.name} ${selectedTecnico1.lastName}` : 'No seleccionado'}</p>
-            ${selectedTecnico2 ? `<p><strong>Técnico Secundario:</strong> ${selectedTecnico2.name} ${selectedTecnico2.lastName}</p>` : ''}
-            <p><strong>Vehículo:</strong> ${selectedVehiculo?.patente || 'No seleccionado'}</p>
-            <p><strong>Fecha:</strong> ${dateTimeStr}</p>
-          </div>
-        `,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, generar programación',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Create the request object with the proper date
-          const solicitud = {
-            clientId: formValues.clientId,
-            localId: formValues.localId,
-            tipoServicioId: formValues.tipoServicioId,
-            sectorTrabajoId: formValues.sectorTrabajoId,
-            especialidadId: formValues.especialidadId,
-            tecnicoId: formValues.tecnico_asignado_id,
-            tecnicoId2: formValues.tecnico_asignado_id_2 || null,
-            vehiculoId: formValues.vehiculoId,
-            fecha: selectedDate.toISOString(), // Send as ISO string to preserve time
-            status: SolicitudStatus.APROBADA,
-            tipo_mantenimiento: formValues.tipo_mantenimiento
-          };
-
-          // Log the date being sent for debugging
-          console.log('Fecha a enviar:', solicitud.fecha);
-
-          this.solicitarVisitaService.crearSolicitudVisita(solicitud).subscribe({
-            next: (response) => {
-              this.showSuccessMessage('Programación generada exitosamente');
-              this.router.navigate(['/transacciones/solicitudes-de-visita/solicitudes']);
-            },
-            error: (error) => {
-              console.error('Error al generar programación:', error);
-              this.showErrorMessage('Error al generar la programación');
-            }
-          });
-        }
-      });
-    } else {
+    if (this.programacionForm.invalid) {
       this.markFormGroupTouched(this.programacionForm);
+      this.showErrorMessage('Por favor, complete todos los campos requeridos correctamente');
+      return;
     }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Quieres crear la programación?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Crear',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.loading = true;
+        const formData = this.programacionForm.value;
+        
+        // Mantener el status original del formulario ('programada')
+        const programacionData = {
+          ...formData,
+          aprobada_por_id: this.currentUser?.id,
+          generada_por_id: this.currentUser?.id
+        };
+        
+        this.solicitarVisitaService.crearSolicitudVisita(programacionData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res: any) => {
+            console.log('Solicitud de visita creada:', res);
+            Swal.fire({
+              title: 'Éxito',
+              html: `
+                <div style="text-align: left">
+                  <p><strong>Solicitud de visita generada correctamente</strong></p>
+                  <p><strong>N° Requerimiento:</strong> ${res.data.id}</p>
+                  <p><strong>Fecha:</strong> ${this.formatDate(res.data.fechaVisita)}</p>
+                </div>
+              `,
+              icon: 'success'
+            });
+            this.router.navigate(['/transacciones/listado-programacion']);
+          },
+          error: (error) => {
+            console.error('Error al crear la solicitud de visita:', error);
+            const errorMsg = error.error?.message || 'El cliente ya tiene una solicitud de visita programada en este mes';
+            this.showErrorMessage(errorMsg);
+            this.loading = false;
+          },
+          complete: () => {
+            this.loading = false;
+          }
+        });
+      }
+    });
   }
 
   formatDate(date: string) {

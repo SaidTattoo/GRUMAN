@@ -12,7 +12,29 @@
   } @else {
     <h2>Modificar Solicitud Numero: <strong>{{solicitud?.id}}</strong></h2>
   }
+  @if (isAprobada) {
+    <!-- Banner de solicitud aprobada -->
   
+    <!-- Banner de cambio de fecha separado -->
+    <div class="change-date-banner mb-3" style="padding: 16px; background-color: #FAFAFA; border: 1px solid #E0E0E0; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center;">
+        <mat-icon style="margin-right: 8px; color: #757575;">event</mat-icon>
+        <span>Cambiar fecha de visita</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <mat-form-field appearance="outline" style="width: 200px; margin: 0;">
+          <mat-label>Nueva fecha de visita</mat-label>
+          <input matInput [matDatepicker]="changeDatePicker" [(ngModel)]="nuevaFechaVisita" [ngModelOptions]="{standalone: true}">
+          <mat-datepicker-toggle matIconSuffix [for]="changeDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #changeDatePicker></mat-datepicker>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="cambiarFechaVisita()" [disabled]="!nuevaFechaVisita">
+          <mat-icon>save</mat-icon>
+          Guardar
+        </button>
+      </div>
+    </div>
+  }
   <form [formGroup]="solicitudForm">
     <!-- Información del Cliente y Local -->
     <div class="section-title">Información General</div>
@@ -171,7 +193,7 @@
       <mat-form-field appearance="fill">
         <mat-label>Fecha de Visita</mat-label>
         @if (solicitud?.status === 'validada' || isRechazada || isAprobada) {
-          <input matInput [value]="solicitud?.fechaVisita | date:'HH:mm dd-MM-yyyy'" disabled>
+          <input matInput [value]="solicitud?.fechaVisita | date:'dd-MM-yyyy'" disabled>
         } @else {
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <input matInput [matDatepicker]="picker" formControlName="fechaVisita" required style="flex: 1;">
@@ -216,9 +238,16 @@
           @for (imagen of solicitud.imagenes; track $index) {
             <div class="image-item">
               <img [src]="imagen" 
-                  (click)="openPhotoViewer([imagen])" 
                   alt="Imagen de la solicitud"
                   class="solicitud-image">
+              <div class="image-actions">
+                <button mat-icon-button color="primary" (click)="openPhotoViewer([imagen])" matTooltip="Ver imagen">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" (click)="downloadPhotos([imagen])" matTooltip="Descargar imagen">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </div>
             </div>
           }
         </div>
@@ -331,16 +360,21 @@
 
                       <!-- Miniaturas de fotos -->
                       <div class="photos-container">
-                       
                           <div class="photo-grid">
                             <div class="photo-item" *ngFor="let foto of getItemFotos(subItem.id)?.fotos">
                               <img [src]="foto" 
-                                   (click)="openPhotoViewer([foto])" 
                                    [alt]="'Foto de ' + subItem.name"
                                    class="inspection-photo">
+                              <div class="image-actions">
+                                <button mat-icon-button color="primary" (click)="openPhotoViewer([foto])" matTooltip="Ver imagen">
+                                  <mat-icon>visibility</mat-icon>
+                                </button>
+                                <button mat-icon-button color="accent" (click)="downloadPhotos([foto])" matTooltip="Descargar imagen">
+                                  <mat-icon>download</mat-icon>
+                                </button>
+                              </div>
                             </div>
                           </div>
-                      
                       </div>
 
                       @if (showAddRepuestoForm[subItem.id]) {
@@ -658,11 +692,12 @@
           <mat-icon>cancel</mat-icon> Rechazar
         </button>
       } @else if (isAprobada) {
-        <!-- Banner informativo para solicitudes aprobadas -->
-        <div class="approved-message" style="color: #2196F3; padding: 10px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
-          <mat-icon style="vertical-align: middle; margin-right: 8px;">schedule</mat-icon>
-          Esta solicitud está aprobada y a la espera de la visita del técnico
+        <!-- Banner de solicitud aprobada -->
+        <div class="approved-banner mb-3" style="color: #2196F3; padding: 16px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; min-height: 56px;">
+          <mat-icon style="margin-right: 8px; height: 24px; width: 24px; font-size: 24px; line-height: 24px;">schedule</mat-icon>
+          <span style="line-height: 24px;">Esta solicitud está aprobada y a la espera de la visita del técnico</span>
         </div>
+
       } @else if (isRechazada) {
         <!-- Banner informativo para solicitudes rechazadas -->
         <div class="rejected-message" style="color: #F44336; padding: 15px; background-color: #FFEBEE; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%; flex-direction: column; margin-bottom: 15px;">

@@ -160,7 +160,7 @@ export class SolicitarVisitaService {
     async crearSolicitudVisita(solicitud: any): Promise<SolicitarVisita> {
         const solicitudVisita = new SolicitarVisita();
       
-      
+        console.log('##############',solicitud);
         // Busca y asigna el tipo de servicio seleccionado
         const tipoServicio = await this.tipoServicioRepository.findOne({ where: { id: solicitud.tipoServicioId } });
         solicitudVisita.tipoServicioId = tipoServicio.id;

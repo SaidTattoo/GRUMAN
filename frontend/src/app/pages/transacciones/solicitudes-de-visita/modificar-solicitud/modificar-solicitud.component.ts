@@ -354,6 +354,7 @@ export class ModificarSolicitudComponent implements OnInit {
     'presiones',
     'fecha'
   ];
+  nuevaFechaVisita: Date | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -1731,5 +1732,97 @@ export class ModificarSolicitudComponent implements OnInit {
   hasTemporaryRepuestos(): boolean {
     // Check if there are any temporary repuestos
     return Object.values(this.temporaryRepuestos).some(repuestos => repuestos && repuestos.length > 0);
+  }
+
+  cambiarFechaVisita(): void {
+    if (this.nuevaFechaVisita) {
+      this.solicitarVisitaService.updateSolicitudVisita(
+        Number(this.solicitudId),
+        { fechaVisita: this.nuevaFechaVisita }
+      ).subscribe({
+        next: () => {
+          Swal.fire({
+            title: 'Éxito',
+            text: 'Fecha de visita actualizada correctamente',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          }).then(() => {
+            // Redirigir a la lista de solicitudes aprobadas
+            this.router.navigate(['/transacciones/solicitudes-de-visita/aprobadas']);
+          });
+        },
+        error: (error) => {
+          console.error('Error al actualizar la fecha:', error);
+          Swal.fire({
+            title: 'Error',
+            text: 'No se pudo actualizar la fecha de visita',
+            icon: 'error'
+          });
+        }
+      });
+    }
+  }
+
+  async downloadPhotos(imageUrls: string[]): Promise<void> {
+    if (!imageUrls || imageUrls.length === 0) {
+      Swal.fire({
+        title: 'Error',
+        text: 'No hay fotos disponibles para descargar',
+        icon: 'error'
+      });
+      return;
+    }
+
+    try {
+      // Mostrar indicador de progreso
+      Swal.fire({
+        title: 'Preparando descarga',
+        text: 'Por favor espere...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // Descargar cada imagen
+      for (let i = 0; i < imageUrls.length; i++) {
+        const url = imageUrls[i];
+        const response = await fetch(url);
+        const blob = await response.blob();
+        
+        // Crear un nombre de archivo basado en la fecha y un contador
+        const fileName = `foto_${new Date().toISOString().split('T')[0]}_${i + 1}.jpg`;
+        
+        // Crear un elemento <a> para descargar
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        
+        // Agregar al DOM, hacer clic y remover
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Esperar un poco entre descargas para evitar bloqueos del navegador
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      // Mostrar mensaje de éxito
+      Swal.fire({
+        title: 'Éxito',
+        text: `Se han descargado ${imageUrls.length} foto(s)`,
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error('Error al descargar las fotos:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un error al descargar las fotos',
+        icon: 'error'
+      });
+    }
   }
 } 

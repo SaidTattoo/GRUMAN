@@ -645,6 +645,8 @@ td.mat-cell {
 }
 
 .photo-item {
+  position: relative;
+  cursor: pointer;
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 4px;
@@ -654,6 +656,36 @@ td.mat-cell {
   &:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    
+    .photo-overlay {
+      opacity: 1;
+    }
+  }
+}
+
+.photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.download-button {
+  background: rgba(255, 255, 255, 0.9);
+  
+  &:hover {
+    background: white;
+  }
+  
+  mat-icon {
+    color: #1976d2;
   }
 }
 
@@ -1161,15 +1193,52 @@ td.mat-cell {
 }
 
 .image-item {
-  aspect-ratio: 16/9;
+  position: relative;
   overflow: hidden;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  &:hover {
+    .image-actions {
+      opacity: 1;
+    }
+  }
 }
 
-.solicitud-image:hover {
-  transform: scale(1.05);
+.solicitud-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.6);
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  button {
+    background: rgba(255,255,255,0.9);
+    
+    &:hover {
+      background: white;
+    }
+  }
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  padding: 16px;
 }
 
 .no-photos {
@@ -1451,7 +1520,9 @@ td.mat-cell {
 
 .mt-4 {
   margin-top: 1.5rem;
-}.repuesto-item-horizontal {
+}
+
+.repuesto-item-horizontal {
   display: flex;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -1492,6 +1563,7 @@ td.mat-cell {
   justify-content: center;
   border-left: 1px solid #eee;
 }
+
 .repuesto-item-horizontal.temporary {
   border: 2px solid #FFC107 !important; /* Yellow border for temporary items */
   background-color: rgba(255, 193, 7, 0.1);
