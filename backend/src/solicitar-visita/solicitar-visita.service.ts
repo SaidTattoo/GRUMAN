@@ -421,7 +421,11 @@ export class SolicitarVisitaService {
         }
     }
     
+    async deleteSolicitud(id){
+       //modificar el estado a 0 para eliminar 
+        await this.solicitarVisitaRepository.update(id, { estado: false });
 
+    }
 
     getSolicitudesVisita(): Promise<SolicitarVisita[]> {
         return this.solicitarVisitaRepository.find({ 
@@ -491,7 +495,29 @@ export class SolicitarVisitaService {
     });
   }
 
-
+async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
+    const data = await this.solicitarVisitaRepository.find({ 
+        where: { status: In([SolicitudStatus.ATENDIDA_EN_PROCESO]), estado: true },
+        relations: [
+            'local',
+            'local.activoFijoLocales',
+            'client',
+            'tecnico_asignado',
+            'tecnico_asignado_2',
+            'itemRepuestos',
+            'itemRepuestos.repuesto',
+            'itemFotos',
+            'causaRaiz',
+            'activoFijoRepuestos',
+            'activoFijoRepuestos.activoFijo',
+            'activoFijoRepuestos.detallesRepuestos',
+            'activoFijoRepuestos.detallesRepuestos.repuesto',
+            'generada_por'
+        ],
+        order: { id: 'DESC' }
+    });
+    return data;
+}
 
 
     async getSolicitudesFinalizadas(): Promise<SolicitarVisita[]> {
@@ -828,8 +854,8 @@ export class SolicitarVisitaService {
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Start of day
         
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
+        const endOfDay = new Date(today);
+        endOfDay.setHours(23, 59, 59, 999); 
         
         try {
             const data = await this.solicitarVisitaRepository.find({ 
@@ -840,9 +866,10 @@ export class SolicitarVisitaService {
                         SolicitudStatus.EN_SERVICIO,
                         SolicitudStatus.FINALIZADA, 
                         SolicitudStatus.APROBADA,
+                        SolicitudStatus.ATENDIDA_EN_PROCESO 
                     ]),
                     estado: true,
-                    fechaVisita: Between(today, tomorrow)
+                    fechaVisita: Between(today, endOfDay)
                 },
                 relations: ['local', 'client', 'generada_por', 'tecnico_asignado', 'tecnico_asignado_2', 'tipoServicio'],
                 order: { id: 'DESC' }
@@ -871,6 +898,7 @@ export class SolicitarVisitaService {
                     SolicitudStatus.EN_SERVICIO,
                     SolicitudStatus.FINALIZADA, 
                     SolicitudStatus.APROBADA,
+                    SolicitudStatus.ATENDIDA_EN_PROCESO 
                   /*   SolicitudStatus.RECHAZADA,
                     SolicitudStatus.PENDIENTE */
                 ]),
@@ -981,10 +1009,9 @@ export class SolicitarVisitaService {
                         SolicitudStatus.VALIDADA, 
                         SolicitudStatus.REABIERTA,
                         SolicitudStatus.EN_SERVICIO,
-                        SolicitudStatus.FINALIZADA,
+                        SolicitudStatus.FINALIZADA, 
                         SolicitudStatus.APROBADA,
-                        SolicitudStatus.RECHAZADA,
-                        SolicitudStatus.PENDIENTE
+                        SolicitudStatus.ATENDIDA_EN_PROCESO 
                     ]),
                     estado: true,
                     
@@ -1560,6 +1587,8 @@ export class SolicitarVisitaService {
             );
         }
     }   
-        
+     async cambiarEstadoSolicitud(id, status){
+            this.solicitarVisitaRepository.update(id, { status })
+     }       
 }
 
