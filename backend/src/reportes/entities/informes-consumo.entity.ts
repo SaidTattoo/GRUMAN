@@ -40,4 +40,7 @@ export class InformesConsumo {
 
   @Column()
   nombre_tecnico: string;
+
+  @Column()
+  mes_facturacion?: string;
 }
