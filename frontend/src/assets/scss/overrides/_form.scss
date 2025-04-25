@@ -32,3 +32,38 @@
 .mat-mdc-dialog-container .mdc-dialog__surface {
   border-radius: $border-radius !important;
 }
+
+// Reducir el tamaño de los campos de formulario
+.mat-mdc-form-field {
+  .mdc-text-field {
+    height: 40px !important;
+    padding: 0 12px !important;
+  }
+
+  .mdc-text-field--outlined {
+    .mdc-notched-outline {
+      height: 40px !important;
+    }
+  }
+
+  .mat-mdc-form-field-flex {
+    min-height: 40px !important;
+  }
+
+  .mat-mdc-form-field-infix {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .mat-mdc-select-value {
+    line-height: 20px !important;
+  }
+  .mat-mdc-form-label{
+    font-size: 14px !important;
+    margin-bottom: 0rem !important;
+  }
+  .mat-mdc-form-field{
+    margin-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+}
