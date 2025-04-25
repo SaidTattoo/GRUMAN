@@ -23,22 +23,27 @@ interface MesFacturacion {
   fecha_inicio: Date;
   fecha_termino: Date;
   hh: number;
-  cliente: any
+  cliente: any;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class InformeConsumoService {
-  constructor(private readonly http: HttpClient) { }
+  constructor(private readonly http: HttpClient) {}
 
-  getInformeConsumo(fechaInicio: any | null, fechaFin: any | null, clienteId: any | null): Observable<InformesConsumo[]> {
-    return this.http.get<InformesConsumo[]>(`${environment.apiUrl}/informe-consumo`, {
-      params: { fechaInicio: fechaInicio || null, fechaFin: fechaFin || null, clienteId: clienteId || null }
-    });
-  }
- 
   getMesFacturacion(clienteId: string): Observable<MesFacturacion[]> {
-    return this.http.get<MesFacturacion[]>(`${environment.apiUrl}/facturacion/${clienteId}`);
+    return this.http.get<MesFacturacion[]>(
+      `${environment.apiUrl}/facturacion/${clienteId}`
+    );
+  }
+
+  getInformeConsumoMesFacturacion(
+    clienteId: string,
+    mesFacturacion: string
+  ): Observable<InformesConsumo[]> {
+    return this.http.get<InformesConsumo[]>(
+      `${environment.apiUrl}/informe-mes-facturacion?companyId=${clienteId}&mesFacturacion=${mesFacturacion}`
+    );
   }
 }
