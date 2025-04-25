@@ -205,6 +205,11 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             iconName: 'file-delta',
             route: 'reportes/reporte-de-activos',
           },
+          {
+            displayName: 'Informe de consumo',
+            iconName: 'graph',
+            route: 'reportes/informe-de-consumo',
+          },
         ],
       },
       /*  {
@@ -241,6 +246,16 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 displayName: 'Reporte de activos',
                 iconName: 'file-delta',
                 route: 'reportes/reporte-de-activos',
+              },
+              {
+                displayName: 'Reporte de repuestos por día',
+                iconName: 'graph',
+                route: 'reportes/repuestos-por-dia',
+              },
+              {
+                displayName: 'Reporte de repuestos por mes',
+                iconName: 'calendar',
+                route: 'reportes/repuestos-por-mes',
               },
             ],
           },

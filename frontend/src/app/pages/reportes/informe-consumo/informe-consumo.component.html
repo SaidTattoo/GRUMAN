@@ -1,0 +1,135 @@
+<mat-card class="cardWithShadow">
+  <mat-card-header>
+    <form [formGroup]="informeForm" class="d-flex justify-content-start align-items-baseline gap-5">
+      <mat-form-field appearance="outline">
+        <mat-label>Selecciona cliente</mat-label>
+        <input type="text" 
+               placeholder="Pick one" 
+               aria-label="Number" 
+               matInput 
+               formControlName="cliente"
+               [matAutocomplete]="auto" />
+        <button mat-icon-button matSuffix *ngIf="informeForm.get('cliente')?.value" (click)="clearClient()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="onCompanySelected($event)">
+          @for(company of filteredOptions | async; track company) {
+          <mat-option [value]="company">
+            {{ company }}
+          </mat-option>
+          }
+        </mat-autocomplete>
+        <mat-error *ngIf="informeForm.get('cliente')?.hasError('required')">
+          El cliente es requerido
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="margin: 0 10px;">
+        <mat-label>Fecha de inicio</mat-label>
+        <input matInput 
+               [matDatepicker]="pickerInicio" 
+               formControlName="fechaInicio" />
+        <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+        <mat-datepicker #pickerInicio></mat-datepicker>
+        <mat-error *ngIf="informeForm.get('fechaInicio')?.hasError('required')">
+          La fecha de inicio es requerida
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="margin-right: 10px;">
+        <mat-label>Fecha de fin</mat-label>
+        <input matInput 
+               [matDatepicker]="pickerFin" 
+               formControlName="fechaFin" />
+        <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFin></mat-datepicker>
+        <mat-error *ngIf="informeForm.get('fechaFin')?.hasError('required')">
+          La fecha de fin es requerida
+        </mat-error>
+      </mat-form-field>
+
+      <button mat-raised-button 
+              color="primary" 
+              class="mt-2" 
+              (click)="setFilter()"
+              [disabled]="informeForm.invalid">
+        Buscar
+      </button>
+    </form>
+  </mat-card-header>
+  <mat-card-content class="p-24">
+    <div class="table-responsive">
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 w-100">
+      <!-- Requerimiento Column -->
+      <ng-container matColumnDef="requerimiento">
+        <th mat-header-cell *matHeaderCellDef> Requerimiento </th>
+        <td mat-cell *matCellDef="let element" [matTooltip]="element.requerimiento" matTooltipPosition="above" class="text-truncate"> {{element.requerimiento}} </td>
+      </ng-container>
+
+      <!-- Servicio Column -->
+      <ng-container matColumnDef="tipo_servicio">
+        <th mat-header-cell *matHeaderCellDef> Servicio </th>
+        <td mat-cell *matCellDef="let element" [matTooltip]="element.tipo_servicio" matTooltipPosition="above" class="text-truncate"> {{element.tipo_servicio}} </td>
+      </ng-container>
+
+      <!-- Local Column -->
+      <ng-container matColumnDef="local">
+        <th mat-header-cell *matHeaderCellDef> Local </th>
+        <td mat-cell *matCellDef="let element" [matTooltip]="element.local" matTooltipPosition="above" class="text-truncate"> {{element.local}} </td>
+      </ng-container>
+
+      <!-- Repuesto Column -->
+      <ng-container matColumnDef="repuesto">
+        <th mat-header-cell *matHeaderCellDef> Repuesto </th>
+        <td mat-cell *matCellDef="let element" [matTooltip]="element.repuesto" matTooltipPosition="above" class="text-truncate" style="max-width: 150px; white-space: nowrap;"> {{element.repuesto}} </td>
+      </ng-container>
+
+      <!-- Cliente Column -->
+      <ng-container matColumnDef="cliente">
+        <th mat-header-cell *matHeaderCellDef> Cliente </th>
+        <td mat-cell *matCellDef="let element" [matTooltip]="element.cliente" matTooltipPosition="above" class="text-truncate" style="max-width: 150px; white-space: nowrap;"> {{element.cliente}} </td>
+      </ng-container>
+
+      <!-- Cantidad Column -->
+      <ng-container matColumnDef="cantidad">
+        <th mat-header-cell *matHeaderCellDef> Cantidad </th>
+        <td mat-cell *matCellDef="let element"> {{element.cantidad}} </td>
+      </ng-container>
+
+      <!-- Precio Compra Column -->
+      <ng-container matColumnDef="precio_compra">
+        <th mat-header-cell *matHeaderCellDef> Precio&nbsp;compra </th>
+        <td mat-cell *matCellDef="let element"> {{element.precio_compra | currency}} </td>
+      </ng-container>
+
+      <!-- Precio Venta Column -->
+      <ng-container matColumnDef="precio_venta_cliente">
+        <th mat-header-cell *matHeaderCellDef> Precio Venta </th>
+        <td mat-cell *matCellDef="let element"> {{element.precio_venta_cliente | currency}} </td>
+      </ng-container>
+
+      <!-- Valor Column -->
+      <ng-container matColumnDef="valor_cliente">
+        <th mat-header-cell *matHeaderCellDef> Valor </th>
+        <td mat-cell *matCellDef="let element"> {{element.valor_cliente | currency}} </td>
+      </ng-container>
+
+      <!-- Fecha Column -->
+      <ng-container matColumnDef="fechaVisita">
+        <th mat-header-cell *matHeaderCellDef> Fecha </th>
+        <td mat-cell *matCellDef="let element"  matTooltipPosition="above" class="text-truncate" style="max-width: 150px; white-space: nowrap;"> {{element.fechaVisita | date:'dd-MM-yyyy'}} </td>
+      </ng-container>
+
+      <!-- Visita Tecnico Column -->
+      <ng-container matColumnDef="nombre_tecnico">
+        <th mat-header-cell *matHeaderCellDef> Visita Técnico </th>
+        <td mat-cell *matCellDef="let element" [matTooltip]="element.nombre_tecnico" matTooltipPosition="above" class="text-truncate" style="max-width: 150px; white-space: nowrap;"> {{element.nombre_tecnico}} </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns" class="w-100"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="w-100"></tr>
+    </table>
+    </div>
+    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" class="mt-10" aria-label="Select page of users"></mat-paginator>
+  </mat-card-content>
+</mat-card>
