@@ -362,16 +362,18 @@
                       <div class="photos-container">
                           <div class="photo-grid">
                             <div class="photo-item" *ngFor="let foto of getItemFotos(subItem.id)?.fotos">
-                              <img [src]="foto" 
-                                   [alt]="'Foto de ' + subItem.name"
-                                   class="inspection-photo">
-                              <div class="image-actions">
-                                <button mat-icon-button color="primary" (click)="openPhotoViewer([foto])" matTooltip="Ver imagen">
+                              <div class="photo-container">
+                                <button mat-icon-button style="z-index: 9900;" color="primary" (click)="openPhotoViewer([foto])" matTooltip="Ver imagen">
                                   <mat-icon>visibility</mat-icon>
                                 </button>
-                                <button mat-icon-button color="accent" (click)="downloadPhotos([foto])" matTooltip="Descargar imagen">
+                                <button mat-icon-button style="z-index: 9900;" color="accent" (click)="downloadPhotos([foto])" matTooltip="Descargar imagen">
                                   <mat-icon>download</mat-icon>
-                                </button>
+                                </button> <img [src]="foto" 
+                                     [alt]="'Foto de ' + subItem.name"
+                                     class="inspection-photo">
+                                <div class="image-actions">
+                                 
+                                </div>
                               </div>
                             </div>
                           </div>
