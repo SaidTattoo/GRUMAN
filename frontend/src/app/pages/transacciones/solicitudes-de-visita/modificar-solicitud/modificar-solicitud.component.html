@@ -129,6 +129,26 @@
               </mat-select>
             </mat-form-field>
           </div>
+
+          <div class="col-md-12">
+            @if (imagePreview) {
+              <div class="image-box">
+                <img loading="lazy" [src]="imagePreview" alt="Vista previa del logo" class="img-preview" />
+              </div>
+            }@else{
+            <div class="drop-area" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+              <p>Cargar una OT</p>
+              <p>Añade o arrastra el archivo aqui</p>
+            </div>
+            }
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+            <span>{{ fileName }}</span>
+           <!--  @if (imagePreview) {
+              <div class="image-box">
+                <img loading="lazy" [src]="imagePreview" alt="Vista previa del logo" class="img-preview" />
+              </div>
+            } -->
+          </div>
         </div>
 
 

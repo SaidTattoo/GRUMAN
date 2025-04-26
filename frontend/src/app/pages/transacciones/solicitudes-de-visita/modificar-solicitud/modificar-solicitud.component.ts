@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
+import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MatInput, MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -31,6 +31,8 @@ import Swal from 'sweetalert2';
 import { CausaRaizService } from '../../../../services/causa-raiz.service';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroup } from '@angular/material/radio';
+import { UploadDataService } from 'src/app/services/upload-data.service';
+
 interface Repuesto {
   id: number;
   familia: string;
@@ -137,7 +139,9 @@ interface ActivoFijoRepuesto {
     DialogPhotoViewerComponent,
     ConfirmDialogComponent,
     MatRadioModule,
-    MatRadioGroup
+    MatRadioGroup,
+    MatInput,
+    MatButton
   ],
   providers: [
     provideNativeDateAdapter()
@@ -359,6 +363,11 @@ export class ModificarSolicitudComponent implements OnInit {
   ];
   nuevaFechaVisita: Date | null = null;
 
+  urlImage: string | null = null;
+  fileName: string = '';
+  imagePreview: string | ArrayBuffer | null = null;
+  imageBase64: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -375,7 +384,8 @@ export class ModificarSolicitudComponent implements OnInit {
     private usersService: UsersService,
     private especialidadesService: EspecialidadesService,
     private cd: ChangeDetectorRef,
-    private causaRaizService: CausaRaizService
+    private causaRaizService: CausaRaizService,
+    private uploadDataService: UploadDataService
   ) {
     this.solicitudForm = this.fb.group({
       tipoServicioId: [''],
@@ -1845,6 +1855,39 @@ export class ModificarSolicitudComponent implements OnInit {
         text: 'Hubo un error al descargar las fotos',
         icon: 'error'
       });
+    }
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const formData = new FormData();
+      formData.append('file', input.files[0]);
+
+      this.uploadDataService.uploadFile(formData, 'clientes').subscribe((data: any) => {
+        //console.log(data);
+        this.urlImage = data.url;
+      });
+
+      const file = input.files[0];
+      this.fileName = file.name;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result;
+        this.imageBase64 = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+  
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.onFileSelected({ target: { files: files } } as unknown as Event);
     }
   }
 } 
