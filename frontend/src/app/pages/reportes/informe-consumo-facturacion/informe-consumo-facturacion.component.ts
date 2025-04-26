@@ -79,6 +79,7 @@ export class InformeConsumoFacturacionComponent implements OnInit {
   dataSource = new MatTableDataSource<ConsumoData>([]);
   @ViewChild(MatPaginator) paginator: MatPaginator;
   private user: any;
+  private hasGruman: boolean = false;
   private storageSubscription: Subscription;
   firstoption: any[] = [];
   originalOptions: any[] = [];
@@ -102,7 +103,8 @@ export class InformeConsumoFacturacionComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private storage: StorageService,
-    private informeConsumoService: InformeConsumoService
+    private informeConsumoService: InformeConsumoService,
+    private storageService: StorageService
   ) {
     this.informeForm = this.fb.group({
       cliente: ['', Validators.required],
@@ -124,6 +126,7 @@ export class InformeConsumoFacturacionComponent implements OnInit {
     this.storageSubscription = this.storage.user$.subscribe((user) => {
       if (user) {
         this.user = user;
+        this.hasGruman = this.selectedCompanyName.toLowerCase() === 'gruman';
         this.firstoption = this.user.companies.filter(
           (company: any) => company.nombre.toLowerCase() !== 'gruman'
         );

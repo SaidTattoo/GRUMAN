@@ -5,7 +5,7 @@
         <mat-label>Selecciona cliente</mat-label>
         <input
           type="text"
-          placeholder="Pick one"
+          placeholder="Selecciona cliente"
           aria-label="Number"
           matInput
           formControlName="cliente"
@@ -85,6 +85,7 @@
       </button>
     </form>
   </mat-card-header>
+
   <mat-card-content class="p-24">
     <div class="table-responsive">
       <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 w-100">
@@ -170,7 +171,7 @@
         <ng-container matColumnDef="precio_compra">
           <th mat-header-cell *matHeaderCellDef>Precio&nbsp;compra</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.precio_compra | currency }}
+            ${{ element.precio_compra }}
           </td>
         </ng-container>
 
@@ -178,7 +179,9 @@
         <ng-container matColumnDef="precio_venta_cliente">
           <th mat-header-cell *matHeaderCellDef>Precio Venta</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.precio_venta_cliente | currency }}
+            ${{
+              element.precio_venta_cliente | currency : "" : "symbol" : "1.0-0"
+            }}
           </td>
         </ng-container>
 
@@ -186,7 +189,7 @@
         <ng-container matColumnDef="valor_cliente">
           <th mat-header-cell *matHeaderCellDef>Valor</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.valor_cliente | currency }}
+            ${{ element.valor_cliente }}
           </td>
         </ng-container>
 
