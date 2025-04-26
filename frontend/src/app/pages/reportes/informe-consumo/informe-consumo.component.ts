@@ -7,7 +7,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTableDataSource } from '@angular/material/table';
@@ -99,6 +99,7 @@ export class InformeConsumoComponent implements OnInit {
       fechaFin: [null, Validators.required]
     });
 
+
     this.filteredOptions = this.informeForm.get('cliente')!.valueChanges.pipe(
       startWith(''),
       map(value => {
@@ -114,7 +115,7 @@ export class InformeConsumoComponent implements OnInit {
     this.storageSubscription = this.storage.user$.subscribe((user) => {
       if (user) {
         this.user = user;
-        this.firstoption = this.user.companies.map((company: any) => company.nombre.toLowerCase() === 'gruman' ? 'TODOS' : company.nombre);
+        this.firstoption = this.user.companies.filter((company: any) => company.nombre.toLowerCase() !== 'gruman').map((company: any) => company.nombre);
         this.originalOptions = [...this.firstoption];
       }
     });
@@ -130,12 +131,27 @@ export class InformeConsumoComponent implements OnInit {
     return this.originalOptions.filter(option => option.toLowerCase().includes(filterValue));
   }
 
+  displayFn = (value: any): string => {
+    if (!value) return '';
+    if (value === 'TODOS') return 'TODOS';
+    const cliente = this.user.companies.find((company: any) => company.id === value);
+    return cliente ? cliente.nombre : '';
+  };
+
   onCompanySelected(event: any) {
     if (!event.option.value) {
       this.informeForm.patchValue({
         cliente: null
       });
       this.selectedCompanyName = '';
+      return;
+    }
+
+    if (event.option.value === 'TODOS') {
+      this.selectedCompanyName = 'TODOS';
+      this.informeForm.patchValue({
+        cliente: 'TODOS'
+      });
       return;
     }
 
@@ -180,5 +196,6 @@ export class InformeConsumoComponent implements OnInit {
     });
     this.selectedCompanyName = '';
     this.informeForm.get('cliente')?.setValue('');
+    this.filteredOptions = of(this.originalOptions);
   }
 }
