@@ -225,5 +225,8 @@ export class SolicitarVisita {
 
   @Column({ type: 'text', nullable: true })
   estado_solicitud: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_ot: string;
 }
  

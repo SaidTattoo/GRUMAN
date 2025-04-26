@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
+import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MatInput, MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -31,6 +31,8 @@ import Swal from 'sweetalert2';
 import { CausaRaizService } from '../../../../services/causa-raiz.service';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroup } from '@angular/material/radio';
+import { UploadDataService } from 'src/app/services/upload-data.service';
+
 interface Repuesto {
   id: number;
   familia: string;
@@ -137,7 +139,9 @@ interface ActivoFijoRepuesto {
     DialogPhotoViewerComponent,
     ConfirmDialogComponent,
     MatRadioModule,
-    MatRadioGroup
+    MatRadioGroup,
+    MatInput,
+    MatButton
   ],
   providers: [
     provideNativeDateAdapter()
@@ -299,6 +303,34 @@ interface ActivoFijoRepuesto {
       border-bottom: 2px solid #e5e7eb;
       padding-bottom: 8px;
     }
+
+    .image-viewer-dialog {
+      .mat-mdc-dialog-container {
+        padding: 0;
+        background: rgba(0, 0, 0, 0.8);
+      }
+    }
+
+    .image-preview-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.02);
+      }
+
+      img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+    }
   `]
 })
 export class ModificarSolicitudComponent implements OnInit {
@@ -359,6 +391,11 @@ export class ModificarSolicitudComponent implements OnInit {
   ];
   nuevaFechaVisita: Date | null = null;
 
+  urlImage: string | null = null;
+  fileName: string = '';
+  imagePreview: string | ArrayBuffer | null = null;
+  imageBase64: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -375,7 +412,8 @@ export class ModificarSolicitudComponent implements OnInit {
     private usersService: UsersService,
     private especialidadesService: EspecialidadesService,
     private cd: ChangeDetectorRef,
-    private causaRaizService: CausaRaizService
+    private causaRaizService: CausaRaizService,
+    private uploadDataService: UploadDataService
   ) {
     this.solicitudForm = this.fb.group({
       tipoServicioId: [''],
@@ -405,6 +443,7 @@ export class ModificarSolicitudComponent implements OnInit {
       garantia: [''],
       turno: [''],
       estado_solicitud: [''],
+      image_ot: [''],
     });
     this.temporaryRepuestos = {};
     this.temporaryDeletedRepuestos = {};
@@ -551,6 +590,11 @@ export class ModificarSolicitudComponent implements OnInit {
     this.solicitarVisitaService.getSolicitudVisita(Number(this.solicitudId)).subscribe({
       next: (data) => {
         this.solicitud = data;
+        
+        // Asignar el imagePreview si existe image_ot
+        if (data.image_ot) {
+          this.setImagePreview(data.image_ot);
+        }
         
         // Detectar estado de la solicitud por su estado actual
         if (this.solicitud?.status === 'pendiente') {
@@ -996,7 +1040,6 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   onValidate(): void {
-    debugger
     // Si la solicitud está rechazada, no permitir validar
     if (this.isRechazada) {
       return;
@@ -1039,6 +1082,7 @@ export class ModificarSolicitudComponent implements OnInit {
         garantia: formValues.garantia,
         turno: formValues.turno,
         estado_solicitud: formValues.estado_solicitud,
+        image_ot: this.urlImage ?? "",
         listaInspeccion: this.listaInspeccion.map(lista => ({
           ...lista,
           items: lista.items.map((item: any) => ({
@@ -1078,6 +1122,7 @@ export class ModificarSolicitudComponent implements OnInit {
               garantia: this.solicitudForm.get('garantia')?.value,
               turno: this.solicitudForm.get('turno')?.value,
               estado_solicitud: this.solicitudForm.get('estado_solicitud')?.value,
+              image_ot: this.urlImage ?? "",
             };
 
             this.solicitarVisitaService.validarSolicitud(
@@ -1845,6 +1890,104 @@ export class ModificarSolicitudComponent implements OnInit {
         text: 'Hubo un error al descargar las fotos',
         icon: 'error'
       });
+    }
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      this.fileName = file.name;
+      
+      // Crear un canvas para comprimir la imagen
+      const img = new Image();
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        img.src = e.target?.result as string;
+        
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Establecer el tamaño máximo deseado
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          
+          let width = img.width;
+          let height = img.height;
+          
+          // Redimensionar si es necesario
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Dibujar la imagen comprimida
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Convertir a base64 con calidad reducida
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          
+          this.imagePreview = compressedBase64;
+          this.imageBase64 = compressedBase64;
+          this.urlImage = compressedBase64;
+        };
+      };
+      
+      reader.readAsDataURL(file);
+    }
+  }
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+  
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.onFileSelected({ target: { files: files } } as unknown as Event);
+    }
+  }
+
+  /**
+   * Abre un modal para visualizar la imagen en tamaño completo
+   */
+  openImageModal(): void {
+    if (!this.imagePreview) {
+      this.snackBar.open('No hay imagen para visualizar', 'Cerrar', {
+        duration: 3000
+      });
+      return;
+    }
+
+    this.dialog.open(DialogPhotoViewerComponent, {
+      data: { imageUrls: [this.imagePreview] },
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      panelClass: 'image-viewer-dialog'
+    });
+  }
+
+  /**
+   * Asigna el imagePreview cuando existe image_ot en el registro
+   * @param image_ot La imagen en formato base64
+   */
+  private setImagePreview(image_ot: string): void {
+    if (image_ot) {
+      this.imagePreview = image_ot;
+      this.imageBase64 = image_ot;
+      this.urlImage = image_ot;
     }
   }
 } 

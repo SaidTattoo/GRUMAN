@@ -129,6 +129,24 @@
               </mat-select>
             </mat-form-field>
           </div>
+
+          <div class="col-md-12">
+            @if (imagePreview) {
+              <div class="image-box" style="position: relative;">
+                <img loading="lazy" [src]="imagePreview" alt="Vista previa del logo" class="img-preview" />
+                <button mat-icon-button color="primary" (click)="openImageModal()" matTooltip="Ver imagen en tamaño completo" 
+                  style="position: absolute; top: 8px; right: 8px; background-color: rgba(255, 255, 255, 0.8);">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </div>
+            }@else{
+            <div class="drop-area" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+              <p>Cargar una OT</p>
+              <p>Añade o arrastra el archivo aqui</p>
+            </div>
+            }
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+          </div>
         </div>
 
 

@@ -295,7 +295,8 @@ export class SolicitarVisitaController {
         repuestos?: { [key: string]: any[] },
         garantia?: string,
         turno?: string,
-        estado_solicitud?: string
+        estado_solicitud?: string,
+        image_ot?: string
     }
   ) {
     console.log('Controller: Validando solicitud:', { id, data });
@@ -312,7 +313,8 @@ export class SolicitarVisitaController {
             repuestos: data.repuestos,
             garantia: data.garantia,
             turno: data.turno,
-            estado_solicitud: data.estado_solicitud
+            estado_solicitud: data.estado_solicitud,
+            image_ot: data.image_ot
         });
 
         const result = await this.solicitarVisitaService.validarSolicitud(
@@ -321,7 +323,8 @@ export class SolicitarVisitaController {
             data.causaRaizId,
             data.garantia,
             data.turno,
-            data.estado_solicitud
+            data.estado_solicitud,
+            data.image_ot
         );
         
         console.log('Controller: Resultado de validación:', result);
