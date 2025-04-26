@@ -819,7 +819,7 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
     }
 
 
-    async validarSolicitud(id: number, validada_por_id: number, causaRaizId?: number): Promise<SolicitarVisita> {
+    async validarSolicitud(id: number, validada_por_id: number, causaRaizId?: number, garantia?: string, turno?: string, estado_solicitud?: string): Promise<SolicitarVisita> {
         const visita = await this.solicitarVisitaRepository.findOne({ 
             where: { id },
             relations: ['itemRepuestos', 'causaRaiz']
@@ -834,7 +834,10 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
             status: SolicitudStatus.VALIDADA,
             validada_por_id: validada_por_id,
             fecha_hora_validacion: new Date(),
-            causaRaizId: causaRaizId || null
+            causaRaizId: causaRaizId || null,
+            garantia: garantia || '',
+            turno: turno || '',
+            estado_solicitud: estado_solicitud || ''
         };
 
         // Actualizar la entidad

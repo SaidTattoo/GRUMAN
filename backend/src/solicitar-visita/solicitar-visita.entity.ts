@@ -216,5 +216,14 @@ export class SolicitarVisita {
 
   @Column({ type: 'int', nullable: true })
   facturacion_id: number;
+
+  @Column({ type: 'text', nullable: true })
+  garantia: string;
+
+  @Column({ type: 'text', nullable: true })
+  turno: string;
+
+  @Column({ type: 'text', nullable: true })
+  estado_solicitud: string;
 }
  

@@ -29,7 +29,8 @@ import { ConfirmDialogComponent } from '../../../../components/confirm-dialog/co
 import { EspecialidadesService } from '../../../../services/especialidades.service';
 import Swal from 'sweetalert2';
 import { CausaRaizService } from '../../../../services/causa-raiz.service';
-
+import { MatRadioModule } from '@angular/material/radio';
+import { MatRadioGroup } from '@angular/material/radio';
 interface Repuesto {
   id: number;
   familia: string;
@@ -134,7 +135,9 @@ interface ActivoFijoRepuesto {
     MatTooltipModule,
     MatDialogModule,
     DialogPhotoViewerComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    MatRadioModule,
+    MatRadioGroup
   ],
   providers: [
     provideNativeDateAdapter()
@@ -399,6 +402,9 @@ export class ModificarSolicitudComponent implements OnInit {
       'tipoServicio': [{value: '', disabled: true}],
       'sectorTrabajo': [{value: '', disabled: true}],
       causaRaizId: [''],
+      garantia: [''],
+      turno: [''],
+      estado_solicitud: [''],
     });
     this.temporaryRepuestos = {};
     this.temporaryDeletedRepuestos = {};
@@ -455,6 +461,9 @@ export class ModificarSolicitudComponent implements OnInit {
       'tipoServicio': [{value: '', disabled: true}],
       'sectorTrabajo': [{value: '', disabled: true}],
       causaRaizId: [''],
+      garantia: [''],
+      turno: [''],
+      estado_solicitud: [''],
     });
     this.temporaryRepuestos = {};
     this.temporaryDeletedRepuestos = {};
@@ -622,6 +631,9 @@ export class ModificarSolicitudComponent implements OnInit {
           'tipoServicio': data.tipoServicio?.nombre || '',
           'sectorTrabajo': data.sectorTrabajo?.nombre || '',
           'causaRaizId': data.causaRaizId || '',
+          'garantia': data.garantia || '',
+          'turno': data.turno || '',
+          'estado_solicitud': data.estado_solicitud || '',
         });
 
         // Si está rechazada, deshabilitar todos los controles
@@ -984,6 +996,7 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   onValidate(): void {
+    debugger
     // Si la solicitud está rechazada, no permitir validar
     if (this.isRechazada) {
       return;
@@ -1023,6 +1036,9 @@ export class ModificarSolicitudComponent implements OnInit {
         latitud_movil: formValues.latitud_movil,
         valorPorLocal: formValues.valorPorLocal,
         registroVisita: formValues.registroVisita,
+        garantia: formValues.garantia,
+        turno: formValues.turno,
+        estado_solicitud: formValues.estado_solicitud,
         listaInspeccion: this.listaInspeccion.map(lista => ({
           ...lista,
           items: lista.items.map((item: any) => ({
@@ -1059,6 +1075,9 @@ export class ModificarSolicitudComponent implements OnInit {
               causaRaizId: this.solicitudForm.get('causaRaizId')?.value,
               valorPorLocal: this.solicitudForm.get('valorPorLocal')?.value,
               registroVisita: this.solicitudForm.get('registroVisita')?.value,
+              garantia: this.solicitudForm.get('garantia')?.value,
+              turno: this.solicitudForm.get('turno')?.value,
+              estado_solicitud: this.solicitudForm.get('estado_solicitud')?.value,
             };
 
             this.solicitarVisitaService.validarSolicitud(
@@ -1344,7 +1363,10 @@ export class ModificarSolicitudComponent implements OnInit {
             repuestoId: r.repuesto.id,
             cantidad: r.cantidad,
             solicitarVisitaId: Number(this.solicitudId),
-            comentario: r.comentario || ''
+            comentario: r.comentario || '',
+            garantia: r.garantia || '',
+            turno: r.turno || '',
+            estado_solicitud: r.estado_solicitud || '',
           }))
         ),
         deletedRepuestos: Object.values(this.temporaryDeletedRepuestos).flat().map(r => r.id)
