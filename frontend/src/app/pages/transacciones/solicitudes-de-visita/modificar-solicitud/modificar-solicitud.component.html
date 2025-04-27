@@ -1,245 +1,310 @@
 <mat-card class="cardWithShadow">
-    <mat-card-content class="p-24">
-        <div class="container">
-  @if (isPendiente) {
-    <h2>Solicitud Pendiente Numero: <strong>{{solicitud?.id}}</strong></h2>
-  } @else if (isAprobada) {
-    <h2>Solicitud Aprobada Numero: <strong>{{solicitud?.id}}</strong></h2>
-  } @else if (isRechazada) {
-    <h2>Solicitud Rechazada Numero: <strong>{{solicitud?.id}}</strong></h2>
-  } @else if (isValidada) {
-    <h2>Solicitud Validada Numero: <strong>{{solicitud?.id}}</strong></h2>
-  } @else {
-    <h2>Modificar Solicitud Numero: <strong>{{solicitud?.id}}</strong></h2>
-  }
-  @if (isAprobada) {
-    <!-- Banner de solicitud aprobada -->
-  
-    <!-- Banner de cambio de fecha separado -->
-    <div class="change-date-banner mb-3" style="padding: 16px; background-color: #FAFAFA; border: 1px solid #E0E0E0; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
-      <div style="display: flex; align-items: center;">
-        <mat-icon style="margin-right: 8px; color: #757575;">event</mat-icon>
-        <span>Cambiar fecha de visita</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <mat-form-field appearance="outline" style="width: 200px; margin: 0;">
-          <mat-label>Nueva fecha de visita</mat-label>
-          <input matInput [matDatepicker]="changeDatePicker" [(ngModel)]="nuevaFechaVisita" [ngModelOptions]="{standalone: true}">
-          <mat-datepicker-toggle matIconSuffix [for]="changeDatePicker"></mat-datepicker-toggle>
-          <mat-datepicker #changeDatePicker></mat-datepicker>
-        </mat-form-field>
-        <button mat-raised-button color="primary" (click)="cambiarFechaVisita()" [disabled]="!nuevaFechaVisita">
-          <mat-icon>save</mat-icon>
-          Guardar
-        </button>
-      </div>
-    </div>
-  }
-  <form [formGroup]="solicitudForm">
-    <!-- Información del Cliente y Local -->
-    <div class="section-title">Información General</div>
-    <div class="form-row">
-      <mat-form-field appearance="fill">
-        <mat-label>Cliente</mat-label>
-        <input matInput formControlName="client.nombre" [disabled]="solicitud?.status === 'validada' || isRechazada">
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Local</mat-label>
-        <input matInput formControlName="local.nombre_local" [disabled]="solicitud?.status === 'validada' || isRechazada">
-      </mat-form-field>
-    </div>
-
-    <div class="form-row">
-      <mat-form-field appearance="fill">
-        <mat-label>Dirección Local</mat-label>
-        <input matInput formControlName="local.direccion" [disabled]="solicitud?.status === 'validada' || isRechazada">
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Valor Servicio {{ getTipoServicioNombre(solicitudForm.get('tipoServicioId')?.value) ? ' ' + getTipoServicioNombre(solicitudForm.get('tipoServicioId')?.value) : '' }}</mat-label>
-        <input matInput formControlName="valorPorLocal" type="number" 
-               [disabled]="(!isPendiente && !isReabierta && solicitud?.status !== 'reabierta' && solicitud?.status !== 'finalizada') || isRechazada || isAprobada || isValidada">
-        <span matPrefix>$&nbsp;</span>
-      </mat-form-field>
-    </div>
-
-    <!-- Registro de Visita - Visible en estados finalizada, reabierta o validada -->
-    <div class="form-row" *ngIf="solicitud?.status === 'finalizada' || solicitud?.status === 'reabierta' || isReabierta || solicitud?.status === 'validada' || isValidada">
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Registro de Visita</mat-label>
-        <input matInput formControlName="registroVisita" rows="4" placeholder="Ingrese los detalles de la visita"
-                 [disabled]="solicitud?.status === 'validada' || isValidada"/>
-      </mat-form-field>
-    </div>
-
-    <!-- Causa Raíz - Solo visible cuando la solicitud está finalizada -->
-    @if (solicitud?.status === 'finalizada' || solicitud?.status === 'reabierta' || solicitud?.status === 'validada') {
-      <div class="form-row">
-        <mat-form-field appearance="fill" class="full-width">
-          <mat-label>Causa Raíz</mat-label>
-          <mat-select formControlName="causaRaizId"  [disabled]="solicitud?.status === 'validada' || isValidada">
-            <mat-option [value]="null">Seleccione una causa</mat-option>
-            <mat-option *ngFor="let causa of causasRaiz" [value]="causa.id">
-              {{ causa.nombre }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-    }
-
-    <div class="form-row">
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Técnico Asignado</mat-label>
-        <mat-select formControlName="tecnico_asignado_id" [disabled]="!isPendiente || isRechazada" required>
-          <mat-option [value]="null">Sin asignar</mat-option>
-          <mat-option *ngFor="let tecnico of tecnicos" [value]="tecnico.id">
-            <div style="display: flex; align-items: center; justify-content: space-between;"
-                 [matTooltip]="'Especialidades: ' + getTecnicoEspecialidades(tecnico)">
-              <span>{{tecnico.name}}  {{tecnico.lastName}}</span>
-              @if (tecnicoTieneEspecialidad(tecnico)) {
-                <span style="color: #4CAF50; font-size: 18px; margin-left: 8px; font-weight: bold; display: flex; align-items: center;"
-                     matTooltip="Técnico con la especialidad requerida">
-                  ✓
-                </span>
-              }
-            </div>
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="isPendiente && solicitudForm.get('tecnico_asignado_id')?.hasError('required')">
-          Se requiere asignar un técnico antes de aprobar la solicitud
-        </mat-error>
-      </mat-form-field>
-    </div>
-    <div class="form-row">
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Técnico Asignado 2 (Opcional)</mat-label>
-        <mat-select formControlName="tecnico_asignado_id_2" [disabled]="!isPendiente || isRechazada">
-          <mat-option [value]="null">Sin asignar</mat-option>
-          <mat-option *ngFor="let tecnico of getTecnicosDisponiblesParaSegundoSelect()" [value]="tecnico.id">
-            <div style="display: flex; align-items: center; justify-content: space-between;"
-                 [matTooltip]="'Especialidades: ' + getTecnicoEspecialidades(tecnico)">
-              <span>{{tecnico.name}}  {{tecnico.lastName}}</span>
-              @if (tecnicoTieneEspecialidad(tecnico)) {
-                <span style="color: #4CAF50; font-size: 18px; margin-left: 8px; font-weight: bold; display: flex; align-items: center;"
-                     matTooltip="Técnico con la especialidad requerida">
-                  ✓
-                </span>
-              }
-            </div>
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    <!-- Mensaje explicativo sobre el ícono de especialidad -->
-    @if (isPendiente) {
-      <div style="margin-bottom: 16px; padding: 8px 12px; background-color: #f5f7fa; border-radius: 4px; font-size: 14px; color: #555; border-left: 3px solid #4CAF50;">
-        <strong>Nota:</strong> Los técnicos marcados con <span style="color: #4CAF50; font-weight: bold;">✓</span> tienen la especialidad requerida para esta solicitud.
-      </div>
-    }
-
-    <!-- Nota informativa para solicitudes pendientes -->
-  
-
-    <!-- Detalles de la Solicitud -->
-    <div class="section-title">Detalles de la Solicitud</div>
-    
-
-
-    <div class="form-row">
-      <mat-form-field appearance="fill">
-        <mat-label>Tipo de Servicio</mat-label>
-        @if (isPendiente && !isRechazada) {
-          <mat-select formControlName="tipoServicioId">
-            <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
-              {{tipo.nombre}}
-            </mat-option>
-          </mat-select>
-        } @else {
-          <input matInput [value]="getTipoServicioNombre(solicitud?.tipoServicioId)" disabled>
-        }
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Sector de Trabajo</mat-label>
-        @if (isPendiente && !isRechazada) {
-          <mat-select formControlName="sectorTrabajoId">
-            <mat-option *ngFor="let sector of sectoresTrabajos" [value]="sector.id">
-              {{sector.nombre}}
-            </mat-option>
-          </mat-select>
-        } @else {
-          <input matInput [value]="getSectorTrabajoNombre(solicitud?.sectorTrabajoId)" disabled>
-        }
-      </mat-form-field>
-    </div>
-
-    <div class="form-row">
-      <mat-form-field appearance="fill">
-        <mat-label>Especialidad</mat-label>
-        @if (isPendiente && !isRechazada) {
-          <mat-select formControlName="especialidad">
-            <mat-option [value]="null">Seleccione una especialidad</mat-option>
-            <mat-option *ngFor="let esp of especialidades" [value]="esp.id">
-              {{esp.nombre}}
-            </mat-option>
-          </mat-select>
-        } @else {
-          <input matInput [value]="getEspecialidadNombre(solicitud?.especialidad)" disabled>
-        }
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Fecha de Visita</mat-label>
-        @if (solicitud?.status === 'validada' || isRechazada || isAprobada) {
-          <input matInput [value]="solicitud?.fechaVisita | date:'dd-MM-yyyy'" disabled>
-        } @else {
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <input matInput [matDatepicker]="picker" formControlName="fechaVisita" required style="flex: 1;">
-            <mat-datepicker-toggle [for]="picker"></mat-datepicker-toggle>
-          </div>
-          <mat-datepicker #picker></mat-datepicker>
-          <mat-error *ngIf="isPendiente && solicitudForm.get('fechaVisita')?.hasError('required')">
-            Se requiere una fecha de visita antes de aprobar la solicitud
-          </mat-error>
-        }
-      </mat-form-field>
-    </div>
-
-    <div class="form-row">
-      <mat-form-field appearance="fill">
-        <mat-label>Ticket</mat-label>
-      
-          <input matInput [value]="solicitud?.ticketGruman" disabled>
-      
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Status</mat-label>
-        <input matInput [value]="solicitud?.status" disabled>
-      </mat-form-field>
-    </div>
-
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Observaciones</mat-label>
-      @if (isValidated() || isRechazada || isValidada || isAprobada) {
-        <textarea matInput [value]="solicitud?.observaciones" rows="4" disabled></textarea>
+  <mat-card-content class="">
+    <div class="container">
+      @if (isPendiente) {
+      <h2>Solicitud pendiente número: <strong>{{solicitud?.id}}</strong></h2>
+      } @else if (isAprobada) {
+      <h2>Solicitud aprobada número: <strong>{{solicitud?.id}}</strong></h2>
+      } @else if (isRechazada) {
+      <h2>Solicitud rechazada número: <strong>{{solicitud?.id}}</strong></h2>
+      } @else if (isValidada) {
+      <h2>Solicitud validada número: <strong>{{solicitud?.id}}</strong></h2>
       } @else {
-        <textarea matInput formControlName="observaciones" rows="4"></textarea>
+      <h2>Modificar solicitud número: <strong>{{solicitud?.id}}</strong></h2>
       }
-    </mat-form-field>
+      @if (isAprobada) {
+      <!-- Banner de solicitud aprobada -->
 
-    <!-- Imágenes de la solicitud -->
-    @if (solicitud?.imagenes?.length) {
-      <div class="section-title">Imágenes de la Solicitud</div>
-      <div class="images-container">
-        <div class="image-grid">
-          @for (imagen of solicitud.imagenes; track $index) {
+      <!-- Banner de cambio de fecha separado -->
+      <div class="change-date-banner mb-3"
+        style="padding: 16px; background-color: #FAFAFA; border: 1px solid #E0E0E0; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center;">
+          <mat-icon style="margin-right: 8px; color: #757575;">event</mat-icon>
+          <span>Cambiar fecha de visita</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <mat-form-field appearance="outline" style="width: 200px; margin: 0;">
+            <mat-label>Nueva fecha de visita</mat-label>
+            <input matInput [matDatepicker]="changeDatePicker" [(ngModel)]="nuevaFechaVisita"
+              [ngModelOptions]="{standalone: true}">
+            <mat-datepicker-toggle matIconSuffix [for]="changeDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #changeDatePicker></mat-datepicker>
+          </mat-form-field>
+          <button mat-raised-button color="primary" (click)="cambiarFechaVisita()" [disabled]="!nuevaFechaVisita">
+            <mat-icon>save</mat-icon>
+            Guardar
+          </button>
+        </div>
+      </div>
+      }
+      <form [formGroup]="solicitudForm">
+        <!-- Información del Cliente y Local -->
+        <div class="section-title">Información general</div>
+        <div class="form-row">
+          <mat-form-field appearance="fill">
+            <mat-label>Cliente</mat-label>
+            <input matInput formControlName="client.nombre"
+              [disabled]="solicitud?.status === 'validada' || isRechazada">
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Local</mat-label>
+            <input matInput formControlName="local.nombre_local"
+              [disabled]="solicitud?.status === 'validada' || isRechazada">
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="fill">
+            <mat-label>Dirección local</mat-label>
+            <input matInput formControlName="local.direccion"
+              [disabled]="solicitud?.status === 'validada' || isRechazada">
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Valor servicio {{ getTipoServicioNombre(solicitudForm.get('tipoServicioId')?.value) ? ' ' +
+              getTipoServicioNombre(solicitudForm.get('tipoServicioId')?.value) : '' }}</mat-label>
+            <input matInput formControlName="valorPorLocal" type="number"
+              [disabled]="(!isPendiente && !isReabierta && solicitud?.status !== 'reabierta' && solicitud?.status !== 'finalizada') || isRechazada || isAprobada || isValidada">
+            <span matPrefix>$&nbsp;</span>
+          </mat-form-field>
+        </div>
+
+        <!-- Registro de Visita - Visible en estados finalizada, reabierta o validada -->
+        <div class="form-row"
+          *ngIf="solicitud?.status === 'finalizada' || solicitud?.status === 'reabierta' || isReabierta || solicitud?.status === 'validada' || isValidada">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Registro de visita</mat-label>
+            <input matInput formControlName="registroVisita" rows="4" placeholder="Ingrese los detalles de la visita"
+              [disabled]="solicitud?.status === 'validada' || isValidada" />
+          </mat-form-field>
+        </div>
+
+        <!-- Causa Raíz - Solo visible cuando la solicitud está finalizada -->
+        @if (solicitud?.status === 'finalizada' || solicitud?.status === 'reabierta' || solicitud?.status ===
+        'validada') {
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Causa raíz</mat-label>
+            <mat-select formControlName="causaRaizId" [disabled]="solicitud?.status === 'validada' || isValidada">
+              <mat-option [value]="null">Seleccione una causa</mat-option>
+              <mat-option *ngFor="let causa of causasRaiz" [value]="causa.id">
+                {{ causa.nombre }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        }
+
+        <div class="row m-b-16">
+          <div class="radio-group-container col-md-4">
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Garantía</mat-label>
+              <mat-select formControlName="garantia">
+                <mat-option [value]="null">Seleccione una causa</mat-option>
+                <mat-option value="si">Si</mat-option>
+                <mat-option value="no">No</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="radio-group-container col-md-4">
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Turno</mat-label>
+              <mat-select formControlName="turno">
+                <mat-option [value]="null">Seleccione una causa</mat-option>
+                <mat-option value="diurno">Diurno</mat-option>
+                <mat-option value="nocturno">Nocturno</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="radio-group-container col-md-4">
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Estado solicitud</mat-label>
+              <mat-select formControlName="estado_solicitud">
+                <mat-option [value]="null">Seleccione una causa</mat-option>
+                <mat-option value="resuelto">Resuelto</mat-option>
+                <mat-option value="no_resuelto">No resuelto</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-12">
+            @if (imagePreview) {
+              <div class="image-box" style="position: relative;">
+                <img loading="lazy" [src]="imagePreview" alt="Vista previa del logo" class="img-preview" />
+                <button mat-icon-button color="primary" (click)="openImageModal()" matTooltip="Ver imagen en tamaño completo" 
+                  style="position: absolute; top: 8px; right: 8px; background-color: rgba(255, 255, 255, 0.8);">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </div>
+            }@else{
+            <div class="drop-area" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+              <p>Cargar una OT</p>
+              <p>Añade o arrastra el archivo aqui</p>
+            </div>
+            }
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+          </div>
+        </div>
+
+
+
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Técnico asignado</mat-label>
+            <mat-select formControlName="tecnico_asignado_id" [disabled]="!isPendiente || isRechazada" required>
+              <mat-option [value]="null">Sin asignar</mat-option>
+              <mat-option *ngFor="let tecnico of tecnicos" [value]="tecnico.id">
+                <div style="display: flex; align-items: center; justify-content: space-between;"
+                  [matTooltip]="'Especialidades: ' + getTecnicoEspecialidades(tecnico)">
+                  <span>{{tecnico.name}} {{tecnico.lastName}}</span>
+                  @if (tecnicoTieneEspecialidad(tecnico)) {
+                  <span
+                    style="color: #4CAF50; font-size: 18px; margin-left: 8px; font-weight: bold; display: flex; align-items: center;"
+                    matTooltip="Técnico con la especialidad requerida">
+                    ✓
+                  </span>
+                  }
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="isPendiente && solicitudForm.get('tecnico_asignado_id')?.hasError('required')">
+              Se requiere asignar un técnico antes de aprobar la solicitud
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-row">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Técnico asignado 2 (Opcional)</mat-label>
+            <mat-select formControlName="tecnico_asignado_id_2" [disabled]="!isPendiente || isRechazada">
+              <mat-option [value]="null">Sin asignar</mat-option>
+              <mat-option *ngFor="let tecnico of getTecnicosDisponiblesParaSegundoSelect()" [value]="tecnico.id">
+                <div style="display: flex; align-items: center; justify-content: space-between;"
+                  [matTooltip]="'Especialidades: ' + getTecnicoEspecialidades(tecnico)">
+                  <span>{{tecnico.name}} {{tecnico.lastName}}</span>
+                  @if (tecnicoTieneEspecialidad(tecnico)) {
+                  <span
+                    style="color: #4CAF50; font-size: 18px; margin-left: 8px; font-weight: bold; display: flex; align-items: center;"
+                    matTooltip="Técnico con la especialidad requerida">
+                    ✓
+                  </span>
+                  }
+                </div>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Mensaje explicativo sobre el ícono de especialidad -->
+        @if (isPendiente) {
+        <div
+          style="margin-bottom: 16px; padding: 8px 12px; background-color: #f5f7fa; border-radius: 4px; font-size: 14px; color: #555; border-left: 3px solid #4CAF50;">
+          <strong>Nota:</strong> Los técnicos marcados con <span style="color: #4CAF50; font-weight: bold;">✓</span>
+          tienen la especialidad requerida para esta solicitud.
+        </div>
+        }
+
+        <!-- Nota informativa para solicitudes pendientes -->
+
+
+        <!-- Detalles de la Solicitud -->
+        <div class="section-title">Detalles de la solicitud</div>
+
+
+
+        <div class="form-row">
+          <mat-form-field appearance="fill">
+            <mat-label>Tipo de servicio</mat-label>
+            @if (isPendiente && !isRechazada) {
+            <mat-select formControlName="tipoServicioId">
+              <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
+                {{tipo.nombre}}
+              </mat-option>
+            </mat-select>
+            } @else {
+            <input matInput [value]="getTipoServicioNombre(solicitud?.tipoServicioId)" disabled>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Sector de trabajo</mat-label>
+            @if (isPendiente && !isRechazada) {
+            <mat-select formControlName="sectorTrabajoId">
+              <mat-option *ngFor="let sector of sectoresTrabajos" [value]="sector.id">
+                {{sector.nombre}}
+              </mat-option>
+            </mat-select>
+            } @else {
+            <input matInput [value]="getSectorTrabajoNombre(solicitud?.sectorTrabajoId)" disabled>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="fill">
+            <mat-label>Especialidad</mat-label>
+            @if (isPendiente && !isRechazada) {
+            <mat-select formControlName="especialidad">
+              <mat-option [value]="null">Seleccione una especialidad</mat-option>
+              <mat-option *ngFor="let esp of especialidades" [value]="esp.id">
+                {{esp.nombre}}
+              </mat-option>
+            </mat-select>
+            } @else {
+            <input matInput [value]="getEspecialidadNombre(solicitud?.especialidad)" disabled>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Fecha de visita</mat-label>
+            @if (solicitud?.status === 'validada' || isRechazada || isAprobada) {
+            <input matInput [value]="solicitud?.fechaVisita | date:'dd-MM-yyyy'" disabled>
+            } @else {
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <input matInput [matDatepicker]="picker" formControlName="fechaVisita" required style="flex: 1;">
+              <mat-datepicker-toggle [for]="picker"></mat-datepicker-toggle>
+            </div>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="isPendiente && solicitudForm.get('fechaVisita')?.hasError('required')">
+              Se requiere una fecha de visita antes de aprobar la solicitud
+            </mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="fill">
+            <mat-label>Ticket</mat-label>
+
+            <input matInput [value]="solicitud?.ticketGruman" disabled>
+
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Status</mat-label>
+            <input matInput [value]="solicitud?.status" disabled>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Observaciones</mat-label>
+          @if (isValidated() || isRechazada || isValidada || isAprobada) {
+          <textarea matInput [value]="solicitud?.observaciones" rows="4" disabled></textarea>
+          } @else {
+          <textarea matInput formControlName="observaciones" rows="4"></textarea>
+          }
+        </mat-form-field>
+
+        <!-- Imágenes de la solicitud -->
+        @if (solicitud?.imagenes?.length) {
+        <div class="section-title">Imágenes de la Solicitud</div>
+        <div class="images-container">
+          <div class="image-grid">
+            @for (imagen of solicitud.imagenes; track $index) {
             <div class="image-item">
-              <img [src]="imagen" 
-                  alt="Imagen de la solicitud"
-                  class="solicitud-image">
+              <img [src]="imagen" alt="Imagen de la solicitud" class="solicitud-image">
               <div class="image-actions">
                 <button mat-icon-button color="primary" (click)="openPhotoViewer([imagen])" matTooltip="Ver imagen">
                   <mat-icon>visibility</mat-icon>
@@ -249,508 +314,517 @@
                 </button>
               </div>
             </div>
-          }
+            }
+          </div>
         </div>
-      </div>
-    }
+        }
 
-    <!-- Fechas de Servicio -->
-    <div class="section-title" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Fechas de Servicio</div>
-    <div class="form-row" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
-      <mat-form-field appearance="fill">
-        <mat-label>Fecha/Hora Inicio Servicio</mat-label>
-        <!-- Campo oculto para mantener el valor en el formulario -->
-        <input matInput formControlName="fecha_hora_inicio_servicio" style="display: none;">
-        <!-- Campo visible con formato personalizado -->
-        <input matInput 
-              [value]="solicitud?.fecha_hora_inicio_servicio | date:'dd-MM-yyyy  HH:mm'"
-              [disabled]="true"
+        <!-- Fechas de Servicio -->
+        <div class="section-title" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Fechas de Servicio
+        </div>
+        <div class="form-row" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
+          <mat-form-field appearance="fill">
+            <mat-label>Fecha/Hora Inicio Servicio</mat-label>
+            <!-- Campo oculto para mantener el valor en el formulario -->
+            <input matInput formControlName="fecha_hora_inicio_servicio" style="display: none;">
+            <!-- Campo visible con formato personalizado -->
+            <input matInput [value]="solicitud?.fecha_hora_inicio_servicio | date:'dd-MM-yyyy  HH:mm'" [disabled]="true"
               [placeholder]="'Sin fecha de inicio'">
-      </mat-form-field>
+          </mat-form-field>
 
-      <mat-form-field appearance="fill">
-        <mat-label>Fecha/Hora Fin Servicio</mat-label>
-        <!-- Campo oculto para mantener el valor en el formulario -->
-        <input matInput formControlName="fecha_hora_fin_servicio" style="display: none;">
-        <!-- Campo visible con formato personalizado -->
-        <input matInput 
-              [value]="solicitud?.fecha_hora_fin_servicio | date:'dd-MM-yyyy  HH:mm'"
-              [disabled]="true"
+          <mat-form-field appearance="fill">
+            <mat-label>Fecha/Hora Fin Servicio</mat-label>
+            <!-- Campo oculto para mantener el valor en el formulario -->
+            <input matInput formControlName="fecha_hora_fin_servicio" style="display: none;">
+            <!-- Campo visible con formato personalizado -->
+            <input matInput [value]="solicitud?.fecha_hora_fin_servicio | date:'dd-MM-yyyy  HH:mm'" [disabled]="true"
               [placeholder]="'Sin fecha de fin'">
-      </mat-form-field>
-    </div>
-
-    <!-- Ubicación -->
-    <div class="section-title" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Ubicación</div>
-    <div class="form-row" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
-      <mat-form-field appearance="fill">
-        <mat-label>Latitud</mat-label>
-        @if (isValidated() || isRechazada || isValidada) {
-          <input matInput [value]="solicitud?.latitud_movil" disabled>
-        } @else {
-          <input matInput formControlName="latitud_movil" type="number" step="0.000001">
-        }
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Longitud</mat-label>
-        @if (isValidated() || isRechazada || isValidada) {
-          <input matInput [value]="solicitud?.longitud_movil" disabled>
-        } @else {
-          <input matInput formControlName="longitud_movil" type="number" step="0.000001">
-        }
-      </mat-form-field>
-    </div>
-
-    <!-- Agregar después de la sección de ubicación -->
-    <div class="detail-section" *ngIf="(!isPendiente && !isAprobada && !isRechazada || isValidada) && solicitud?.latitud_movil && solicitud?.longitud_movil">
-      <h3>Ubicación del Local</h3>
-      <div class="map-container">
-        <div class="map-frame">
-          <div id="map" style="height: 400px; width: 100%; border: 1px solid #ccc;"></div>
+          </mat-form-field>
         </div>
-      </div>
-    </div>
 
-    <!-- Firma del Cliente -->
-    <div class="section-title" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Firma del Cliente</div>
-    <div class="signature-container" *ngIf="(!isPendiente && !isAprobada && !isRechazada || isValidada) && solicitud?.firma_cliente">
-      <img [src]="solicitud.firma_cliente" alt="Firma del cliente" class="signature-image">
-    </div>
+        <!-- Ubicación -->
+        <div class="section-title" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Ubicación</div>
+        <div class="form-row" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
+          <mat-form-field appearance="fill">
+            <mat-label>Latitud</mat-label>
+            @if (isValidated() || isRechazada || isValidada) {
+            <input matInput [value]="solicitud?.latitud_movil" disabled>
+            } @else {
+            <input matInput formControlName="latitud_movil" type="number" step="0.000001">
+            }
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Longitud</mat-label>
+            @if (isValidated() || isRechazada || isValidada) {
+            <input matInput [value]="solicitud?.longitud_movil" disabled>
+            } @else {
+            <input matInput formControlName="longitud_movil" type="number" step="0.000001">
+            }
+          </mat-form-field>
+        </div>
 
-    <!-- Lista de Inspección -->
-    <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos utilizados en la inspección</div>
-    <div class="lista-container" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
-      @for (lista of listaInspeccion; track lista.id) {
-        <div class="lista-seccion">
-          <div class="seccion-header">{{ lista.name }}</div>
-          <ul class="lista-items">
-            @for (item of lista.items; track item.id) {
+        <!-- Agregar después de la sección de ubicación -->
+        <div class="detail-section"
+          *ngIf="(!isPendiente && !isAprobada && !isRechazada || isValidada) && solicitud?.latitud_movil && solicitud?.longitud_movil">
+          <h3>Ubicación del Local</h3>
+          <div class="map-container">
+            <div class="map-frame">
+              <div id="map" style="height: 400px; width: 100%; border: 1px solid #ccc;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Firma del Cliente -->
+        <div class="section-title" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Firma del Cliente
+        </div>
+        <div class="signature-container"
+          *ngIf="(!isPendiente && !isAprobada && !isRechazada || isValidada) && solicitud?.firma_cliente">
+          <img [src]="solicitud.firma_cliente" alt="Firma del cliente" class="signature-image">
+        </div>
+
+        <!-- Lista de Inspección -->
+        <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos
+          utilizados en la inspección</div>
+        <div class="lista-container" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
+          @for (lista of listaInspeccion; track lista.id) {
+          <div class="lista-seccion">
+            <div class="seccion-header">{{ lista.name }}</div>
+            <ul class="lista-items">
+              @for (item of lista.items; track item.id) {
               <li>
                 {{ item.name }}
                 <ul class="lista-subitems">
                   @for (subItem of item.subItems; track subItem.id) {
-                    <li [class.deshabilitado]="subItem.disabled">
-                      <div class="repuesto-info " style="display: flex; justify-content: space-between; width: 100%;">
-                        <div class="repuesto-detail " style="flex: 0 0 60%; padding-right: 10px;">
-                          <strong>Item:</strong> 
-                          <span>{{ subItem.name }}</span>
-                        </div>
-                        <div class="repuesto-detail " style="flex: 0 0 40%; text-align: right;">
-                          <strong>Estado:</strong>
-                          <span class="badge" [ngClass]="{
+                  <li [class.deshabilitado]="subItem.disabled">
+                    <div class="repuesto-info " style="display: flex; justify-content: space-between; width: 100%;">
+                      <div class="repuesto-detail " style="flex: 0 0 60%; padding-right: 10px;">
+                        <strong>Item:</strong>
+                        <span>{{ subItem.name }}</span>
+                      </div>
+                      <div class="repuesto-detail " style="flex: 0 0 40%; text-align: right;">
+                        <strong>Estado:</strong>
+                        <span class="badge" [ngClass]="{
                             'badge-success': getItemEstado(subItem.id)?.estado === 'conforme',
                             'badge-warning': getItemEstado(subItem.id)?.estado === 'no_aplica',
                             'badge-danger': getItemEstado(subItem.id)?.estado === 'no_conforme'
                           }">
-                            {{ getEstadoLabel(getItemEstado(subItem.id)?.estado) }}
-                          </span>
-                        </div>
+                          {{ getEstadoLabel(getItemEstado(subItem.id)?.estado) }}
+                        </span>
                       </div>
-                      <div class="subitem-actions">
-                        <button mat-button  color="primary" 
-                                *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
-                                (click)="toggleAddRepuestoForm(subItem.id)"
-                                matTooltip="Agregar repuesto">
-                         Agregar repuestos <mat-icon>add</mat-icon>
-                        </button>
-                        @if (subItem.fotos?.length) {
-                          <span class="photo-count">{{ subItem.fotos.length }} foto(s)</span>
-                        }
-                      </div>
+                    </div>
+                    <div class="subitem-actions">
+                      <button mat-button color="primary"
+                        *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
+                        (click)="toggleAddRepuestoForm(subItem.id)" matTooltip="Agregar repuesto">
+                        Agregar repuestos <mat-icon>add</mat-icon>
+                      </button>
+                      @if (subItem.fotos?.length) {
+                      <span class="photo-count">{{ subItem.fotos.length }} foto(s)</span>
+                      }
+                    </div>
 
-                      <!-- Miniaturas de fotos -->
-                      <div class="photos-container">
-                          <div class="photo-grid">
-                            <div class="photo-item" *ngFor="let foto of getItemFotos(subItem.id)?.fotos">
-                              <div class="photo-container">
-                                <button mat-icon-button style="z-index: 9900;" color="primary" (click)="openPhotoViewer([foto])" matTooltip="Ver imagen">
-                                  <mat-icon>visibility</mat-icon>
-                                </button>
-                                <button mat-icon-button style="z-index: 9900;" color="accent" (click)="downloadPhotos([foto])" matTooltip="Descargar imagen">
-                                  <mat-icon>download</mat-icon>
-                                </button> <img [src]="foto" 
-                                     [alt]="'Foto de ' + subItem.name"
-                                     class="inspection-photo">
-                                <div class="image-actions">
-                                 
-                                </div>
-                              </div>
+                    <!-- Miniaturas de fotos -->
+                    <div class="photos-container">
+                      <div class="photo-grid">
+                        <div class="photo-item" *ngFor="let foto of getItemFotos(subItem.id)?.fotos">
+                          <div class="photo-container">
+                            <button mat-icon-button style="z-index: 9900;" color="primary"
+                              (click)="openPhotoViewer([foto])" matTooltip="Ver imagen">
+                              <mat-icon>visibility</mat-icon>
+                            </button>
+                            <button mat-icon-button style="z-index: 9900;" color="accent"
+                              (click)="downloadPhotos([foto])" matTooltip="Descargar imagen">
+                              <mat-icon>download</mat-icon>
+                            </button> <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
+                            <div class="image-actions">
+
                             </div>
                           </div>
+                        </div>
                       </div>
+                    </div>
 
-                      @if (showAddRepuestoForm[subItem.id]) {
-                        <div class="add-repuesto-form mat-elevation-z2">
-                          <mat-form-field appearance="fill">
-                            <mat-label>Seleccionar Repuesto</mat-label>
-                            <mat-select [(ngModel)]="selectedRepuesto" [ngModelOptions]="{standalone: true}">
-                              @for (repuesto of repuestosList; track repuesto.id) {
-                                <mat-option [value]="repuesto">
-                                  {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ (repuesto.precio_venta || repuesto.precio || 0).toLocaleString('es-CL') }}
-                                </mat-option>
-                              }
-                            </mat-select>
-                          </mat-form-field>
+                    @if (showAddRepuestoForm[subItem.id]) {
+                    <div class="add-repuesto-form mat-elevation-z2">
+                      <mat-form-field appearance="fill">
+                        <mat-label>Seleccionar Repuesto</mat-label>
+                        <mat-select [(ngModel)]="selectedRepuesto" [ngModelOptions]="{standalone: true}">
+                          @for (repuesto of repuestosList; track repuesto.id) {
+                          <mat-option [value]="repuesto">
+                            {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ (repuesto.precio_venta ||
+                            repuesto.precio || 0).toLocaleString('es-CL') }}
+                          </mat-option>
+                          }
+                        </mat-select>
+                      </mat-form-field>
 
-                    <mat-form-field appearance="fill">
-                      <mat-label>Cantidad</mat-label>
-                      <input matInput type="number" [(ngModel)]="newRepuestoCantidad" [ngModelOptions]="{standalone: true}" min="1">
-                    </mat-form-field>
+                      <mat-form-field appearance="fill">
+                        <mat-label>Cantidad</mat-label>
+                        <input matInput type="number" [(ngModel)]="newRepuestoCantidad"
+                          [ngModelOptions]="{standalone: true}" min="1">
+                      </mat-form-field>
 
-                          <div class="form-actions">
-                            <button mat-button (click)="toggleAddRepuestoForm(subItem.id)">
-                              Cancelar
-                            </button>
-                            <button mat-raised-button color="primary" 
-                                    (click)="addRepuestoToItem(subItem.id)">
-                              Agregar
-                            </button>
+                      <div class="form-actions">
+                        <button mat-button (click)="toggleAddRepuestoForm(subItem.id)">
+                          Cancelar
+                        </button>
+                        <button mat-raised-button color="primary" (click)="addRepuestoToItem(subItem.id)">
+                          Agregar
+                        </button>
+                      </div>
+                    </div>
+                    }
+
+                    <!-- Modificamos esta sección para mostrar repuestos solo si hay repuestos válidos -->
+                    @if (subItem.repuestos?.length) {
+                    <ul class="repuestos-list">
+                      @for (repuesto of getRepuestosPorItem(subItem.id); track repuesto) {
+                      <li class="repuesto-item-horizontal" [class.temporary]="isTemporaryRepuesto(subItem.id, repuesto)"
+                        [class.deleted]="isRepuestoPendingDelete(subItem.id, repuesto)">
+
+                        <div class="repuesto-content">
+                          <!-- Fila 1: Artículo -->
+                          <div class="repuesto-row repuesto-row-articulo">
+                            <strong>Artículo:</strong>
+                            <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
+                          </div>
+
+                          <!-- Fila 2: Detalles -->
+                          <div class="repuesto-row">
+                            <span><strong>Marca:</strong> {{ repuesto.repuesto?.marca || 'N/A' }}</span>
+                            <span><strong>Cantidad:</strong> {{ repuesto.cantidad }}</span>
+                            <span><strong>Precio:</strong> ${{ (repuesto.precio_venta || repuesto.repuesto?.precio_venta
+                              || repuesto.repuesto?.precio || 0).toLocaleString('es-CL') }}</span>
+                            <span><strong>Total:</strong> ${{ ((repuesto.cantidad || 0) * (repuesto.precio_venta ||
+                              repuesto.repuesto?.precio_venta || repuesto.repuesto?.precio ||
+                              0)).toLocaleString('es-CL') }}</span>
+
                           </div>
                         </div>
-                      }
 
-                      <!-- Modificamos esta sección para mostrar repuestos solo si hay repuestos válidos -->
-                      @if (subItem.repuestos?.length) {
-                        <ul class="repuestos-list">
-                          @for (repuesto of getRepuestosPorItem(subItem.id); track repuesto) {
-                            <li class="repuesto-item-horizontal"
-                                [class.temporary]="isTemporaryRepuesto(subItem.id, repuesto)"
-                                [class.deleted]="isRepuestoPendingDelete(subItem.id, repuesto)">
-                                
-                              <div class="repuesto-content">
-                                <!-- Fila 1: Artículo -->
-                                <div class="repuesto-row repuesto-row-articulo">
-                                  <strong>Artículo:</strong>
-                                  <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
-                                </div>
-                      
-                                <!-- Fila 2: Detalles -->
-                                <div class="repuesto-row">
-                                  <span><strong>Marca:</strong> {{ repuesto.repuesto?.marca || 'N/A' }}</span>
-                                  <span><strong>Cantidad:</strong> {{ repuesto.cantidad }}</span>
-                                  <span><strong>Precio:</strong> ${{ (repuesto.precio_venta || repuesto.repuesto?.precio_venta || repuesto.repuesto?.precio || 0).toLocaleString('es-CL') }}</span>
-                                  <span><strong>Total:</strong> ${{ ((repuesto.cantidad || 0) * (repuesto.precio_venta || repuesto.repuesto?.precio_venta || repuesto.repuesto?.precio || 0)).toLocaleString('es-CL') }}</span>
-                                  
-                                </div>
-                              </div>
-                      
-                              <!-- Icono eliminar -->
-                              <div class="repuesto-actions">
-                                <button class="delete-button"
-                                        *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
-                                        matTooltip="Eliminar repuesto"
-                                        (click)="deleteRepuesto(subItem.id, repuesto)">
-                                  <mat-icon>delete</mat-icon>
-                                </button>
-                              </div>
-                            </li>
-                          }
-                        </ul>
+                        <!-- Icono eliminar -->
+                        <div class="repuesto-actions">
+                          <button class="delete-button"
+                            *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
+                            matTooltip="Eliminar repuesto" (click)="deleteRepuesto(subItem.id, repuesto)">
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </div>
+                      </li>
                       }
-                      
-                    </li>
+                    </ul>
+                    }
+
+                  </li>
                   }
                 </ul>
               </li>
-            }
-          </ul>
+              }
+            </ul>
+          </div>
+          }
         </div>
-      }
-    </div>
 
-   
 
-    <!-- Estado y Repuestos de Activos Fijos -->
-    <div class="lista-seccion" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
-      <div class="seccion-header">Estado y Repuestos de Activos Fijos</div>
-      <div class="lista-items">
-        @for (activoFijo of solicitud.activoFijoRepuestos; track activoFijo.id) {
-          <li>
-            <!-- Detalles del Activo Fijo -->
-            <div class="repuesto-detail">
-              <strong>Tipo:</strong> {{activoFijo.activoFijo.tipo_equipo}}
-              <strong>Marca:</strong> {{activoFijo.activoFijo.marca}}
-              <strong>Potencia:</strong> {{activoFijo.activoFijo.potencia_equipo}}
-              <strong>Código:</strong> {{activoFijo.activoFijo.codigo_activo}}
-            </div>
 
-            <!-- Lista de Repuestos -->
-            <div class="repuestos-list">
-              @for (detalle of activoFijo.detallesRepuestos; track $index) {
+        <!-- Estado y Repuestos de Activos Fijos -->
+        <div class="lista-seccion" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
+          <div class="seccion-header">Estado y Repuestos de Activos Fijos</div>
+          <div class="lista-items">
+            @for (activoFijo of solicitud.activoFijoRepuestos; track activoFijo.id) {
+            <li>
+              <!-- Detalles del Activo Fijo -->
+              <div class="repuesto-detail">
+                <strong>Tipo:</strong> {{activoFijo.activoFijo.tipo_equipo}}
+                <strong>Marca:</strong> {{activoFijo.activoFijo.marca}}
+                <strong>Potencia:</strong> {{activoFijo.activoFijo.potencia_equipo}}
+                <strong>Código:</strong> {{activoFijo.activoFijo.codigo_activo}}
+              </div>
+
+              <!-- Lista de Repuestos -->
+              <div class="repuestos-list">
+                @for (detalle of activoFijo.detallesRepuestos; track $index) {
                 <div class="repuesto-item-horizontal">
                   <div class="repuesto-content">
                     <div class="repuesto-row">
-                      <strong>Artículo:</strong> 
+                      <strong>Artículo:</strong>
                       <span>{{ detalle.repuesto.articulo || 'N/A' }}</span>
                     </div>
                     <div class="repuesto-row">
-                      <strong>Marca:</strong> 
+                      <strong>Marca:</strong>
                       <span>{{ detalle.repuesto.marca || 'N/A' }}</span>
-                    
-                      <strong>Cantidad:</strong> 
+
+                      <strong>Cantidad:</strong>
                       <span>{{ detalle.cantidad }}</span>
-                   
-                      <strong>Precio:</strong> 
+
+                      <strong>Precio:</strong>
                       <span>${{ detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
-                    
-                      <strong>Total:</strong> 
-                      <span>${{ detalle.cantidad * +detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+
+                      <strong>Total:</strong>
+                      <span>${{ detalle.cantidad * +detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0'
+                        }}</span>
                     </div>
                   </div>
                 </div>
-                
-              }
-              
-              <!-- Total del Activo Fijo -->
-              <div class="total-section">
-                <div class="total-amount">
-                  <strong>Total Activo Fijo:</strong>
-                  <span>${{ calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos) | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+
+                }
+
+                <!-- Total del Activo Fijo -->
+                <div class="total-section">
+                  <div class="total-amount">
+                    <strong>Total Activo Fijo:</strong>
+                    <span>${{ calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos) |
+                      currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </li>
-        }
-      </div>
-    </div>
-
-    <!-- aca mostrar la tabla de checklist de clima -->
-    <div class="checklist-clima-section" *ngIf="solicitud?.checklistsClima?.length > 0">
-      <h3 class="section-title">Checklist de Clima</h3>
-      
-      @for (checklist of solicitud.checklistsClima; track checklist.id) {
-        <mat-card class="checklist-card mb-4">
-          <mat-card-header>
-            <mat-card-title>
-              Activo Fijo: {{ getActivoFijoInfo(checklist.activoFijoId) }}
-            </mat-card-title>
-            <mat-card-subtitle>
-              Fecha: {{ checklist.createdAt | date:'dd/MM/yyyy HH:mm' }}
-            </mat-card-subtitle>
-          </mat-card-header>
-          
-          <mat-card-content>
-            <!-- Mediciones -->
-            <div class="mediciones-section">
-              <h4>Mediciones de Temperatura</h4>
-              <table class="table-checklist">
-                <tr>
-                  <th>Medición</th>
-                  <th>Valor</th>
-                  <th>Observación</th>
-                </tr>
-                <tr>
-                  <td>Set Point</td>
-                  <td>{{ checklist.medicion_SetPoint }}°C</td>
-                  <td>{{ checklist.medicion_SetPoint_observacion }}</td>
-                </tr>
-                <tr>
-                  <td>Temp. Inyección Frío</td>
-                  <td>{{ checklist.medicion_TempInjeccionFrio }}°C</td>
-                  <td>{{ checklist.medicion_TempInjeccionFrio_observacion }}</td>
-                </tr>
-                <tr>
-                  <td>Temp. Inyección Calor</td>
-                  <td>{{ checklist.medicion_TempInjeccionCalor }}°C</td>
-                  <td>{{ checklist.medicion_TempInjeccionCalor_observacion }}</td>
-                </tr>
-                <tr>
-                  <td>Temp. Ambiente</td>
-                  <td>{{ checklist.medicion_TempAmbiente }}°C</td>
-                  <td>{{ checklist.medicion_TempAmbiente_observacion }}</td>
-                </tr>
-                <tr>
-                  <td>Temp. Retorno</td>
-                  <td>{{ checklist.medicion_TempRetorno }}°C</td>
-                  <td>{{ checklist.medicion_TempRetorno_observacion }}</td>
-                </tr>
-                <tr>
-                  <td>Temp. Exterior</td>
-                  <td>{{ checklist.medicion_TempExterior }}°C</td>
-                  <td>{{ checklist.medicion_TempExterior_observacion }}</td>
-                </tr>
-              </table>
-            </div>
-
-            <!-- Consumos -->
-            <div class="consumos-section mt-4">
-              <h4>Consumos y Tensiones</h4>
-              <div class="grid-container">
-                <div class="grid-item">
-                  <h5>Consumo Compresor</h5>
-                  <table class="table-checklist">
-                    <tr>
-                      <td>R:</td>
-                      <td>{{ checklist.consumoCompresor_R }}A</td>
-                    </tr>
-                    <tr>
-                      <td>S:</td>
-                      <td>{{ checklist.consumoCompresor_S }}A</td>
-                    </tr>
-                    <tr>
-                      <td>T:</td>
-                      <td>{{ checklist.consumoCompresor_T }}A</td>
-                    </tr>
-                    <tr>
-                      <td>N:</td>
-                      <td>{{ checklist.consumoCompresor_N }}A</td>
-                    </tr>
-                  </table>
-                </div>
-
-                <div class="grid-item">
-                  <h5>Tensiones</h5>
-                  <table class="table-checklist">
-                    <tr>
-                      <td>R-S:</td>
-                      <td>{{ checklist.tension_R_S }}V</td>
-                    </tr>
-                    <tr>
-                      <td>S-T:</td>
-                      <td>{{ checklist.tension_S_T }}V</td>
-                    </tr>
-                    <tr>
-                      <td>T-R:</td>
-                      <td>{{ checklist.tension_T_R }}V</td>
-                    </tr>
-                    <tr>
-                      <td>T-N:</td>
-                      <td>{{ checklist.tension_T_N }}V</td>
-                    </tr>
-                  </table>
-                </div>
-
-                <div class="grid-item">
-                  <h5>Consumo Total</h5>
-                  <table class="table-checklist">
-                    <tr>
-                      <td>R:</td>
-                      <td>{{ checklist.consumo_total_R }}A</td>
-                    </tr>
-                    <tr>
-                      <td>S:</td>
-                      <td>{{ checklist.consumo_total_S }}A</td>
-                    </tr>
-                    <tr>
-                      <td>T:</td>
-                      <td>{{ checklist.consumo_total_T }}A</td>
-                    </tr>
-                    <tr>
-                      <td>N:</td>
-                      <td>{{ checklist.consumo_total_N }}A</td>
-                    </tr>
-                  </table>
-                </div>
-
-                <div class="grid-item">
-                  <h5>Presiones</h5>
-                  <table class="table-checklist">
-                    <tr>
-                      <td>Alta:</td>
-                      <td>{{ checklist.presiones_alta }}PSI</td>
-                    </tr>
-                    <tr>
-                      <td>Baja:</td>
-                      <td>{{ checklist.presiones_baja }}PSI</td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      }
-    </div>
-
-    <!-- Total Final -->
-    <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
-     
-      <!-- Total Final -->
-      <div class="final-total-amount">
-        <strong>Total Final:</strong>
-        <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
-      </div>
-    </div>
-    @if (isPendiente) {
-      <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
-        <mat-icon style="color: #1976d2;">info</mat-icon>
-        <span style="color: #1565c0; font-size: 14px;">Para aprobar esta solicitud, debes asignar un técnico y verificar la fecha de visita.</span>
-      </div>
-    }
-    <div class="actions">
-      <button mat-button [style.color]="solicitud?.status === 'validada' || isAprobada || isRechazada ? '#1976d2' : ''" (click)="onCancel()">
-        {{ solicitud?.status !== 'validada' && !isAprobada && !isRechazada ? 'Cancelar' : 'Volver' }}
-      </button>
-
-      @if (isPendiente) {
-        <!-- Botones para estado pendiente -->
-        <button mat-raised-button color="primary" 
-                (click)="aprobarSolicitud()" 
-                style="margin-right: 10px;"
-                [disabled]="!solicitudForm.get('tecnico_asignado_id')?.value">
-          <mat-icon>check_circle</mat-icon> Aprobar
-        </button>
-        <button mat-raised-button color="warn" (click)="rechazarSolicitud()">
-          <mat-icon>cancel</mat-icon> Rechazar
-        </button>
-      } @else if (isAprobada) {
-        <!-- Banner de solicitud aprobada -->
-        <div class="approved-banner mb-3" style="color: #2196F3; padding: 16px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; min-height: 56px;">
-          <mat-icon style="margin-right: 8px; height: 24px; width: 24px; font-size: 24px; line-height: 24px;">schedule</mat-icon>
-          <span style="line-height: 24px;">Esta solicitud está aprobada y a la espera de la visita del técnico</span>
+            </li>
+            }
+          </div>
         </div>
 
-      } @else if (isRechazada) {
-        <!-- Banner informativo para solicitudes rechazadas -->
-        <div class="rejected-message" style="color: #F44336; padding: 15px; background-color: #FFEBEE; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%; flex-direction: column; margin-bottom: 15px;">
-          <div style="display: flex; align-items: center; width: 100%; justify-content: center; margin-bottom: 10px;">
-            <mat-icon style="vertical-align: middle; margin-right: 8px; font-size: 28px; height: 28px; width: 28px;">cancel</mat-icon>
-            <span style="font-weight: bold; font-size: 18px;">Esta solicitud fue rechazada</span>
+        <!-- aca mostrar la tabla de checklist de clima -->
+        <div class="checklist-clima-section" *ngIf="solicitud?.checklistsClima?.length > 0">
+          <h3 class="section-title">Checklist de Clima</h3>
+
+          @for (checklist of solicitud.checklistsClima; track checklist.id) {
+          <mat-card class="checklist-card mb-4">
+            <mat-card-header>
+              <mat-card-title>
+                Activo Fijo: {{ getActivoFijoInfo(checklist.activoFijoId) }}
+              </mat-card-title>
+              <mat-card-subtitle>
+                Fecha: {{ checklist.createdAt | date:'dd/MM/yyyy HH:mm' }}
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <!-- Mediciones -->
+              <div class="mediciones-section">
+                <h4>Mediciones de Temperatura</h4>
+                <table class="table-checklist">
+                  <tr>
+                    <th>Medición</th>
+                    <th>Valor</th>
+                    <th>Observación</th>
+                  </tr>
+                  <tr>
+                    <td>Set Point</td>
+                    <td>{{ checklist.medicion_SetPoint }}°C</td>
+                    <td>{{ checklist.medicion_SetPoint_observacion }}</td>
+                  </tr>
+                  <tr>
+                    <td>Temp. Inyección Frío</td>
+                    <td>{{ checklist.medicion_TempInjeccionFrio }}°C</td>
+                    <td>{{ checklist.medicion_TempInjeccionFrio_observacion }}</td>
+                  </tr>
+                  <tr>
+                    <td>Temp. Inyección Calor</td>
+                    <td>{{ checklist.medicion_TempInjeccionCalor }}°C</td>
+                    <td>{{ checklist.medicion_TempInjeccionCalor_observacion }}</td>
+                  </tr>
+                  <tr>
+                    <td>Temp. Ambiente</td>
+                    <td>{{ checklist.medicion_TempAmbiente }}°C</td>
+                    <td>{{ checklist.medicion_TempAmbiente_observacion }}</td>
+                  </tr>
+                  <tr>
+                    <td>Temp. Retorno</td>
+                    <td>{{ checklist.medicion_TempRetorno }}°C</td>
+                    <td>{{ checklist.medicion_TempRetorno_observacion }}</td>
+                  </tr>
+                  <tr>
+                    <td>Temp. Exterior</td>
+                    <td>{{ checklist.medicion_TempExterior }}°C</td>
+                    <td>{{ checklist.medicion_TempExterior_observacion }}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Consumos -->
+              <div class="consumos-section mt-4">
+                <h4>Consumos y Tensiones</h4>
+                <div class="grid-container">
+                  <div class="grid-item">
+                    <h5>Consumo Compresor</h5>
+                    <table class="table-checklist">
+                      <tr>
+                        <td>R:</td>
+                        <td>{{ checklist.consumoCompresor_R }}A</td>
+                      </tr>
+                      <tr>
+                        <td>S:</td>
+                        <td>{{ checklist.consumoCompresor_S }}A</td>
+                      </tr>
+                      <tr>
+                        <td>T:</td>
+                        <td>{{ checklist.consumoCompresor_T }}A</td>
+                      </tr>
+                      <tr>
+                        <td>N:</td>
+                        <td>{{ checklist.consumoCompresor_N }}A</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div class="grid-item">
+                    <h5>Tensiones</h5>
+                    <table class="table-checklist">
+                      <tr>
+                        <td>R-S:</td>
+                        <td>{{ checklist.tension_R_S }}V</td>
+                      </tr>
+                      <tr>
+                        <td>S-T:</td>
+                        <td>{{ checklist.tension_S_T }}V</td>
+                      </tr>
+                      <tr>
+                        <td>T-R:</td>
+                        <td>{{ checklist.tension_T_R }}V</td>
+                      </tr>
+                      <tr>
+                        <td>T-N:</td>
+                        <td>{{ checklist.tension_T_N }}V</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div class="grid-item">
+                    <h5>Consumo Total</h5>
+                    <table class="table-checklist">
+                      <tr>
+                        <td>R:</td>
+                        <td>{{ checklist.consumo_total_R }}A</td>
+                      </tr>
+                      <tr>
+                        <td>S:</td>
+                        <td>{{ checklist.consumo_total_S }}A</td>
+                      </tr>
+                      <tr>
+                        <td>T:</td>
+                        <td>{{ checklist.consumo_total_T }}A</td>
+                      </tr>
+                      <tr>
+                        <td>N:</td>
+                        <td>{{ checklist.consumo_total_N }}A</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div class="grid-item">
+                    <h5>Presiones</h5>
+                    <table class="table-checklist">
+                      <tr>
+                        <td>Alta:</td>
+                        <td>{{ checklist.presiones_alta }}PSI</td>
+                      </tr>
+                      <tr>
+                        <td>Baja:</td>
+                        <td>{{ checklist.presiones_baja }}PSI</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+          }
+        </div>
+
+        <!-- Total Final -->
+        <div class="final-total-section" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
+
+          <!-- Total Final -->
+          <div class="final-total-amount">
+            <strong>Total Final:</strong>
+            <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span>
           </div>
-          
-          <!-- Información de quién rechazó -->
-          @if (solicitud?.rechazada_por_id && usuarioRechazo) {
+        </div>
+        @if (isPendiente) {
+        <div
+          style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
+          <mat-icon style="color: #1976d2;">info</mat-icon>
+          <span style="color: #1565c0; font-size: 14px;">Para aprobar esta solicitud, debes asignar un técnico y
+            verificar la fecha de visita.</span>
+        </div>
+        }
+        <div class="actions">
+          <button mat-button
+            [style.color]="solicitud?.status === 'validada' || isAprobada || isRechazada ? '#1976d2' : ''"
+            (click)="onCancel()">
+            {{ solicitud?.status !== 'validada' && !isAprobada && !isRechazada ? 'Cancelar' : 'Volver' }}
+          </button>
+
+          @if (isPendiente) {
+          <!-- Botones para estado pendiente -->
+          <button mat-raised-button color="primary" (click)="aprobarSolicitud()" style="margin-right: 10px;"
+            [disabled]="!solicitudForm.get('tecnico_asignado_id')?.value">
+            <mat-icon>check_circle</mat-icon> Aprobar
+          </button>
+          <button mat-raised-button color="warn" (click)="rechazarSolicitud()">
+            <mat-icon>cancel</mat-icon> Rechazar
+          </button>
+          } @else if (isAprobada) {
+          <!-- Banner de solicitud aprobada -->
+          <div class="approved-banner mb-3"
+            style="color: #2196F3; padding: 16px; background-color: #E3F2FD; border-radius: 4px; display: flex; align-items: center; min-height: 56px;">
+            <mat-icon
+              style="margin-right: 8px; height: 24px; width: 24px; font-size: 24px; line-height: 24px;">schedule</mat-icon>
+            <span style="line-height: 24px;">Esta solicitud está aprobada y a la espera de la visita del técnico</span>
+          </div>
+
+          } @else if (isRechazada) {
+          <!-- Banner informativo para solicitudes rechazadas -->
+          <div class="rejected-message"
+            style="color: #F44336; padding: 15px; background-color: #FFEBEE; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%; flex-direction: column; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; width: 100%; justify-content: center; margin-bottom: 10px;">
+              <mat-icon
+                style="vertical-align: middle; margin-right: 8px; font-size: 28px; height: 28px; width: 28px;">cancel</mat-icon>
+              <span style="font-weight: bold; font-size: 18px;">Esta solicitud fue rechazada</span>
+            </div>
+
+            <!-- Información de quién rechazó -->
+            @if (solicitud?.rechazada_por_id && usuarioRechazo) {
             <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
               <strong>Rechazada por:</strong> {{ usuarioRechazo.name }} {{ usuarioRechazo.lastName }}
             </div>
-          }
-          
-          <!-- Fecha de rechazo (Solo se mostrará si hay) -->
-          @if (solicitud?.fecha_rechazo) {
+            }
+
+            <!-- Fecha de rechazo (Solo se mostrará si hay) -->
+            @if (solicitud?.fecha_rechazo) {
             <div style="width: 100%; text-align: center; margin-top: 8px; font-size: 16px;">
               <strong>Fecha:</strong> {{ solicitud.fecha_rechazo | date:'HH:mm dd-MM-yyyy' }}
             </div>
-          }
-          
-          <!-- Observación de rechazo -->
-          @if (solicitud?.observacion_rechazo) {
-            <div style="width: 100%; text-align: center; margin-top: 8px; padding: 10px; background-color: rgba(244, 67, 54, 0.1); border-radius: 4px; font-size: 16px;">
+            }
+
+            <!-- Observación de rechazo -->
+            @if (solicitud?.observacion_rechazo) {
+            <div
+              style="width: 100%; text-align: center; margin-top: 8px; padding: 10px; background-color: rgba(244, 67, 54, 0.1); border-radius: 4px; font-size: 16px;">
               <strong>Motivo:</strong> {{ solicitud.observacion_rechazo }}
             </div>
+            }
+          </div>
+          } @else if (solicitud?.status !== 'validada' && !isValidada) {
+          <!-- Botones para estados diferentes a pendiente, aprobada y validada -->
+          <button mat-raised-button color="primary" (click)="onSaveRepuestos()" [disabled]="!hasChanges()"
+            style="margin-right: 10px;">
+            <mat-icon>save</mat-icon>
+            Guardar Repuestos
+          </button>
+          <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
+            Validar solicitud 
+          </button>
+          } @else {
+          <div class="validation-message"
+            style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
+            <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
+            Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'HH:mm dd-MM-yyyy' }}
+          </div>
           }
         </div>
-      } @else if (solicitud?.status !== 'validada' && !isValidada) {
-        <!-- Botones para estados diferentes a pendiente, aprobada y validada -->
-        <button mat-raised-button color="primary" 
-                (click)="onSaveRepuestos()"
-                [disabled]="!hasChanges()"
-                style="margin-right: 10px;">
-          <mat-icon>save</mat-icon>
-          Guardar Repuestos
-        </button>
-        <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
-          Validar Solicitud
-        </button>
-      } @else {
-        <div class="validation-message" style="color: #4CAF50; padding: 10px; background-color: #E8F5E9; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 100%;">
-          <mat-icon style="vertical-align: middle; margin-right: 8px;">check_circle</mat-icon>
-          Esta solicitud fue validada el {{ solicitud.fecha_hora_validacion | date:'HH:mm dd-MM-yyyy' }}
-        </div>
-      }
+      </form>
     </div>
-  </form>
-</div>
 
-</mat-card-content>
+  </mat-card-content>
 </mat-card>
-

@@ -4,7 +4,7 @@
       <mat-form-field appearance="outline">
         <mat-label>Selecciona cliente</mat-label>
         <input type="text" 
-               placeholder="Pick one" 
+               placeholder="Selecciona cliente" 
                aria-label="Number" 
                matInput 
                formControlName="cliente"
@@ -12,7 +12,7 @@
         <button mat-icon-button matSuffix *ngIf="informeForm.get('cliente')?.value" (click)="clearClient()">
           <mat-icon>close</mat-icon>
         </button>
-        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="onCompanySelected($event)">
+        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCompanySelected($event)">
           @for(company of filteredOptions | async; track company) {
           <mat-option [value]="company">
             {{ company }}
@@ -99,19 +99,19 @@
       <!-- Precio Compra Column -->
       <ng-container matColumnDef="precio_compra">
         <th mat-header-cell *matHeaderCellDef> Precio&nbsp;compra </th>
-        <td mat-cell *matCellDef="let element"> {{element.precio_compra | currency}} </td>
+        <td mat-cell *matCellDef="let element"> ${{element.precio_compra}} </td>
       </ng-container>
 
       <!-- Precio Venta Column -->
       <ng-container matColumnDef="precio_venta_cliente">
         <th mat-header-cell *matHeaderCellDef> Precio Venta </th>
-        <td mat-cell *matCellDef="let element"> {{element.precio_venta_cliente | currency}} </td>
+        <td mat-cell *matCellDef="let element"> ${{element.precio_venta_cliente}} </td>
       </ng-container>
 
       <!-- Valor Column -->
       <ng-container matColumnDef="valor_cliente">
         <th mat-header-cell *matHeaderCellDef> Valor </th>
-        <td mat-cell *matCellDef="let element"> {{element.valor_cliente | currency}} </td>
+        <td mat-cell *matCellDef="let element"> ${{element.valor_cliente}} </td>
       </ng-container>
 
       <!-- Fecha Column -->

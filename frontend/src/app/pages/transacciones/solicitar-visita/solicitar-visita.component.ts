@@ -267,27 +267,51 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   }
 
   getSectoresTrabajo() {
-    this.sectoresService.getSectores().subscribe((response) => {
-      this.sectores = response;
-    });
+    this.sectoresService.getSectores()
+      .pipe(
+        map(sectores => 
+          sectores.sort((a:any, b:any) => 
+            a.nombre.toLowerCase().localeCompare(b.nombre.toLowerCase(), 'es')
+          )
+        )
+      )
+      .subscribe((response) => {
+        this.sectores = response;
+      });
   }
 
   getTipoServicio() {
     this.clientesService.getCliente(this.clientId)
-    .subscribe((response) => {
-      this.tipoServicio = response.tipoServicio;
-    });
+      .pipe(
+        map(response => ({
+          ...response,
+          tipoServicio: response.tipoServicio.sort((a:any, b:any) => 
+            a.nombre.toLowerCase().localeCompare(b.nombre.toLowerCase(), 'es')
+          )
+        }))
+      )
+      .subscribe((response) => {
+        this.tipoServicio = response.tipoServicio;
+      });
   }
 
   loadEspecialidades() {
-    this.especialidadesService.findAll().subscribe({
-      next: (data: Especialidad[]) => {
-        this.especialidades = data;
-      },
-      error: (error) => {
-        console.error('Error cargando especialidades:', error);
-      }
-    });
+    this.especialidadesService.findAll()
+      .pipe(
+        map((especialidades: Especialidad[]) => 
+          especialidades.sort((a, b) => 
+            a.nombre.toLowerCase().localeCompare(b.nombre.toLowerCase(), 'es')
+          )
+        )
+      )
+      .subscribe({
+        next: (data: Especialidad[]) => {
+          this.especialidades = data;
+        },
+        error: (error) => {
+          console.error('Error cargando especialidades:', error);
+        }
+      });
   }
 
   onFileSelected(event: Event) {

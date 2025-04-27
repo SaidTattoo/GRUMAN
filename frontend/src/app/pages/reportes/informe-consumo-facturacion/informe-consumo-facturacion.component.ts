@@ -5,18 +5,27 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
-import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
+import {
+  MAT_DATE_LOCALE,
+  provideNativeDateAdapter,
+} from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
-import { Observable, Subscription, of } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { CommonModule } from '@angular/common';
 import { AsyncPipe, CurrencyPipe } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { StorageService } from 'src/app/services/storage.service';
-import { InformeConsumoService } from './informe-consumo.service';
+import { InformeConsumoService } from './informe-consumo-facturacion.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 export interface ConsumoData {
   requerimiento: string;
@@ -30,11 +39,12 @@ export interface ConsumoData {
   precio_venta_cliente: number;
   valor_cliente: number;
   fechaVisita: Date;
+  mes_facturacion: string;
   nombre_tecnico: string;
 }
 
 @Component({
-  selector: 'app-informe-consumo',
+  selector: 'app-informe-consumo-facturacion',
   standalone: true,
   imports: [
     CommonModule,
@@ -54,26 +64,27 @@ export interface ConsumoData {
     AsyncPipe,
     MatPaginatorModule,
     CurrencyPipe,
-    MatTooltipModule
+    MatTooltipModule,
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
-    provideNativeDateAdapter()
+    provideNativeDateAdapter(),
   ],
-  templateUrl: './informe-consumo.component.html',
-  styleUrl: './informe-consumo.component.scss'
+  templateUrl: './informe-consumo-facturacion.component.html',
+  styleUrl: './informe-consumo-facturacion.component.scss',
 })
-export class InformeConsumoComponent implements OnInit {
+export class InformeConsumoFacturacionComponent implements OnInit {
   informeForm: FormGroup;
-  filteredOptions: Observable<string[]>;
+  filteredOptions: Observable<any[]>;
   dataSource = new MatTableDataSource<ConsumoData>([]);
   @ViewChild(MatPaginator) paginator: MatPaginator;
   private user: any;
+  private hasGruman: boolean = false;
   private storageSubscription: Subscription;
-  firstoption: string[] = [];
-  originalOptions: string[] = [];
+  firstoption: any[] = [];
+  originalOptions: any[] = [];
   selectedCompanyName: string = '';
-
+  mesFacturacionList: any[] = [];
   displayedColumns: string[] = [
     'requerimiento',
     'tipo_servicio',
@@ -85,24 +96,24 @@ export class InformeConsumoComponent implements OnInit {
     'precio_venta_cliente',
     'valor_cliente',
     'fechaVisita',
-    'nombre_tecnico'
+    'mes_facturacion',
+    'nombre_tecnico',
   ];
 
   constructor(
     private fb: FormBuilder,
     private storage: StorageService,
-    private informeConsumoService: InformeConsumoService
+    private informeConsumoService: InformeConsumoService,
+    private storageService: StorageService
   ) {
     this.informeForm = this.fb.group({
       cliente: ['', Validators.required],
-      fechaInicio: [null, Validators.required],
-      fechaFin: [null, Validators.required]
+      mesFacturacion: [{ value: null, disabled: true }, Validators.required],
     });
-
 
     this.filteredOptions = this.informeForm.get('cliente')!.valueChanges.pipe(
       startWith(''),
-      map(value => {
+      map((value) => {
         if (!value) {
           return this.originalOptions;
         }
@@ -115,50 +126,70 @@ export class InformeConsumoComponent implements OnInit {
     this.storageSubscription = this.storage.user$.subscribe((user) => {
       if (user) {
         this.user = user;
-        this.firstoption = this.user.companies.filter((company: any) => company.nombre.toLowerCase() !== 'gruman').map((company: any) => company.nombre);
+        this.hasGruman = this.selectedCompanyName.toLowerCase() === 'gruman';
+        this.firstoption = this.user.companies.filter(
+          (company: any) => company.nombre.toLowerCase() !== 'gruman'
+        );
         this.originalOptions = [...this.firstoption];
       }
     });
-
   }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
   }
 
-  private _filter(value: string): string[] {
+  private _filter(value: string): any[] {
     const filterValue = value.toLowerCase();
-    return this.originalOptions.filter(option => option.toLowerCase().includes(filterValue));
+    return this.originalOptions.filter(
+      (option) =>
+        option.nombre.toLowerCase() !== 'gruman' &&
+        option.nombre.toLowerCase().includes(filterValue)
+    );
   }
 
-  displayFn = (value: any): string => {
-    if (!value) return '';
-    if (value === 'TODOS') return 'TODOS';
-    const cliente = this.user.companies.find((company: any) => company.id === value);
+  displayFn = (clientId: number): string => {
+    const cliente = this.originalOptions.find((c) => c.id === clientId);
     return cliente ? cliente.nombre : '';
+  };
+
+  displayMesFn = (mesId: any): string => {
+    if (!mesId) return '';
+    if (typeof mesId === 'object') return mesId.mes;
+    const mes = this.mesFacturacionList.find((m) => m.id === mesId);
+    return mes ? mes.mes : '';
   };
 
   onCompanySelected(event: any) {
     if (!event.option.value) {
       this.informeForm.patchValue({
-        cliente: null
+        cliente: null,
       });
       this.selectedCompanyName = '';
+
+      this.informeForm.get('mesFacturacion')?.disable();
       return;
     }
 
-    if (event.option.value === 'TODOS') {
-      this.selectedCompanyName = 'TODOS';
-      this.informeForm.patchValue({
-        cliente: 'TODOS'
+    // const selectedCompany = this.user.companies.find((company: any) => company.nombre === event.option.value);
+
+    this.informeConsumoService
+      .getMesFacturacion(event.option.value)
+      .subscribe((listMesFacturacion: any) => {
+        this.mesFacturacionList = listMesFacturacion;
+        this.informeForm.get('mesFacturacion')?.enable();
       });
-      return;
-    }
-
-    const selectedCompany = this.user.companies.find((company: any) => company.nombre === event.option.value);
     this.selectedCompanyName = event.option.value;
+    // this.informeForm.patchValue({
+    //   cliente: selectedCompany ? selectedCompany.id : null
+    // });
+  }
+
+  onMesFacturacionSelected(event: any) {
+    const selectedMes = event.option.value;
+    const mes = this.mesFacturacionList.find((m) => m.mes === selectedMes);
     this.informeForm.patchValue({
-      cliente: selectedCompany ? selectedCompany.id : null
+      mesFacturacion: mes.id,
     });
   }
 
@@ -168,22 +199,18 @@ export class InformeConsumoComponent implements OnInit {
       return;
     }
 
-    const { cliente, fechaInicio, fechaFin } = this.informeForm.value;
-    const fechaInicioStr = this.formatDate(fechaInicio);
-    const fechaFinStr = this.formatDate(fechaFin);
+    const { cliente, mesFacturacion } = this.informeForm.value;
 
-    this.informeConsumoService.getInformeConsumo(
-      fechaInicioStr,
-      fechaFinStr,
-      cliente
-    ).subscribe(
-      (data: any) => {
-        this.dataSource.data = data[0];
-      },
-      (error: any) => {
-        console.error('Error al obtener el informe:', error);
-      }
-    );
+    this.informeConsumoService
+      .getInformeConsumoMesFacturacion(cliente, mesFacturacion.id_facturacion)
+      .subscribe(
+        (data: any) => {
+          this.dataSource.data = data[0];
+        },
+        (error: any) => {
+          console.error('Error al obtener el informe:', error);
+        }
+      );
   }
 
   private formatDate(date: Date): string {
@@ -192,10 +219,17 @@ export class InformeConsumoComponent implements OnInit {
 
   clearClient() {
     this.informeForm.patchValue({
-      cliente: null
+      cliente: null,
     });
     this.selectedCompanyName = '';
     this.informeForm.get('cliente')?.setValue('');
-    this.filteredOptions = of(this.originalOptions);
+    this.informeForm.get('mesFacturacion')?.disable();
+  }
+  clearMes() {
+    this.informeForm.patchValue({
+      mesFacturacion: null,
+    });
+    this.selectedCompanyName = '';
+    this.informeForm.get('mesFacturacion')?.setValue('');
   }
 }

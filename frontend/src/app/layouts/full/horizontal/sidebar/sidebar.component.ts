@@ -151,6 +151,27 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             bgcolor: 'primary',
             route: 'transacciones/solicitudes-del-dia-cliente',
           },
+          {
+            displayName: 'Reportes',
+            iconName: 'file-search',
+            children: [
+              {
+                displayName: 'Reporte de activos',
+                iconName: 'file-delta',
+                route: 'reportes/reporte-de-activos',
+              },
+              {
+                displayName: 'Reporte de repuestos por día',
+                iconName: 'graph',
+                route: 'reportes/repuestos-por-dia',
+              },
+              {
+                displayName: 'Reporte de repuestos por mes',
+                iconName: 'calendar',
+                route: 'reportes/repuestos-por-mes',
+              },
+            ],
+          },
         ]
         : []),
 
@@ -194,18 +215,6 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
               iconName: 'user-check',
               route:'transacciones/solicitudes-de-visita/atendidas-en-proceso'
           }
-        ],
-      },
-      {
-        displayName: 'Reportes',
-        iconName: 'file-search',
-        children: [
-          {
-            displayName: 'Reporte de activos',
-            iconName: 'file-delta',
-            route: 'reportes/reporte-de-activos',
-          },
-         
         ],
       },
       /*  {

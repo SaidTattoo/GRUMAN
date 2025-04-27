@@ -18,91 +18,91 @@ export const SolicitudesDeVisitaRoutes: Routes = [
     path: 'pendientes',
     component: SolicitudesDeVisitaComponent,
     data: {
-      title: 'Solicitudes de Visita Pendientes'
+      title: 'Solicitudes de visita pendientes'
     }
   }, 
   {
     path: 'solicitudes',
     component: SolicitudesComponent,
     data: {
-      title: 'Gestión de Solicitudes'
+      title: 'Gestión de solicitudes'
     }
   },
   {
     path: 'aprobadas',
     component: SolicitudesAprobadasComponent,
     data: {
-      title: 'Solicitudes Aprobadas'
+      title: 'Solicitudes aprobadas'
     }
   },
   {
     path: 'rechazadas',
     component: SolicitudesRechazadasComponent,
     data: {
-      title: 'Solicitudes Rechazadas'
+      title: 'Solicitudes rechazadas'
     }
   },
   {
     path: 'finalizadas',
     component: SolicitudesFinalizadasComponent,
     data: {
-      title: 'Solicitudes Finalizadas'
+      title: 'Solicitudes finalizadas'
     }
   },
   {
     path: 'validadas',
     component: SolicitudesValidadasComponent,
     data: {
-      title: 'Solicitudes Validadas'
+      title: 'Solicitudes validadas'
     }
   },
   {
     path: 'atendidas-en-proceso',
     component: SolicitudesAtendidasEnProcesoComponent,
     data: {
-      title: 'Solicitudes Atendidas en Proceso'
+      title: 'Solicitudes atendidas en proceso'
     }
   },
   {
     path: 'modificar/:id',
     component: ModificarSolicitudComponent,
     data: {
-      title: 'Modificar Solicitud'
+      title: 'Modificar solicitud'
     }
   },
   {
     path: 'ver-solicitud/pendiente/:id',
     component: ModificarSolicitudComponent,
     data: {
-      title: 'Ver Solicitud'
+      title: 'Ver solicitud'
     }
   },
   {
     path: 'ver-solicitud/aprobada/:id',
     component: ModificarSolicitudComponent,
     data: {
-      title: 'Ver Solicitud'
+      title: 'Ver solicitud'
     }
   },
   {
     path: 'ver-solicitud/rechazada/:id',
     component: ModificarSolicitudComponent,
     data: {
-      title: 'Ver Solicitud'
+      title: 'Ver solicitud'
     }
   },
   {
     path: 'ver-solicitud/validada/:id',
     component: ModificarSolicitudComponent,
     data: {
-      title: 'Ver Solicitud'
+      title: 'Ver solicitud'
     }
   },
   {
     path: 'carga-masiva',
     component: CargaMasivaComponent,
     data: {
-      title: 'Carga Masiva'
+      title: 'Carga masiva'
     }
   }
 ];

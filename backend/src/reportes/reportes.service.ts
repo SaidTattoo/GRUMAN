@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ReportesActivos } from './entities/reportes-activos.entity';
 import { ActivoFijoLocal } from '../activo-fijo-local/activo-fijo-local.entity';
-
 @Injectable()
 export class ReportesService {
   constructor(
@@ -66,4 +65,5 @@ export class ReportesService {
     console.log(query)
     return await this.reportesRepository.query(query);
   }
+
 }
