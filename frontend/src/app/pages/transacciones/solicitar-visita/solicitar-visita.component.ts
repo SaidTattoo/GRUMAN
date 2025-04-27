@@ -230,10 +230,40 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     });
   }
   getLocales() {
-  
-    this.localesService.getLocalesByCliente(this.clientId).subscribe((response) => {
-      this.locales = response;
-    });
+    this.localesService.getLocalesByCliente(this.clientId)
+      .pipe(
+        map(locales => {
+          return locales.sort((a: any, b: any) => {
+            // Función para extraer números del inicio del string
+            const getLeadingNumber = (str: string) => {
+              const match = str.match(/^\d+/);
+              return match ? parseInt(match[0]) : null;
+            };
+
+            const aName = a.nombre_local.toLowerCase();
+            const bName = b.nombre_local.toLowerCase();
+            
+            // Obtener números del inicio si existen
+            const aNum = getLeadingNumber(aName);
+            const bNum = getLeadingNumber(bName);
+
+            // Si ambos nombres empiezan con números
+            if (aNum !== null && bNum !== null) {
+              return aNum - bNum;
+            }
+            
+            // Si solo uno empieza con número, el que no tiene número va primero
+            if (aNum === null && bNum !== null) return -1;
+            if (aNum !== null && bNum === null) return 1;
+            
+            // Si ninguno empieza con número, ordenar alfabéticamente
+            return aName.localeCompare(bName, 'es');
+          });
+        })
+      )
+      .subscribe((response) => {
+        this.locales = response;
+      });
   }
 
   getSectoresTrabajo() {

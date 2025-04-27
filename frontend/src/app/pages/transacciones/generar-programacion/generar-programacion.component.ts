@@ -238,7 +238,37 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     if (clienteId) {
       this.loading = true;
       this.localesService.getLocalesByCliente(clienteId)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(
+          takeUntil(this.destroy$),
+          map(locales => {
+            return locales.sort((a: any, b: any) => {
+              // Función para extraer números del inicio del string
+              const getLeadingNumber = (str: string) => {
+                const match = str.match(/^\d+/);
+                return match ? parseInt(match[0]) : null;
+              };
+
+              const aName = a.nombre_local.toLowerCase();
+              const bName = b.nombre_local.toLowerCase();
+              
+              // Obtener números del inicio si existen
+              const aNum = getLeadingNumber(aName);
+              const bNum = getLeadingNumber(bName);
+
+              // Si ambos nombres empiezan con números
+              if (aNum !== null && bNum !== null) {
+                return aNum - bNum;
+              }
+              
+              // Si solo uno empieza con número, el que no tiene número va primero
+              if (aNum === null && bNum !== null) return -1;
+              if (aNum !== null && bNum === null) return 1;
+              
+              // Si ninguno empieza con número, ordenar alfabéticamente
+              return aName.localeCompare(bName, 'es');
+            });
+          })
+        )
         .subscribe({
           next: (res: any) => {
             this.locales = res;
@@ -292,7 +322,15 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
     const clienteId = this.programacionForm.get('clientId')?.value;
     if (clienteId) {
       this.clientesService.getCliente(clienteId)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(
+          takeUntil(this.destroy$),
+          map(data => ({
+            ...data,
+            tipoServicio: (data.tipoServicio || []).sort((a: any, b: any) => 
+              a.nombre.toLowerCase().localeCompare(b.nombre.toLowerCase(), 'es')
+            )
+          }))
+        )
         .subscribe({
           next: (data: any) => {
             this.tiposServicio = data.tipoServicio || [];
@@ -589,16 +627,24 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   }
 
   loadEspecialidades(): void {
-    this.especialidadesService.findAll().subscribe({
-      next: (data: any[]) => {
-        this.especialidades = data;
-        console.log('Especialidades cargadas:', this.especialidades);
-      },
-      error: (error) => {
-        console.error('Error cargando especialidades:', error);
-        this.showErrorMessage('Error al cargar las especialidades');
-      }
-    });
+    this.especialidadesService.findAll()
+      .pipe(
+        map(especialidades => 
+          especialidades.sort((a, b) => 
+            a.nombre.toLowerCase().localeCompare(b.nombre.toLowerCase(), 'es')
+          )
+        )
+      )
+      .subscribe({
+        next: (data: any[]) => {
+          this.especialidades = data;
+          console.log('Especialidades cargadas:', this.especialidades);
+        },
+        error: (error) => {
+          console.error('Error cargando especialidades:', error);
+          this.showErrorMessage('Error al cargar las especialidades');
+        }
+      });
   }
 
   setupEspecialidadAutocomplete() {
