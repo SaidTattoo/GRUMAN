@@ -26,6 +26,9 @@ export class ClientService {
         return this.clientRepository.find({ 
             where: { deleted: false, nombre: Not('GRUMAN') },
             relations: ['tipoServicio', 'facturaciones'],
+            order: {
+                nombre: 'ASC'
+            }
         });
     }
 

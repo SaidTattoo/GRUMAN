@@ -47,8 +47,11 @@ export class UsersService {
                 where: { 
                     profile: 'tecnico', 
                     disabled: false ,
-                    name: Not('Atlantis_IA')
-                }, 
+                    name: Not('Atlantis_IA'),
+                  
+                },   order: {
+                    name: 'ASC'
+                },
                 relations: ['especialidades'] 
             });
             console.log(`Se encontraron ${tecnicos.length} técnicos`);
