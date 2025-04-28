@@ -321,7 +321,14 @@ export const routes: Routes = [
           title: 'Búsqueda Global',
 
         }
-      }
+      },
+      {
+        path: 'mantenedores/tipo-solicitud',
+        loadChildren: () =>
+          import('./pages/mantenedores/tipo-solicitud/tipo-solicitud.routes').then(
+            (m) => m.TIPO_SOLICITUD_ROUTES
+          ),
+      },
     ],
   },
   {
