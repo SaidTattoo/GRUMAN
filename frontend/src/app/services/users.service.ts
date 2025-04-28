@@ -26,10 +26,14 @@ export class UsersService {
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
-  getAllTecnicos(): Observable<any[]> {
+  getAllTecnicos(page: number = 1, limit: number = 10): Observable<any> {
     const url = `${this.apiUrl}/tecnicos`;
+    const params = new HttpParams()
+        .set('page', page.toString())
+        .set('limit', limit.toString());
+    
     console.log('URL de la petición:', url);
-    return this.http.get<any[]>(url).pipe(
+    return this.http.get(url, { params }).pipe(
         tap(response => console.log('Respuesta del servidor:', response)),
         catchError(error => {
             console.error('Error al obtener técnicos:', error);

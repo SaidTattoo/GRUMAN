@@ -1,9 +1,9 @@
 import { IsNotEmpty, IsString, IsOptional, IsBoolean } from 'class-validator';
 
-export class CreateSubItemDto {
-    @IsNotEmpty()
+export class UpdateSubItemDto {
+    @IsOptional()
     @IsString()
-    name: string;
+    name?: string;
 
     @IsOptional()
     @IsBoolean()

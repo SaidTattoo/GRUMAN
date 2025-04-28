@@ -13,5 +13,8 @@ export class SubItem {
   item: Item;
 
   @Column({ default: false })
+  foto_obligatoria: boolean;
+
+  @Column({ default: false })
   disabled: boolean;
 } 

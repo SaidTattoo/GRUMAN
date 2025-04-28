@@ -29,4 +29,9 @@ export class ActivoFijoLocalService {
   eliminar(id: number) {
     return this.http.delete<any>(`${environment.apiUrl}activo-fijo-local/${id}`);
   }
+
+  getActivosFijosByLocal(localId: number) {
+    return this.http.get<any>(`${environment.apiUrl}activo-fijo-local/local/${localId}`);
+  }
+
 }

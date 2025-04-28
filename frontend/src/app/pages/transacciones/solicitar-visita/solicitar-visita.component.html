@@ -54,6 +54,29 @@
         </div>
       </div>
 
+      <!-- Activo Fijo -->
+      <div class="row" *ngIf="shouldShowClimaInput()">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Activo Fijo</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Activo Fijo</mat-label>
+            <input type="text"
+                   matInput
+                   formControlName="activoFijoId"
+                   [matAutocomplete]="autoActivoFijo"
+                   placeholder="Seleccione un activo fijo">
+            <mat-autocomplete #autoActivoFijo="matAutocomplete" [displayWith]="displayActivoFijoFn">
+              <mat-option [value]="null">No aplica</mat-option>
+              <mat-option *ngFor="let activo of filteredActivosFijos | async" [value]="activo">
+                {{activo.codigo_activo}} - {{activo.tipo_equipo}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+      </div>
+
       <!-- Sector del trabajo -->
       <div class="row">
         <div class="col-sm-4 d-flex align-items-center">
@@ -94,19 +117,6 @@
             <mat-error *ngIf="visitaForm.get('especialidad')?.hasError('required')">
               La especialidad es requerida
             </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <!-- Ticket Cliente -->
-      <div class="row">
-        <div class="col-sm-4 d-flex align-items-center">
-          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Ticket {{client?.nombre || 'Cliente'}}</mat-label>
-        </div>
-        <div class="col-sm-8">
-          <mat-form-field appearance="outline" class="w-100">
-            <input matInput formControlName="ticketGruman" placeholder="Ingrese número de ticket">
-            <mat-hint>Corresponde al número de ticket interno de {{client?.nombre}}</mat-hint>
           </mat-form-field>
         </div>
       </div>

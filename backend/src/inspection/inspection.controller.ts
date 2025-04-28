@@ -174,4 +174,14 @@ export class InspectionController {
     getRepuestosBySubItem(@Param('subItemId') subItemId: string) {
         return this.inspectionService.getRepuestosBySubItem(+subItemId);
     }
+
+    @Patch('sections/cambiar-estado-foto/:sectionId/items/:itemId/subitems/:subItemId')
+    cambiarEstadoFoto(
+        @Param('sectionId') sectionId: string,
+        @Param('itemId') itemId: string,
+        @Param('subItemId') subItemId: string,
+        @Body() updateSubItemDto: CreateSubItemDto
+    ) {
+        return this.inspectionService.cambiarEstadoFoto(+sectionId, +itemId, +subItemId, updateSubItemDto);
+    }
 } 

@@ -18,6 +18,10 @@ export interface Item {
 export interface SubItem {
   id: number;
   name: string;
+  disabled?: boolean;
+  fotos?: string[];
+  repuestos?: any[];
+  foto_obligatoria?: boolean;
 }
 
 @Injectable({
@@ -66,7 +70,11 @@ export class InspectionService {
     );
   }
 
-  updateSubItem(sectionId: number, itemId: number, subItemId: number, subItem: { name: string }): Observable<SubItem> {
+  updateSubItem(sectionId: number, itemId: number, subItemId: number, subItem: { name?: string; foto_obligatoria?: boolean }): Observable<SubItem> {
+    return this.http.patch<SubItem>(`${this.apiUrl}/sections/${sectionId}/items/${itemId}/subitems/${subItemId}`, subItem);
+  }
+
+  cambiarEstadoFoto(sectionId: number, itemId: number, subItemId: number, subItem: { foto_obligatoria?: boolean, name: string }): Observable<SubItem> {
     return this.http.patch<SubItem>(`${this.apiUrl}/sections/${sectionId}/items/${itemId}/subitems/${subItemId}`, subItem);
   }
 

@@ -3,6 +3,7 @@ import { Client } from '../client/client.entity';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Locales } from '../locales/locales.entity';
 import { ChecklistClima } from '../checklist_clima/checklist_clima.entity';
+import { SolicitarVisita } from '../solicitar-visita/solicitar-visita.entity';
 
 @Entity('activo_fijo_local')
 export class ActivoFijoLocal {
@@ -40,7 +41,9 @@ export class ActivoFijoLocal {
     @Column()
     suministra: string;
 
-
     @Column()
     codigo_activo: string;
+
+    @OneToMany(() => SolicitarVisita, solicitud => solicitud.activoFijo)
+    solicitudesVisita: SolicitarVisita[];
 }

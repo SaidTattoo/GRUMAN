@@ -11,6 +11,7 @@ import { ActivoFijoRepuestos } from "src/activo-fijo-repuestos/entities/activo-f
 import { ChecklistClima } from "src/checklist_clima/checklist_clima.entity";
 import { ItemEstado } from "src/inspection/entities/item-estado.entity";
 import { Facturacion } from "src/facturacion/facturacion.entity";
+import { ActivoFijoLocal } from '../activo-fijo-local/activo-fijo-local.entity';
 
 export enum SolicitudStatus {
     PENDIENTE = 'pendiente',
@@ -228,5 +229,21 @@ export class SolicitarVisita {
 
   @Column({ type: 'text', nullable: true })
   image_ot: string;
+
+ 
+  @Column({
+    type: 'boolean',
+    name: 'clima',
+    default: true
+  })
+  clima: boolean;
+  // Agregar la relación con ActivoFijoLocal
+  @ManyToOne(() => ActivoFijoLocal, { nullable: true })
+  @JoinColumn({ name: 'activo_fijo_id' })
+  activoFijo: ActivoFijoLocal;
+
+  @Column({ type: 'int', nullable: true })
+  activo_fijo_id: number;
+
 }
  

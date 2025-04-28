@@ -40,4 +40,26 @@ export class ActivoFijoLocalService {
             relations: ['client', 'locales', 'tipoActivo'],
         });
     }
+
+    getActivosFijosByLocal(localId: number): Promise<ActivoFijoLocal[]> {
+        return this.activoFijoLocalRepository.find({
+            where: { locales: { id: localId } },
+            relations: ['tipoActivo'],
+            select: {
+                id: true,
+                tipo_equipo: true,
+                marca: true,
+                potencia_equipo: true,
+                refrigerante: true,
+                codigo_activo: true,
+                tipoActivo: {
+                    id: true,
+                    name: true
+                }
+            },
+            order: {
+                codigo_activo: 'ASC'
+            }
+        });
+    }
 }

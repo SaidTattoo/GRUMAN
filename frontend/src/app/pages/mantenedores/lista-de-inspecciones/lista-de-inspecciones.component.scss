@@ -26,6 +26,30 @@ mat-list-item {
       background-color: rgba(0, 0, 0, 0.04);
     }
   }
+
+  .mat-mdc-slide-toggle {
+    &.mdc-switch--selected {
+      .mdc-switch__track {
+        background-color: rgba(25, 118, 210, 0.5) !important;
+      }
+      .mdc-switch__handle {
+        background-color: #1976d2 !important;
+      }
+    }
+    
+    &:not(.mdc-switch--selected) {
+      .mdc-switch__track {
+        background-color: rgba(0, 0, 0, 0.38) !important;
+      }
+      .mdc-switch__handle {
+        background-color: #fafafa !important;
+      }
+    }
+
+    .mdc-switch__track {
+      border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    }
+  }
 }
 
 .empty-state {
@@ -92,4 +116,10 @@ button[mat-flat-button] {
 .item-number {
   min-width: 45px;
   font-weight: bold;
+}
+
+.subitem-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

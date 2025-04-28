@@ -12,6 +12,9 @@ import { InspectionService, Section, Item, SubItem } from '../../../services/ins
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-lista-de-inspecciones',
@@ -24,7 +27,8 @@ import { Router } from '@angular/router';
     MatIconModule,
     MatExpansionModule,
     MatStepperModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSlideToggleModule
   ],
   templateUrl: './lista-de-inspecciones.component.html',
   styleUrl: './lista-de-inspecciones.component.scss'
@@ -42,8 +46,9 @@ export class ListaDeInspeccionesComponent implements OnInit {
 
   constructor(
     private dialog: MatDialog,
-    private inspectionService: InspectionService
-    ,private router: Router
+    private inspectionService: InspectionService,
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -416,5 +421,32 @@ export class ListaDeInspeccionesComponent implements OnInit {
 
   isPanelExpanded(itemId: number): boolean {
     return this.expandedItems.has(itemId);
+  }
+
+  async toggleFotoObligatoria(subItem: SubItem, event: MatSlideToggleChange): Promise<void> {
+    try {
+      const section = this.sections.find(s => s.items.some(i => i.subItems.includes(subItem)));
+      const item = section?.items.find(i => i.subItems.includes(subItem));
+      if (!section || !item) throw new Error('No se encontró la sección o el item');
+      
+      this.inspectionService.cambiarEstadoFoto(section.id, item.id, subItem.id, { 
+        foto_obligatoria: event.checked,
+        name: subItem.name
+      })
+        .subscribe({
+          next: () => {
+            subItem.foto_obligatoria = event.checked;
+          },
+          error: (error) => {
+            console.error('Error al actualizar foto obligatoria:', error);
+            event.source.checked = !event.checked;
+            this.snackBar.open('Error al actualizar el estado de la foto', 'Cerrar', { duration: 3000 });
+          }
+        });
+    } catch (error) {
+      console.error('Error al actualizar foto obligatoria:', error);
+      event.source.checked = !event.checked;
+      this.snackBar.open('Error al actualizar el estado de la foto', 'Cerrar', { duration: 3000 });
+    }
   }
 }

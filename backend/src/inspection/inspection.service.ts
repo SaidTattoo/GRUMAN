@@ -441,4 +441,15 @@ export class InspectionService {
         // Filtrar cualquier repuesto null antes de retornar
         return itemRepuestos.filter(ir => ir.repuesto != null);
     }
+
+    async cambiarEstadoFoto(sectionId: number, itemId: number, subItemId: number, subItem: { foto_obligatoria?: boolean }) {
+        const subItems = await this.subItemRepository.findOne({ where: { id: subItemId } });
+        if (!subItems) {
+            throw new NotFoundException(`SubItem with ID ${subItemId} not found`);
+        }
+
+        await this.subItemRepository.update(subItemId, { foto_obligatoria: subItem.foto_obligatoria });
+        return subItems;
+    }
+    
 } 

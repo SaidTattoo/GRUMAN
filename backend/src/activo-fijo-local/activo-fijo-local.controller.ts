@@ -118,4 +118,9 @@ export class ActivoFijoLocalController {
     deleteActivoFijoLocal(@Param('id') id: number) {
         return this.activoFijoLocalService.deleteActivoFijoLocal(id);
     }
+
+    @Get('local/:id')
+    getActivosFijosByLocal(@Param('id') id: number) {
+        return this.activoFijoLocalService.getActivosFijosByLocal(id);
+    }
 }

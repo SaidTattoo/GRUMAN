@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Put, Delete } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Put, Delete, Query, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './users.entity';
 import { ApiBody, ApiOperation, ApiParam, ApiTags, ApiResponse } from '@nestjs/swagger';

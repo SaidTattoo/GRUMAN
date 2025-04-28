@@ -26,6 +26,7 @@ import { Observable, Subject, of } from 'rxjs';
 import { map, startWith, takeUntil } from 'rxjs/operators';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { S } from '@angular/cdk/keycodes';
+import { ActivoFijoLocalService } from 'src/app/services/activo-fijo-local.service';
 
 
 interface Client {
@@ -76,6 +77,10 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   private destroy$ = new Subject<void>();
   filteredEspecialidades: Observable<Especialidad[]>;
   filteredTipoServicio: Observable<any[]>;
+  isReactivo: boolean = false;
+  showClimaInput: boolean = false;
+  activosFijos: any[] = [];
+  filteredActivosFijos: Observable<any[]>;
 
   constructor(
    private userService: UserService,
@@ -88,7 +93,8 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     private uploadDataService: UploadDataService,
     private clientesService: ClientesService,
     private storage: StorageService,
-    private especialidadesService: EspecialidadesService
+    private especialidadesService: EspecialidadesService,
+    private activoFijoLocalService: ActivoFijoLocalService
   ) {
     this.visitaForm = this.fb.group({
       tipoServicioId: [null, Validators.required],
@@ -96,7 +102,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       clientId: [null],
       sectorTrabajoId: [null, Validators.required],
       especialidad: [null, [Validators.required]],
-      ticketGruman: [''],
+      activoFijoId: [''],
       observaciones: [''],
       fechaIngreso: [null],
     });
@@ -112,10 +118,16 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit(): void {
+    
     this.storageSubscription = this.storage.user$.subscribe(user => {
       if (user && user.selectedCompany) {
         this.clientId = user.selectedCompany.id;
+        console.log('clientId', user.selectedCompany.clima)
         this.currentUserId = user.id;
+        
+        // Agregar esta línea para guardar el estado de clima
+        this.showClimaInput = user.selectedCompany.clima || false;
+        
         // Obtener los datos del cliente
         this.clientesService.getCliente(this.clientId).subscribe(
           (clientData) => {
@@ -131,6 +143,49 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     this.setupLocalAutocomplete();
     this.setupEspecialidadAutocomplete();
     this.setupTipoServicioAutocomplete();
+
+    // Modificar el observer del tipo de servicio
+    this.visitaForm.get('tipoServicioId')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tipoServicio => {
+        if (tipoServicio) {
+          this.isReactivo = tipoServicio.nombre?.toLowerCase() === 'reactivo';
+          
+          // Si no es reactivo o no hay clima, resetear el campo de activo fijo
+          if (!this.isReactivo || !this.showClimaInput) {
+            this.visitaForm.patchValue({ activoFijoId: '' });
+          }
+        }
+      });
+
+    // Modificar el observer de localId
+    this.visitaForm.get('localId')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(local => {
+        // Limpiar el campo de activo fijo
+        this.visitaForm.patchValue({ activoFijoId: null }, { emitEvent: false });
+        
+        // Cargar los nuevos activos fijos si hay un local seleccionado
+        if (local?.id) {
+          this.activoFijoLocalService.getActivosFijosByLocal(local.id).subscribe(
+            (activosFijos) => {
+              this.activosFijos = activosFijos;
+              this.filteredActivosFijos = of(this.activosFijos);
+            },
+            (error) => {
+              console.error('Error al cargar activos fijos:', error);
+              this.activosFijos = [];
+              this.filteredActivosFijos = of([]);
+            }
+          );
+        } else {
+          // Si no hay local seleccionado, limpiar los arrays
+          this.activosFijos = [];
+          this.filteredActivosFijos = of([]);
+        }
+      });
+
+    this.setupActivoFijoAutocomplete();
   }
 
   ngOnDestroy(): void {
@@ -173,6 +228,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       const values = this.visitaForm.getRawValue();
       const selectedLocal = values.localId;
       const selectedEspecialidad = values.especialidad;
+      const selectedTipoServicio = values.tipoServicioId;
 
       // Get current date and time
       const now = new Date();
@@ -185,24 +241,23 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       );
 
       const solicitud = {
-        tipoServicioId: Number(values.tipoServicioId),
+        tipoServicioId: selectedTipoServicio?.id || null,
         localId: selectedLocal?.id || null,
         sectorTrabajoId: Number(values.sectorTrabajoId),
         clientId: this.clientId,
         especialidad: selectedEspecialidad?.id || null,
-        ticketGruman: values.ticketGruman,
+        activoFijoId: values.activoFijoId || null,
         observaciones: values.observaciones,
         fechaIngreso: selectedDate.toISOString(), // Send as ISO string with current time
         imagenes: imagenesLimpias,
         generada_por_id: this.currentUserId
       };
       
-      console.log('solicitud', solicitud)
+      console.log('solicitud', solicitud);
     
       this.solicitarVisitaService.crearSolicitudVisita(solicitud).subscribe({
         next: (response) => {
           console.log('Visita creada:', response);
-          // Mostrar mensaje de éxito
           Swal.fire({
             title: 'Éxito',
             text: 'La solicitud de visita se ha creado correctamente',
@@ -460,5 +515,44 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     this.filteredTipoServicio = of(this.tipoServicio.filter(tipo =>
       tipo.nombre.toLowerCase().includes(filterValue)
     ));
+  }
+
+  shouldShowClimaInput(): boolean {
+    return this.isReactivo && this.showClimaInput;
+  }
+
+  private setupActivoFijoAutocomplete() {
+    this.filteredActivosFijos = this.visitaForm.get('activoFijoId')!.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterActivosFijos(value))
+    );
+  }
+
+  private _filterActivosFijos(value: any): any[] {
+    if (!this.activosFijos) return [];
+    
+    const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+    return this.activosFijos.filter(activo => 
+      activo.codigo_activo.toLowerCase().includes(filterValue)
+    );
+  }
+
+  displayActivoFijoFn(activoFijo: any): string {
+    if (activoFijo === null) return 'No aplica';
+    return activoFijo ? `${activoFijo.codigo_activo} - ${activoFijo.tipo_equipo}` : '';
+  }
+
+  onActivoFijoFocus() {
+    this.filteredActivosFijos = of(this.activosFijos);
+  }
+
+  filtrarActivosFijos(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
+    this.filteredActivosFijos = of(
+      this.activosFijos.filter(activo =>
+        activo.codigo_activo.toLowerCase().includes(filterValue) ||
+        activo.tipo_equipo.toLowerCase().includes(filterValue)
+      )
+    );
   }
 }

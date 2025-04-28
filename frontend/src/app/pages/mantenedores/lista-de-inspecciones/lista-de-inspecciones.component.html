@@ -113,12 +113,22 @@
                                     <div class="d-flex w-100 gap-2 align-items-center">
                                       <span class="item-number">{{i + 1}}.{{j + 1}}.{{k + 1}}</span>
                                       <span class="flex-grow-1">{{ subItem.name }}</span>
-                                      <button mat-icon-button color="primary" (click)="editSubItem(section, item, subItem)">
-                                        <mat-icon>edit</mat-icon>
-                                      </button>
-                                      <button mat-icon-button color="warn" (click)="removeSubItem(section, item, k)">
-                                        <mat-icon>delete</mat-icon>
-                                      </button>
+                                      <div class="subitem-actions"> 
+                                        <span class="me-2">{{ subItem.foto_obligatoria ? 'Foto obligatoria' : 'Foto no obligatoria' }}</span>
+                                        <mat-slide-toggle
+                                          [checked]="subItem.foto_obligatoria"
+                                          (change)="toggleFotoObligatoria(subItem, $event)"
+                                          matTooltip="Foto obligatoria"
+                                          color="primary"
+                                          class="me-2">
+                                        </mat-slide-toggle>
+                                        <button mat-icon-button color="primary" (click)="editSubItem(section, item, subItem)">
+                                          <mat-icon>edit</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="warn" (click)="removeSubItem(section, item, k)">
+                                          <mat-icon>delete</mat-icon>
+                                        </button>
+                                      </div>
                                     </div>
                                   </mat-list-item>
                                 }
