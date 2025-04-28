@@ -40,6 +40,11 @@ interface Especialidad {
   nombre: string;
 }
 
+interface SolicitudVisitaResponse {
+  id: number;
+  [key: string]: any;
+}
+
 @Component({
   selector: 'app-solicitar-visita',
   standalone: true,
@@ -223,54 +228,34 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     }
   }
 
-  onSubmit() {
-    if (this.visitaForm.valid) {
-      const values = this.visitaForm.getRawValue();
-      const selectedLocal = values.localId;
-      const selectedEspecialidad = values.especialidad;
-      const selectedTipoServicio = values.tipoServicioId;
-
-      // Get current date and time
-      const now = new Date();
-      const selectedDate = new Date(values.fechaIngreso);
-      selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-
-      // Limpiar las URLs de las imágenes antes de enviar
-      const imagenesLimpias = this.urlImage.map(url => 
-        url.replace(/([^:]\/)\/+/g, '$1')
-      );
-
-      const solicitud = {
-        tipoServicioId: selectedTipoServicio?.id || null,
-        localId: selectedLocal?.id || null,
-        sectorTrabajoId: Number(values.sectorTrabajoId),
-        clientId: this.clientId,
-        especialidad: selectedEspecialidad?.id || null,
-        activoFijoId: values.activoFijoId || null,
-        observaciones: values.observaciones,
-        fechaIngreso: selectedDate.toISOString(), // Send as ISO string with current time
-        imagenes: imagenesLimpias,
-        generada_por_id: this.currentUserId
+  async onSubmit() {
+    try {
+      const formData = {
+        ...this.visitaForm.value,
+        tipoServicioId: this.visitaForm.value.tipoServicioId?.id || null,
+        localId: this.visitaForm.value.localId?.id || null,
+        especialidad: this.visitaForm.value.especialidad?.id || null,
+        activoFijoId: this.visitaForm.value.activoFijoId?.id || null,
+        fecha: new Date(),
+        imagenes: []
       };
+
+      const response = await this.solicitarVisitaService.crearSolicitudVisita(formData).toPromise() as SolicitudVisitaResponse;
       
-      console.log('solicitud', solicitud);
-    
-      this.solicitarVisitaService.crearSolicitudVisita(solicitud).subscribe({
-        next: (response) => {
-          console.log('Visita creada:', response);
-          Swal.fire({
-            title: 'Éxito',
-            text: 'La solicitud de visita se ha creado correctamente',
-            icon: 'success'
-          });
-        },
-        error: (error) => {
-          console.error('Error al crear la visita:', error);
-          Swal.fire('Error', 'No se pudo crear la solicitud de visita', 'error');
-        }
-      });
-    } else {
-      Swal.fire('Error', 'Debe completar todos los campos requeridos', 'error');
+      if (this.selectedFiles.length > 0 && response?.id) {
+        const imageUrls = await this.subirImagenes(response.id);
+        console.log('Visita creada:', response);
+        Swal.fire({
+          title: 'Éxito',
+          text: 'La solicitud de visita se ha creado correctamente',
+          icon: 'success'
+        });
+      } else {
+        Swal.fire('Error', 'No se pudo crear la solicitud de visita', 'error');
+      }
+    } catch (error) {
+      console.error('Error al crear la visita:', error);
+      Swal.fire('Error', 'No se pudo crear la solicitud de visita', 'error');
     }
   }
   formatDate(date: string) {

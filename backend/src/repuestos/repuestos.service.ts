@@ -84,7 +84,8 @@ export class RepuestosService {
       const repuestos = await this.repuestosRepository.find({
         relations: {
           clienteRepuestos: {
-            cliente: true
+            cliente: true,
+             
           }
         }
       });

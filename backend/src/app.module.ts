@@ -42,8 +42,6 @@ import { ClienteRepuestoModule } from './cliente-repuesto/cliente-repuesto.modul
 import { DashboardModule } from './dashboard/dashboard.module';
 import { MesesFacturacionModule } from './meses_facturacion/meses_facturacion.module';
 import { ReportesModule } from './reportes/reportes.module';
-import { SlaController } from './sla/sla.controller';
-import { SlaModule } from './sla/sla.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -90,13 +88,12 @@ import { SlaModule } from './sla/sla.module';
     ClienteRepuestoModule,
     DashboardModule,
     MesesFacturacionModule,
-    ReportesModule,
-    SlaModule
+    ReportesModule
     /*     LocalesModule,
         SectoresTrabajoModule,
         ProgramacionModule */
   ],
-  controllers: [AppController, SlaController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule { }

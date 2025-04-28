@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-lista-de-inspecciones',
@@ -28,7 +29,8 @@ import { MatSlideToggleChange } from '@angular/material/slide-toggle';
     MatExpansionModule,
     MatStepperModule,
     MatProgressSpinnerModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatTooltipModule
   ],
   templateUrl: './lista-de-inspecciones.component.html',
   styleUrl: './lista-de-inspecciones.component.scss'

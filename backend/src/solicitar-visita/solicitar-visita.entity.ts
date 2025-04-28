@@ -230,12 +230,7 @@ export class SolicitarVisita {
   @Column({ type: 'text', nullable: true })
   image_ot: string;
 
- 
-  @Column({
-    type: 'boolean',
-    name: 'clima',
-    default: true
-  })
+
   clima: boolean;
   // Agregar la relación con ActivoFijoLocal
   @ManyToOne(() => ActivoFijoLocal, { nullable: true })

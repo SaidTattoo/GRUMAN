@@ -454,45 +454,26 @@ export class SolicitarVisitaService {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
 
-        const data = await this.solicitarVisitaRepository
-            .createQueryBuilder('solicitud')
-            .leftJoinAndSelect('solicitud.local', 'local')
-            .leftJoinAndSelect('local.activoFijoLocales', 'activoFijoLocales')
-            .leftJoinAndSelect('solicitud.client', 'client')
-            .leftJoinAndSelect('client.listaInspeccion', 'listaInspeccion')
-            .leftJoinAndSelect('listaInspeccion.items', 'items')
-            .leftJoinAndSelect('items.subItems', 'subItems')
-            .leftJoinAndSelect('solicitud.tecnico_asignado', 'tecnico_asignado')
-            .leftJoinAndSelect('solicitud.tecnico_asignado_2', 'tecnico_asignado_2')
-            .leftJoinAndSelect('solicitud.activoFijoRepuestos', 'activoFijoRepuestos')
-            .leftJoinAndSelect('activoFijoRepuestos.activoFijo', 'activoFijo')
-            .leftJoinAndSelect('activoFijoRepuestos.detallesRepuestos', 'detallesRepuestos')
-            .leftJoinAndSelect('detallesRepuestos.repuesto', 'repuesto')
-            .select([
-                'solicitud',  // Esto incluirá todos los campos de solicitud, incluyendo clima
-                'local',
-                'activoFijoLocales',
-                'client',
-                'client.clima',  // Explícitamente seleccionamos el clima del cliente
-                'listaInspeccion',
-                'items',
-                'subItems',
-                'tecnico_asignado',
-                'tecnico_asignado_2',
+        const data = await this.solicitarVisitaRepository.find({ 
+            where: { 
+                tecnico_asignado: { rut },
+                estado: true,
+                fechaVisita: Between(today, tomorrow),
+                status: In([SolicitudStatus.APROBADA, SolicitudStatus.EN_SERVICIO]) 
+            },
+            relations: [
+                'local', 
+                'local.activoFijoLocales',
+                'client', 
+                'tecnico_asignado', 
+                'tecnico_asignado_2', 
                 'activoFijoRepuestos',
-                'activoFijo',
-                'detallesRepuestos',
-                'repuesto'
-            ])
-            .where('tecnico_asignado.rut = :rut', { rut })
-            .andWhere('solicitud.estado = :estado', { estado: true })
-            .andWhere('solicitud.fechaVisita BETWEEN :today AND :tomorrow', { today, tomorrow })
-            .andWhere('solicitud.status IN (:...status)', { 
-                status: [SolicitudStatus.APROBADA, SolicitudStatus.EN_SERVICIO] 
-            })
-            .orderBy('solicitud.fechaVisita', 'DESC')
-            .getMany();
-
+                'activoFijoRepuestos.activoFijo',
+                'activoFijoRepuestos.detallesRepuestos',
+                'activoFijoRepuestos.detallesRepuestos.repuesto'
+            ],
+            order: { fechaVisita: 'DESC' }
+        });
         return data;
     }
 
@@ -1425,7 +1406,6 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
               'activoFijoRepuestos', 'activoFijoRepuestos.activoFijo', 'activoFijoRepuestos.detallesRepuestos',
               'activoFijoRepuestos.detallesRepuestos.repuesto']
           });
-          console.log('##############',solicitud);
           if (!solicitud) throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
       
           const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });

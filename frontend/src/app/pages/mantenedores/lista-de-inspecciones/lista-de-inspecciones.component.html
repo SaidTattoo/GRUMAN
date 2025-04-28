@@ -118,7 +118,7 @@
                                         <mat-slide-toggle
                                           [checked]="subItem.foto_obligatoria"
                                           (change)="toggleFotoObligatoria(subItem, $event)"
-                                          matTooltip="Foto obligatoria"
+                                          [matTooltip]="subItem.foto_obligatoria ? 'Foto obligatoria' : 'Foto no obligatoria'"
                                           color="primary"
                                           class="me-2">
                                         </mat-slide-toggle>
