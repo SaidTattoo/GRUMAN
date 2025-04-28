@@ -335,9 +335,14 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
                 route: 'mantenedores/documentos/tipo-documento',
               },
               {
-                displayName: 'Tipo servicio',
+                displayName: 'Tipo Servicio',
                 iconName: 'server-2',
                 route: 'mantenedores/tipo-servicio',
+              },
+              {
+                displayName: 'Tipo Solicitud',
+                iconName: 'clock',
+                route: 'mantenedores/tipo-solicitud',
               },
               {
                 displayName: 'Sectores de trabajo',
