@@ -1,0 +1,63 @@
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Crear tipo de solicitud</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" placeholder="Nombre del tipo de solicitud">
+          <mat-error *ngIf="form.get('nombre')?.hasError('required')">
+            El nombre es requerido
+          </mat-error>
+        </mat-form-field>
+
+        <div class="row">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>SLA Días</mat-label>
+              <input matInput type="number" formControlName="sla_dias" placeholder="Días de SLA">
+              <mat-error *ngIf="form.get('sla_dias')?.hasError('required')">
+                Los días de SLA son requeridos
+              </mat-error>
+              <mat-error *ngIf="form.get('sla_dias')?.hasError('min')">
+                Los días de SLA deben ser mayores o iguales a 0
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>SLA Hora</mat-label>
+              <input matInput type="number" formControlName="sla_hora" placeholder="Hora de SLA">
+              <mat-error *ngIf="form.get('sla_hora')?.hasError('required')">
+                La hora de SLA es requerida
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Cliente</mat-label>
+          <input type="text" matInput formControlName="id_cliente" [matAutocomplete]="auto" placeholder="Buscar cliente">
+          <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="selectedCliente = $event.option.value">
+            <mat-option *ngFor="let cliente of filteredClientes | async" [value]="cliente">
+              {{cliente.nombre}}
+            </mat-option>
+          </mat-autocomplete>
+          <mat-error *ngIf="form.get('id_cliente')?.hasError('required')">
+            El cliente es requerido
+          </mat-error>
+        </mat-form-field>
+
+        
+
+        <div class="button-container">
+          <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid">Guardar</button>
+          <button mat-raised-button color="" type="button" (click)="cancelar()">Cancelar</button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div> 

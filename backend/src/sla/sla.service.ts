@@ -17,7 +17,7 @@ export class SlaService {
   }
 
   async findAll(): Promise<Sla[]> {
-    return this.slaRepository.find();
+    return this.slaRepository.find({ relations: ['cliente'] });
   }
 
   async findOne(id: number): Promise<Sla> {

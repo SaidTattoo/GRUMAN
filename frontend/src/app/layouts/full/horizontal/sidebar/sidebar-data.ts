@@ -146,12 +146,17 @@ export const navItems: NavItem[] = [
           },
           {
             displayName: 'Tipo Servicio',
-            iconName: 'home-shield',
+            iconName: 'server-2',
             route: 'mantenedores/tipo-servicio',
           },
           {
-            displayName: 'Sectores de Trabajo',
-            iconName: 'home-shield',
+            displayName: 'Tipo Solicitud',
+            iconName: 'clock',
+            route: 'mantenedores/tipo-solicitud',
+          },
+          {
+            displayName: 'Sectores de trabajo',
+            iconName: 'map-pin',
             route: 'mantenedores/sectores-trabajo',
           },
           {
