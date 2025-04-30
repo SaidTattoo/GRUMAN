@@ -1398,144 +1398,242 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
 
     async generatePdf(id: number): Promise<Buffer> {
         try {
-          const solicitud = await this.solicitarVisitaRepository.findOne({
-            where: { id },
-            relations: [
-              'local', 'local.activoFijoLocales', 'client', 'tecnico_asignado', 'tecnico_asignado_2',
-              'itemRepuestos', 'itemRepuestos.repuesto', 'itemFotos', 'causaRaiz',
-              'activoFijoRepuestos', 'activoFijoRepuestos.activoFijo', 'activoFijoRepuestos.detallesRepuestos',
-              'activoFijoRepuestos.detallesRepuestos.repuesto']
-          });
-          if (!solicitud) throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
-      
-          const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
-          const buffers: Buffer[] = [];
-          doc.on('data', buffers.push.bind(buffers));
-          let finalBuffer: Buffer | null = null;
-          doc.on('end', () => finalBuffer = Buffer.concat(buffers));
-      
-          const pageWidth = doc.page.width;
-          const marginLeft = 50;
-      
-          // Header: Logo + Title + Data
-          const logoPath = existsSync(join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg'))
-            ? join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg')
-            : join(__dirname, '..', 'images', 'atlantis_logo.jpg');
-          try {
-            if (existsSync(logoPath)) {
-              doc.image(logoPath, marginLeft, 40, { width: 60 });
-            }
-          } catch {}
-      
-          doc.font('Helvetica-Bold').fontSize(20).text('ATLANTIS', marginLeft + 80, 50);
-          doc.font('Helvetica').fontSize(10)
-            .text(`N° Solicitud: ${solicitud.id}`, marginLeft + 80, 75)
-            .text(`Inicio: ${format(new Date(solicitud.fecha_hora_inicio_servicio), 'dd/MM/yyyy HH:mm')}`, marginLeft + 80, 90)
-            .text(`Término: ${format(new Date(solicitud.fecha_hora_fin_servicio), 'dd/MM/yyyy HH:mm')}`, marginLeft + 80, 105);
-      
-          doc.moveTo(marginLeft, 130).lineTo(pageWidth - marginLeft, 130).stroke();
-          doc.moveDown(2);
-      
-          // Información general
-          doc.font('Helvetica-Bold').fontSize(12).text('DESCRIPCIÓN GENERAL DE LA SOLICITUD', marginLeft, undefined, { underline: true });
-          doc.moveDown(1);
-      
-          const tecnico1 = solicitud.tecnico_asignado;
-          const tecnico2 = solicitud.tecnico_asignado_2;
-      
-          const nombreTecnicos = [
-            tecnico1 ? `${tecnico1.name} ${tecnico1.lastName || ''}`.trim() : null,
-            tecnico2 ? `${tecnico2.name} ${tecnico2.lastName || ''}`.trim() : null
-          ].filter(Boolean).join(' y ') || 'No especificado';
-      
-          const info = [
-            [`CLIENTE`, solicitud.client?.nombre],
-            [`LOCAL`, solicitud.local?.nombre_local],
-            [`DIRECCIÓN`, solicitud.local?.direccion],
-            [`EQUIPO A INTERVENIR`, solicitud.observaciones || 'No especificado'],
-            [`TIPO DE SERVICIO`, solicitud.tipo_mantenimiento],
-            [`TÉCNICO EJECUTANTE`, nombreTecnicos]
-          ];
-      
-          doc.fontSize(10);
-          info.forEach(([label, value]) => {
-            doc.font('Helvetica-Bold').text(`${label}: `, marginLeft, undefined, { continued: true })
-               .font('Helvetica').text(value || '');
-          });
-      
-          // Firma
-          doc.moveDown(3);
-          doc.fontSize(11).font('Helvetica-Bold').text('Firma del Cliente:', marginLeft);
-          if (solicitud.firma_cliente) {
-            try {
-              const signatureBuffer = Buffer.from(solicitud.firma_cliente.replace(/^data:image\/\w+;base64,/, ''), 'base64');
-              doc.image(signatureBuffer, marginLeft, doc.y + 10, { width: 180, height: 90 });
-              doc.moveDown(5);
-            } catch {
-              doc.font('Helvetica').text('Firma no disponible', marginLeft);
-            }
-          }
-          doc.fontSize(10).text(`Fecha: ${format(new Date(), 'dd/MM/yyyy')}`, marginLeft);
-      
-          // Repuestos utilizados
-          const repuestos = solicitud.itemRepuestos?.map(r => `- ${r.repuesto.familia}: ${r.repuesto.articulo} (${r.repuesto.marca})`).join('\n');
-          if (repuestos) {
-            doc.addPage();
-            doc.fontSize(12).font('Helvetica-Bold').text('REPUESTOS UTILIZADOS', marginLeft, undefined, { underline: true });
-            doc.moveDown();
-            doc.font('Helvetica').fontSize(10).text(repuestos, marginLeft);
-          }
-      
-          // Fotografías
-          const hasPhotos = solicitud.itemFotos?.some(f => f.fotos?.length);
-          if (hasPhotos) {
-            doc.addPage();
-            doc.fontSize(14).font('Helvetica-Bold').text('REGISTRO FOTOGRÁFICO', marginLeft, undefined, { underline: true });
-      
-            let y = 80, x = marginLeft;
-            const imageWidth = 120, imageHeight = 90, gap = 15;
-      
-            for (const item of solicitud.itemFotos) {
-              if (!item.fotos?.length) continue;
-              doc.fontSize(11).font('Helvetica-Bold').text(`Item ${item.itemId}`, x, y);
-              y += 15;
-              for (const fotoUrl of item.fotos) {
-                try {
-                  const filename = fotoUrl.split('/uploads/')[1];
-                  const path = join(process.cwd(), 'uploads', filename);
-                  if (!existsSync(path)) throw new Error(`No existe: ${path}`);
-      
-                  if (x + imageWidth > pageWidth - marginLeft) {
-                    x = marginLeft;
-                    y += imageHeight + gap;
-                  }
-                  if (y + imageHeight > doc.page.height - 60) {
-                    doc.addPage();
-                    y = 60; x = marginLeft;
-                  }
-                  doc.rect(x, y, imageWidth, imageHeight).stroke();
-                  doc.image(path, x, y, { fit: [imageWidth, imageHeight] });
-                  x += imageWidth + gap;
-                } catch (err) {
-                  doc.font('Helvetica').fontSize(8).text(`Error imagen: ${err.message}`, x, y);
-                  x += imageWidth + gap;
-                }
-              }
-              y += imageHeight + gap * 2;
-              x = marginLeft;
-            }
-          }
-      
-          doc.end();
-          return new Promise((resolve, reject) => {
-            doc.on('end', () => finalBuffer ? resolve(finalBuffer) : reject(new Error('PDF vacío')));
-          });
-        } catch (err) {
-          throw new InternalServerErrorException(`Error generando PDF: ${err.message}`);
-        }
-      }
+            const solicitud = await this.solicitarVisitaRepository.findOne({
+                where: { id },
+                relations: [
+                    'local', 'local.activoFijoLocales', 'client', 'tecnico_asignado', 'tecnico_asignado_2',
+                    'itemRepuestos', 'itemRepuestos.repuesto', 'itemFotos', 'causaRaiz',
+                    'activoFijoRepuestos', 'activoFijoRepuestos.activoFijo', 'activoFijoRepuestos.detallesRepuestos',
+                    'activoFijoRepuestos.detallesRepuestos.repuesto'
+                ]
+            });
 
-      async subirCargaMasiva(datos: any[]): Promise<SolicitarVisita[]> {
+            if (!solicitud) throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+
+            const doc = new PDFDocument({ 
+                size: 'A4', 
+                margin: 50, 
+                bufferPages: true,
+                info: {
+                    Title: `Reporte de Visita Técnica #${solicitud.id}`,
+                    Author: 'Sistema de Gestión Técnica'
+                }
+            });
+
+            const buffers: Buffer[] = [];
+            doc.on('data', buffers.push.bind(buffers));
+            let finalBuffer: Buffer | null = null;
+            doc.on('end', () => finalBuffer = Buffer.concat(buffers));
+
+            const pageWidth = doc.page.width;
+            const marginLeft = 50;
+            const marginRight = 50;
+            const contentWidth = pageWidth - marginLeft - marginRight;
+
+            // Estilos
+            const styles = {
+                title: { font: 'Helvetica-Bold', size: 24, fillColor: '#333333' },
+                subtitle: { font: 'Helvetica-Bold', size: 14, fillColor: '#666666' },
+                header: { font: 'Helvetica-Bold', size: 12, fillColor: '#333333' },
+                text: { font: 'Helvetica', size: 10, fillColor: '#333333' },
+                small: { font: 'Helvetica', size: 8, fillColor: '#666666' },
+                tableHeader: { font: 'Helvetica-Bold', size: 10, fillColor: '#222' },
+                tableCell: { font: 'Helvetica', size: 10, fillColor: '#333' }
+            };
+
+            // Header con logo y título
+            const logoPath = existsSync(join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg'))
+                ? join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg')
+                : join(__dirname, '..', 'images', 'atlantis_logo.jpg');
+
+            if (existsSync(logoPath)) {
+                doc.image(logoPath, marginLeft, 40, { width: 60 });
+            }
+
+            doc.font(styles.title.font)
+               .fontSize(styles.title.size)
+               .fillColor(styles.title.fillColor)
+               .text('REPORTE DE VISITA TÉCNICA', marginLeft + 80, 50);
+
+            doc.font(styles.subtitle.font)
+               .fontSize(styles.subtitle.size)
+               .fillColor(styles.subtitle.fillColor)
+               .text(`N° Solicitud: ${solicitud.id}`, marginLeft + 80, 80);
+
+            // Línea separadora
+            doc.moveTo(marginLeft, 120)
+               .lineTo(pageWidth - marginRight, 120)
+               .stroke('#333333');
+
+            let currentY = 140;
+
+            // --- TABLA INFORMACIÓN PRINCIPAL ---
+            const infoTable = [
+                ['Cliente', solicitud.client?.nombre || 'No especificado'],
+                ['Local', solicitud.local?.nombre_local || 'No especificado'],
+                ['Dirección', solicitud.local?.direccion || 'No especificada'],
+                ['Teléfono', solicitud.local?.telefono || 'No especificado'],
+                ['Fecha de Visita', solicitud.fechaVisita ? format(new Date(solicitud.fechaVisita), 'dd/MM/yyyy HH:mm') : 'No especificada'],
+                ['Tipo de Mantenimiento', solicitud.tipo_mantenimiento || 'No especificado'],
+                ['Técnico Asignado', solicitud.tecnico_asignado ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}` : 'No especificado'],
+                ['Hora Inicio', solicitud.fecha_hora_inicio_servicio ? format(new Date(solicitud.fecha_hora_inicio_servicio), 'HH:mm') : 'No especificada'],
+                ['Hora Término', solicitud.fecha_hora_fin_servicio ? format(new Date(solicitud.fecha_hora_fin_servicio), 'HH:mm') : 'No especificada']
+            ];
+
+            // Dibujar tabla elegante
+            const tableX = marginLeft;
+            let tableY = currentY;
+            const rowHeight = 22;
+            const col1Width = 140;
+            const col2Width = contentWidth - col1Width;
+            const borderColor = '#cccccc';
+
+            // Encabezado de sección
+            doc.font(styles.header.font)
+               .fontSize(styles.header.size)
+               .fillColor(styles.header.fillColor)
+               .text('INFORMACIÓN DE LA VISITA', tableX, tableY);
+            tableY += 18;
+
+            // Borde exterior
+            doc.save();
+            doc.roundedRect(tableX, tableY, contentWidth, rowHeight * infoTable.length, 6)
+               .lineWidth(0.7)
+               .stroke(borderColor);
+            doc.restore();
+
+            // Filas
+            for (let i = 0; i < infoTable.length; i++) {
+                const y = tableY + i * rowHeight;
+                // Línea horizontal
+                if (i > 0) {
+                    doc.moveTo(tableX, y)
+                       .lineTo(tableX + contentWidth, y)
+                       .strokeColor(borderColor)
+                       .lineWidth(0.5)
+                       .stroke();
+                }
+                // Columna 1
+                doc.font(styles.tableHeader.font)
+                   .fontSize(styles.tableHeader.size)
+                   .fillColor('#222')
+                   .text(infoTable[i][0], tableX + 8, y + 6, { width: col1Width - 10 });
+                // Línea vertical
+                doc.moveTo(tableX + col1Width, y)
+                   .lineTo(tableX + col1Width, y + rowHeight)
+                   .strokeColor(borderColor)
+                   .lineWidth(0.5)
+                   .stroke();
+                // Columna 2
+                doc.font(styles.tableCell.font)
+                   .fontSize(styles.tableCell.size)
+                   .fillColor('#333')
+                   .text(infoTable[i][1], tableX + col1Width + 8, y + 6, { width: col2Width - 10 });
+            }
+            tableY += rowHeight * infoTable.length + 16;
+            currentY = tableY;
+
+            // --- TABLA EQUIPOS INTERVENIDOS ---
+            if (solicitud.activoFijoRepuestos?.length > 0) {
+                doc.font(styles.header.font)
+                   .fontSize(styles.header.size)
+                   .fillColor(styles.header.fillColor)
+                   .text('EQUIPOS INTERVENIDOS', tableX, currentY);
+                currentY += 18;
+                // Encabezados
+                const equiposHeaders = ['Código', 'Tipo', 'Marca', 'Estado', 'Observaciones'];
+                const colWidths = [90, 90, 90, 70, contentWidth - 340];
+                // Borde exterior
+                doc.save();
+                doc.roundedRect(tableX, currentY, contentWidth, rowHeight * (solicitud.activoFijoRepuestos.length + 1), 6)
+                   .lineWidth(0.7)
+                   .stroke(borderColor);
+                doc.restore();
+                // Encabezados
+                let x = tableX;
+                for (let i = 0; i < equiposHeaders.length; i++) {
+                    doc.font(styles.tableHeader.font)
+                       .fontSize(styles.tableHeader.size)
+                       .fillColor('#222')
+                       .text(equiposHeaders[i], x + 8, currentY + 6, { width: colWidths[i] - 10 });
+                    x += colWidths[i];
+                    if (i < equiposHeaders.length - 1) {
+                        doc.moveTo(x, currentY)
+                           .lineTo(x, currentY + rowHeight * (solicitud.activoFijoRepuestos.length + 1))
+                           .strokeColor(borderColor)
+                           .lineWidth(0.5)
+                           .stroke();
+                    }
+                }
+                // Filas de equipos
+                for (let i = 0; i < solicitud.activoFijoRepuestos.length; i++) {
+                    const afr = solicitud.activoFijoRepuestos[i];
+                    let y = currentY + rowHeight * (i + 1);
+                    let x = tableX;
+                    const values = [
+                        afr.activoFijo?.codigo_activo || '',
+                        afr.activoFijo?.tipo_equipo || '',
+                        afr.activoFijo?.marca || '',
+                        afr.estadoOperativo || '',
+                        afr.observacionesEstado || 'Sin observaciones'
+                    ];
+                    for (let j = 0; j < values.length; j++) {
+                        doc.font(styles.tableCell.font)
+                           .fontSize(styles.tableCell.size)
+                           .fillColor('#333')
+                           .text(values[j], x + 8, y + 6, { width: colWidths[j] - 10 });
+                        x += colWidths[j];
+                    }
+                    // Línea horizontal
+                    if (i < solicitud.activoFijoRepuestos.length) {
+                        doc.moveTo(tableX, y)
+                           .lineTo(tableX + contentWidth, y)
+                           .strokeColor(borderColor)
+                           .lineWidth(0.5)
+                           .stroke();
+                    }
+                }
+                currentY += rowHeight * (solicitud.activoFijoRepuestos.length + 1) + 16;
+            }
+
+            // --- FIRMA DEL CLIENTE ---
+            doc.font(styles.header.font)
+               .fontSize(styles.header.size)
+               .fillColor(styles.header.fillColor)
+               .text('FIRMA DEL CLIENTE', tableX, currentY);
+            currentY += 18;
+            if (solicitud.firma_cliente) {
+                try {
+                    const signatureBuffer = Buffer.from(solicitud.firma_cliente.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+                    doc.image(signatureBuffer, tableX, currentY, { width: 180, height: 90 });
+                    currentY += 100;
+                } catch (error) {
+                    doc.font(styles.text.font)
+                       .fontSize(styles.text.size)
+                       .fillColor(styles.text.fillColor)
+                       .text('Firma no disponible', tableX, currentY);
+                    currentY += 30;
+                }
+            }
+
+            // Footer
+            const footerY = doc.page.height - 50;
+            doc.font(styles.small.font)
+               .fontSize(styles.small.size)
+               .fillColor(styles.small.fillColor)
+               .text('Documento generado automáticamente por el Sistema de Gestión Técnica', 
+                     marginLeft, footerY);
+
+            doc.end();
+            return new Promise((resolve, reject) => {
+                doc.on('end', () => finalBuffer ? resolve(finalBuffer) : reject(new Error('PDF vacío')));
+            });
+        } catch (err) {
+            throw new InternalServerErrorException(`Error generando PDF: ${err.message}`);
+        }
+    }
+
+    async subirCargaMasiva(datos: any[]): Promise<SolicitarVisita[]> {
         const solicitudesCreadas: any[] = [];
 
         try {
