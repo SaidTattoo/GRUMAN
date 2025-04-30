@@ -1,11 +1,12 @@
 import { Controller, Post, Body, Get, Param, Delete, Put } from '@nestjs/common';
 import { SlaService } from './sla.service';
 import { SlaDto } from './dto/sla.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('sla')
 @Controller('sla')
 export class SlaController {
     constructor(private readonly slaService: SlaService) {}
-
     @Post()
     create(@Body() createSlaDto: SlaDto) {
         return this.slaService.create(createSlaDto);

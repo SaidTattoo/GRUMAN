@@ -42,6 +42,7 @@ import { ClienteRepuestoModule } from './cliente-repuesto/cliente-repuesto.modul
 import { DashboardModule } from './dashboard/dashboard.module';
 import { MesesFacturacionModule } from './meses_facturacion/meses_facturacion.module';
 import { ReportesModule } from './reportes/reportes.module';
+import { SlaModule } from './sla/sla.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -88,7 +89,8 @@ import { ReportesModule } from './reportes/reportes.module';
     ClienteRepuestoModule,
     DashboardModule,
     MesesFacturacionModule,
-    ReportesModule
+    ReportesModule,
+    SlaModule
     /*     LocalesModule,
         SectoresTrabajoModule,
         ProgramacionModule */
