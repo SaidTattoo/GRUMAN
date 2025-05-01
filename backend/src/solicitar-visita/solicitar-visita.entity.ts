@@ -177,6 +177,11 @@ export class SolicitarVisita {
   @JoinColumn({ name: 'generada_por_id' })
   generada_por: User;
 
+  // Relación con User para generada_por
+  @ManyToOne(() => TipoServicio, (tipoServicio) => tipoServicio.id, { nullable: true })
+  @JoinColumn({ name: 'tipoServicioId' })
+  tipo_servicio: TipoServicio;
+
   @Column({ type: 'int', nullable: true })
   generada_por_id: number;
 
