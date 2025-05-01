@@ -1401,9 +1401,19 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
             const solicitud = await this.solicitarVisitaRepository.findOne({
                 where: { id },
                 relations: [
-                    'local', 'local.activoFijoLocales', 'client', 'tecnico_asignado', 'tecnico_asignado_2',
-                    'itemRepuestos', 'itemRepuestos.repuesto', 'itemFotos', 'causaRaiz',
-                    'activoFijoRepuestos', 'activoFijoRepuestos.activoFijo', 'activoFijoRepuestos.detallesRepuestos',
+                    'local', 
+                    'local.activoFijoLocales', 
+                    'client', 
+                    'tecnico_asignado', 
+                    'tecnico_asignado_2',
+                    'itemRepuestos', 
+                    'itemRepuestos.repuesto', 
+                    'itemFotos', 
+                    'causaRaiz',
+                    'tipo_servicio',
+                    'activoFijoRepuestos', 
+                    'activoFijoRepuestos.activoFijo', 
+                    'activoFijoRepuestos.detallesRepuestos',
                     'activoFijoRepuestos.detallesRepuestos.repuesto'
                 ]
             });
@@ -1415,8 +1425,8 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 margin: 50, 
                 bufferPages: true,
                 info: {
-                    Title: `Reporte de Visita Técnica #${solicitud.id}`,
-                    Author: 'Sistema de Gestión Técnica'
+                    Title: `Reporte de visita técnica #${solicitud.id}`,
+                    Author: 'Sistema de gestión técnica'
                 }
             });
 
@@ -1435,10 +1445,10 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 title: { font: 'Helvetica-Bold', size: 24, fillColor: '#333333' },
                 subtitle: { font: 'Helvetica-Bold', size: 14, fillColor: '#666666' },
                 header: { font: 'Helvetica-Bold', size: 12, fillColor: '#333333' },
-                text: { font: 'Helvetica', size: 10, fillColor: '#333333' },
+                text: { font: 'Helvetica', size: 8, fillColor: '#333333' },
                 small: { font: 'Helvetica', size: 8, fillColor: '#666666' },
-                tableHeader: { font: 'Helvetica-Bold', size: 10, fillColor: '#222' },
-                tableCell: { font: 'Helvetica', size: 10, fillColor: '#333' }
+                tableHeader: { font: 'Helvetica-Bold', size: 8, fillColor: '#222' },
+                tableCell: { font: 'Helvetica', size: 8, fillColor: '#333' }
             };
 
             // Header con logo y título
@@ -1473,18 +1483,18 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 ['Local', solicitud.local?.nombre_local || 'No especificado'],
                 ['Dirección', solicitud.local?.direccion || 'No especificada'],
                 ['Teléfono', solicitud.local?.telefono || 'No especificado'],
-                ['Fecha de Visita', solicitud.fechaVisita ? format(new Date(solicitud.fechaVisita), 'dd/MM/yyyy HH:mm') : 'No especificada'],
-                ['Tipo de Mantenimiento', solicitud.tipo_mantenimiento || 'No especificado'],
-                ['Técnico Asignado', solicitud.tecnico_asignado ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}` : 'No especificado'],
-                ['Hora Inicio', solicitud.fecha_hora_inicio_servicio ? format(new Date(solicitud.fecha_hora_inicio_servicio), 'HH:mm') : 'No especificada'],
-                ['Hora Término', solicitud.fecha_hora_fin_servicio ? format(new Date(solicitud.fecha_hora_fin_servicio), 'HH:mm') : 'No especificada']
+                ['Fecha visita', solicitud.fechaVisita ? format(new Date(solicitud.fechaVisita), 'dd-MM-yyyy') : 'No especificada'],
+                ['Tipo de mantenimiento', solicitud.tipo_servicio?.nombre || 'No especificado'],
+                ['Técnico asignado', solicitud.tecnico_asignado ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}` : 'No especificado'],
+                ['Hora inicio', solicitud.fecha_hora_inicio_servicio ? format(new Date(solicitud.fecha_hora_inicio_servicio), 'HH:mm') : 'No especificada'],
+                ['Hora término', solicitud.fecha_hora_fin_servicio ? format(new Date(solicitud.fecha_hora_fin_servicio), 'HH:mm') : 'No especificada']
             ];
 
             // Dibujar tabla elegante
             const tableX = marginLeft;
             let tableY = currentY;
             const rowHeight = 22;
-            const col1Width = 140;
+            const col1Width = 150;
             const col2Width = contentWidth - col1Width;
             const borderColor = '#cccccc';
 
@@ -1530,6 +1540,7 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                    .fillColor('#333')
                    .text(infoTable[i][1], tableX + col1Width + 8, y + 6, { width: col2Width - 10 });
             }
+
             tableY += rowHeight * infoTable.length + 16;
             currentY = tableY;
 
@@ -1542,7 +1553,7 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 currentY += 18;
                 // Encabezados
                 const equiposHeaders = ['Código', 'Tipo', 'Marca', 'Estado', 'Observaciones'];
-                const colWidths = [90, 90, 90, 70, contentWidth - 340];
+                const colWidths = [100, 90, 90, 70, contentWidth - 340];
                 // Borde exterior
                 doc.save();
                 doc.roundedRect(tableX, currentY, contentWidth, rowHeight * (solicitud.activoFijoRepuestos.length + 1), 6)
@@ -1605,7 +1616,7 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
             if (solicitud.firma_cliente) {
                 try {
                     const signatureBuffer = Buffer.from(solicitud.firma_cliente.replace(/^data:image\/\w+;base64,/, ''), 'base64');
-                    doc.image(signatureBuffer, tableX, currentY, { width: 180, height: 90 });
+                    doc.image(signatureBuffer, tableX, currentY, { width: 100, height: 100, fit: [100, 100]});
                     currentY += 100;
                 } catch (error) {
                     doc.font(styles.text.font)
@@ -1616,13 +1627,100 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 }
             }
 
+            const hasPhotos = solicitud.itemFotos?.some(f => f.fotos?.length);
+            if (hasPhotos) {
+              doc.addPage();
+              doc.fontSize(16).font('Helvetica-Bold')
+                 .fillColor('#333')
+                 .text('REGISTRO FOTOGRÁFICO', marginLeft, 40, { 
+                   align: 'center',
+                   underline: true
+                 });
+        
+              let y = 80;
+              const imageSize = 160; // Tamaño cuadrado para las imágenes
+              const gap = 20;
+              const imagesPerRow = 3;
+              const xPositions = Array.from({length: imagesPerRow}, (_, i) => 
+                marginLeft + i * (imageSize + gap)
+              );
+        
+              for (const item of solicitud.itemFotos) {
+                if (!item.fotos?.length) continue;
+                
+                // Verificar si hay espacio suficiente para el título y al menos una fila de imágenes
+                if (y + imageSize + 40 > doc.page.height - 60) {
+                  doc.addPage();
+                  y = 80;
+                }
+
+                // Título del Item con fondo gris claro
+                doc.rect(marginLeft, y, pageWidth - marginLeft * 2, 25)
+                   .fillColor('#f5f5f5')
+                   .fill();
+                doc.fontSize(12)
+                   .font('Helvetica-Bold')
+                   .fillColor('#333')
+                   .text(`Item ${item.itemId}`, marginLeft + 10, y + 7);
+                y += 35;
+
+                let currentCol = 0;
+                
+                for (const fotoUrl of item.fotos) {
+                  try {
+                    const filename = fotoUrl.split('/uploads/')[1];
+                    const path = join(process.cwd(), 'uploads', filename);
+                    if (!existsSync(path)) throw new Error(`No existe: ${path}`);
+        
+                    if (currentCol >= imagesPerRow) {
+                      currentCol = 0;
+                      y += imageSize + gap;
+                    }
+
+                    if (y + imageSize > doc.page.height - 60) {
+                      doc.addPage();
+                      y = 80;
+                    }
+
+                    // Marco con sombra para la imagen
+                    doc.save()
+                       .rect(xPositions[currentCol], y, imageSize, imageSize)
+                       .fillColor('#fff')
+                       .fill()
+                       .lineWidth(1)
+                       .strokeColor('#ccc')
+                       .stroke();
+
+                    // Imagen cuadrada con fit
+                    doc.image(path, xPositions[currentCol], y, {
+                      fit: [imageSize, imageSize],
+                      align: 'center',
+                      valign: 'center'
+                    });
+
+                    currentCol++;
+                  } catch (err) {
+                    doc.font('Helvetica')
+                       .fontSize(8)
+                       .fillColor('#ff0000')
+                       .text(`Error: ${err.message}`, xPositions[currentCol], y + imageSize/2);
+                    currentCol++;
+                  }
+                }
+                
+                y += imageSize + gap * 2;
+              }
+            }
+
+            
+
             // Footer
-            const footerY = doc.page.height - 50;
-            doc.font(styles.small.font)
-               .fontSize(styles.small.size)
-               .fillColor(styles.small.fillColor)
-               .text('Documento generado automáticamente por el Sistema de Gestión Técnica', 
-                     marginLeft, footerY);
+            // const footerY = doc.page.height - 50;
+            // doc.font(styles.small.font)
+            //    .fontSize(styles.small.size)
+            //    .fillColor(styles.small.fillColor)
+            //    .text('Documento generado automáticamente por el Sistema de Gestión Técnica', 
+            //          marginLeft, footerY);
 
             doc.end();
             return new Promise((resolve, reject) => {
