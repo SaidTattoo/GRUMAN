@@ -1484,7 +1484,7 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 ['Dirección', solicitud.local?.direccion || 'No especificada'],
                 ['Teléfono', solicitud.local?.telefono || 'No especificado'],
                 ['Fecha visita', solicitud.fechaVisita ? format(new Date(solicitud.fechaVisita), 'dd-MM-yyyy') : 'No especificada'],
-                ['Tipo de mantenimiento', solicitud.tipo_servicio?.nombre || 'No especificado'],
+                ['Tipo de servicio', solicitud.tipo_servicio?.nombre || 'No especificado'],
                 ['Técnico asignado', solicitud.tecnico_asignado ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}` : 'No especificado'],
                 ['Hora inicio', solicitud.fecha_hora_inicio_servicio ? format(new Date(solicitud.fecha_hora_inicio_servicio), 'HH:mm') : 'No especificada'],
                 ['Hora término', solicitud.fecha_hora_fin_servicio ? format(new Date(solicitud.fecha_hora_fin_servicio), 'HH:mm') : 'No especificada']
