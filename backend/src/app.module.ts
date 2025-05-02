@@ -42,6 +42,7 @@ import { ClienteRepuestoModule } from './cliente-repuesto/cliente-repuesto.modul
 import { DashboardModule } from './dashboard/dashboard.module';
 import { MesesFacturacionModule } from './meses_facturacion/meses_facturacion.module';
 import { ReportesModule } from './reportes/reportes.module';
+import { SlaModule } from './sla/sla.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -78,7 +79,7 @@ import { ReportesModule } from './reportes/reportes.module';
       rootPath: join(__dirname, '..', 'uploads'), // Asegúrate de que esta ruta es correcta
       serveRoot: '/uploads', // Esto asegura que las rutas comiencen con /uploads
     }),
-    
+    SlaModule,
     ActivoFijoLocalModule,
     UploadV2Module,
     SolicitarVisitaModule,
