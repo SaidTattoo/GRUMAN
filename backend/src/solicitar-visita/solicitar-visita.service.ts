@@ -1403,7 +1403,7 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
         const itemEstado = await this.itemEstadoRepository.findOne({
             where: { estado: status }
         });
-        return itemEstado?.estado || status;
+        return itemEstado?.estado || "-";
     }
  
     async getNameItem(id: any): Promise<string> {
@@ -1721,6 +1721,7 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                             let estado = 'Sin estado';
                             try {
                                 const estadoRes = await this.getNameStatus(subItem.estado);
+                                console.log('estadoRes', estadoRes);
                                 estado = estadoRes || 'Sin estado';
                             } catch (e) {
                                 estado = 'Sin estado';
@@ -1733,6 +1734,8 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                                 estadoColor = '#F44336'; // Rojo
                             } else if (estado.toLowerCase().includes('no aplica')) {
                                 estadoColor = '#FF9800'; // Naranja
+                            } else if (estado.toLowerCase().includes('-')) {
+                                estadoColor = '#bbbbbb'; // Naranja
                             }
                             
                             // Calcular alturas

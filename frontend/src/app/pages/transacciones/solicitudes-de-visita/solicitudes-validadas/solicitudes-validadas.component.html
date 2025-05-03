@@ -149,12 +149,14 @@
                      matTooltipShowDelay="500">
                 <mat-icon>edit</mat-icon>
               </button>
-            
-              <button mat-icon-button color="primary" 
-                      (click)="downloadPdf(row); $event.stopPropagation(); "
-                      matTooltip="Descargar PDF">
-                <mat-icon>picture_as_pdf</mat-icon>
-              </button>
+              
+              <ng-container *ngIf="row.status === 'validada'">
+                <button mat-icon-button color="primary" 
+                        (click)="downloadPdf(row); $event.stopPropagation(); "
+                        matTooltip="Descargar PDF">
+                  <mat-icon>picture_as_pdf</mat-icon>
+                </button>
+              </ng-container>
 
             </td>
           </ng-container>
