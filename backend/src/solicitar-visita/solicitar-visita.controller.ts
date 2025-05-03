@@ -500,4 +500,13 @@ export class SolicitarVisitaController {
       throw new InternalServerErrorException('Error al cambiar el estado de la solicitud');
     }
   }
+
+  @Post(':id/enviar-email')
+  async enviarEmail(@Param('id') id: number) {
+    try {
+      return this.solicitarVisitaService.enviarEmail(id);
+    } catch (error) {
+      throw new InternalServerErrorException('Error al enviar el email');
+    }
+  }
 }

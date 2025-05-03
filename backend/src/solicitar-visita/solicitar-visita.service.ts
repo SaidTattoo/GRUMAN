@@ -26,6 +26,7 @@ import * as fs from 'fs';
 import { format } from 'date-fns';
 import { existsSync, readFileSync } from 'fs';
 import { Item } from 'src/inspection/entities/item.entity';
+import * as sgMail from '@sendgrid/mail';
 
 
 
@@ -2019,5 +2020,36 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 return '#9E9E9E';
         }
     }
+
+    async enviarEmail(id: number) {
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY || "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");
+
+        const urlOrder = `${process.env.FRONTEND_URL}/transacciones/solicitudes-de-visita/ver-solicitud/validada/${id}`;
+
+        const msg = {
+            to: 'ignacionorambuenag@gmail.com', // Replace with the recipient's email address
+            cc: ['mreyesmauricio@gmail.com', 'valericio.carrasco@soporte-ti.net'],
+            from: {
+                email: 'notificaciones@atlantispro.cl',
+                name: 'Notificaciones Gruman'
+            },
+            subject: 'Se valido una nueva solicitud de visita',
+            templateId: 'd-d6180d6a117f45948c9e07180779a41c',
+            dynamicTemplateData: {
+                urlOrder: urlOrder
+            }
+           };
+          
+           sgMail
+            .send(msg)
+            .then(() => {
+            console.log('Email sent successfully');
+            })
+            .catch(error => {
+            console.error(error);
+            });
+        
+        
+    }   
 }
 

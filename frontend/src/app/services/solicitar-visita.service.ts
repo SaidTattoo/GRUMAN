@@ -204,4 +204,8 @@ export class SolicitarVisitaService {
   cambiarEstado(id: number, estado: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}solicitar-visita/${id}/estado`, { status: estado });
   }
+
+  enviarEmail(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}solicitar-visita/${id}/enviar-email`, {});
+  }
 }

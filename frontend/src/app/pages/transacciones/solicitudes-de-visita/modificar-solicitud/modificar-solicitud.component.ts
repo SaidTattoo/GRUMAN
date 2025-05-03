@@ -32,6 +32,7 @@ import { CausaRaizService } from '../../../../services/causa-raiz.service';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroup } from '@angular/material/radio';
 import { UploadDataService } from 'src/app/services/upload-data.service';
+import { environment } from 'src/app/config';
 
 interface Repuesto {
   id: number;
@@ -1134,6 +1135,16 @@ export class ModificarSolicitudComponent implements OnInit {
                 this.snackBar.open('Solicitud validada correctamente', 'Cerrar', {
                   duration: 3000
                 });
+                // EJECUTAR ENVIO DE EMAIL
+                this.solicitarVisitaService.enviarEmail(Number(this.solicitudId)).subscribe({
+                  next: (response) => {
+                    console.log('Email enviado correctamente:', response);
+                  },
+                  error: (error) => {
+                    console.error('Error al enviar el email:', error);
+                  }
+                }); 
+
                 this.router.navigate(['/transacciones/solicitudes-de-visita/validadas']);
               },
               error: (error) => {
