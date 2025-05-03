@@ -21,6 +21,7 @@ import { Subscription } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import * as XLSX from 'xlsx';
 import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-solicitudes-validadas',
   standalone: true,
@@ -40,286 +41,12 @@ import Swal from 'sweetalert2';
     MatTooltipModule,
     MatProgressSpinnerModule
   ],
-  template: `
-    <mat-card class="cardWithShadow">
-      <mat-card-content class="p-24">
-        <div class="row justify-content-between m-b-8">
-          <div class="col-sm-8">
-            <h2 class="m-0">Solicitudes Validadas</h2>
-          </div>
-          <div class="col-sm-4">
-            <mat-form-field appearance="outline" class="w-100 hide-hint">
-              <mat-label>Buscar</mat-label>
-              <input matInput (keyup)="applyFilter($event)" placeholder="Buscar solicitud" #input>
-              <mat-icon matPrefix>search</mat-icon>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <!-- Botones de acción -->
-        <div class="action-buttons my-3">
-          <button mat-stroked-button color="primary" (click)="exportarExcel()">
-            <mat-icon>file_download</mat-icon>
-            Exportar a Excel
-          </button>
-        </div>
-
-        <!-- Indicador de carga -->
-        <div *ngIf="loading" class="loading-container">
-          <mat-spinner diameter="40"></mat-spinner>
-          <p>Cargando solicitudes...</p>
-        </div>
-
-        <!-- Tabla de datos o mensaje cuando no hay datos -->
-        <div *ngIf="!loading" class="m-t-16">
-          <!-- Mensaje cuando no hay datos -->
-          <div *ngIf="dataSource.data.length === 0" class="no-data-message">
-            <mat-icon>event_busy</mat-icon>
-            <p>No hay solicitudes validadas para mostrar</p>
-        
-            <p class="text-muted">Las solicitudes validadas aparecerán aquí cuando estén disponibles</p>
-          </div>
-
-          <!-- Tabla con datos -->
-          <div *ngIf="dataSource.data.length > 0" class="table-responsive">
-            <table mat-table [dataSource]="dataSource" matSort class="w-100 mat-elevation-z8">
-              <!-- ID Column -->
-              <ng-container matColumnDef="id">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de solicitud</th>
-                <td mat-cell *matCellDef="let row">{{row.id}}</td>
-              </ng-container>
-
-             
-
-              <!-- Fecha Column -->
-              <ng-container matColumnDef="fechaIngreso">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Ingreso</th>
-                <td mat-cell *matCellDef="let row">{{row.fechaIngreso  | date:'dd/MM/yyyy '}}</td>
-              </ng-container>
-
-              <!-- Cliente Column -->
-              <ng-container matColumnDef="cliente">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
-                <td mat-cell *matCellDef="let row">{{row.client?.nombre || 'No asignado'}}</td>
-              </ng-container>
-
-              <!-- Local Column -->
-              <ng-container matColumnDef="local">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Local</th>
-                <td mat-cell *matCellDef="let row">{{row.local?.nombre_local || 'No asignado'}}</td>
-              </ng-container>
-
-              <!-- Ticket Column -->
-              <ng-container matColumnDef="ticketGruman">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket</th>
-                <td mat-cell *matCellDef="let row">{{row.ticketGruman || 'Sin ticket'}}</td>
-              </ng-container>
-              <ng-container matColumnDef="generado_por">
-                <th mat-header-cell *matHeaderCellDef>Generado por</th>
-                <td mat-cell *matCellDef="let row">  {{row.generada_por ? (row.generada_por.name + ' ' + row.generada_por.lastName) : 'Sin usuario'}}</td>
-              </ng-container>
-              <ng-container matColumnDef="validada_por">
-                <th mat-header-cell *matHeaderCellDef>Validada por</th>
-                <td mat-cell *matCellDef="let row"> {{row.validada_por ? (row.validada_por.name + ' ' + row.validada_por.lastName) : 'Sin usuario'}}</td>
-              </ng-container>
-              <ng-container matColumnDef="fecha_hora_validacion">
-                <th mat-header-cell *matHeaderCellDef>Fecha y hora validación</th>
-                <td mat-cell *matCellDef="let row">{{row.fecha_hora_validacion  | date:'dd/MM/yyyy HH:mm'}} </td>
-              </ng-container>
-              <!-- Especialidad Column -->
-              <ng-container matColumnDef="especialidad">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Especialidad</th>
-                <td mat-cell *matCellDef="let row">
-                  {{especialidades[row.especialidad] || 'No especificada'}}
-                </td>
-              </ng-container>
-
-              <!-- Observaciones Column -->
-              <ng-container matColumnDef="observaciones">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Observaciones</th>
-                <td mat-cell *matCellDef="let row">
-                  {{ row.observaciones?.length > 100 ? (row.observaciones | slice:0:50) + '...' : row.observaciones }}
-                </td>
-              </ng-container>
-
-              <!-- Técnico Column -->
-              <ng-container matColumnDef="tecnico">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Técnico</th>
-                <td mat-cell *matCellDef="let row">
-                  {{row.tecnico_asignado ? row.tecnico_asignado.name + ' ' + row.tecnico_asignado.lastName : 'No asignado'}}
-                </td>
-              </ng-container>
-
-              <!-- Status Column -->
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
-                <td mat-cell *matCellDef="let row">
-                  <mat-chip-listbox>
-                    <mat-chip [ngClass]="{
-                      'bg-warning': row.status === 'reabierta',
-                      'bg-success': row.status === 'validada'
-                    }">
-                      {{row.status === 'reabierta' ? 'Reabierta' : 'Validada'}}
-                    </mat-chip>
-                  </mat-chip-listbox>
-                </td>
-              </ng-container>
-
-              <!-- Actions Column -->
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Acciones</th>
-                <td mat-cell *matCellDef="let row">
-                  <button mat-icon-button color="primary" (click)="verDetalle(row.id); $event.stopPropagation()" matTooltip="Ver detalle">
-                    <mat-icon>visibility</mat-icon>
-                  </button>
-                <!--   <button mat-icon-button 
-                          color="primary" 
-                          (click)="verHistorial(row); $event.stopPropagation()"
-                          matTooltip="Ver historial"
-                          matTooltipPosition="above"
-                          matTooltipShowDelay="500">
-                    <mat-icon>history</mat-icon>
-                  </button> -->
-                  <button  mat-icon-button 
-                           color="primary" 
-                           (click)="reabrirSolicitud(row); $event.stopPropagation()" 
-                           matTooltip="Reabrir solicitud"
-                           matTooltipPosition="above"
-                           matTooltipShowDelay="500"
-                           [disabled]="row.status === 'reabierta'"
-                           [matTooltip]="row.status === 'reabierta' ? 'Solicitud ya reabierta' : 'Reabrir solicitud'">
-                    <mat-icon>open_in_browser</mat-icon>
-                  </button>
-                  <button mat-icon-button 
-                         color="accent"
-                         *ngIf="row.status === 'reabierta'"
-                         (click)="editarSolicitud(row); $event.stopPropagation()"
-                         matTooltip="Editar solicitud"
-                         matTooltipPosition="above"
-                         matTooltipShowDelay="500">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="verDetalle(row.id)"></tr>
-              
-              <!-- Row shown when there is no matching data from filter -->
-              <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell" colspan="11">
-                  <div class="no-data-message">
-                    <mat-icon>search_off</mat-icon>
-                    <p>No se encontraron coincidencias para "{{input.value}}"</p>
-                    <p class="text-muted">Intenta con otros términos de búsqueda</p>
-                  </div>
-                </td>
-              </tr>
-            </table>
-
-            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" 
-                          [pageSize]="10"
-                          aria-label="Seleccionar página">
-            </mat-paginator>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: [`
-    .table-responsive {
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-    }
-    .mat-column-actions {
-      width: 120px;
-      text-align: center;
-    }
-    .mat-column-logo {
-      width: 60px;
-      padding: 8px;
-    }
-    .logo-cell {
-      text-align: center;
-    }
-    .client-logo {
-      width: 40px;
-      height: 40px;
-      border-radius: 4px;
-      object-fit: contain;
-    }
-    .mat-mdc-row:hover {
-      background-color: #f5f5f5;
-      cursor: pointer;
-    }
-    .mat-mdc-cell {
-      padding: 8px 16px;
-    }
-    .mat-column-ticketGruman {
-      min-width: 100px;
-    }
-    .hide-hint ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-      display: none;
-    }
-    .bg-warning {
-      background-color: #ffc107 !important;
-      color: #ffffff !important;
-    }
-    .bg-success {
-      background-color: #28a745 !important;
-      color: #ffffff !important;
-    }
-    .mat-mdc-chip {
-      color: #ffffff !important;
-    }
-    .mat-column-status {
-      width: 120px;
-    }
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 0;
-    }
-    .loading-container p {
-      margin-top: 16px;
-      color: rgba(0, 0, 0, 0.6);
-    }
-    .no-data-message {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 0;
-      text-align: center;
-    }
-    .no-data-message mat-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      margin-bottom: 16px;
-      color: rgba(0, 0, 0, 0.3);
-    }
-    .no-data-message p {
-      margin: 4px 0;
-      color: rgba(0, 0, 0, 0.6);
-    }
-    .no-data-message p:first-of-type {
-      font-size: 18px;
-      color: rgba(0, 0, 0, 0.8);
-    }
-    .text-muted {
-      color: rgba(0, 0, 0, 0.6);
-    }
-  `]
+  templateUrl: './solicitudes-validadas.component.html',
+  styleUrls: ['./solicitudes-validadas.component.scss']
 })
 export class SolicitudesValidadasComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'id',
-   
     'cliente',
     'local',
     'fechaIngreso',
@@ -458,7 +185,6 @@ export class SolicitudesValidadasComponent implements OnInit, OnDestroy {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    
     });
   }
 
@@ -510,6 +236,46 @@ export class SolicitudesValidadasComponent implements OnInit, OnDestroy {
 
   verHistorial(solicitud: any) {
     this.router.navigate(['/transacciones/solicitudes-de-visita/validadas/historial', solicitud.id]);
+  }
+
+  downloadPdf(row: any) {
+    Swal.fire({
+      title: 'Generando PDF',
+      text: 'Por favor espere...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    this.solicitarVisitaService.downloadPdf(row.id).subscribe({
+      next: (blob: Blob) => {
+        if (blob.size === 0) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'El PDF generado está vacío'
+          });
+          return;
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `solicitud-${row.id}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        Swal.close();
+      },
+      error: (error) => {
+        console.error('Error descargando PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el PDF. Por favor intente nuevamente.'
+        });
+      }
+    });
   }
 
   exportarExcel() {

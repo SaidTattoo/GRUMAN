@@ -450,6 +450,7 @@ export class SolicitarVisitaController {
     @Res() res: Response
   ) {
     try {
+      console.log('Generando PDF para la solicitud:', id);
       const buffer = await this.solicitarVisitaService.generatePdf(id);
       
       if (!buffer || buffer.length === 0) {

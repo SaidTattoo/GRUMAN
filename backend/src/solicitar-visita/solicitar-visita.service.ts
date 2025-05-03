@@ -25,6 +25,7 @@ import { join } from 'path';
 import * as fs from 'fs';
 import { format } from 'date-fns';
 import { existsSync, readFileSync } from 'fs';
+import { Item } from 'src/inspection/entities/item.entity';
 
 
 
@@ -149,7 +150,9 @@ export class SolicitarVisitaService {
         @InjectRepository(Facturacion)
         private facturacionRepository: Repository<Facturacion>,
         @InjectRepository(ClienteRepuesto)
-        private clienteRepuestoRepository: Repository<ClienteRepuesto>
+        private clienteRepuestoRepository: Repository<ClienteRepuesto>,
+        @InjectRepository(Item)
+        private itemRepository: Repository<Item>
     ) {}
 
     /**
@@ -1396,6 +1399,20 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
         return this.solicitarVisitaRepository.save(solicitud);
     }
 
+    async getNameStatus(status: string): Promise<string> {
+        const itemEstado = await this.itemEstadoRepository.findOne({
+            where: { estado: status }
+        });
+        return itemEstado?.estado || status;
+    }
+ 
+    async getNameItem(id: any): Promise<string> {
+        const itemEstado = await this.itemRepository.findOne({
+            where: { id: id }
+        });
+        return itemEstado?.name || "-";
+    }
+
     async generatePdf(id: number): Promise<Buffer> {
         try {
             const solicitud = await this.solicitarVisitaRepository.findOne({
@@ -1609,9 +1626,9 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
 
             // --- FIRMA DEL CLIENTE ---
             doc.font(styles.header.font)
-               .fontSize(styles.header.size)
-               .fillColor(styles.header.fillColor)
-               .text('FIRMA DEL CLIENTE', tableX, currentY);
+            .fontSize(styles.header.size)
+            .fillColor(styles.header.fillColor)
+            .text('FIRMA DEL CLIENTE', tableX, currentY);
             currentY += 18;
             if (solicitud.firma_cliente) {
                 try {
@@ -1620,10 +1637,206 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                     currentY += 100;
                 } catch (error) {
                     doc.font(styles.text.font)
-                       .fontSize(styles.text.size)
-                       .fillColor(styles.text.fillColor)
-                       .text('Firma no disponible', tableX, currentY);
+                    .fontSize(styles.text.size)
+                    .fillColor(styles.text.fillColor)
+                    .text('Firma no disponible', tableX, currentY);
                     currentY += 30;
+                }
+            }
+            
+            // --- LISTADO DE ITEMS DE INSPECCIÓN ---
+            console.log('solicitud.client.listaInspeccion', solicitud.client?.listaInspeccion);
+            if (solicitud.client?.listaInspeccion?.length > 0) {
+                for (const lista of solicitud.client.listaInspeccion) {
+                    // Verificar todos los ítems para estimar altura total de la sección
+                    let alturaEstimadaSeccion = 20; // Altura del título
+                    
+                    // Estimar altura para al menos el primer ítem
+                    if (lista.items?.length > 0) {
+                        const primerItem = lista.items[0];
+                        alturaEstimadaSeccion += 25; // Título del ítem
+                        
+                        // Al menos el primer sub-ítem del primer ítem (si existe)
+                        if (primerItem.subItems?.length > 0) {
+                            alturaEstimadaSeccion += 100; // Altura aproximada de un sub-ítem
+                        }
+                    }
+                    
+                    // Si no hay espacio para el título y al menos un ítem, saltar página
+                    if (currentY + alturaEstimadaSeccion > doc.page.height - 50) {
+                        doc.addPage();
+                        currentY = 50;
+                    }
+
+                    // Dibujar título de sección con fondo gris
+                    doc.save();
+                    doc.roundedRect(tableX - 10, currentY - 5, contentWidth + 20, 25, 5)
+                       .fillColor('#f2f2f2')
+                       .fill();
+                    doc.restore();
+                    
+                    doc.font(styles.header.font)
+                       .fontSize(styles.header.size)
+                       .fillColor(styles.header.fillColor)
+                       .text(lista.name, tableX, currentY + 2, {
+                           width: contentWidth,
+                           align: 'center'
+                       });
+                    currentY += 27;
+
+                    // Iterar por los ítems
+                    for (const item of lista.items) {
+                        // Estimar altura de este ítem y sus subitems
+                        let alturaEstimadaItem = 25; // Título del ítem
+                        if (item.subItems?.length > 0) {
+                            // Estimar altura para al menos 1 subitem
+                            alturaEstimadaItem += Math.min(item.subItems.length, 2) * 110;
+                        }
+                        
+                        // Verificar si hay espacio para el ítem completo o al menos su título y un subítem
+                        if (currentY + alturaEstimadaItem > doc.page.height - 40) {
+                            doc.addPage();
+                            currentY = 50;
+                        }
+
+                        // Título del item con fondo suave
+                        doc.save();
+                        doc.roundedRect(tableX - 5, currentY - 5, contentWidth + 10, 25, 3)
+                           .fillColor('#e0e0e0')
+                           .fill();
+                        doc.restore();
+                        
+                        doc.font(styles.subtitle.font)
+                           .fontSize(styles.subtitle.size)
+                           .fillColor(styles.subtitle.fillColor)
+                           .text(item.name, tableX, currentY, {
+                               width: contentWidth,
+                               align: 'left'
+                           });
+                        currentY += 30;
+
+                        // Formato para subitems (diseño como en el ejemplo)
+                        for (const subItem of item.subItems) {
+                            // Obtener estado y comentario
+                            let estado = 'Sin estado';
+                            try {
+                                const estadoRes = await this.getNameStatus(subItem.estado);
+                                estado = estadoRes || 'Sin estado';
+                            } catch (e) {
+                                estado = 'Sin estado';
+                            }
+                            const comentario = subItem.comentario || 'Sin observaciones';
+                            
+                            // Color según estado
+                            let estadoColor = '#4CAF50'; // Verde por defecto (conforme)
+                            if (estado.toLowerCase().includes('no conforme')) {
+                                estadoColor = '#F44336'; // Rojo
+                            } else if (estado.toLowerCase().includes('no aplica')) {
+                                estadoColor = '#FF9800'; // Naranja
+                            }
+                            
+                            // Calcular alturas
+                            const subItemName = subItem.name || 'Sin información';
+                            const nameHeight = doc.heightOfString(subItemName, { 
+                                width: contentWidth - 120, // Ajustado para estado más pequeño
+                                lineGap: 1
+                            });
+                            
+                            const observacionesTexto = 'Observaciones: ' + comentario;
+                            const observacionesHeight = doc.heightOfString(observacionesTexto, { 
+                                width: contentWidth - 30,
+                                lineGap: 1
+                            });
+                            
+                            // Altura total del bloque
+                            const totalHeight = Math.max(nameHeight, 22) + observacionesHeight + 15;
+                            
+                            // Verificar si hay espacio
+                            if (currentY + totalHeight + 20 > doc.page.height - 40) {
+                                doc.addPage();
+                                currentY = 50;
+                            }
+                            
+                            // ---- DIBUJAR SUBITEM ----
+                            
+                            // 1. Nombre del subitem (a la izquierda)
+                            doc.font('Helvetica-Bold')
+                               .fontSize(styles.tableCell.size)
+                               .fillColor('#333')
+                               .text(subItemName, tableX, currentY, {
+                                   width: contentWidth - 120,
+                                   lineGap: 1
+                               });
+                            
+                            // Calcular altura real del nombre para centrar el estado
+                            const actualNameHeight = Math.min(
+                                doc.heightOfString(subItemName, { width: contentWidth - 120, lineGap: 1 }),
+                                20 // altura máxima para considerar
+                            );
+                            
+                            // 2. Estado (botón a la derecha, más pequeño y centrado)
+                            const estadoHeight = 18; // Altura reducida del botón
+                            const estadoY = currentY + (actualNameHeight / 2) - (estadoHeight / 2); // Centrado vertical
+                            
+                            // Dibujar el botón de estado
+                            doc.save();
+                            doc.roundedRect(tableX + contentWidth - 110, estadoY, 110, estadoHeight, 3)
+                               .fillColor(estadoColor)
+                               .fill();
+                            doc.restore();
+                            
+                            // Texto del estado centrado (usando align center y ajustando Y manualmente)
+                            const estadoTexto = estado.toUpperCase();
+                            
+                            // Establecer la fuente antes de calcular dimensiones
+                            doc.font('Helvetica-Bold')
+                               .fontSize(styles.tableCell.size - 1);
+                            
+                            // Centrado vertical calculado manualmente
+                            // Para el centrado vertical perfecto, ajustamos el valor Y
+                            const verticalOffset = estadoHeight * 0.3; // Aproximadamente 30% de la altura del botón
+                            
+                            doc.fillColor('#FFFFFF')
+                               .text(estadoTexto, 
+                                     tableX + contentWidth - 110, 
+                                     estadoY + verticalOffset, {
+                                        width: 110,
+                                        align: 'center'
+                                    });
+                            
+                            // Avanzar a las observaciones
+                            currentY += Math.max(nameHeight, 22) + 5;
+                            
+                            // Ya no hay línea divisoria aquí
+                            
+                            // 3. Observaciones
+                            doc.font('Helvetica-Bold')
+                               .fontSize(styles.tableCell.size - 1)
+                               .fillColor('#333')
+                               .text('Observaciones: ', tableX, currentY, {
+                                   continued: true
+                               });
+                            
+                            doc.font('Helvetica')
+                               .fontSize(styles.tableCell.size - 1)
+                               .fillColor('#666')
+                               .text(comentario);
+                            
+                            // Avanzar posición Y después de las observaciones
+                            currentY += observacionesHeight + 5;
+                            
+                            // Línea divisoria entre subitems completos
+                            doc.moveTo(tableX, currentY)
+                               .lineTo(tableX + contentWidth, currentY)
+                               .strokeColor('#e0e0e0')
+                               .stroke();
+                            
+                            currentY += 10; // Espacio entre subitems
+                        }
+                        
+                        // Espacio adicional entre items principales
+                        currentY += 15;
+                    }
                 }
             }
 
@@ -1655,13 +1868,14 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 }
 
                 // Título del Item con fondo gris claro
+                const nameItem = await this.getNameItem(item.itemId);
                 doc.rect(marginLeft, y, pageWidth - marginLeft * 2, 25)
                    .fillColor('#f5f5f5')
                    .fill();
                 doc.fontSize(12)
                    .font('Helvetica-Bold')
                    .fillColor('#333')
-                   .text(`Item ${item.itemId}`, marginLeft + 10, y + 7);
+                   .text(nameItem, marginLeft + 10, y + 7);
                 y += 35;
 
                 let currentCol = 0;
@@ -1789,5 +2003,18 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
      async cambiarEstadoSolicitud(id, status){
             this.solicitarVisitaRepository.update(id, { status })
      }       
+
+    private getEstadoColor(estado: string): string {
+        switch(estado.toLowerCase()) {
+            case 'conforme':
+                return '#4CAF50';
+            case 'no conforme':
+                return '#F44336';
+            case 'no aplica':
+                return '#FF9800';
+            default:
+                return '#9E9E9E';
+        }
+    }
 }
 
