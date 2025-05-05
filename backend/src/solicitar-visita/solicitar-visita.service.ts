@@ -1651,13 +1651,15 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 currentY += rowHeight * (solicitud.activoFijoRepuestos.length + 1) + 16;
             }
 
-            // --- FIRMA DEL CLIENTE ---
-            doc.font(styles.header.font)
-            .fontSize(styles.header.size)
-            .fillColor(styles.header.fillColor)
-            .text('FIRMA DEL CLIENTE', tableX, currentY);
-            currentY += 18;
+            
+
             if (solicitud.firma_cliente) {
+                // --- FIRMA DEL CLIENTE ---
+                doc.font(styles.header.font)
+                .fontSize(styles.header.size)
+                .fillColor(styles.header.fillColor)
+                .text('FIRMA DEL CLIENTE', tableX, currentY);
+                currentY += 18;
                 try {
                     const signatureBuffer = Buffer.from(solicitud.firma_cliente.replace(/^data:image\/\w+;base64,/, ''), 'base64');
                     doc.image(signatureBuffer, tableX, currentY, { width: 100, height: 100, fit: [100, 100]});
@@ -1668,6 +1670,111 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                     .fillColor(styles.text.fillColor)
                     .text('Firma no disponible', tableX, currentY);
                     currentY += 30;
+                }
+            }
+            
+            // --- LISTADO DE REPUESTOS UTILIZADOS ---
+            if (solicitud.itemRepuestos?.length > 0) {
+                // Verificar si hay suficiente espacio para la sección
+                if (currentY + 100 > doc.page.height - 50) {
+                    doc.addPage();
+                    currentY = 50;
+                }
+                
+                doc.font(styles.header.font)
+                   .fontSize(styles.header.size)
+                   .fillColor(styles.header.fillColor)
+                   .text('REPUESTOS UTILIZADOS', tableX, currentY);
+                currentY += 18;
+                
+                // Encabezados
+                const repuestosHeaders = ['Artículo', 'Marca', 'Familia', 'Código', 'Cantidad', 'Precio'];
+                const colWidths = [contentWidth * 0.25, contentWidth * 0.15, contentWidth * 0.15, contentWidth * 0.15, contentWidth * 0.15, contentWidth * 0.15];
+                
+                // Borde exterior
+                doc.save();
+                doc.roundedRect(tableX, currentY, contentWidth, rowHeight * (solicitud.itemRepuestos.length + 1), 6)
+                   .lineWidth(0.7)
+                   .stroke(borderColor);
+                doc.restore();
+                
+                // Encabezados
+                let x = tableX;
+                for (let i = 0; i < repuestosHeaders.length; i++) {
+                    doc.font(styles.tableHeader.font)
+                       .fontSize(styles.tableHeader.size)
+                       .fillColor('#222')
+                       .text(repuestosHeaders[i], x + 8, currentY + 6, { width: colWidths[i] - 10 });
+                    x += colWidths[i];
+                    if (i < repuestosHeaders.length - 1) {
+                        doc.moveTo(x, currentY)
+                           .lineTo(x, currentY + rowHeight * (solicitud.itemRepuestos.length + 1))
+                           .strokeColor(borderColor)
+                           .lineWidth(0.5)
+                           .stroke();
+                    }
+                }
+                
+                // Línea horizontal después de los encabezados
+                doc.moveTo(tableX, currentY + rowHeight)
+                   .lineTo(tableX + contentWidth, currentY + rowHeight)
+                   .strokeColor(borderColor)
+                   .lineWidth(0.5)
+                   .stroke();
+                
+                // Filas de repuestos
+                for (let i = 0; i < solicitud.itemRepuestos.length; i++) {
+                    const repuesto = solicitud.itemRepuestos[i];
+                    let y = currentY + rowHeight * (i + 1);
+                    let x = tableX;
+                    
+                    // Preparar los valores a mostrar
+                    const articulo = repuesto.repuesto?.articulo || 'N/A';
+                    const marca = repuesto.repuesto?.marca || 'N/A';
+                    const familia = repuesto.repuesto?.familia || 'N/A';
+                    const codigo = repuesto.repuesto?.codigoBarra || 'N/A';
+                    const cantidad = repuesto.cantidad?.toString() || '0';
+                    const precio = repuesto.precio_venta 
+                        ? `$${Number(repuesto.precio_venta).toLocaleString('es-CL')}`
+                        : (repuesto.repuesto?.precio_venta 
+                            ? `$${Number(repuesto.repuesto.precio_venta).toLocaleString('es-CL')}`
+                            : 'N/A');
+                    
+                    const values = [articulo, marca, familia, codigo, cantidad, precio];
+                    
+                    for (let j = 0; j < values.length; j++) {
+                        doc.font(styles.tableCell.font)
+                           .fontSize(styles.tableCell.size)
+                           .fillColor('#333')
+                           .text(values[j], x + 8, y + 6, { width: colWidths[j] - 10 });
+                        x += colWidths[j];
+                    }
+                    
+                    // Línea horizontal entre filas
+                    if (i < solicitud.itemRepuestos.length - 1) {
+                        doc.moveTo(tableX, y + rowHeight)
+                           .lineTo(tableX + contentWidth, y + rowHeight)
+                           .strokeColor(borderColor)
+                           .lineWidth(0.5)
+                           .stroke();
+                    }
+                }
+                
+                currentY += rowHeight * (solicitud.itemRepuestos.length + 1) + 16;
+                
+                // Información adicional (Total, condiciones, etc.)
+                let totalRepuestos = 0;
+                solicitud.itemRepuestos.forEach(item => {
+                    const precio = item.precio_venta || (item.repuesto ? Number(item.repuesto.precio_venta) : 0);
+                    totalRepuestos += (precio * item.cantidad);
+                });
+                
+                if (totalRepuestos > 0) {
+                    doc.font(styles.tableHeader.font)
+                       .fontSize(styles.tableHeader.size)
+                       .fillColor('#222')
+                       .text(`Total repuestos: $${totalRepuestos.toLocaleString('es-CL')}`, tableX, currentY, { align: 'right', width: contentWidth });
+                    currentY += 20;
                 }
             }
             
