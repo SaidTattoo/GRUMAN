@@ -1045,6 +1045,38 @@ export class ModificarSolicitudComponent implements OnInit {
     if (this.isRechazada) {
       return;
     }
+
+    // Validar campos requeridos cuando el estado es finalizado
+    if (this.solicitud?.status === 'finalizada') {
+      const formValues = this.solicitudForm.getRawValue();
+      
+      if (!formValues.garantia) {
+        this.snackBar.open('Debe seleccionar si aplica garantía', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top'
+        });
+        return;
+      }
+
+      if (!formValues.turno) {
+        this.snackBar.open('Debe seleccionar el turno', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'end', 
+          verticalPosition: 'top'
+        });
+        return;
+      }
+
+      if (!formValues.estado_solicitud) {
+        this.snackBar.open('Debe seleccionar el estado de la solicitud', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top'
+        });
+        return;
+      }
+    }
     
     console.log('Iniciando validación...');
     this.authService.currentUser.subscribe(currentUser => {
@@ -1116,13 +1148,13 @@ export class ModificarSolicitudComponent implements OnInit {
           next: () => {
             // Una vez actualizado, procedemos a validar
             const validationData = {
-              validada_por_id: currentUser.id,
-              causaRaizId: this.solicitudForm.get('causaRaizId')?.value,
-              valorPorLocal: this.solicitudForm.get('valorPorLocal')?.value,
-              registroVisita: this.solicitudForm.get('registroVisita')?.value,
-              garantia: this.solicitudForm.get('garantia')?.value,
-              turno: this.solicitudForm.get('turno')?.value,
-              estado_solicitud: this.solicitudForm.get('estado_solicitud')?.value,
+              validada_por_id: currentUser?.id || null,
+              causaRaizId: this.solicitudForm.get('causaRaizId')?.value || null,
+              valorPorLocal: this.solicitudForm.get('valorPorLocal')?.value || 0,
+              registroVisita: this.solicitudForm.get('registroVisita')?.value || '',
+              garantia: this.solicitudForm.get('garantia')?.value || false,
+              turno: this.solicitudForm.get('turno')?.value || '',
+              estado_solicitud: this.solicitudForm.get('estado_solicitud')?.value || '',
               image_ot: this.urlImage ?? "",
             };
 
@@ -1995,10 +2027,19 @@ export class ModificarSolicitudComponent implements OnInit {
    * @param image_ot La imagen en formato base64
    */
   private setImagePreview(image_ot: string): void {
-    if (image_ot) {
-      this.imagePreview = image_ot;
-      this.imageBase64 = image_ot;
-      this.urlImage = image_ot;
+    this.imagePreview = image_ot;
+    this.urlImage = image_ot;
+  }
+
+  eliminarImagenPreview(): void {
+    this.imagePreview = null;
+    this.urlImage = null;
+    this.imageBase64 = null;
+    this.fileName = '';
+    // Limpiar el input file para permitir seleccionar el mismo archivo nuevamente
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   }
 } 
