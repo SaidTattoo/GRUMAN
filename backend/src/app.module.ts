@@ -79,7 +79,7 @@ import { SlaModule } from './sla/sla.module';
       rootPath: join(__dirname, '..', 'uploads'), // Asegúrate de que esta ruta es correcta
       serveRoot: '/uploads', // Esto asegura que las rutas comiencen con /uploads
     }),
-    
+    SlaModule,
     ActivoFijoLocalModule,
     UploadV2Module,
     SolicitarVisitaModule,

@@ -417,7 +417,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
                 <div style="text-align: left">
                   <p><strong>Solicitud de visita generada correctamente</strong></p>
                   <p><strong>N° Requerimiento:</strong> ${res.data.id}</p>
-                  <p><strong>Fecha:</strong> ${this.formatDate(res.data.fechaVisita)}</p>
+                  <p><strong>Fecha:</strong> ${this.formatDate(new Date().toISOString())}</p>
                 </div>
               `,
               icon: 'success'

@@ -16,7 +16,7 @@ import { MaterialModule } from 'src/app/material.module';
 import { DashboardService } from 'src/app/services/dashboard.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/core/services/user.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FacturacionService } from 'src/app/services/facturacion.service';
 
 export enum TipoOrden {
@@ -51,6 +51,8 @@ interface DashboardData {
     AppVisitUsaComponent,
     AppProductsComponent,
     AppLatestReviewsComponent,
+    RouterModule,
+    
   ],
   templateUrl: './dashboard1.component.html',
   styles: [
