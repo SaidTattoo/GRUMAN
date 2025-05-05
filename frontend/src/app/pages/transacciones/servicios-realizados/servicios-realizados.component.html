@@ -168,6 +168,14 @@
             <td mat-cell *matCellDef="let servicio"> {{servicio.tipoServicio?.nombre}} </td>
           </ng-container>
 
+          <!-- Tarea Column -->
+          <ng-container matColumnDef="cliente" >
+            <th mat-header-cell *matHeaderCellDef>Cliente</th>
+            <td mat-cell *matCellDef="let servicio">
+              {{servicio.client?.nombre}}
+            </td>
+          </ng-container>
+
           <!-- Local Column -->
           <ng-container matColumnDef="local">
             <th mat-header-cell *matHeaderCellDef>Local</th>

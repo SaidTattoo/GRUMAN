@@ -89,6 +89,7 @@ export class ServiciosRealizadosComponent implements OnInit {
   displayedColumns: string[] = [
     'id',
     'fechaIngreso',
+    'cliente',
     'local',
     'tipo_mantenimiento',
     'tipoServicio',
@@ -239,7 +240,8 @@ export class ServiciosRealizadosComponent implements OnInit {
     const formData = this.programacionForm.value;
     const params: any = {
       tipoBusqueda: formData.tipoBusqueda,
-      clientId: this.isGruman ? formData.clientId : this.selectedCompany.id
+      clientId: this.isGruman ? formData.clientId : this.selectedCompany.id,
+      
     };
 
     // Agregar parámetros opcionales solo si tienen un valor diferente a 'todos'
@@ -267,11 +269,18 @@ export class ServiciosRealizadosComponent implements OnInit {
       next: (response: any) => {
         if (response.success) {
           this.serviciosRealizados = response.data;
-          this.panelOpenState = false; // Cierra el panel después de la búsqueda
+          this.panelOpenState = false;
           console.log('[Component] Servicios realizados:', this.serviciosRealizados);
         }
       },
-      error: (error) => console.error('[Component] Error:', error)
+      error: (error) => {
+        console.error('[Component] Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los servicios realizados'
+        });
+      }
     });
   }
 
