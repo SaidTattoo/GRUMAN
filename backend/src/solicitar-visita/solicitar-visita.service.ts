@@ -927,11 +927,8 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
             const whereClause: any = {
                 status: In([
                    SolicitudStatus.VALIDADA, 
-                    SolicitudStatus.REABIERTA,
-                    SolicitudStatus.EN_SERVICIO,
-                    SolicitudStatus.FINALIZADA, 
-                    SolicitudStatus.APROBADA,
-                    SolicitudStatus.ATENDIDA_EN_PROCESO 
+                    
+                    
                   /*   SolicitudStatus.RECHAZADA,
                     SolicitudStatus.PENDIENTE */
                 ]),

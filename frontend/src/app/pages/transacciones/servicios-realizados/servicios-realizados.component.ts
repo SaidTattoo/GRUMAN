@@ -23,6 +23,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { FacturacionService } from 'src/app/services/facturacion.service';
 import * as XLSX from 'xlsx';
 import Swal from 'sweetalert2';
+import { SolicitarVisitaComponent } from '../solicitar-visita/solicitar-visita.component';
+import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
 
 @Component({
   selector: 'app-servicios-realizados',
@@ -89,14 +91,20 @@ export class ServiciosRealizadosComponent implements OnInit {
   displayedColumns: string[] = [
     'id',
     'fechaIngreso',
+    'cliente',
     'local',
-    'tipo_mantenimiento',
+    'solicita',
+    'fechaVisita',
     'tipoServicio',
     'tecnico',
+    'sla',
+    'tiempo',
+    'cumplimiento', 
     'status',
+    'mesFacturacion',
     'fechaValidacion',
-    'observaciones',
-    'acciones'
+    'acciones',
+
   ];
   panelOpenState = true; // Controla el estado del panel de búsqueda
 
@@ -108,7 +116,8 @@ export class ServiciosRealizadosComponent implements OnInit {
     private clientesService: ClientesService,
     private storageService: StorageService,
     private router: Router,
-    private facturacionService: FacturacionService
+    private facturacionService: FacturacionService,
+    private solicitarVisitaService: SolicitarVisitaService
   ) {
     const userData = this.storageService.getCurrentUserWithCompany();
     if (userData && userData.selectedCompany) {
@@ -239,7 +248,8 @@ export class ServiciosRealizadosComponent implements OnInit {
     const formData = this.programacionForm.value;
     const params: any = {
       tipoBusqueda: formData.tipoBusqueda,
-      clientId: this.isGruman ? formData.clientId : this.selectedCompany.id
+      clientId: this.isGruman ? formData.clientId : this.selectedCompany.id,
+      
     };
 
     // Agregar parámetros opcionales solo si tienen un valor diferente a 'todos'
@@ -267,11 +277,18 @@ export class ServiciosRealizadosComponent implements OnInit {
       next: (response: any) => {
         if (response.success) {
           this.serviciosRealizados = response.data;
-          this.panelOpenState = false; // Cierra el panel después de la búsqueda
+          this.panelOpenState = false;
           console.log('[Component] Servicios realizados:', this.serviciosRealizados);
         }
       },
-      error: (error) => console.error('[Component] Error:', error)
+      error: (error) => {
+        console.error('[Component] Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los servicios realizados'
+        });
+      }
     });
   }
 
@@ -388,4 +405,44 @@ export class ServiciosRealizadosComponent implements OnInit {
       showConfirmButton: false
     });
   }
+  downloadPdf(row: any) {
+    Swal.fire({
+      title: 'Generando PDF',
+      text: 'Por favor espere...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    this.solicitarVisitaService.downloadPdf(row.id).subscribe({
+      next: (blob: Blob) => {
+        if (blob.size === 0) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'El PDF generado está vacío'
+          });
+          return;
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `solicitud-${row.id}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        Swal.close();
+      },
+      error: (error) => {
+        console.error('Error descargando PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el PDF. Por favor intente nuevamente.'
+        });
+      }
+    });
+  }
+
 }

@@ -156,11 +156,6 @@
             <td mat-cell *matCellDef="let servicio"> {{formatDate(servicio.fechaIngreso)}} </td>
           </ng-container>
 
-          <!-- Tipo Mantenimiento Column -->
-          <ng-container matColumnDef="tipo_mantenimiento">
-            <th mat-header-cell *matHeaderCellDef> Tipo Mantenimiento </th>
-            <td mat-cell *matCellDef="let servicio"> {{servicio.tipo_mantenimiento}} </td>
-          </ng-container>
 
           <!-- Tipo Servicio Column -->
           <ng-container matColumnDef="tipoServicio">
@@ -168,6 +163,22 @@
             <td mat-cell *matCellDef="let servicio"> {{servicio.tipoServicio?.nombre}} </td>
           </ng-container>
 
+          <!-- Tarea Column -->
+          <ng-container matColumnDef="cliente" >
+            <th mat-header-cell *matHeaderCellDef>Cliente</th>
+            <td mat-cell *matCellDef="let servicio">
+              {{servicio.client?.nombre}}
+            </td>
+          </ng-container>
+
+
+          <!-- Tarea Column -->
+          <ng-container matColumnDef="solicita">
+            <th mat-header-cell *matHeaderCellDef>Solicita</th>
+            <td mat-cell *matCellDef="let servicio">
+              {{servicio.generada_por?.name}} {{servicio.generada_por?.lastName || ''}}
+            </td>
+          </ng-container>
           <!-- Local Column -->
           <ng-container matColumnDef="local">
             <th mat-header-cell *matHeaderCellDef>Local</th>
@@ -178,7 +189,13 @@
             </td>
           </ng-container>
 
-         
+          <!-- Fecha Column -->
+          <ng-container matColumnDef="fechaVisita">
+            <th mat-header-cell *matHeaderCellDef>Fecha Visita</th>
+            <td mat-cell *matCellDef="let servicio">
+              {{servicio.fechaVisita ? (servicio.fechaVisita | date:'dd/MM/yyyy ') : 'Sin fecha'}}
+            </td>
+          </ng-container>
 
           <!-- Técnico Column -->
           <ng-container matColumnDef="tecnico">
@@ -208,6 +225,30 @@
               {{ servicio.fecha_hora_validacion ? (servicio.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm') : 'Sin fecha' }}
             </td>
           </ng-container>
+          <!-- mes facturacion -->
+          <ng-container matColumnDef="mesFacturacion">
+            <th mat-header-cell *matHeaderCellDef> Mes Facturación </th>
+            <td mat-cell *matCellDef="let servicio"> {{servicio.facturacion.mes}} </td>
+          </ng-container>
+          <!-- SLA -->
+          <ng-container matColumnDef="sla">
+            <th mat-header-cell *matHeaderCellDef> SLA </th>
+            <td mat-cell *matCellDef="let servicio">  </td>
+          </ng-container>
+
+          <!-- Tiempo -->
+          <ng-container matColumnDef="tiempo">
+            <th mat-header-cell *matHeaderCellDef> Tiempo </th>
+            <td mat-cell *matCellDef="let servicio">  </td>
+          </ng-container>
+
+          <!-- Cumplimiento -->
+          <ng-container matColumnDef="cumplimiento">
+            <th mat-header-cell *matHeaderCellDef> Cumplimiento </th>
+            <td mat-cell *matCellDef="let servicio">  </td>
+          </ng-container>
+          
+          
           <!-- Acciones Column -->
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef> Acciones </th>
@@ -215,6 +256,11 @@
               <button mat-icon-button color="primary" (click)="verDetalle(servicio)" matTooltip="Ver en nueva pestaña">
                 <mat-icon>visibility</mat-icon>
               </button>
+              <button mat-icon-button color="primary" 
+              (click)="downloadPdf(servicio); $event.stopPropagation(); "
+              matTooltip="Descargar PDF">
+          <mat-icon>picture_as_pdf</mat-icon>
+        </button>
            <!--    @if (isGruman) {
                 <button mat-raised-button (click)="aprobarSolicitud(servicio)" 
                         color="primary" 
