@@ -17,7 +17,7 @@
             <div class="col-12">
               <div class="d-flex flex-wrap justify-content-between">
             
-                <div class="card-container">
+                <div class="card-container" [routerLink]="['/transacciones/solicitudes-de-visita/pendientes']" style="cursor: pointer;">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
                       <mat-icon>assignment_late</mat-icon>
@@ -30,7 +30,7 @@
                 </div>
 
               
-                <div class="card-container">
+                <div class="card-container" [routerLink]="['/transacciones/solicitudes-de-visita/aprobadas']" style="cursor: pointer;">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
                       <mat-icon>done_all</mat-icon>
@@ -56,7 +56,7 @@
                 </div>
                
                
-                <div class="card-container">
+                <div class="card-container" [routerLink]="['/transacciones/solicitudes-de-visita/finalizadas']" style="cursor: pointer;">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
                       <mat-icon>flag_2</mat-icon>
@@ -80,7 +80,7 @@
                   </mat-card>
                 </div>
 
-                <div class="card-container">
+                <div class="card-container" [routerLink]="['/transacciones/solicitudes-de-visita/validadas']" style="cursor: pointer;">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
                       <mat-icon>verified</mat-icon>
@@ -92,7 +92,7 @@
                   </mat-card>
                 </div>
 
-                <div class="card-container">
+                <div class="card-container" [routerLink]="['/transacciones/solicitudes-de-visita/atendidas-en-proceso']" style="cursor: pointer;">
                   <mat-card class="cardWithShadow bg-primary text-white">
                     <mat-card-content>
                       <mat-icon>sync</mat-icon>

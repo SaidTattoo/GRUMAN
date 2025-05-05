@@ -464,6 +464,13 @@ export class SolicitarVisitaService {
                 'solicitud.observaciones',
                 'solicitud.tipo_mantenimiento',
                 'local',
+                'local.id',
+                'local.nombre_local',
+                'local.direccion',
+                'activoFijoLocales',
+                'activoFijoLocales.id',
+                'activoFijoLocales.codigo_activo',
+                'activoFijoLocales.tipo_equipo',
                 'client',
                 'tecnico_asignado',
                 'tecnico_asignado_2',
@@ -659,6 +666,7 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
     }
 
     async finalizarSolicitudVisita(id: number): Promise<SolicitarVisita> {
+
         const solicitud = await this.solicitarVisitaRepository.findOne({ where: { id } });
         if (!solicitud) {
             throw new NotFoundException(`Solicitud with ID ${id} not found`);
@@ -732,6 +740,8 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
 /* agregar fecha_hora_fin_servicio */
     async finalizarServicio(id: number, data: any): Promise<SolicitarVisita> {
 
+       
+        
     await this.manipularRepuestosYfotos(id, data);
     await this.manipularChecklistClimaRepuestos(id, data);
 

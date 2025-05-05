@@ -40,10 +40,7 @@ interface Especialidad {
   nombre: string;
 }
 
-interface SolicitudVisitaResponse {
-  id: number;
-  [key: string]: any;
-}
+
 
 @Component({
   selector: 'app-solicitar-visita',
@@ -104,22 +101,28 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     this.visitaForm = this.fb.group({
       tipoServicioId: [null, Validators.required],
       localId: [null, Validators.required],
-      clientId: [null],
+      clientId: [null, Validators.required],
       sectorTrabajoId: [null, Validators.required],
       especialidad: [null, [Validators.required]],
       activoFijoId: [''],
       observaciones: [''],
-      fechaIngreso: [null],
+      fechaIngreso: [new Date()],
     });
 
     // Obtener el cliente seleccionado del localStorage o de un servicio
     const selectedClient = localStorage.getItem('selectedClient');
     this.client = selectedClient ? JSON.parse(selectedClient) : null;
 
-    // Initialize currentUserId from storage
+    // Obtener el ID del usuario actual del storage
     const userData = this.storage.getCurrentUser();
-    console.log('userData', userData)
     this.currentUserId = userData?.id;
+
+    // Suscribirse a cambios en el usuario
+    this.storage.user$.subscribe(user => {
+      if (user) {
+        this.currentUserId = user.id;
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -143,6 +146,9 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         this.getTipoServicio();
         this.getSectoresTrabajo();
         this.loadEspecialidades();
+        this.visitaForm.patchValue({
+          clientId: this.clientId
+        });
       }
     });
     this.setupLocalAutocomplete();
@@ -229,35 +235,97 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   }
 
   async onSubmit() {
-    try {
-      const formData = {
-        ...this.visitaForm.value,
-        tipoServicioId: this.visitaForm.value.tipoServicioId?.id || null,
-        localId: this.visitaForm.value.localId?.id || null,
-        especialidad: this.visitaForm.value.especialidad?.id || null,
-        activoFijoId: this.visitaForm.value.activoFijoId?.id || null,
-        fecha: new Date(),
-        imagenes: []
-      };
+    const confirmResult = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Quieres crear la programación?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Crear',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+    });
 
-      const response = await this.solicitarVisitaService.crearSolicitudVisita(formData).toPromise() as SolicitudVisitaResponse;
-      
-      if (this.selectedFiles.length > 0 && response?.id) {
-        const imageUrls = await this.subirImagenes(response.id);
-        console.log('Visita creada:', response);
-        Swal.fire({
-          title: 'Éxito',
-          text: 'La solicitud de visita se ha creado correctamente',
-          icon: 'success'
-        });
-      } else {
-        Swal.fire('Error', 'No se pudo crear la solicitud de visita', 'error');
+    if (confirmResult.isConfirmed) {
+      try {
+        const fechaActual = new Date();
+        
+        const formData = {
+          ...this.visitaForm.value,
+          clientId: this.clientId,
+          generada_por_id: this.currentUserId,
+          tipoServicioId: this.visitaForm.value.tipoServicioId?.id || null,
+          localId: this.visitaForm.value.localId?.id || null,
+          especialidad: this.visitaForm.value.especialidad?.id || null,
+          activoFijoId: this.visitaForm.value.activoFijoId?.id || null,
+          fecha: fechaActual.toISOString(),
+          fechaIngreso: this.visitaForm.value.fechaIngreso ? 
+            new Date(this.visitaForm.value.fechaIngreso).toISOString() : 
+            fechaActual.toISOString(),
+          imagenes: []
+        };
+
+        const response:any = await this.solicitarVisitaService.crearSolicitudVisita(formData).toPromise();
+        
+        if (response?.success && response?.data) {
+          // Si hay archivos para subir, procesarlos
+          if (this.selectedFiles.length > 0) {
+            await this.subirImagenes(response.data.id);
+          }
+          
+          // Mostrar el modal de éxito con la información detallada
+          await Swal.fire({
+            title: 'Éxito',
+            html: `
+              <div>
+                <div class="mb-3">Solicitud de visita generada correctamente</div>
+                <div class="mb-2">
+                  <strong>N° Requerimiento:</strong> ${response.data.id}
+                </div>
+                <div class="mb-2">
+                  <strong>Fecha:</strong> ${this.formatDate(new Date().toISOString())}
+                </div>
+                <div class="mb-2">
+                  <strong>Local:</strong> ${response.data.local.nombre_local}
+                </div>
+                <div class="mb-2">
+                  <strong>Dirección:</strong> ${response.data.local.direccion}
+                </div>
+                <div class="mb-2">
+                  <strong>Tipo de Servicio:</strong> ${this.visitaForm.value.tipoServicioId?.nombre || ''}
+                </div>
+                <div class="mb-2">
+                  <strong>Sector:</strong> ${this.sectores.find(s => s.id === this.visitaForm.value.sectorTrabajoId)?.nombre || ''}
+                </div>
+                <div class="mb-2">
+                  <strong>Especialidad:</strong> ${this.visitaForm.value.especialidad?.nombre || ''}
+                </div>
+                ${this.visitaForm.value.observaciones ? `
+                  <div class="mb-2">
+                    <strong>Observaciones:</strong> ${this.visitaForm.value.observaciones}
+                  </div>
+                ` : ''}
+              </div>
+            `,
+            icon: 'success',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#3085d6',
+            width: '600px'
+          });
+
+          // Limpiar el formulario
+          this.visitaForm.reset();
+          this.selectedFiles = [];
+          this.previewUrls = {};
+        }
+      } catch (error: any) {
+        console.error('Error al crear la visita:', error);
+        const errorMessage = error.error?.message || 'No se pudo crear la solicitud de visita';
+        Swal.fire('Error', errorMessage, 'error');
       }
-    } catch (error) {
-      console.error('Error al crear la visita:', error);
-      Swal.fire('Error', 'No se pudo crear la solicitud de visita', 'error');
     }
   }
+
   formatDate(date: string) {
     return new Date(date).toLocaleDateString('es-ES', {
       year: 'numeric',
@@ -266,9 +334,10 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-    
     });
   }
+
+
   getLocales() {
     this.localesService.getLocalesByCliente(this.clientId)
       .pipe(
