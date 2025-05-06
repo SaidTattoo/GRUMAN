@@ -102,77 +102,87 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
       },
       ...(showMantenedores
         ? [
-          {
-            displayName: 'Programación',
-            iconName: 'calendar',
-            children: [
-              {
-                displayName: 'Generar programación',
-                iconName: 'plus',
-                bgcolor: 'primary',
-                route: 'generar-programacion',
-              },
-              {
-                displayName: 'Listado de programación',
-                iconName: 'list',
-                bgcolor: 'primary',
-                route: 'transacciones/listado-programacion',
-              },
+            {
+              displayName: 'Programación',
+              iconName: 'calendar',
+              children: [
+                {
+                  displayName: 'Generar programación',
+                  iconName: 'plus',
+                  bgcolor: 'primary',
+                  route: 'generar-programacion',
+                },
+                {
+                  displayName: 'Listado de programación',
+                  iconName: 'list',
+                  bgcolor: 'primary',
+                  route: 'transacciones/listado-programacion',
+                },
 
-              {
-                displayName: 'Solicitud de aprobación de correctiva',
-                iconName: 'checkbox',
-                bgcolor: 'primary',
-                route: 'transacciones/solicitud-aprobacion-correctiva',
-              },
-              {
-                displayName:
-                  'Listado de solicitudes de aprobación de correctiva',
-                iconName: 'list-check',
-                bgcolor: 'primary',
-                route:
-                  'transacciones/listado-solicitud-aprobacion-correctiva',
-              },
-            ],
-          },
-        ]
+                {
+                  displayName: 'Solicitud de aprobación de correctiva',
+                  iconName: 'checkbox',
+                  bgcolor: 'primary',
+                  route: 'transacciones/solicitud-aprobacion-correctiva',
+                },
+                {
+                  displayName:
+                    'Listado de solicitudes de aprobación de correctiva',
+                  iconName: 'list-check',
+                  bgcolor: 'primary',
+                  route:
+                    'transacciones/listado-solicitud-aprobacion-correctiva',
+                },
+              ],
+            },
+          ]
         : []),
       ...(showSolicitarVisita
         ? [
-          {
-            displayName: 'Solicitar Visita',
-            iconName: 'calendar-check',
-            route: 'transacciones/solicitar-visita',
-            bgcolor: 'primary',
-          },
-          {
-            displayName: `Servicios del día ${formattedDate}`,
-            iconName: 'calendar',
-            bgcolor: 'primary',
-            route: 'transacciones/solicitudes-del-dia-cliente',
-          },
-          {
-            displayName: 'Reportes',
-            iconName: 'file-search',
-            children: [
-              {
-                displayName: 'Reporte de activos',
-                iconName: 'file-delta',
-                route: 'reportes/reporte-de-activos',
-              },
-              {
-                displayName: 'Reporte de repuestos por día',
-                iconName: 'graph',
-                route: 'reportes/repuestos-por-dia',
-              },
-              {
-                displayName: 'Reporte de repuestos por mes',
-                iconName: 'calendar',
-                route: 'reportes/repuestos-por-mes',
-              },
-            ],
-          },
-        ]
+            {
+              displayName: 'Solicitar Visita',
+              iconName: 'calendar-check',
+              route: 'transacciones/solicitar-visita',
+              bgcolor: 'primary',
+            },
+            {
+              displayName: `Servicios del día ${formattedDate}`,
+              iconName: 'calendar',
+              bgcolor: 'primary',
+              route: 'transacciones/solicitudes-del-dia-cliente',
+            },
+            {
+              displayName: 'Reportes',
+              iconName: 'file-search',
+              children: [
+                {
+                  displayName: 'Reporte de activos',
+                  iconName: 'file-delta',
+                  route: 'reportes/reporte-de-activos',
+                },
+                {
+                  displayName: 'Reporte de repuestos por día',
+                  iconName: 'graph',
+                  route: 'reportes/repuestos-por-dia',
+                },
+                {
+                  displayName: 'Reporte de repuestos por mes',
+                  iconName: 'calendar',
+                  route: 'reportes/repuestos-por-mes',
+                },
+                {
+                  displayName: 'Informe de consumo',
+                  iconName: 'businessplan',
+                  route: 'reportes/informe-de-consumo',
+                },
+                {
+                  displayName: 'Gastos acumulados',
+                  iconName: 'businessplan',
+                  route: 'reportes/informe-gastos-acumulados',
+                },
+              ],
+            },
+          ]
         : []),
 
       {
@@ -188,7 +198,6 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             displayName: 'Solicitudes de Visita Pendiente',
             iconName: 'home-shield',
             route: 'transacciones/solicitudes-de-visita/pendientes',
-
           },
           {
             displayName: 'Visita aprobadas',
@@ -211,10 +220,10 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
             route: 'transacciones/solicitudes-de-visita/validadas',
           },
           {
-              displayName:'Visitas atendidas en proceso',
-              iconName: 'user-check',
-              route:'transacciones/solicitudes-de-visita/atendidas-en-proceso'
-          }
+            displayName: 'Visitas atendidas en proceso',
+            iconName: 'user-check',
+            route: 'transacciones/solicitudes-de-visita/atendidas-en-proceso',
+          },
         ],
       },
       /*  {
@@ -225,154 +234,159 @@ export class AppHorizontalSidebarComponent implements OnInit, OnDestroy {
        }, */
       ...(showMantenedores
         ? [
+            {
+              displayName: 'Servicios',
+              iconName: 'server',
+              route: 'mantenedores',
+              children: [
+                {
+                  displayName: 'Servicios realizados ',
+                  iconName: 'phone-check',
+                  route: 'transacciones/servicios-realizados',
+                },
+                {
+                  displayName: `Servicios del día | ${formattedDate}`,
+                  iconName: 'calendar',
+                  route: 'transacciones/solicitudes-del-dia',
+                },
+              ],
+            },
+            {
+              displayName: 'Reportes',
+              iconName: 'file-search',
+              children: [
+                {
+                  displayName: 'Reporte de activos',
+                  iconName: 'file-delta',
+                  route: 'reportes/reporte-de-activos',
+                },
+                {
+                  displayName: 'Reporte de repuestos por día',
+                  iconName: 'graph',
+                  route: 'reportes/repuestos-por-dia',
+                },
+                {
+                  displayName: 'Reporte de repuestos por mes',
+                  iconName: 'calendar',
+                  route: 'reportes/repuestos-por-mes',
+                },
+                {
+                  displayName: 'Informe de consumo',
+                  iconName: 'graph',
+                  route: 'reportes/informe-de-consumo',
+                },
+                {
+                  displayName: 'Gastos acumulados',
+                  iconName: 'businessplan',
+                  route: 'reportes/informe-gastos-acumulados',
+                },
+              ],
+            },
+            {
+              displayName: 'Mantenedores',
+              iconName: 'user-cog',
+              route: 'mantenedores',
+              children: [
+                {
+                  displayName: 'Carga masiva',
+                  iconName: 'upload',
+                  route: 'transacciones/solicitudes-de-visita/carga-masiva',
+                },
+                {
+                  displayName: 'Locales',
+                  iconName: 'building-store',
+                  route: 'mantenedores/locales',
+                },
+                {
+                  displayName: 'Móviles',
+                  iconName: 'car',
+                  route: 'mantenedores/vehiculos',
+                },
+                {
+                  displayName: 'Técnicos Gruman',
+                  iconName: 'users',
+                  route: 'mantenedores/tecnicos-gruman',
+                },
+                {
+                  displayName: 'Tipo activo',
+                  iconName: 'package',
+                  route: 'mantenedores/tipo-activo',
+                },
+                {
+                  displayName: 'Usuarios del sistema',
+                  iconName: 'users-group',
+                  route: 'mantenedores/usuarios',
+                },
+                {
+                  displayName: 'Técnicos móviles',
+                  iconName: 'user-bolt',
+                  route: 'mantenedores/tecnicos-moviles',
+                },
+                {
+                  displayName: 'Repuestos',
+                  iconName: 'tool',
+                  route: 'mantenedores/repuestos',
+                },
+                {
+                  displayName: 'Clientes',
+                  iconName: 'briefcase',
+                  route: 'mantenedores/clientes',
+                },
+                {
+                  displayName: 'Inspecciones',
+                  iconName: 'scan',
+                  route: 'mantenedores/lista-de-inspecciones',
+                },
 
-          {
-            displayName: 'Servicios',
-            iconName: 'server',
-            route: 'mantenedores',
-            children: [
-              {
-                displayName: 'Servicios realizados ',
-                iconName: 'phone-check',
-                route: 'transacciones/servicios-realizados',
-              },
-              {
-                displayName: `Servicios del día | ${formattedDate}`,
-                iconName: 'calendar',
-                route: 'transacciones/solicitudes-del-dia',
-              },
-            ]
-          },
-          {
-            displayName: 'Reportes',
-            iconName: 'file-search',
-            children: [
-              {
-                displayName: 'Reporte de activos',
-                iconName: 'file-delta',
-                route: 'reportes/reporte-de-activos',
-              },
-              {
-                displayName: 'Reporte de repuestos por día',
-                iconName: 'graph',
-                route: 'reportes/repuestos-por-dia',
-              },
-              {
-                displayName: 'Reporte de repuestos por mes',
-                iconName: 'calendar',
-                route: 'reportes/repuestos-por-mes',
-              }, {
-                displayName: 'Informe de consumo',
-                iconName: 'graph',
-                route: 'reportes/informe-de-consumo',
-              },
-            ],
-          },
-          {
-            displayName: 'Mantenedores',
-            iconName: 'user-cog',
-            route: 'mantenedores',
-            children: [
-              {
-                displayName: 'Carga masiva',
-                iconName: 'upload',
-                route: 'transacciones/solicitudes-de-visita/carga-masiva',
-              },
-              {
-                displayName: 'Locales',
-                iconName: 'building-store',
-                route: 'mantenedores/locales',
-              },
-              {
-                displayName: 'Móviles',
-                iconName: 'car',
-                route: 'mantenedores/vehiculos',
-              },
-              {
-                displayName: 'Técnicos Gruman',
-                iconName: 'users',
-                route: 'mantenedores/tecnicos-gruman',
-              },
-              {
-                displayName: 'Tipo activo',
-                iconName: 'package',
-                route: 'mantenedores/tipo-activo',
-              },
-              {
-                displayName: 'Usuarios del sistema',
-                iconName: 'users-group',
-                route: 'mantenedores/usuarios',
-              },
-              {
-                displayName: 'Técnicos móviles',
-                iconName: 'user-bolt',
-                route: 'mantenedores/tecnicos-moviles',
-              },
-              {
-                displayName: 'Repuestos',
-                iconName: 'tool',
-                route: 'mantenedores/repuestos',
-              },
-              {
-                displayName: 'Clientes',
-                iconName: 'briefcase',
-                route: 'mantenedores/clientes',
-              },
-              {
-                displayName: 'Inspecciones',
-                iconName: 'scan',
-                route: 'mantenedores/lista-de-inspecciones',
-              },
+                {
+                  displayName: 'Listado de documentos',
+                  iconName: 'file-description',
+                  route: 'mantenedores/documentos',
+                },
+                {
+                  displayName: 'Tipo documento',
+                  iconName: 'files',
+                  route: 'mantenedores/documentos/tipo-documento',
+                },
+                {
+                  displayName: 'Tipo Servicio',
+                  iconName: 'server-2',
+                  route: 'mantenedores/tipo-servicio',
+                },
+                {
+                  displayName: 'Tipo Solicitud',
+                  iconName: 'clock',
+                  route: 'mantenedores/tipo-solicitud',
+                },
+                {
+                  displayName: 'Sectores de trabajo',
+                  iconName: 'map-pin',
+                  route: 'mantenedores/sectores-trabajo',
+                },
+                {
+                  displayName: 'Causas raíz',
+                  iconName: 'file-search',
+                  route: 'mantenedores/causa-raiz',
+                },
 
-              {
-                displayName: 'Listado de documentos',
-                iconName: 'file-description',
-                route: 'mantenedores/documentos',
-              },
-              {
-                displayName: 'Tipo documento',
-                iconName: 'files',
-                route: 'mantenedores/documentos/tipo-documento',
-              },
-              {
-                displayName: 'Tipo Servicio',
-                iconName: 'server-2',
-                route: 'mantenedores/tipo-servicio',
-              },
-              {
-                displayName: 'Tipo Solicitud',
-                iconName: 'clock',
-                route: 'mantenedores/tipo-solicitud',
-              },
-              {
-                displayName: 'Sectores de trabajo',
-                iconName: 'map-pin',
-                route: 'mantenedores/sectores-trabajo',
-              },
-              {
-                displayName: 'Causas raíz',
-                iconName: 'file-search',
-                route: 'mantenedores/causa-raiz',
-              },
-
-              {
-                displayName: 'Activo fijo local',
-                iconName: 'building-warehouse',
-                route: 'mantenedores/activo-fijo-local',
-              },
-              {
-                displayName: 'Especialidades',
-                iconName: 'propeller',
-                route: 'mantenedores/especialidades',
-              },
-              {
-                displayName: 'Mes de facturación',
-                iconName: 'receipt-2',
-                route: 'mantenedores/mes-de-facturacion',
-              },
-            ],
-          },
-        ]
+                {
+                  displayName: 'Activo fijo local',
+                  iconName: 'building-warehouse',
+                  route: 'mantenedores/activo-fijo-local',
+                },
+                {
+                  displayName: 'Especialidades',
+                  iconName: 'propeller',
+                  route: 'mantenedores/especialidades',
+                },
+                {
+                  displayName: 'Mes de facturación',
+                  iconName: 'receipt-2',
+                  route: 'mantenedores/mes-de-facturacion',
+                },
+              ],
+            },
+          ]
         : []),
     ];
   }

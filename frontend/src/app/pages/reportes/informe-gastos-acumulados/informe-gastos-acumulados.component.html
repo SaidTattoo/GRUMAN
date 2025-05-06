@@ -1,0 +1,110 @@
+<mat-card class="cardWithShadow">
+  <mat-card-header>
+   <form [formGroup]="informeForm" class="d-flex justify-content-start align-items-baseline gap-5">
+      <mat-form-field appearance="outline">
+        <mat-label>Selecciona cliente</mat-label>
+        <input type="text" 
+               placeholder="Selecciona cliente" 
+               aria-label="Number" 
+               matInput 
+               formControlName="cliente"
+               [matAutocomplete]="auto" />
+        <button mat-icon-button matSuffix *ngIf="informeForm.get('cliente')?.value" (click)="clearClient()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCompanySelected($event)">
+          @for(company of filteredOptions | async; track company) {
+          <mat-option [value]="company">
+            {{ company }}
+          </mat-option>
+          }
+        </mat-autocomplete>
+        <mat-error *ngIf="informeForm.get('cliente')?.hasError('required')">
+          El cliente es requerido
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="margin: 0 10px;">
+        <mat-label>Selecciona mes</mat-label>
+        <input type="text"
+               placeholder="Selecciona mes"
+               aria-label="Mes"
+               matInput
+               formControlName="mesActual"
+               [matAutocomplete]="autoMes"
+               [readonly]="!informeForm.get('cliente')?.value" />
+        <button mat-icon-button matSuffix *ngIf="informeForm.get('mesActual')?.value" (click)="clearMes()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-autocomplete autoActiveFirstOption #autoMes="matAutocomplete" [displayWith]="displayMesFn">
+          @for(mes of meses; track mes) {
+          <mat-option [value]="mes">
+            {{ mes.mes }}
+          </mat-option>
+          }
+        </mat-autocomplete>
+        <mat-error *ngIf="informeForm.get('mesActual')?.hasError('required')">
+          El mes es requerido
+        </mat-error>
+      </mat-form-field>
+
+      <button mat-raised-button 
+              color="primary" 
+              class="mt-2" 
+              (click)="setFilter()"
+              [disabled]="informeForm.invalid">
+        Buscar
+      </button>
+    </form>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Gasto acumulado {{ mesActual }} | Valor UF al día de hoy $ {{ valorUF | number }}</h2>
+      </div>
+      
+      <table mat-table [dataSource]="tableData" class="full-width-table">
+        <!-- Columna Concepto -->
+        <ng-container matColumnDef="concepto">
+          <th mat-header-cell *matHeaderCellDef class="header-cell">CONCEPTO</th>
+          <td mat-cell *matCellDef="let row" class="concept-cell">{{row.concepto}}</td>
+        </ng-container>
+
+        <!-- Columna Tipo Moneda -->
+        <ng-container matColumnDef="tipoMoneda">
+          <th mat-header-cell *matHeaderCellDef class="header-cell">TIPO MONEDA</th>
+          <td mat-cell *matCellDef="let row" class="currency-cell">{{row.tipoMoneda}}</td>
+        </ng-container>
+
+        <!-- Columna Presupuesto Mensual -->
+        <ng-container matColumnDef="presupuestoMensual">
+          <th mat-header-cell *matHeaderCellDef class="header-cell">PRESUPUESTO MENSUAL</th>
+          <td mat-cell *matCellDef="let row" class="number-cell">
+            {{row.presupuestoMensual ? (row.tipoMoneda === 'CLP' ? '$ ' : '') + (row.presupuestoMensual | number:'1.2-2') : ''}}
+          </td>
+        </ng-container>
+
+        <!-- Columna Acumulado -->
+        <ng-container matColumnDef="acumulado">
+          <th mat-header-cell *matHeaderCellDef class="header-cell">ACUMULADO AL DIA DE HOY</th>
+          <td mat-cell *matCellDef="let row" class="number-cell">
+            {{row.acumulado ? (row.tipoMoneda === 'CLP' ? '$ ' : '') + (row.acumulado | number:'1.2-2') : ''}}
+          </td>
+        </ng-container>
+
+        <!-- Columna Desviación -->
+        <ng-container matColumnDef="desviacion">
+          <th mat-header-cell *matHeaderCellDef class="header-cell">DESVIACION (PPTO)</th>
+          <td mat-cell *matCellDef="let row" class="number-cell" [ngClass]="{'negative': row.desviacion < 0, 'positive': row.desviacion > 0}">
+            {{row.desviacion ? '(' + (row.desviacion | number:'1.2-2') + ')%' : ''}}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            [ngClass]="{'summary-row': row.isSummary, 'total-row': row.isTotal}">
+        </tr>
+      </table>
+    </div>
+  </mat-card-content>
+</mat-card>
