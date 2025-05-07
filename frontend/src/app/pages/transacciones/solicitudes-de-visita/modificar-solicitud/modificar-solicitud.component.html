@@ -94,7 +94,7 @@
             </mat-select>
           </mat-form-field>
         </div>
-        }
+        
 
         <div class="row m-b-16">
           <div class="radio-group-container col-md-4">
@@ -132,31 +132,73 @@
           </div>
 
           <div class="col-md-12">
-            @if (imagePreview) {
-              <div class="image-box" style="position: relative;">
-                <img loading="lazy" [src]="imagePreview" alt="Vista previa del logo" class="img-preview" />
-                <button mat-icon-button color="primary" (click)="openImageModal()" matTooltip="Ver imagen en tamaño completo" 
-                  style="position: absolute; top: 8px; right: 8px; background-color: rgba(255, 255, 255, 0.8);">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" (click)="eliminarImagenPreview()" matTooltip="Eliminar imagen" 
-                  style="position: absolute; top: 8px; right: 48px; background-color: rgba(255, 255, 255, 0.8);">
-                  <mat-icon>delete</mat-icon>
-                </button>
+            <div class="section-title m-t-0">Imagen de OT</div>
+            @if (imagePreview || solicitud?.image_ot) {
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 0px 0px 10px 0px;">
+                <!-- Contenedor de la imagen -->
+                <div class="image-box" style="width: 50%; height: 350px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                  <img 
+                    loading="lazy" 
+                    [src]="imagePreview || solicitud?.image_ot" 
+                    alt="Imagen de OT" 
+                    class="img-preview" 
+                    style="width: 100%; height: 100%; object-fit: cover;"
+                  />
+                </div>
+                <div class="w-100 d-flex justify-content-center gap-5">
+                  <button mat-icon-button (click)="openImageModal()" matTooltip="Ver imagen en tamaño completo">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  @if (!isValidada && !isRechazada) {
+                  <button mat-icon-button (click)="eliminarImagenPreview()" matTooltip="Eliminar imagen">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                  }
+                </div>
+                <!-- Botones de acción -->
+               
               </div>
-            }@else{
-            <div class="drop-area" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-              <p>Cargar una OT</p>
-              <p>Añade o arrastra el archivo aqui</p>
-            </div>
+            } @else {
+              <div 
+                class="drop-area" 
+                (click)="fileInput.click()" 
+                (dragover)="onDragOver($event)" 
+                (drop)="onDrop($event)"
+                style="
+                  border: 2px dashed #ccc;
+                  border-radius: 8px;
+                  padding: 20px;
+                  text-align: center;
+                  cursor: pointer;
+                  background-color: #f8f9fa;
+                  transition: all 0.3s ease;
+                  width: 200px;
+                  height: 200px;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  margin: 20px auto;
+                "
+              >
+                <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #666; margin-bottom: 10px;">upload_file</mat-icon>
+                <p style="margin: 0; font-size: 16px; color: #333;">Cargar imagen de OT</p>
+                <p style="margin: 5px 0 0; font-size: 14px; color: #666;">Arrastra y suelta aquí o haz clic para seleccionar</p>
+              </div>
             }
-            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+            <input 
+              #fileInput 
+              type="file" 
+              (change)="onFileSelected($event)" 
+              accept="image/*" 
+              style="display: none;" 
+              [disabled]="isValidada || isRechazada"
+            />
           </div>
         </div>
+        }
 
-
-
-        <div class="form-row">
+        <div class="form-row m-t-16">
           <mat-form-field appearance="fill" class="full-width">
             <mat-label>Técnico asignado</mat-label>
             <mat-select formControlName="tecnico_asignado_id" [disabled]="!isPendiente || isRechazada" required>

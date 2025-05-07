@@ -33,6 +33,7 @@ export class AppController {
       }),
     }),
   )
+  
   @Post('upload/:path')
   uploadFile(@UploadedFile() file: Express.Multer.File, @Param('path') path: string) {
     if (!file) {

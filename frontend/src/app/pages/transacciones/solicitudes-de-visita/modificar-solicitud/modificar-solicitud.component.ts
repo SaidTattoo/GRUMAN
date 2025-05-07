@@ -33,6 +33,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroup } from '@angular/material/radio';
 import { UploadDataService } from 'src/app/services/upload-data.service';
 import { environment } from 'src/app/config';
+import { HttpClient } from '@angular/common/http';
 
 interface Repuesto {
   id: number;
@@ -414,7 +415,8 @@ export class ModificarSolicitudComponent implements OnInit {
     private especialidadesService: EspecialidadesService,
     private cd: ChangeDetectorRef,
     private causaRaizService: CausaRaizService,
-    private uploadDataService: UploadDataService
+    private uploadDataService: UploadDataService,
+    private http: HttpClient
   ) {
     this.solicitudForm = this.fb.group({
       tipoServicioId: [''],
@@ -594,7 +596,12 @@ export class ModificarSolicitudComponent implements OnInit {
         
         // Asignar el imagePreview si existe image_ot
         if (data.image_ot) {
-          this.setImagePreview(data.image_ot);
+          const imageUrl = data.image_ot.startsWith('http') ? data.image_ot : `${environment.apiUrl}/${data.image_ot}`;
+          this.imagePreview = imageUrl;
+          this.urlImage = imageUrl;
+          this.solicitudForm.patchValue({
+            image_ot: imageUrl
+          });
         }
         
         // Detectar estado de la solicitud por su estado actual
@@ -1936,7 +1943,7 @@ export class ModificarSolicitudComponent implements OnInit {
     }
   }
 
-  onFileSelected(event: Event) {
+  async onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
@@ -1949,7 +1956,7 @@ export class ModificarSolicitudComponent implements OnInit {
       reader.onload = (e) => {
         img.src = e.target?.result as string;
         
-        img.onload = () => {
+        img.onload = async () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
@@ -1979,12 +1986,57 @@ export class ModificarSolicitudComponent implements OnInit {
           // Dibujar la imagen comprimida
           ctx?.drawImage(img, 0, 0, width, height);
           
-          // Convertir a base64 con calidad reducida
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-          
-          this.imagePreview = compressedBase64;
-          this.imageBase64 = compressedBase64;
-          this.urlImage = compressedBase64;
+          try {
+            // Convertir canvas a blob
+            const blob = await new Promise<Blob>((resolve) => {
+              canvas.toBlob((blob) => {
+                resolve(blob as Blob);
+              }, 'image/jpeg', 0.7);
+            });
+
+            // Crear FormData
+            const formData = new FormData();
+            const compressedFile = new File([blob], this.fileName, { type: 'image/jpeg' });
+            formData.append('file', compressedFile);
+
+            const response = await this.uploadDataService.uploadFileFirebase(
+              formData,
+              `?path=solicitudes-visita/${this.solicitudId}/ot`
+            ).toPromise();
+
+            if (response && response.url) {
+              // Guardar la URL de la imagen y actualizar el preview
+              const imageUrl = response.url.startsWith('http') ? response.url : `${environment.apiUrl}/${response.url}`;
+              this.imagePreview = imageUrl;
+              this.urlImage = imageUrl;
+
+              // Actualizar el formulario con la nueva URL
+              this.solicitudForm.patchValue({
+                image_ot: imageUrl
+              });
+
+              // Actualizar la solicitud en el backend
+              await this.solicitarVisitaService.updateSolicitudVisita(
+                Number(this.solicitudId),
+                { image_ot: imageUrl }
+              ).toPromise();
+
+              // Forzar la detección de cambios
+              this.cd.detectChanges();
+
+              // Mostrar mensaje de éxito
+              this.snackBar.open('Imagen de OT subida exitosamente', 'Cerrar', {
+                duration: 3000
+              });
+            } else {
+              throw new Error('No se recibió una URL válida del servidor');
+            }
+          } catch (error) {
+            console.error('Error al subir la imagen:', error);
+            this.snackBar.open('Error al subir la imagen. Por favor, verifica la conexión e intenta nuevamente', 'Cerrar', {
+              duration: 5000
+            });
+          }
         };
       };
       
@@ -2031,15 +2083,43 @@ export class ModificarSolicitudComponent implements OnInit {
     this.urlImage = image_ot;
   }
 
-  eliminarImagenPreview(): void {
-    this.imagePreview = null;
-    this.urlImage = null;
-    this.imageBase64 = null;
-    this.fileName = '';
-    // Limpiar el input file para permitir seleccionar el mismo archivo nuevamente
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
+  async eliminarImagenPreview(): Promise<void> {
+    try {
+      // Limpiar las variables locales
+      this.imagePreview = null;
+      this.urlImage = null;
+      this.imageBase64 = null;
+      this.fileName = '';
+
+      // Actualizar el formulario
+      this.solicitudForm.patchValue({
+        image_ot: null
+      });
+
+      // Actualizar en el backend
+      await this.solicitarVisitaService.updateSolicitudVisita(
+        Number(this.solicitudId),
+        { image_ot: null }
+      ).toPromise();
+
+      // Forzar la detección de cambios
+      this.cd.detectChanges();
+
+      // Mostrar mensaje de éxito
+      this.snackBar.open('Imagen eliminada correctamente', 'Cerrar', {
+        duration: 3000
+      });
+
+      // Limpiar el input file
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+    } catch (error) {
+      console.error('Error al eliminar la imagen:', error);
+      this.snackBar.open('Error al eliminar la imagen', 'Cerrar', {
+        duration: 3000
+      });
     }
   }
 } 

@@ -4,3 +4,4 @@
 .cursorrules
 .notes
 backend/uploads/
+backend/.env
