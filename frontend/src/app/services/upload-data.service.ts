@@ -51,6 +51,43 @@ export class UploadDataService {
   }
 
   /**
+   * Subir un archivo a firebase storage.
+   * @param formData - FormData que contiene el archivo.
+   * @param path - Ruta en el backend donde se subirá el archivo.
+   * @returns Observable con la respuesta del servidor.
+   */
+  uploadFileFirebase(formData: FormData, path: string): Observable<any> {
+    // Solo limpiar barras extras del path
+    const cleanPath = path.replace(/^\/+|\/+$/g, '');
+    
+    // Construir la URL asegurándose de que no haya dobles barras
+    const url = `${this.apiUrl}firebase/upload/${cleanPath}`;
+    
+    console.log('URL de carga:', url); // Para debugging
+    
+    // Asegurarse de que el FormData tenga el archivo con el nombre 'file'
+    const file = formData.get('file');
+    if (!file) {
+      console.warn('No se encontró el archivo en FormData');
+      throw new Error('No se encontró el archivo');
+    }
+
+    // Realizar la petición POST
+    return this.http.post(url, formData)
+      .pipe(
+        map((response: any) => {
+          if (response && response.url) {
+            // Limpiar la URL antes de devolverla
+            response.url = response.url
+              .replace(/([^:]\/)\/+/g, '$1')
+              .replace(/localhost:3000/, environment.apiUrl);
+          }
+          return response;
+        })
+      );
+  }
+
+  /**
    * Descargar un archivo desde el servidor.
    * @param path - Ruta en el backend desde donde se descargará el archivo.
    * @returns Observable con el archivo como blob.
