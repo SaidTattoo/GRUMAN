@@ -21,6 +21,7 @@ services:
       - "3000:3000"
     volumes:
       - ./backend:/app
+      - /app/node_modules
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - mariadb
@@ -30,8 +31,13 @@ services:
       - NODE_OPTIONS=--max-old-space-size=4096
       - TZ=America/Santiago
     command: npm run start:dev
+    restart: always
     networks:
       - gruman_network
+    deploy:
+      resources:
+        limits:
+          memory: 8G
 
   mariadb:
     image: mariadb:latest
@@ -44,36 +50,6 @@ services:
       - "3306:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
-    networks:
-      - gruman_network
-
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./frontend:/app
-      - ./certbot/www:/var/www/certbot
-      - ./certbot/conf:/etc/letsencrypt
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - gruman_network
-
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./certbot/www:/var/www/certbot
-      - ./certbot/conf:/etc/letsencrypt
-    entrypoint: >
-      sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot
-      --email said.ravest@gmail.com --agree-tos --no-eff-email
-      -d dev.soporte-ti.net"
     networks:
       - gruman_network
 

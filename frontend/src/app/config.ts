@@ -24,8 +24,7 @@ export const defaults: AppSettings = {
   navPos: 'side',
 };
 export const environment = {
-    apiUrl: 'http://138.255.103.35:3000/',
-    baseUrl: 'http://dev.atlantispro.cl/'
-  //apiUrl: 'http://localhost:3000/',
+  apiUrl: 'http://138.255.103.38:3000/',
+  baseUrl: 'http://v3.atlantispro.cl/'
 };
   
