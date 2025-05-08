@@ -97,4 +97,24 @@ export class AppController {
       url: fileUrl,
     };
   }
+
+  @Get('indicators/uf')
+  async getUf() {
+    try {
+      const response = await this.appService.getUf();
+      
+      if (!response?.UFs?.length) {
+        throw new Error('No se encontraron datos de UF');
+      }
+
+      const ufData = response.UFs[0];
+      
+      return {
+        value: Math.round(Number(ufData.Valor.replace('.', '').replace(',', '.'))),
+        date: ufData.Fecha,
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener UF: ${error.message}`);
+    }
+  }
 }
