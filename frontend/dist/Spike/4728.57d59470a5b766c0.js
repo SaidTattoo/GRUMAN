@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkSpike=self.webpackChunkSpike||[]).push([[4728],{4728:(d,t,s)=>{s.r(t),s.d(t,{SOLICITUDES_APROBADAS_ROUTES:()=>a});const a=[{path:"",component:s(5471).P,data:{title:"Solicitudes de Visita Aprobadas"}}]}}]);

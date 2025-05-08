@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkSpike=self.webpackChunkSpike||[]).push([[6208],{6208:(e,a,s)=>{s.r(a),s.d(a,{SOLICITUDES_RECHAZADAS_ROUTES:()=>S});const S=[{path:"",component:s(4023).w,data:{title:"Solicitudes de Visita Rechazadas"}}]}}]);
