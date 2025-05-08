@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://138.255.103.35:3000',
-  baseUrl: 'http://dev.atlantispro.cl'
+  apiUrl: 'https://138.255.103.35:3000',
+  baseUrl: 'https://dev.atlantispro.cl'
   // ... otras variables de entorno
 };
