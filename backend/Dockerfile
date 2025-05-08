@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar las dependencias
-RUN npm install
+RUN npm ci
 RUN npm install nodemailer @types/nodemailer
 
 # Copiar el resto de la aplicación

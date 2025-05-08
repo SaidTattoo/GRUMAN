@@ -1,0 +1,239 @@
+{
+  "lastUpdate": "2025-01-16",
+  "versions": [
+    {
+      "version": "1.0.8",
+      "date": "2025-01-16",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Mejorado el diseño visual del rango de fechas en la tabla de mes de facturación"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema de actualización del currentUser al editar clientes asignados"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la sincronización del localStorage y el estado de la aplicación"
+        },
+        {
+          "type": "improvement",
+          "description": "Actualizada la visualización del tipo de servicio mostrando el nombre en lugar del ID"
+        },
+        {
+          "type": "improvement",
+          "description": "Removida la obligatoriedad del campo especialidad en el formulario de solicitud de visita"
+        }
+      ]
+    },
+    {
+      "version": "1.0.7",
+      "date": "2025-01-14",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "Corregido error en la actualización de sectores por defecto que no retornaba la entidad actualizada"
+        },
+        {
+          "type": "feature",
+          "description": "Agregado campo de fecha de vencimiento a los documentos"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error en la actualización de locales donde la propiedad 'cliente' no coincidía con 'client' en la entidad"
+        },
+        {
+          "type": "feature",
+          "description": "Agregada funcionalidad para establecer y modificar sobreprecio y valor por local en la creación y edición de locales"
+        },
+        {
+          "type": "improvement",
+          "description": "Actualizada la visualización del listado de locales: removidos campos Zona, Grupo y Referencia, agregados campos de Sobreprecio y Valor por Local"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorado el ancho de columnas en tablas para optimizar la visualización de datos"
+        }
+      ]
+    },
+    {
+      "version": "1.0.6",
+      "date": "2025-01-10",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Simplificada la URL del dashboard principal de /dashboards/dashboard1 a /dashboards"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error de visualización en el formulario de solicitud de visita cuando no hay cliente seleccionado"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la visualización del número de ticket mostrando el nombre del cliente actual"
+        },
+        {
+          "type": "fix",
+          "description": "Identificado error en la consulta SQL al editar clientes con campos listaInspeccion y tipoServicio"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error en el formato de envío de clientId al editar usuarios técnicos - Se requiere enviar array de IDs en lugar de objeto completo"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema de visualización y actualización del apellido en formularios de edición de técnicos y usuarios"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error al guardar tipos de servicio en la edición de clientes"
+        }
+      ]
+    },
+    {
+      "version": "1.0.5",
+      "date": "2025-01-10",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Simplificada la URL del dashboard principal de /dashboards/dashboard1 a /dashboards"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido error de visualización en el formulario de solicitud de visita cuando no hay cliente seleccionado"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la visualización del número de ticket mostrando el nombre del cliente actual"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema de visualización de menús para usuarios con un solo cliente"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la selección automática de empresa para usuarios con cliente único"
+        }
+      ]
+    },
+    {
+      "version": "1.0.4",
+      "date": "2025-01-08",
+      "changes": [
+        {
+          "type": "improvement",
+          "description": "Rediseño del menú de selección de empresas"
+        },
+        {
+          "type": "fix",
+          "description": "Eliminado el scroll innecesario en el menú de empresas"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejor alineación y espaciado de logos y nombres de empresas"
+        },
+        {
+          "type": "improvement",
+          "description": "Optimización visual en la presentación de empresas sin logo"
+        }
+      ]
+    },
+    {
+      "version": "1.0.3",
+      "date": "2024-03-21",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Nuevo selector de perfil para usuarios con múltiples clientes"
+        },
+        {
+          "type": "feature",
+          "description": "Nuevo diseño del badge de actualizaciones"
+        },
+        {
+          "type": "improvement",
+          "description": "Optimización en la carga de imágenes de clientes"
+        },
+        {
+          "type": "feature",
+          "description": "Sistema de notificaciones mejorado"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido el problema de persistencia en las selecciones de clientes"
+        },
+        {
+          "type": "fix",
+          "description": "Solucionado error al editar usuarios y sus clientes asociados"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema con el badge de actualizaciones que no se mostraba"
+        }
+      ]
+    },
+    {
+      "version": "1.0.2",
+      "date": "2024-03-20",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Agregado sistema de changelog para ver actualizaciones"
+        },
+        {
+          "type": "improvement",
+          "description": "Nuevo diseño en la selección de clientes con grid de imágenes"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema al editar usuarios y sus clientes asociados"
+        },
+        {
+          "type": "fix",
+          "description": "Solucionado error en la ruta del changelog que redirigía al login"
+        }
+      ]
+    },
+    {
+      "version": "1.0.1",
+      "date": "2024-03-19",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Agregado sistema de edición de usuarios"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema con la selección de clientes"
+        },
+        {
+          "type": "improvement",
+          "description": "Mejorada la interfaz de selección de clientes"
+        },
+        {
+          "type": "fix",
+          "description": "Solucionado error que no mostraba los clientes seleccionados en edición"
+        },
+        {
+          "type": "fix",
+          "description": "Corregido problema con el endpoint de actualización de usuarios"
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2024-03-15",
+      "changes": [
+        {
+          "type": "feature",
+          "description": "Lanzamiento inicial de la aplicación"
+        },
+        {
+          "type": "fix",
+          "description": "Correcciones iniciales de estabilidad"
+        }
+      ]
+    }
+  ]
+} 

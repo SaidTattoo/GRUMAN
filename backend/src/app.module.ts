@@ -43,6 +43,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { MesesFacturacionModule } from './meses_facturacion/meses_facturacion.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { SlaModule } from './sla/sla.module';
+import { FirebaseModule } from './firebase/firebase.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -90,7 +91,8 @@ import { SlaModule } from './sla/sla.module';
     DashboardModule,
     MesesFacturacionModule,
     ReportesModule,
-    SlaModule
+    SlaModule,
+    FirebaseModule
     /*     LocalesModule,
         SectoresTrabajoModule,
         ProgramacionModule */
