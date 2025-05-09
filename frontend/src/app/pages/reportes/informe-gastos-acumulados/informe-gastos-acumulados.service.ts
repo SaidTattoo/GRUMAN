@@ -29,7 +29,13 @@ export class InformeGastosAcumuladosService {
     });
   }
 
-  getMesesByCliente(clienteId: any | null): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/facturacion/${clienteId}`);
+  getValorUF(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/indicators/uf`);
+  }
+
+  getInformeGastoAcumulado(clienteId: any | null): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiUrl}/informe-gasto-acumulado?clientId=${clienteId}`
+    );
   }
 }

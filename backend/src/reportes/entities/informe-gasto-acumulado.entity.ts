@@ -8,7 +8,7 @@ export class InformeGastoAcumulado {
   @Column()
   name: string;
 
-  @Column() // SERVICE | REPLACEMENT | HEADER | TOTAL |
+  @Column() // SERVICE | REPLACEMENT | REACTIVES_RM | REACTIVES_REGION| HEADER | LUMINARIES | TOTAL |
   type_service: string;
 
   @Column()

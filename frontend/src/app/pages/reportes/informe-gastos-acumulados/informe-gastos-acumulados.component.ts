@@ -19,6 +19,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { InformeGastosAcumuladosService } from './informe-gastos-acumulados.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSelectModule } from '@angular/material/select';
+import { environment } from 'src/environments/environment';
 
 interface TableRow {
   concepto: string;
@@ -66,7 +67,9 @@ export class InformeGastosAcumuladosComponent implements OnInit {
   
   // Variables para el encabezado
   mesActual: string = '';
-  valorUF: number = 39030;
+  valorUF: number = 0;
+
+  dataList: any = null
 
   // Variables para datos de la tabla
   tableData: TableRow[] = [];
@@ -85,13 +88,18 @@ export class InformeGastosAcumuladosComponent implements OnInit {
   ) {
     this.informeForm = this.fb.group({
       cliente: ['', Validators.required],
-      mesActual: ['', Validators.required]
     });
 
     this.filteredOptions = this.informeForm.get('cliente')!.valueChanges.pipe(
       startWith(''),
       map(value => this._filter(value || ''))
     );
+
+    this.informeGastosAcumuladosService.getValorUF().subscribe((data) => {
+      this.valorUF = data.value;
+    });
+
+    this.mesActual = new Date().toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }).toUpperCase();
 
     // Inicializar los datos de la tabla
     this.initializeTableData();
@@ -107,80 +115,10 @@ export class InformeGastosAcumuladosComponent implements OnInit {
         this.originalOptions = [...this.firstoption];
       }
     });
-
-    this.initializeMeses();
   }
 
   private initializeTableData() {
-    this.tableData = [
-      {
-        concepto: 'Valor Servicios',
-        tipoMoneda: 'UF',
-        presupuestoMensual: 1303.43,
-        acumulado: 3.8,
-        desviacion: -99.71
-      },
-      {
-        concepto: 'Total Servicios (A)',
-        tipoMoneda: '',
-        presupuestoMensual: null,
-        acumulado: 148314,
-        desviacion: null,
-        isSummary: true
-      },
-      {
-        concepto: 'Correctivo',
-        tipoMoneda: 'CLP',
-        presupuestoMensual: 11000000,
-        acumulado: 4321266,
-        desviacion: -60.72
-      },
-      {
-        concepto: 'Inversion',
-        tipoMoneda: 'CLP',
-        presupuestoMensual: 11000000,
-        acumulado: 206919,
-        desviacion: -98.12
-      },
-      {
-        concepto: 'Reactivos RM',
-        tipoMoneda: 'CLP',
-        presupuestoMensual: 3000000,
-        acumulado: 855206,
-        desviacion: -71.49
-      },
-      {
-        concepto: 'Reactivos Regiones',
-        tipoMoneda: '',
-        presupuestoMensual: null,
-        acumulado: 0,
-        desviacion: null
-      },
-      {
-        concepto: 'Luminarias',
-        tipoMoneda: 'CLP',
-        presupuestoMensual: null,
-        acumulado: 129860,
-        desviacion: null
-      },
-      {
-        concepto: 'Total Repuestos (B)',
-        tipoMoneda: '',
-        presupuestoMensual: null,
-        acumulado: 5513251,
-        desviacion: null,
-        isSummary: true
-      },
-      {
-        concepto: 'Total Mes (A+B)',
-        tipoMoneda: '',
-        presupuestoMensual: null,
-        acumulado: 5661565,
-        desviacion: null,
-        isSummary: true,
-        isTotal: true
-      }
-    ];
+    this.tableData = [];
   }
 
   private _filter(value: string): string[] {
@@ -200,19 +138,13 @@ export class InformeGastosAcumuladosComponent implements OnInit {
     return mes.mes || '';
   };
 
-  clearMes() {
-    this.informeForm.patchValue({
-      mesActual: null
-    });
-  }
+
 
   onCompanySelected(event: any) {
     if (!event.option.value) {
       this.informeForm.patchValue({
         cliente: null,
-        mesActual: null
       });
-      this.informeForm.get('mesActual')?.disable();
       this.selectedCompanyName = '';
       this.meses = [];
       return;
@@ -223,14 +155,152 @@ export class InformeGastosAcumuladosComponent implements OnInit {
       this.selectedCompanyName = event.option.value;
       this.informeForm.patchValue({
         cliente: selectedCompany.id,
-        mesActual: null
       });
       
-      this.informeForm.get('mesActual')?.enable();
-      
-      this.informeGastosAcumuladosService.getMesesByCliente(selectedCompany.id).subscribe((meses) => {
-        this.meses = meses;
-      });
+      this.informeGastosAcumuladosService
+        .getInformeGastoAcumulado(selectedCompany.id)
+        .subscribe((data:any) => {
+          console.log(data);
+          this.tableData = [
+            {
+              concepto: 'Valor Servicios',
+              tipoMoneda: data.headerFile.currency,
+              presupuestoMensual: data.headerFile.monthly_cost,
+              acumulado: data.headerFile.accumulated_cost,
+              desviacion: data.headerFile.percentage_cost_diff,
+            },
+            {
+              concepto: 'Total Servicios (A)',
+              tipoMoneda: 'CLP',
+              presupuestoMensual: 0,
+              acumulado: Math.round(
+                data.headerFile.accumulated_cost * this.valorUF
+              ),
+              desviacion: 0,
+              isSummary: true,
+            },
+            // {
+            //   concepto: 'Correctivo',
+            //   tipoMoneda: 'CLP',
+            //   presupuestoMensual: 11000000,
+            //   acumulado: data.headerFile.accumulated_cost * this.valorUF,
+            //   desviacion: -60.72,
+            // },
+            // {
+            //   concepto: 'Inversion',
+            //   tipoMoneda: 'CLP',
+            //   presupuestoMensual: 11000000,
+            //   acumulado: 206919,
+            //   desviacion: -98.12,
+            // },
+            // {
+            //   concepto: 'Reactivos RM',
+            //   tipoMoneda: 'CLP',
+            //   presupuestoMensual: 3000000,
+            //   acumulado: 855206,
+            //   desviacion: -71.49,
+            // },
+            // {
+            //   concepto: 'Reactivos Regiones',
+            //   tipoMoneda: '',
+            //   presupuestoMensual: null,
+            //   acumulado: 0,
+            //   desviacion: null,
+            // },
+            // {
+            //   concepto: 'Luminarias',
+            //   tipoMoneda: 'CLP',
+            //   presupuestoMensual: data.luminariesFile,
+            //   acumulado: 129860,
+            //   desviacion: null,
+            // },
+            // {
+            //   concepto: 'Total Repuestos (B)',
+            //   tipoMoneda: '',
+            //   presupuestoMensual: null,
+            //   acumulado: 5513251,
+            //   desviacion: null,
+            //   isSummary: true,
+            // },
+            // {
+            //   concepto: 'Total Mes (A+B)',
+            //   tipoMoneda: '',
+            //   presupuestoMensual: null,
+            //   acumulado: 5661565,
+            //   desviacion: null,
+            //   isSummary: true,
+            //   isTotal: true,
+            // },
+          ];
+          let totalRepuestos = 0;
+
+          data.servicesFile.forEach((item: any) => {
+            const monthlyCost = item.monthly_cost ?? 0;
+            totalRepuestos += parseFloat(monthlyCost.toString());
+            this.tableData.push({
+              concepto: item.name,
+              tipoMoneda: item.currency,
+              presupuestoMensual: 26000000,
+              acumulado: monthlyCost,
+              desviacion: monthlyCost * 100 / 26000000,
+            });
+          });
+
+          const reactivoRMCost = Math.round(data.reactiveRMFile.accumulated_cost);
+          totalRepuestos += parseFloat(reactivoRMCost.toString());
+          this.tableData.push({
+            concepto: 'Reactivo RM', 
+            tipoMoneda: 'CLP',
+            presupuestoMensual: 3000000,
+            acumulado: reactivoRMCost,
+            desviacion: reactivoRMCost * 100 / 3000000,
+          });
+
+          const reactivoRegionesCost = Math.round(data.reactiveRegionsFile.accumulated_cost) ?? 0;
+          totalRepuestos += parseFloat(reactivoRegionesCost.toString());
+          this.tableData.push({
+            concepto: 'Reactivo Regiones',
+            tipoMoneda: 'CLP', 
+            presupuestoMensual: 3000000,
+            acumulado: reactivoRegionesCost,
+            desviacion: (reactivoRegionesCost * 100) / 3000000,
+          });
+
+          data.luminariesFile.forEach((item: any) => {
+            const monthlyCost = item.monthly_cost ?? 0;
+            totalRepuestos += parseFloat(monthlyCost.toString());
+            this.tableData.push({
+              concepto: 'Luminarias',
+              tipoMoneda: item.currency,
+              presupuestoMensual: 0, 
+              acumulado: monthlyCost,
+              desviacion: 0,
+            });
+          });
+
+          this.tableData.push({
+            concepto: 'Total Repuestos (B)',
+            tipoMoneda: 'CLP',
+            presupuestoMensual: 0,
+            acumulado: Math.round(totalRepuestos), 
+            desviacion: null,
+            isSummary: true,
+          });
+
+          const totalServicios = this.tableData
+            .filter(row => row.isSummary && row.concepto !== 'Total Repuestos (B)')
+            .reduce((sum, row) => sum + (row.acumulado || 0), 0);
+
+          this.tableData.push({
+            concepto: 'Total Mes (A+B)', 
+            tipoMoneda: 'CLP',
+            presupuestoMensual: 0,
+            acumulado: Math.round(totalRepuestos + totalServicios),
+            desviacion: null,
+            isTotal: true,
+          });
+
+        });
     }
   }
 
@@ -240,44 +310,20 @@ export class InformeGastosAcumuladosComponent implements OnInit {
       return;
     }
 
-    const { cliente, mesActual } = this.informeForm.value;
-    const fechaInicio = mesActual.fecha_inicio;
-    const fechaFin = mesActual.fecha_fin;
+    const { cliente } = this.informeForm.value;
 
-    this.informeGastosAcumuladosService.getInformeConsumo(
-      fechaInicio,
-      fechaFin,
-      cliente
-    ).subscribe(
-      (data: any) => {
-        // Aquí podrías actualizar this.tableData con los datos reales
-        console.log('Datos recibidos:', data);
-      },
-      (error: any) => {
-        console.error('Error al obtener el informe:', error);
-      }
-    );
+    this.informeGastosAcumuladosService.getInformeGastoAcumulado(cliente).subscribe((data) => {
+      console.log(data);
+      this.dataList = data;
+    });
   }
 
   clearClient() {
     this.informeForm.patchValue({
       cliente: null,
-      mesActual: null
     });
-    this.informeForm.get('mesActual')?.disable();
     this.selectedCompanyName = '';
     this.informeForm.get('cliente')?.setValue('');
     this.filteredOptions = of(this.originalOptions);
-    this.meses = [];
-  }
-
-  private initializeMeses() {
-    this.meses = [
-      { id: 1, mes: 'Enero 2025' },
-      { id: 2, mes: 'Febrero 2025' },
-      { id: 3, mes: 'Marzo 2025' },
-      { id: 4, mes: 'Abril 2025' },
-      { id: 5, mes: 'Mayo 2025' }
-    ];
   }
 }

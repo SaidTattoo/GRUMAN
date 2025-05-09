@@ -24,33 +24,9 @@
         </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" style="margin: 0 10px;">
-        <mat-label>Selecciona mes</mat-label>
-        <input type="text"
-               placeholder="Selecciona mes"
-               aria-label="Mes"
-               matInput
-               formControlName="mesActual"
-               [matAutocomplete]="autoMes"
-               [readonly]="!informeForm.get('cliente')?.value" />
-        <button mat-icon-button matSuffix *ngIf="informeForm.get('mesActual')?.value" (click)="clearMes()">
-          <mat-icon>close</mat-icon>
-        </button>
-        <mat-autocomplete autoActiveFirstOption #autoMes="matAutocomplete" [displayWith]="displayMesFn">
-          @for(mes of meses; track mes) {
-          <mat-option [value]="mes">
-            {{ mes.mes }}
-          </mat-option>
-          }
-        </mat-autocomplete>
-        <mat-error *ngIf="informeForm.get('mesActual')?.hasError('required')">
-          El mes es requerido
-        </mat-error>
-      </mat-form-field>
-
       <button mat-raised-button 
               color="primary" 
-              class="mt-2" 
+              class="mt-2 m-l-6" 
               (click)="setFilter()"
               [disabled]="informeForm.invalid">
         Buscar
@@ -60,7 +36,8 @@
   <mat-card-content>
     <div class="table-container">
       <div class="table-header">
-        <h2>Gasto acumulado {{ mesActual }} | Valor UF al día de hoy $ {{ valorUF | number }}</h2>
+        <h2><b>Valor UF:</b> ${{ valorUF | number }}</h2>
+        <h2><b>Gasto acumulado:</b> {{ mesActual }}</h2>
       </div>
       
       <table mat-table [dataSource]="tableData" class="full-width-table">
@@ -80,7 +57,7 @@
         <ng-container matColumnDef="presupuestoMensual">
           <th mat-header-cell *matHeaderCellDef class="header-cell">PRESUPUESTO MENSUAL</th>
           <td mat-cell *matCellDef="let row" class="number-cell">
-            {{row.presupuestoMensual ? (row.tipoMoneda === 'CLP' ? '$ ' : '') + (row.presupuestoMensual | number:'1.2-2') : ''}}
+            {{row.presupuestoMensual === 0 ? '-' : '$' + (row.presupuestoMensual | number)}}
           </td>
         </ng-container>
 
@@ -88,7 +65,7 @@
         <ng-container matColumnDef="acumulado">
           <th mat-header-cell *matHeaderCellDef class="header-cell">ACUMULADO AL DIA DE HOY</th>
           <td mat-cell *matCellDef="let row" class="number-cell">
-            {{row.acumulado ? (row.tipoMoneda === 'CLP' ? '$ ' : '') + (row.acumulado | number:'1.2-2') : ''}}
+            {{row.acumulado === 0 ? '-' : '$' + (row.acumulado | number)}}
           </td>
         </ng-container>
 
@@ -96,7 +73,7 @@
         <ng-container matColumnDef="desviacion">
           <th mat-header-cell *matHeaderCellDef class="header-cell">DESVIACION (PPTO)</th>
           <td mat-cell *matCellDef="let row" class="number-cell" [ngClass]="{'negative': row.desviacion < 0, 'positive': row.desviacion > 0}">
-            {{row.desviacion ? '(' + (row.desviacion | number:'1.2-2') + ')%' : ''}}
+            {{row.desviacion ? '(' + (row.desviacion | number:'1.2-2') + ')%' : '-'}}
           </td>
         </ng-container>
 

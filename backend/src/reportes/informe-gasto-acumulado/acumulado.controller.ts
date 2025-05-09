@@ -8,11 +8,37 @@ export class InformeGastoAcumuladoController {
     private readonly informeGastoAcumuladoService: InformeGastoAcumuladoService,
   ) {}  
 
-  @Get('reporte_gasto_acumulado')
+  @Get()
   async getReportesActivos(
-    @Query('companyId') companyId: number,
-  ): Promise<InformeGastoAcumulado[]> {
+    @Query('clientId') clientId: number,
+  ): Promise<{ headerFile: any; servicesFile: any; reactiveRMFile: any; reactiveRegionsFile: any; luminariesFile: any }> {
     const mesFacturacion = new Date().getMonth() + 1;
-    return this.informeGastoAcumuladoService.getHeader(companyId, mesFacturacion);
+    const headerFile = await this.informeGastoAcumuladoService.getHeader(
+      clientId,
+      mesFacturacion,
+    );
+    const servicesFile = await this.informeGastoAcumuladoService.getServices(
+      clientId,
+      mesFacturacion,
+    );
+    const reactiveRMFile = await this.informeGastoAcumuladoService.getReactivosRM(
+      clientId,
+      mesFacturacion,
+    );
+    const reactiveRegionsFile = await this.informeGastoAcumuladoService.getReactivosRegion(
+      clientId,
+      mesFacturacion,
+    );
+    const luminariesFile = await this.informeGastoAcumuladoService.getLuminaries(
+      clientId,
+      mesFacturacion,
+    );
+    return {
+      headerFile,
+      servicesFile,
+      reactiveRMFile,
+      reactiveRegionsFile,
+      luminariesFile,
+    };
   }
 }
