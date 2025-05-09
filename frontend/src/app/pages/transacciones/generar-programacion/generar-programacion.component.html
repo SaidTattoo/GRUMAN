@@ -145,14 +145,14 @@
             <input matInput 
                    [matDatepicker]="picker" 
                    [min]="minDate"
-                   formControlName="fechaIngreso" 
+                   formControlName="fechaVisita" 
                    placeholder="DD/MM/YYYY">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
-            <mat-error *ngIf="programacionForm.get('fechaIngreso')?.hasError('required')">
+            <mat-error *ngIf="programacionForm.get('fechaVisita')?.hasError('required')">
               La fecha es requerida
             </mat-error>
-            <mat-error *ngIf="programacionForm.get('fechaIngreso')?.hasError('matDatepickerMin')">
+            <mat-error *ngIf="programacionForm.get('fechaVisita')?.hasError('matDatepickerMin')">
               La fecha no puede ser anterior a hoy
             </mat-error>
           </mat-form-field>

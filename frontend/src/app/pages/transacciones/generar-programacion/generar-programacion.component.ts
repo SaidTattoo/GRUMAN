@@ -102,16 +102,22 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
   private initForm(): void {
     this.programacionForm = new FormGroup({
       clientId: new FormControl('', [Validators.required]),
-      localId: new FormControl({ value: '', disabled: true }, [Validators.required]),
-      tipoServicioId: new FormControl({ value: '', disabled: true }, [Validators.required]),
+      localId: new FormControl({ value: '', disabled: true }, [
+        Validators.required,
+      ]),
+      tipoServicioId: new FormControl({ value: '', disabled: true }, [
+        Validators.required,
+      ]),
       sectorTrabajoId: new FormControl('', [Validators.required]),
       especialidadId: new FormControl('', [Validators.required]),
       status: new FormControl(SolicitudStatus.APROBADA, [Validators.required]),
-      fechaIngreso: new FormControl('', [Validators.required]),
+      fechaVisita: new FormControl('', [Validators.required]),
       tecnico_asignado_id: new FormControl('', [Validators.required]),
       tecnico_asignado_id_2: new FormControl(''),
       observaciones: new FormControl('', [Validators.maxLength(500)]),
-      tipo_mantenimiento: new FormControl(SolicitudStatus.PROGRAMADO, [Validators.required])
+      tipo_mantenimiento: new FormControl(SolicitudStatus.PROGRAMADO, [
+        Validators.required,
+      ]),
     });
 
     // Agregar validación para evitar técnicos duplicados
