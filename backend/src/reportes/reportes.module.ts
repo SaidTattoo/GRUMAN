@@ -8,6 +8,8 @@ import { InformeConsumoController } from './informe-consumo/informe-consumo.cont
 import { InformeConsumoService } from './informe-consumo/informe-consumo.service';
 import { InformesConsumo } from './entities/informes-consumo.entity';
 import { InformeMesFacturacionModule } from './informe-mes-facturacion/informe-mes-facturacion.module';
+import { InformeGastoAcumuladoModule } from './informe-gasto-acumulado/acumulado.module';
+import { InformeGastoAcumulado } from './entities/informe-gasto-acumulado.entity';
 
 @Module({
   imports: [
@@ -15,10 +17,12 @@ import { InformeMesFacturacionModule } from './informe-mes-facturacion/informe-m
       ReportesActivos,
       ActivoFijoLocal,
       InformesConsumo,
+      InformeGastoAcumulado,
     ]),
-    InformeMesFacturacionModule
+    InformeMesFacturacionModule,
+    InformeGastoAcumuladoModule,
   ],
   controllers: [ReportesController, InformeConsumoController],
   providers: [ReportesService, InformeConsumoService],
 })
-export class ReportesModule { }
+export class ReportesModule {}
