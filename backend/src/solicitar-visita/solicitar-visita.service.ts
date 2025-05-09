@@ -179,6 +179,7 @@ export class SolicitarVisitaService {
         solicitudVisita.ticketGruman = solicitud.ticketGruman;
         solicitudVisita.observaciones = solicitud.observaciones;
         solicitudVisita.fechaIngreso = solicitud.fechaIngreso;
+        solicitudVisita.fechaVisita = solicitud.fechaVisita;
         solicitudVisita.imagenes = solicitud.imagenes;
         solicitudVisita.tipo_mantenimiento = solicitud.tipo_mantenimiento;
         solicitudVisita.generada_por_id = solicitud.generada_por_id;
@@ -218,7 +219,8 @@ export class SolicitarVisitaService {
         if (solicitudVisita.tipo_mantenimiento === 'programado' && solicitudVisita.tipoServicioId === 3) {
                 const solicitudesExistentes = await this.solicitarVisitaRepository.find({
                     where: {
-                        local: { id: solicitudVisita.local.id },
+                        local: { id: solicitudVisita.local.id},
+                        estado: true,
                     tipo_mantenimiento: solicitudVisita.tipo_mantenimiento,
                         fechaIngreso: Between(
                             new Date(periodoCorrespondiente.fecha_inicio),

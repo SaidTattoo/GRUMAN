@@ -44,7 +44,8 @@ export class SolicitarVisitaController {
     const solicitud = {
       ...createSolicitarVisitaDto,
       clientId: Number(createSolicitarVisitaDto.clientId),
-      fechaIngreso: new Date(createSolicitarVisitaDto.fechaIngreso),
+      fechaVisita: createSolicitarVisitaDto.fechaVisita,
+      fechaIngreso: new Date(),
       status: createSolicitarVisitaDto.status || 'pendiente',
       aprobada_por_id: createSolicitarVisitaDto.aprobada_por_id || null
     };
