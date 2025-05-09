@@ -308,37 +308,157 @@ export class SolicitarVisitaService {
     }
 
 
+  
     async getSolicitudVisita(id: number): Promise<SolicitarVisita> {
-        const solicitud = await this.solicitarVisitaRepository.findOne({
+        // Consulta base con relaciones esenciales
+        const solicitudBase = await this.solicitarVisitaRepository.findOne({
             where: { id: id, estado: true },
+            select: {
+                local: {
+                    id: true,
+                    direccion: true,
+                    nombre_local: true,
+                    email_local: true,
+                    email_encargado: true,
+                    nombre_encargado: true,
+                    latitud: true,
+                    longitud: true,
+                    sobreprecio: true,
+                    valorPorLocal: true,
+                    numeroLocal: true,
+                   
+                },
+                client: {
+                    id: true,
+                    nombre: true,
+                    rut: true,
+                    razonSocial: true,
+                    sobreprecio: true,
+                    valorPorLocal: true,
+                    fechaAlta: true,
+                    listaInspeccion: true
+                },
+                tecnico_asignado: {
+                    id: true,
+                    name: true,
+                    lastName: true,
+                    rut: true,
+                    profile: true
+                },
+                tecnico_asignado_2: {
+                    id: true,
+                    name: true,
+                    lastName: true,
+                    rut: true,
+                    profile: true
+                },
+                facturacion: {
+                    id_facturacion: true,
+                    mes: true
+                },
+                generada_por: {
+                    id: true,
+                    name: true,
+                    lastName: true,
+                    email: true,
+                    rut: true
+                }
+            },
             relations: [
                 'local',
-                'local.activoFijoLocales',
                 'client',
-                'checklistsClima',
                 'tecnico_asignado',
                 'tecnico_asignado_2',
-                'itemRepuestos',
-                'itemRepuestos.repuesto',
-                'itemFotos',
-                'causaRaiz',
-                'activoFijoRepuestos',
-                'activoFijoRepuestos.activoFijo',
-                'activoFijoRepuestos.detallesRepuestos',
-                'activoFijoRepuestos.detallesRepuestos.repuesto',
-                'itemEstados',
-                'facturacion',
-                'generada_por'
+                'generada_por',
+                'facturacion'
             ]
         });
 
-        if (!solicitud) {
+        if (!solicitudBase) {
             throw new NotFoundException(`Solicitud with ID ${id} not found`);
         }
 
-        return solicitud;
+        // Cargar relaciones adicionales en consultas separadas
+        const [
+            checklistsClima,
+            itemRepuestos,
+            itemFotos,
+            causaRaiz,
+            activoFijoRepuestos,
+            itemEstados,
+            facturacion,
+            activoFijoLocales
+        ] = await Promise.all([
+            this.solicitarVisitaRepository
+                .createQueryBuilder('solicitud')
+                .leftJoinAndSelect('solicitud.checklistsClima', 'checklistsClima')
+                .where('solicitud.id = :id', { id })
+                .getOne(),
+            
+            this.solicitarVisitaRepository
+                .createQueryBuilder('solicitud')
+                .leftJoinAndSelect('solicitud.itemRepuestos', 'itemRepuestos')
+                .leftJoinAndSelect('itemRepuestos.repuesto', 'repuesto')
+                .where('solicitud.id = :id', { id })
+                .getOne(),
+
+           
+            this.solicitarVisitaRepository
+                .createQueryBuilder('solicitud')
+                .leftJoinAndSelect('solicitud.itemFotos', 'itemFotos')
+                .where('solicitud.id = :id', { id })
+                .getOne(),
+
+            this.solicitarVisitaRepository
+                .createQueryBuilder('solicitud')
+                .leftJoinAndSelect('solicitud.causaRaiz', 'causaRaiz')
+                .where('solicitud.id = :id', { id })
+                .getOne(),
+
+            this.solicitarVisitaRepository
+                .createQueryBuilder('solicitud')
+                .leftJoinAndSelect('solicitud.activoFijoRepuestos', 'activoFijoRepuestos')
+                .where('solicitud.id = :id', { id })
+                .getOne(),
+
+            this.solicitarVisitaRepository
+                .createQueryBuilder('solicitud')
+                .leftJoinAndSelect('solicitud.itemEstados', 'itemEstados')
+                .where('solicitud.id = :id', { id })
+                .getOne(),
+
+            this.solicitarVisitaRepository
+                .createQueryBuilder('solicitud')
+                .leftJoinAndSelect('solicitud.facturacion', 'facturacion')
+                .where('solicitud.id = :id', { id })
+                .getOne(),
+
+            this.solicitarVisitaRepository
+                .createQueryBuilder('solicitud')
+                .leftJoinAndSelect('solicitud.local', 'local')
+                .leftJoinAndSelect('local.activoFijoLocales', 'activoFijoLocales')
+                .where('solicitud.id = :id', { id })
+                .getOne()
+        ]);
+
+     
+        return {
+            ...solicitudBase,
+            checklistsClima: checklistsClima?.checklistsClima || [],
+            itemRepuestos: itemRepuestos?.itemRepuestos || [],
+            itemFotos: itemFotos?.itemFotos || [],
+            causaRaiz: causaRaiz?.causaRaiz || null,
+            activoFijoRepuestos: activoFijoRepuestos?.activoFijoRepuestos || [],
+            itemEstados: itemEstados?.itemEstados || [],
+            facturacion: facturacion?.facturacion || null,
+            local: {
+                ...solicitudBase.local,
+                activoFijoLocales: activoFijoLocales?.local?.activoFijoLocales || []
+            }
+        };
     }
 
+    
 
     //obtener solicitudes con paginacion y filtros de cliente, estado, tipo de mantenimiento, mes de facturacion decha desde y fecha hasta puede haber solo un filtro o estar todos los filtros
     //tambien quiero paginacion por la cantidad de solicitudes que vienen
