@@ -581,47 +581,59 @@ export class SolicitarVisitaService {
         tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
 
         const data = await this.solicitarVisitaRepository
-            .createQueryBuilder('solicitud')
-            .select([
-                'solicitud.id',
-                'solicitud.fechaVisita',
-                'solicitud.status',
-                'solicitud.estado',
-                'solicitud.observaciones',
-                'solicitud.tipo_mantenimiento',
-                'local',
-                'local.id',
-                'local.nombre_local',
-                'local.direccion',
-                'activoFijoLocales',
-                'activoFijoLocales.id',
-                'activoFijoLocales.codigo_activo',
-                'activoFijoLocales.tipo_equipo',
-                'client',
-                'tecnico_asignado',
-                'tecnico_asignado_2',
-                'activoFijoRepuestos',
-                'activoFijo',
-                'detallesRepuestos',
-                'repuesto'
-            ])
-            .leftJoin('solicitud.local', 'local')
-            .leftJoin('local.activoFijoLocales', 'activoFijoLocales')
-            .leftJoin('solicitud.client', 'client')
-            .leftJoin('solicitud.tecnico_asignado', 'tecnico_asignado')
-            .leftJoin('solicitud.tecnico_asignado_2', 'tecnico_asignado_2')
-            .leftJoin('solicitud.activoFijoRepuestos', 'activoFijoRepuestos')
-            .leftJoin('activoFijoRepuestos.activoFijo', 'activoFijo')
-            .leftJoin('activoFijoRepuestos.detallesRepuestos', 'detallesRepuestos')
-            .leftJoin('detallesRepuestos.repuesto', 'repuesto')
-            .where('tecnico_asignado.rut = :rut', { rut })
-            .andWhere('solicitud.estado = :estado', { estado: true })
-            .andWhere('solicitud.fechaVisita BETWEEN :today AND :tomorrow', { today, tomorrow })
-            .andWhere('solicitud.status IN (:...statuses)', { 
-                statuses: [SolicitudStatus.APROBADA, SolicitudStatus.EN_SERVICIO] 
-            })
-            .orderBy('solicitud.fechaVisita', 'DESC')
-            .getMany();
+          .createQueryBuilder('solicitud')
+          .select([
+            'solicitud.id',
+            'solicitud.fechaVisita',
+            'solicitud.status',
+            'solicitud.estado',
+            'solicitud.observaciones',
+            'solicitud.tipo_mantenimiento',
+            'solicitud.tipoServicioId',
+            'local',
+            'local.id',
+            'local.nombre_local',
+            'local.direccion',
+            'activoFijoLocales',
+            'activoFijoLocales.id',
+            'activoFijoLocales.codigo_activo',
+            'activoFijoLocales.tipo_equipo',
+            'client',
+            'tecnico_asignado',
+            'tecnico_asignado_2',
+            'activoFijoRepuestos',
+            'activoFijo',
+            'detallesRepuestos',
+            'repuesto',
+            'solicitud.tipo_servicio',
+            'tipoServicioId.id',
+            'tipoServicioId.nombre',
+          ])
+          .leftJoin('solicitud.local', 'local')
+          .leftJoin('local.activoFijoLocales', 'activoFijoLocales')
+          .leftJoin('solicitud.client', 'client')
+          .leftJoin('solicitud.tecnico_asignado', 'tecnico_asignado')
+          .leftJoin('solicitud.tecnico_asignado_2', 'tecnico_asignado_2')
+          .leftJoin('solicitud.activoFijoRepuestos', 'activoFijoRepuestos')
+          .leftJoin('activoFijoRepuestos.activoFijo', 'activoFijo')
+          .leftJoin(
+            'activoFijoRepuestos.detallesRepuestos',
+            'detallesRepuestos',
+          )
+          .leftJoin('detallesRepuestos.repuesto', 'repuesto')
+          .leftJoin('solicitud.tipo_servicio', 'tipoServicioId')
+          // .leftJoin('tipo_servicio', 'tipo_servicio.id = solicitud.tipoServicioId')
+          .where('tecnico_asignado.rut = :rut', { rut })
+          .andWhere('solicitud.estado = :estado', { estado: true })
+          .andWhere('solicitud.fechaVisita BETWEEN :today AND :tomorrow', {
+            today,
+            tomorrow,
+          })
+          .andWhere('solicitud.status IN (:...statuses)', {
+            statuses: [SolicitudStatus.APROBADA, SolicitudStatus.EN_SERVICIO],
+          })
+          .orderBy('solicitud.fechaVisita', 'DESC')
+          .getMany();
 
         return data;
     }
