@@ -364,6 +364,10 @@ export class SolicitarVisitaService {
                     lastName: true,
                     email: true,
                     rut: true
+                },
+                tipo_servicio: {
+                    id: true,
+                    nombre: true
                 }
             },
             relations: [
@@ -372,7 +376,8 @@ export class SolicitarVisitaService {
                 'tecnico_asignado',
                 'tecnico_asignado_2',
                 'generada_por',
-                'facturacion'
+                'facturacion',
+                'tipo_servicio'
             ]
         });
 
