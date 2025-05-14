@@ -27,6 +27,9 @@ import { format } from 'date-fns';
 import { existsSync, readFileSync } from 'fs';
 import { Item } from 'src/inspection/entities/item.entity';
 import * as sgMail from '@sendgrid/mail';
+import * as https from 'https';
+import * as http from 'http';
+import { Readable } from 'stream';
 
 
 
@@ -117,6 +120,12 @@ interface ServiciosRealizadosParams {
   mesFacturacion?: string;
   tipoServicio?: string;
   tipoSolicitud?: string;
+}
+
+interface ImageDownloadResult {
+  success: boolean;
+  data?: Buffer;
+  error?: string;
 }
 
 @Injectable()
@@ -2126,7 +2135,7 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                  });
         
               let y = 80;
-              const imageSize = 160; // Tamaño cuadrado para las imágenes
+              const imageSize = 160;
               const gap = 20;
               const imagesPerRow = 3;
               const xPositions = Array.from({length: imagesPerRow}, (_, i) => 
@@ -2136,13 +2145,11 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
               for (const item of solicitud.itemFotos) {
                 if (!item.fotos?.length) continue;
                 
-                // Verificar si hay espacio suficiente para el título y al menos una fila de imágenes
                 if (y + imageSize + 40 > doc.page.height - 60) {
                   doc.addPage();
                   y = 80;
                 }
 
-                // Título del Item con fondo gris claro
                 const nameItem = await this.getNameItem(item.itemId);
                 doc.rect(marginLeft, y, pageWidth - marginLeft * 2, 25)
                    .fillColor('#f5f5f5')
@@ -2157,10 +2164,12 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                 
                 for (const fotoUrl of item.fotos) {
                   try {
-                    const filename = fotoUrl.split('/uploads/')[1];
-                    const path = join(process.cwd(), 'uploads', filename);
-                    if (!existsSync(path)) throw new Error(`No existe: ${path}`);
-        
+                    const imageResult = await this.downloadImage(fotoUrl);
+                    
+                    if (!imageResult.success) {
+                      throw new Error(imageResult.error);
+                    }
+
                     if (currentCol >= imagesPerRow) {
                       currentCol = 0;
                       y += imageSize + gap;
@@ -2180,8 +2189,8 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
                        .strokeColor('#ccc')
                        .stroke();
 
-                    // Imagen cuadrada con fit
-                    doc.image(path, xPositions[currentCol], y, {
+                    // Imagen cuadrada con fit usando el buffer descargado
+                    doc.image(imageResult.data, xPositions[currentCol], y, {
                       fit: [imageSize, imageSize],
                       align: 'center',
                       valign: 'center'
@@ -2322,5 +2331,51 @@ async getSolicitudesAtendidasProceso():Promise<SolicitarVisita[]>{
         
         
     }   
+
+    private async downloadImage(url: string): Promise<ImageDownloadResult> {
+      try {
+        // Verificar si es una URL de Firebase
+        const isFirebaseUrl = url.includes('firebasestorage.googleapis.com');
+        // Verificar si es una URL del servidor local
+        const isLocalServerUrl = url.includes('138.255.103.');
+        
+        if (!isFirebaseUrl && !isLocalServerUrl) {
+          // Si es una ruta local del sistema de archivos
+          const filename = url.split('/uploads/')[1];
+          const path = join(process.cwd(), 'uploads', filename);
+          if (!existsSync(path)) {
+            return { success: false, error: `Archivo no encontrado: ${path}` };
+          }
+          const data = readFileSync(path);
+          return { success: true, data };
+        }
+
+        // Para URLs externas (Firebase o servidor local)
+        return new Promise((resolve) => {
+          const protocol = url.startsWith('https') ? https : http;
+          
+          protocol.get(url, (response) => {
+            if (response.statusCode !== 200) {
+              resolve({ 
+                success: false, 
+                error: `Error al descargar imagen. Status: ${response.statusCode}` 
+              });
+              return;
+            }
+
+            const chunks: Buffer[] = [];
+            response.on('data', (chunk) => chunks.push(chunk));
+            response.on('end', () => {
+              const data = Buffer.concat(chunks);
+              resolve({ success: true, data });
+            });
+          }).on('error', (err) => {
+            resolve({ success: false, error: err.message });
+          });
+        });
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    }
 }
 
