@@ -414,6 +414,8 @@ export class SolicitarVisitaService {
                 .createQueryBuilder('solicitud')
                 .leftJoinAndSelect('solicitud.itemFotos', 'itemFotos')
                 .where('solicitud.id = :id', { id })
+                .orderBy('itemFotos.id', 'DESC')
+                .limit(1)
                 .getOne(),
 
             this.solicitarVisitaRepository
