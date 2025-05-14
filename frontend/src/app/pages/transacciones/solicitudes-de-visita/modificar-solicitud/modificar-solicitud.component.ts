@@ -949,6 +949,8 @@ export class ModificarSolicitudComponent implements OnInit {
     if (this.isRechazada) {
       return;
     }
+
+    debugger
     
     console.log('Iniciando guardado de repuestos...');
     this.loading = true;
@@ -989,6 +991,7 @@ export class ModificarSolicitudComponent implements OnInit {
         if (!repuesto.pendingDelete) {
           promises.push(
             this.inspectionService.insertRepuestoInItem(
+              this.solicitud.client.id,
               String(subItemId),
               repuesto.repuesto.id,
               repuesto.cantidad,
@@ -1138,7 +1141,7 @@ export class ModificarSolicitudComponent implements OnInit {
       console.log('temporalRepuestos', this.temporaryRepuestos);
       for (const subItemId in this.temporaryRepuestos) {
         for (const repuesto of this.temporaryRepuestos[subItemId]) {
-          this.inspectionService.insertRepuestoInItem(subItemId, repuesto.repuesto.id, repuesto.cantidad, repuesto.comentario, Number(this.solicitudId)).subscribe({
+          this.inspectionService.insertRepuestoInItem(this.solicitud?.client?.id, subItemId, repuesto.repuesto.id, repuesto.cantidad, repuesto.comentario, Number(this.solicitudId)).subscribe({
             next: () => {
               console.log('Repuesto agregado correctamente');
             },
@@ -1604,6 +1607,7 @@ export class ModificarSolicitudComponent implements OnInit {
     };
 
     console.log('Update data being sent:', updateData); // Debug log
+    debugger
 
     try {
         await this.solicitarVisitaService.updateSolicitudVisita(Number(this.solicitudId), updateData).toPromise();

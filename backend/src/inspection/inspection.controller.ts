@@ -154,6 +154,7 @@ export class InspectionController {
         @Body() addRepuestoDto: AddRepuestoDto
     ) {
         return this.inspectionService.insertRepuestoInItem(
+            addRepuestoDto.clienteId,
             itemId,
             addRepuestoDto.repuestoId,
             addRepuestoDto.cantidad,

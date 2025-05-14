@@ -365,7 +365,7 @@ export class InspectionService {
 
 
  
-    async insertRepuestoInItem(itemId: string, repuestoId: number, cantidad: number, comentario: string, solicitarVisitaId: number, estado?: string) {
+    async insertRepuestoInItem(clienteId: number, itemId: string, repuestoId: number, cantidad: number, comentario: string, solicitarVisitaId: number, estado?: string) {
         // Primero buscar el subItem para obtener su item padre
         const subItem = await this.subItemRepository.findOne({
             where: { id: parseInt(itemId) },
@@ -380,17 +380,27 @@ export class InspectionService {
             where: { id: repuestoId }
         });
 
+        console.log("solicitarVisitaId:",solicitarVisitaId, "repuestoId:", repuestoId);
+        const repuestoPrecio = await this.clienteRepuestoService.findByClienteAndRepuesto(
+            clienteId,
+            repuestoId
+        );
+
+        console.log(repuestoPrecio);
+
         if (!repuesto) {
             throw new NotFoundException(`Repuesto not found`);
         }
 
         const itemRepuesto = this.itemRepuestoRepository.create({
-            itemId:  parseInt(itemId), // Usar el ID del item padre
-            repuesto,
-            cantidad,
-            solicitarVisita: { id: solicitarVisitaId },
-            comentario,
-            estado: estado || 'pendiente'
+          itemId: parseInt(itemId), // Usar el ID del item padre
+          repuesto,
+          cantidad,
+          solicitarVisita: { id: solicitarVisitaId },
+          comentario,
+          estado: estado || 'pendiente',
+          precio_venta: repuestoPrecio.precio_venta,
+          precio_compra: repuestoPrecio.precio_compra,
         });
 
         return await this.itemRepuestoRepository.save(itemRepuesto);

@@ -90,8 +90,9 @@ export class InspectionService {
     return this.http.post(`${this.apiUrl}/cleanup-lists`, {});
   }
   
-  insertRepuestoInItem(itemId: string, repuestoId: number, cantidad: number, comentario: string, solicitarVisitaId: any, estado?: string) {
+  insertRepuestoInItem(clientId:string, itemId: string, repuestoId: number, cantidad: number, comentario: string, solicitarVisitaId: any, estado?: string) {
     return this.http.post(`${this.apiUrl}/items/${itemId}/repuestos`, { 
+      clientId,
       repuestoId, 
       cantidad, 
       comentario, 

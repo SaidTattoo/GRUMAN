@@ -26,4 +26,8 @@ export class AddRepuestoDto {
   @IsOptional()
   @IsString({ each: true })
   fotos?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  clienteId?: number;
 } 
