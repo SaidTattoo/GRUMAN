@@ -1004,10 +1004,10 @@ export class SolicitarVisitaService {
   async finalizarServicioV2(id: number, data: any): Promise<any> {
     const querySolicitarVisita = `
         UPDATE solicitar_visita
-        SET status = 'FINALIZADA', fecha_hora_fin_servicio = NOW()
+        SET status = 'FINALIZADA', fecha_hora_fin_servicio = NOW(), firma_cliente = ?
         WHERE id = ?
         `;
-    await this.solicitarVisitaRepository.query(querySolicitarVisita, [id]);
+    await this.solicitarVisitaRepository.query(querySolicitarVisita, [data.firma, id]);
 
     const itemEstadoData = [];
     const itemFotosData = [];
