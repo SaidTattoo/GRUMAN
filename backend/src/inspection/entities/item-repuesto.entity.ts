@@ -38,4 +38,7 @@ export class ItemRepuesto {
     @ManyToOne(() => SolicitarVisita)
     @JoinColumn({ name: 'solicitarVisitaId' })
     solicitarVisita: SolicitarVisita;
+
+    @Column({ nullable: true })
+    activo_fijo_id: number;
 } 

@@ -30,6 +30,14 @@ export class SolicitarVisitaController {
     return this.solicitarVisitaService.finalizarServicio(id, data);
   }
 
+  @Post('finalizar-servicio-v2/:id')
+  async finalizarServicioV2(
+    @Param('id') id: number,
+    @Body() data: any[]
+  ): Promise<SolicitarVisita> {
+    return this.solicitarVisitaService.finalizarServicioV2(id, data);
+  }
+
   @Post()
   async create(@Body() createSolicitarVisitaDto: any) {
     console.log('Datos recibidos:', createSolicitarVisitaDto);
