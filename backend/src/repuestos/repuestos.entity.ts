@@ -34,4 +34,7 @@ export class Repuesto {
 
   @OneToMany(() => ClienteRepuesto, clienteRepuesto => clienteRepuesto.repuesto)
   clienteRepuestos: ClienteRepuesto[];
+  
+  @OneToMany(() => Repuesto, repuesto => repuesto.id)
+  repuestos: Repuesto[];
 }

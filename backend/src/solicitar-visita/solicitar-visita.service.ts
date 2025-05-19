@@ -515,6 +515,37 @@ export class SolicitarVisitaService {
       },
     };
   }
+  async getSolicitudVisitaClima(id: number): Promise<SolicitarVisita> {
+    // Consulta base con relaciones esenciales
+    const solicitudBase = await this.solicitarVisitaRepository.findOne({
+      where: { id: id, estado: true },
+      relations: [
+        'local', 
+        'local.activoFijoLocales', 
+        'itemFotos', 
+        'itemRepuestos', 
+        'itemEstados', 
+        'checklistsClima', 
+        'causaRaiz', 
+        'generada_por', 
+        'facturacion', 
+        'tecnico_asignado', 
+        'tecnico_asignado_2', 
+        'tipo_servicio',
+        'activoFijoRepuestos',
+        'activoFijoRepuestos.detallesRepuestos',
+        'activoFijoRepuestos.detallesRepuestos.repuesto',
+        ],
+    });
+
+    solicitudBase.local.totalActivoFijoLocales =
+      solicitudBase.local.activoFijoLocales.length;
+
+    if (solicitudBase.local.activoFijoLocales.length > 0) {
+    }
+
+    return solicitudBase;
+  }
 
   //obtener solicitudes con paginacion y filtros de cliente, estado, tipo de mantenimiento, mes de facturacion decha desde y fecha hasta puede haber solo un filtro o estar todos los filtros
   //tambien quiero paginacion por la cantidad de solicitudes que vienen
@@ -1071,8 +1102,8 @@ export class SolicitarVisitaService {
 
     const queryInserEstado = `
         INSERT INTO item_estado 
-          (itemId, solicitarVisitaId, estado, comentario)
-          VALUES (?, ?, ?, ?)
+          (itemId, solicitarVisitaId, estado, comentario, activo_fijo_id)
+          VALUES (?, ?, ?, ?, ?)
         `;
 
     const promisesEstadoData = itemEstadoData.map((item) => {
@@ -1133,8 +1164,8 @@ export class SolicitarVisitaService {
 
     const queryInsertItemFotos = `
           INSERT INTO item_fotos
-          (itemId, solicitarVisitaId, fotos, fechaAgregado)
-          VALUES (?, ?, ?, ?)
+          (itemId, solicitarVisitaId, fotos, fechaAgregado, activo_fijo_id)
+          VALUES (?, ?, ?, ?, ?)
         `;
 
     const promisesItemFotos = itemFotosData.map(item => {
@@ -1164,6 +1195,23 @@ export class SolicitarVisitaService {
           (itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, activo_fijo_id)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
+   
+    const queryInsertDetalleRepuestos = `
+        INSERT INTO detalle_repuesto_activo_fijo
+        (cantidad, comentario, precio_unitario, activo_fijo_repuestos_id, repuesto_id, estado)
+        VALUES(?, ?, ?, ?, ?, ?);
+        `;
+
+    const promisesDetalleRepuestos = itemRepuestosData.map((item) => {
+        return this.detalleRepuestoActivoFijoRepository.query(queryInsertDetalleRepuestos, [
+            item.cantidad,
+            item.comentario,
+            item.precio_venta,
+            item.activo_fijo_repuestos_id,
+            item.repuesto_id,
+            item.estado,
+        ]);
+    }); 
 
     const promisesItemRepuestos = itemRepuestosData.map(item => {
       return this.itemRepuestoRepository.query(queryInsertItemRepuestos, [
@@ -1179,7 +1227,7 @@ export class SolicitarVisitaService {
       ]);
     }); 
 
-    await Promise.all(promisesItemRepuestos);
+    await Promise.all([promisesItemRepuestos, promisesDetalleRepuestos]);
 
     return true;
   }

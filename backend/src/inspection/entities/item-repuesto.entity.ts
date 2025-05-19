@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 't
 import { Repuesto } from '../../repuestos/repuestos.entity';
 import { SolicitarVisita } from '../../solicitar-visita/solicitar-visita.entity';
 
-@Entity('item_repuestos')
+@Entity('item_repuestos', { synchronize: false })
 export class ItemRepuesto {
     @PrimaryGeneratedColumn()
     id: number;
@@ -40,5 +40,5 @@ export class ItemRepuesto {
     solicitarVisita: SolicitarVisita;
 
     @Column({ nullable: true })
-    activo_fijo_id: number;
+    activo_fijo_id: string;
 } 

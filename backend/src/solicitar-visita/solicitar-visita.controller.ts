@@ -209,7 +209,7 @@ export class SolicitarVisitaController {
 
   @Get(':id')
   async getSolicitudVisita(@Param('id') id: number) {
-    return this.solicitarVisitaService.getSolicitudVisita(id);
+    return this.solicitarVisitaService.getSolicitudVisitaClima(id);
   }
 
   @Post(':id/aprobar')

@@ -18,15 +18,14 @@ export class Locales {
   @Column()
   nombre_local: string;
 
-  @ManyToOne(() => Comuna, comuna => comuna.locales)
+  @ManyToOne(() => Comuna, (comuna) => comuna.locales)
   comuna: Comuna;
 
- 
-  @ManyToOne(() => Region, region => region.locales)
+  @ManyToOne(() => Region, (region) => region.locales)
   @JoinColumn({ name: 'regionId' })
   region: Region;
 
-  @ManyToOne(() => Provincia, provincia => provincia.locales)
+  @ManyToOne(() => Provincia, (provincia) => provincia.locales)
   @JoinColumn({ name: 'provinciaId' })
   provincia: Provincia;
 
@@ -56,10 +55,10 @@ export class Locales {
 
   @Column({ type: 'decimal', precision: 10, scale: 8 })
   longitud: number;
-  @Column({   type: 'decimal', precision: 10, scale: 2, default: 0.0 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0.0 })
   sobreprecio: number;
 
-  @Column({  type: 'decimal', precision: 10, scale: 2, default: 0.0 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0.0 })
   valorPorLocal: number;
   @ManyToOne(() => Client, (client) => client.locales, { eager: false })
   @JoinColumn({ name: 'clientId' }) // Asegúrate de que la columna en la base de datos sea 'clientId'
@@ -67,14 +66,20 @@ export class Locales {
 
   @Column()
   numeroLocal: string;
-  @OneToMany(() => SectorTrabajo, sectorTrabajo => sectorTrabajo.local)
+  @OneToMany(() => SectorTrabajo, (sectorTrabajo) => sectorTrabajo.local)
   sectoresTrabajo: SectorTrabajo[];
 
-  @OneToMany(() => Programacion, programacion => programacion.local)
+  @OneToMany(() => Programacion, (programacion) => programacion.local)
   programaciones: Programacion[];
   @Column({ default: false })
   deleted: boolean;
 
-  @OneToMany(() => ActivoFijoLocal, activoFijoLocal => activoFijoLocal.locales)
+  @OneToMany(
+    () => ActivoFijoLocal,
+    (activoFijoLocal) => activoFijoLocal.locales,
+  )
   activoFijoLocales: ActivoFijoLocal[];
+
+  @Column({ type: 'int', default: 0, nullable: true })
+  totalActivoFijoLocales: number;
 }
