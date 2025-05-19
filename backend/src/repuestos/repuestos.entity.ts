@@ -1,6 +1,6 @@
 import { ClienteRepuesto } from 'src/cliente-repuesto/cliente-repuesto.entity';
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-
+import { DetalleRepuestoActivoFijo } from '../activo-fijo-repuestos/entities/detalle-repuesto-activo-fijo.entity';
 
 @Entity('repuestos')
 export class Repuesto {
@@ -34,7 +34,7 @@ export class Repuesto {
 
   @OneToMany(() => ClienteRepuesto, clienteRepuesto => clienteRepuesto.repuesto)
   clienteRepuestos: ClienteRepuesto[];
-  
-  @OneToMany(() => Repuesto, repuesto => repuesto.id)
-  repuestos: Repuesto[];
+
+  @OneToMany(() => DetalleRepuestoActivoFijo, detalle => detalle.repuesto)
+  detallesActivoFijo: DetalleRepuestoActivoFijo[];
 }

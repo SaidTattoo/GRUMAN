@@ -11,7 +11,7 @@ export class DetalleRepuestoActivoFijo {
     @JoinColumn({ name: 'activo_fijo_repuestos_id' })
     activoFijoRepuestos: ActivoFijoRepuestos;
 
-    @ManyToOne(() => Repuesto)
+    @ManyToOne(() => Repuesto, { eager: true })
     @JoinColumn({ name: 'repuesto_id' })
     repuesto: Repuesto;
 

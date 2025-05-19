@@ -518,24 +518,36 @@ export class SolicitarVisitaService {
   async getSolicitudVisitaClima(id: number): Promise<SolicitarVisita> {
     // Consulta base con relaciones esenciales
     const solicitudBase = await this.solicitarVisitaRepository.findOne({
+      select: {client: {
+          id: true,
+          nombre: true,
+          rut: true,
+          razonSocial: true,
+          sobreprecio: true,
+          valorPorLocal: true,
+          fechaAlta: true,
+          listaInspeccion: true,
+        },
+    },
       where: { id: id, estado: true },
       relations: [
-        'local', 
-        'local.activoFijoLocales', 
-        'itemFotos', 
-        'itemRepuestos', 
-        'itemEstados', 
-        'checklistsClima', 
-        'causaRaiz', 
-        'generada_por', 
-        'facturacion', 
-        'tecnico_asignado', 
-        'tecnico_asignado_2', 
+        'local',
+        'local.activoFijoLocales',
+        'itemFotos',
+        'itemRepuestos',
+        'itemEstados',
+        'checklistsClima',
+        'causaRaiz',
+        'generada_por',
+        'facturacion',
+        'tecnico_asignado',
+        'tecnico_asignado_2',
         'tipo_servicio',
         'activoFijoRepuestos',
         'activoFijoRepuestos.detallesRepuestos',
         'activoFijoRepuestos.detallesRepuestos.repuesto',
-        ],
+        'client',
+      ],
     });
 
     solicitudBase.local.totalActivoFijoLocales =

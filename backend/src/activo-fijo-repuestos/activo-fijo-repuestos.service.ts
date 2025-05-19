@@ -80,11 +80,13 @@ export class ActivoFijoRepuestosService {
     async obtenerRepuestosPorSolicitud(solicitudId: number) {
         return await this.activoFijoRepuestosRepository.find({
             where: { solicitarVisita: { id: solicitudId } },
-            relations: [
-                'activoFijo',
-                'detallesRepuestos',
-                'detallesRepuestos.repuesto'
-            ]
+            relations: {
+                activoFijo: true,
+                detallesRepuestos: {
+                    repuesto: true
+                },
+                solicitarVisita: true
+            }
         });
     }
 } 
