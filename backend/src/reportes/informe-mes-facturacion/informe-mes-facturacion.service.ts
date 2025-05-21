@@ -19,7 +19,10 @@ export class InformeMesFacturacionService {
       CALL gruman.\`sp-reportes-mes-facturacion\`(?, ?)
     `;
   
-    const params = [companyId, mesFacturacion];
+    const params = [
+      companyId || null,
+      mesFacturacion || null
+    ];
 
     return await this.informeConsumoRepository.query(query, params);
   }

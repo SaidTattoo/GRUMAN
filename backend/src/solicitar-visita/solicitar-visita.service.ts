@@ -518,7 +518,8 @@ export class SolicitarVisitaService {
   async getSolicitudVisitaClima(id: number): Promise<SolicitarVisita> {
     // Consulta base con relaciones esenciales
     const solicitudBase = await this.solicitarVisitaRepository.findOne({
-      select: {client: {
+      select: {
+        client: {
           id: true,
           nombre: true,
           rut: true,
@@ -528,7 +529,7 @@ export class SolicitarVisitaService {
           fechaAlta: true,
           listaInspeccion: true,
         },
-    },
+      },
       where: { id: id, estado: true },
       relations: [
         'local',
@@ -551,7 +552,7 @@ export class SolicitarVisitaService {
     });
 
     solicitudBase.local.totalActivoFijoLocales =
-      solicitudBase.local.activoFijoLocales.length;
+      solicitudBase.local.activoFijoLocales.length || 0;
 
     if (solicitudBase.local.activoFijoLocales.length > 0) {
     }
@@ -1045,203 +1046,279 @@ export class SolicitarVisitaService {
   }
 
   async finalizarServicioV2(id: number, data: any): Promise<any> {
-    const querySolicitarVisita = `
-        UPDATE solicitar_visita
-        SET status = 'FINALIZADA', fecha_hora_fin_servicio = NOW(), firma_cliente = ?
-        WHERE id = ?
-        `;
-    await this.solicitarVisitaRepository.query(querySolicitarVisita, [data.firma, id]);
+    await this.solicitarVisitaRepository.update(id, {
+      status: SolicitudStatus.FINALIZADA,
+      fecha_hora_fin_servicio: new Date(),
+      firma_cliente: data.firma,
+    });
+
+    const solicitud = await this.solicitarVisitaRepository.findOne({
+      where: { id },
+      relations: ['client'],
+    });
 
     const itemEstadoData = [];
     const itemFotosData = [];
     const itemRepuestosData = [];
     const itemActivoFijoRepuestosData = [];
+    const detalleRepuestoActivoFijoData = [];
 
-    data?.data?.forEach(async (item) => {
-      item.checklist.forEach(async (category) => {
-        category.items.forEach(async (itemList) => {
-          itemList.subItems.forEach(async (subItem) => {
-            if (subItem.estado === 'aprobado') {
+    if (!data?.data?.length) {
+      return {
+        itemEstadoData,
+        itemActivoFijoRepuestosData,
+        itemFotosData,
+        itemRepuestosData,
+      };
+    }
+
+    const fechaActual = new Date();
+
+    // Procesar datos de forma secuencial para manejar correctamente las promesas
+    for (const item of data.data) {
+      if (!item.checklist?.length) continue;
+
+      for (const category of item.checklist) {
+        if (!category.items?.length) continue;
+
+        for (const itemList of category.items) {
+          if (!itemList.subItems?.length) continue;
+
+          for (const subItem of itemList.subItems) {
+            const {
+              id: itemId,
+              estado,
+              observaciones,
+              fotos = [],
+              repuestos = [],
+              activoId = null,
+            } = subItem;
+
+            // Procesar estado
+            if (estado === 'aprobado') {
               itemEstadoData.push({
-                itemId: subItem.id,
-                estado: subItem.estado,
-                comentario: subItem.observaciones,
+                itemId,
+                estado,
+                comentario: observaciones,
                 solicitarVisitaId: id,
-                activo_fijo_id: subItem.activoId,
+                activo_fijo_id: activoId,
               });
-            }
-            if (subItem.fotos.length > 0) {
-              itemFotosData.push({
-                itemId: subItem.id,
-                solicitarVisitaId: id,
-                fotos: subItem.fotos,
-                fechaAgregado: new Date(),
-                activo_fijo_id: subItem.activoId
-              });
-            }
-            if (subItem.repuestos.length > 0) {
-              subItem.repuestos.forEach(async (repuesto) => {
-                itemRepuestosData.push({
-                  itemId: subItem.id,
-                  repuestoId: repuesto.id,
-                  cantidad: repuesto.cantidad,
-                  comentario: '',
-                  solicitarVisitaId: id,
-                  precio_venta: 0,
-                  precio_compra: 0,
-                  estado: 'pendiente',
-                  activo_fijo_id: subItem.activoId
-                });
+
+              itemActivoFijoRepuestosData.push({
+                estadoOperativo:
+                  estado === 'aprobado' ? 'funcionando' : 'detenido',
+                observacionesEstado: observaciones,
+                fechaRevision: fechaActual,
+                solicitud_visita_id: id,
+                activo_fijo_id: activoId,
               });
             }
 
-            if (subItem.estado === 'aprobado') {
-              itemActivoFijoRepuestosData.push({
-                estadoOperativo: subItem.estado,
-                observacionesEstado: subItem.observaciones,
-                fechaRevision: new Date(),
-                solicitud_visita_id: id,
-                activo_fijo_id: subItem.activoId,
+            // Procesar fotos
+            if (fotos.length > 0) {
+              itemFotosData.push({
+                itemId,
+                solicitarVisitaId: id,
+                fotos,
+                fechaAgregado: fechaActual,
+                activo_fijo_id: activoId,
               });
             }
-          });
-        });
-      });
-    });
+
+            // Procesar repuestos
+            if (repuestos.length > 0) {
+              try {
+                const repuestosPromises = repuestos.map(async (repuesto) => {
+                  try {
+                    const responseData = await this.getValorRepuesto(
+                      repuesto.id,
+                      solicitud.client.id,
+                    );
+                    if (responseData) {
+                      return {
+                        itemId,
+                        repuestoId: repuesto.id,
+                        cantidad: repuesto.cantidad,
+                        comentario: '',
+                        solicitarVisitaId: id,
+                        precio_venta: responseData.precio_venta ?? 0,
+                        precio_compra: responseData.precio_compra ?? 0,
+                        estado: 'pendiente',
+                        activo_fijo_id: activoId,
+                      };
+                    }
+                    return null;
+                  } catch (error) {
+                    console.error(
+                      `Error procesando repuesto ${repuesto.id}:`,
+                      error,
+                    );
+                    throw error;
+                  }
+                });
+
+                // Esperar a que todas las promesas de repuestos se resuelvan
+                const results = await Promise.all(repuestosPromises);
+                results.forEach((result) => {
+                  if (result) {
+                    itemRepuestosData.push(result);
+                  }
+                });
+              } catch (error) {
+                console.error('Error procesando repuestos:', error);
+                throw new InternalServerErrorException(
+                  `Error al procesar repuestos: ${error.message}`,
+                );
+              }
+            }
+          }
+        }
+      }
+    }
 
     console.log('ESTADO --------------------------------');
     console.log(itemEstadoData);
 
-    const queryInserEstado = `
-        INSERT INTO item_estado 
-          (itemId, solicitarVisitaId, estado, comentario, activo_fijo_id)
-          VALUES (?, ?, ?, ?, ?)
-        `;
+    try {
+      const itemestadoRepositoryEntities =
+        this.itemEstadoRepository.create(itemEstadoData);
 
-    const promisesEstadoData = itemEstadoData.map((item) => {
-      // Validar y transformar el estado operativo
-      let estadoOperativo = 'funcionando'; // valor por defecto
-      if (item.estadoOperativo === 'detenido') {
-        estadoOperativo = 'detenido';
-      } else if (item.estadoOperativo === 'funcionando_con_observaciones') {
-        estadoOperativo = 'funcionando_con_observaciones';
-      }
-
-      return this.itemEstadoRepository.query(
-        queryInserEstado,
-        [
-          item.itemId,
-          item.solicitarVisitaId,
-          item.estado,
-          item.comentario,
-        ],
+      await this.itemEstadoRepository.save(itemestadoRepositoryEntities);
+    } catch (error) {
+      console.error('Error guardando estado:', error);
+      throw new InternalServerErrorException(
+        `Error al guardar estado: ${error.message}`,
       );
-    });
-
-    await Promise.all(promisesEstadoData);
-
-
+    }
 
     console.log('ACTIVO FIJO REPUESTOS --------------------------------');
     console.log(itemActivoFijoRepuestosData);
     // insertar registro en tabla detalle_repuesto_activo_fijo (id, cantidad, comentario, precio_unitario, activo_fijo_repuesto_id, repuesto_id, estado)
-    const queryInserActivoFijoRepuestos = `
-        INSERT INTO activo_fijo_repuestos 
-          (estadoOperativo, observacionesEstado, fechaRevision, solicitud_visita_id, activo_fijo_id)
-          VALUES (?, ?, ?, ?, ?)
-        `;
 
-    const promisesActivoData = itemActivoFijoRepuestosData.map(item => {
-      // Validar y transformar el estado operativo
-      let estadoOperativo = 'funcionando'; // valor por defecto
-      if (item.estadoOperativo === 'detenido') {
-        estadoOperativo = 'detenido';
-      } else if (item.estadoOperativo === 'funcionando_con_observaciones') {
-        estadoOperativo = 'funcionando_con_observaciones';
-      }
+    try {
+      const activoFijoRepuestosEntities =
+        this.activoFijoRepuestosRepository.create(itemActivoFijoRepuestosData);
 
-      return this.activoFijoRepuestosRepository.query(queryInserActivoFijoRepuestos, [
-        estadoOperativo,
-        item.observacionesEstado,
-        item.fechaRevision,
-        item.solicitud_visita_id,
-        item.activo_fijo_id
-      ]);
-    });
+      await this.activoFijoRepuestosRepository.save(
+        activoFijoRepuestosEntities,
+      );
+    } catch (error) {
+      console.error('Error guardando activo fijo repuestos:', error);
+      throw new InternalServerErrorException(
+        `Error al guardar activo fijo repuestos: ${error.message}`,
+      );
+    }
 
-    await Promise.all(promisesActivoData);
-
-    console.log('FOTOS --------------------------------');
+    console.log('ITEM FOTOS --------------------------------');
     console.log(itemFotosData);
 
-    const queryInsertItemFotos = `
-          INSERT INTO item_fotos
-          (itemId, solicitarVisitaId, fotos, fechaAgregado, activo_fijo_id)
-          VALUES (?, ?, ?, ?, ?)
-        `;
-
-    const promisesItemFotos = itemFotosData.map(item => {
-      // Asegurarnos de que fotos sea un array válido
-      const fotos = Array.isArray(item.fotos) ? item.fotos : 
-                    (typeof item.fotos === 'string' ? [item.fotos] : []);
-      
-      // Convertir a JSON string
-      const fotosJson = JSON.stringify(fotos);
-      
-      return this.itemFotosRepository.query(queryInsertItemFotos, [
-        item.itemId,
-        item.solicitarVisitaId,
-        fotosJson,
-        item.fechaAgregado,
-        item.activo_fijo_id
-      ]);
-    });
-
-    await Promise.all(promisesItemFotos);
-
-    console.log('REPUESTOS --------------------------------');
+    try {
+      const itemFotosEntities = this.itemFotosRepository.create(itemFotosData);
+      await this.itemFotosRepository.save(itemFotosEntities);
+    } catch (error) {
+      console.error('Error guardando item fotos:', error);
+      throw new InternalServerErrorException(
+        `Error al guardar item fotos: ${error.message}`,
+      );
+    }
+    console.log('ITEM REPUESTOS --------------------------------');
     console.log(itemRepuestosData);
-    // insertar registro en tabla item_repuestos (id, itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, detalle_repuesto_activo_fijo_id)
-    const queryInsertItemRepuestos = `
-          INSERT INTO item_repuestos
-          (itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, activo_fijo_id)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+
+    try {
+      const itemRepuestosEntities = this.itemRepuestoRepository.create(itemRepuestosData);
+      await this.itemRepuestoRepository.save(itemRepuestosEntities);
+    } catch (error) {
+      console.error('Error guardando item repuestos:', error);
+      throw new InternalServerErrorException(
+        `Error al guardar item repuestos: ${error.message}`,
+      );
+    }
+
+    return {
+      itemEstadoData,
+      itemActivoFijoRepuestosData,
+      itemFotosData,
+      itemRepuestosData,
+    };
+
    
-    const queryInsertDetalleRepuestos = `
-        INSERT INTO detalle_repuesto_activo_fijo
-        (cantidad, comentario, precio_unitario, activo_fijo_repuestos_id, repuesto_id, estado)
-        VALUES(?, ?, ?, ?, ?, ?);
-        `;
 
-    const promisesDetalleRepuestos = itemRepuestosData.map((item) => {
-        return this.detalleRepuestoActivoFijoRepository.query(queryInsertDetalleRepuestos, [
-            item.cantidad,
-            item.comentario,
-            item.precio_venta,
-            item.activo_fijo_repuestos_id,
-            item.repuesto_id,
-            item.estado,
-        ]);
-    }); 
+    // console.log('REPUESTOS --------------------------------');
+    // console.log(itemRepuestosData);
+    // // insertar registro en tabla item_repuestos (id, itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, detalle_repuesto_activo_fijo_id)
+    // const queryInsertItemRepuestos = `
+    //       INSERT INTO item_repuestos
+    //       (itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, activo_fijo_id)
+    //       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    //     `;
 
-    const promisesItemRepuestos = itemRepuestosData.map(item => {
-      return this.itemRepuestoRepository.query(queryInsertItemRepuestos, [
-        item.itemId,
-        item.repuestoId,
-        item.cantidad,
-        item.comentario,
-        item.solicitarVisitaId,
-        item.estado,
-        item.precio_venta,
-        item.precio_compra,
-        item.activo_fijo_id,
-      ]);
-    }); 
+    // // const queryInsertDetalleRepuestos = `
+    // //     INSERT INTO detalle_repuesto_activo_fijo
+    // //     (cantidad, comentario, precio_unitario, activo_fijo_repuestos_id, repuesto_id, estado)
+    // //     VALUES(?, ?, ?, ?, ?, ?);
+    // //     `;
 
-    await Promise.all([promisesItemRepuestos, promisesDetalleRepuestos]);
+    // // const promisesDetalleRepuestos = itemRepuestosData.map((item) => {
+    // //     return this.detalleRepuestoActivoFijoRepository.query(queryInsertDetalleRepuestos, [
+    // //         item.cantidad,
+    // //         item.comentario,
+    // //         item.precio_venta,
+    // //         item.activo_fijo_repuestos_id,
+    // //         item.repuesto_id,
+    // //         item.estado,
+    // //     ]);
+    // // });
 
-    return true;
+    // const promisesItemRepuestos = itemRepuestosData.map((item) => {
+    //   return this.itemRepuestoRepository.query(queryInsertItemRepuestos, [
+    //     item.itemId,
+    //     item.repuestoId,
+    //     item.cantidad,
+    //     item.comentario,
+    //     item.solicitarVisitaId,
+    //     item.estado,
+    //     item.precio_venta,
+    //     item.precio_compra,
+    //     item.activo_fijo_id,
+    //   ]);
+    // });
+
+    // const result = await Promise.all([
+    //   promisesItemRepuestos,
+    //   promisesItemFotos,
+    //   promisesActivoData,
+    //   promisesEstadoData,
+    // ]);
+
+    // return result;
+  }
+
+  async getValorRepuesto(repuestoId: number, clientId: number) {
+    try {
+      const repuesto = await this.repuestoRepository.findOne({
+        where: { id: repuestoId },
+      });
+
+      if (!repuesto) {
+        throw new NotFoundException(
+          `Repuesto con ID ${repuestoId} no encontrado`,
+        );
+      }
+
+      const clienteRepuesto = await this.clienteRepuestoRepository.findOne({
+        where: { repuesto: { id: repuestoId }, cliente: { id: clientId } },
+      });
+
+      return {
+        precio_venta: clienteRepuesto?.precio_venta || 0,
+        precio_compra: clienteRepuesto?.precio_compra || 0,
+        repuesto: { ...repuesto },
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error al obtener valor del repuesto: ${error.message}`,
+      );
+    }
   }
 
   /* agregar fecha_hora_fin_servicio */

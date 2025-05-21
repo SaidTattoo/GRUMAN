@@ -21,7 +21,8 @@ export enum SolicitudStatus {
     FINALIZADA = 'finalizada',
     VALIDADA = 'validada',
     REABIERTA = 'reabierta',
-    ATENDIDA_EN_PROCESO = 'atendida_en_proceso'  
+    ATENDIDA_EN_PROCESO = 'atendida_en_proceso',
+    ELIMINADA = 'eliminada'
 }
 
 @Entity('solicitar_visita')

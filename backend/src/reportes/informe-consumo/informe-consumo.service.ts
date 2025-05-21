@@ -20,9 +20,9 @@ export class InformeConsumoService {
     `;
 
     const params = [
-      fechaInicio,
-      fechaFin,
-      clienteId
+      fechaInicio ? new Date(fechaInicio) : null,
+      fechaFin ? new Date(fechaFin) : null,
+      clienteId || null
     ];
 
     return await this.informeConsumoRepository.query(query, params);

@@ -36,6 +36,12 @@ export class ActivoFijoRepuestos {
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     fechaRevision: Date;
 
+    @Column({type: 'int', nullable: true})
+    solicitud_visita_id: number;
+
+    @Column({type: 'int', nullable: true})
+    activo_fijo_id: number;
+
     @OneToMany(() => DetalleRepuestoActivoFijo, detalle => detalle.activoFijoRepuestos, {
         cascade: true,
         eager: true
