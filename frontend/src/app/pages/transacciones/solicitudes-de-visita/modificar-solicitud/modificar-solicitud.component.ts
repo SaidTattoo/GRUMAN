@@ -150,190 +150,6 @@ interface ActivoFijoRepuesto {
   ],
   templateUrl: './modificar-solicitud.component.html',
   styleUrls: ['./modificar-solicitud.component.scss'],
-  styles: [`
-    .badge {
-      padding: 6px 12px;
-      border-radius: 16px;
-      font-weight: 500;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: inline-block;
-      margin-left: 8px;
-    }
-
-    .badge-success {
-      background-color: rgba(76, 175, 80, 0.2);  /* Verde más suave */
-      color: #2e7d32;  /* Verde oscuro para el texto */
-      border: 1px solid #4caf50;
-    }
-
-    .badge-warning {
-      background-color: rgba(255, 193, 7, 0.2);  /* Amarillo más suave */
-      color: #f57c00;  /* Naranja oscuro para el texto */
-      border: 1px solid #ffc107;
-    }
-
-    .badge-danger {
-      background-color: rgba(244, 67, 54, 0.2);  /* Rojo más suave */
-      color: #d32f2f;  /* Rojo oscuro para el texto */
-      border: 1px solid #f44336;
-    }
-
-    .badge:hover {
-      opacity: 0.9;
-      transform: scale(1.05);
-      transition: all 0.2s ease;
-    }
-
-    .table-responsive {
-      overflow-x: auto;
-      margin: 16px 0;
-    }
-
-    .mat-mdc-table {
-      width: 100%;
-      background: white;
-    }
-
-    .mat-mdc-header-cell {
-      font-weight: 600;
-      color: #1a1f36;
-    }
-
-    .mat-mdc-cell {
-      padding: 12px 8px;
-    }
-
-    .text-muted {
-      color: #6b7280;
-    }
-
-    .small {
-      font-size: 0.875em;
-    }
-
-    .checklist-container {
-      background-color: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .checklist-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 16px;
-      border: 1px solid #ddd;
-    }
-
-    .checklist-table th,
-    .checklist-table td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
-
-    .checklist-table thead th {
-      background-color: #f5f5f5;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-
-    .checklist-table tbody tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-
-    .checklist-table tbody tr:hover {
-      background-color: #f5f5f5;
-    }
-
-    .checklist-footer {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #eee;
-    }
-
-    .text-center {
-      text-align: center;
-    }
-
-    .m-b-16 {
-      margin-bottom: 16px;
-    }
-
-    .m-b-24 {
-      margin-bottom: 24px;
-    }
-
-    .activo-fijo-info {
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 16px;
-      margin-top: 16px;
-    }
-
-    .info-item {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .info-label {
-      font-weight: 500;
-      color: #6b7280;
-      font-size: 0.875rem;
-    }
-
-    .info-value {
-      color: #1f2937;
-      font-size: 1rem;
-    }
-
-    .section-title {
-      color: #111827;
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-      border-bottom: 2px solid #e5e7eb;
-      padding-bottom: 8px;
-    }
-
-    .image-viewer-dialog {
-      .mat-mdc-dialog-container {
-        padding: 0;
-        background: rgba(0, 0, 0, 0.8);
-      }
-    }
-
-    .image-preview-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-
-      &:hover {
-        transform: scale(1.02);
-      }
-
-      img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-      }
-    }
-  `]
 })
 export class ModificarSolicitudComponent implements OnInit {
   solicitudId: string;
@@ -812,6 +628,21 @@ export class ModificarSolicitudComponent implements OnInit {
 
   onCancel(): void {
     this.router.navigate(['/transacciones/solicitudes-de-visita']);
+  }
+
+  hasPhotos(subItem:any, activoFijo:any) {
+    return this.solicitud?.itemFotos?.find((item:any) => item.itemId.toString() === subItem.toString() && item.activo_fijo_id.toString() === activoFijo.toString())?.fotos || [];
+  }
+ 
+  hasItemStatus(subItem:any, activoFijo:any) {
+    return this.solicitud?.itemEstados?.find((item:any) => item.itemId.toString() === subItem.toString() && item.activo_fijo_id.toString() === activoFijo.toString()) || [];
+  }
+
+  hasReplacements(subItem:any, activoFijo:any) {
+    return this.solicitud?.itemRepuestos?.filter((item:any) => 
+      item.itemId.toString() === subItem.toString() && 
+      item.activo_fijo_id.toString() === activoFijo.toString()
+    ) || [];
   }
 
   aprobarSolicitud(): void {
@@ -1810,11 +1641,20 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   getActivoFijoInfo(activoFijoId: number): string {
+    debugger
     const activoFijo = this.solicitud?.local?.activoFijoLocales?.find((af:any) => af.id === activoFijoId);
     if (activoFijo) {
       return `${activoFijo.tipo_equipo} - ${activoFijo.marca} (${activoFijo.codigo_activo})`;
     }
     return 'No encontrado';
+  }
+
+  getResponsesChecklist(activoFijoId: number): any {
+    const activoFijo = this.solicitud?.local?.listaInspeccion?.find((af: any) => af.id === activoFijoId);
+    if (activoFijo) {
+      return activoFijo;
+    }
+    return [];
   }
 
   getActivoFijoDetails(activoFijoId: number): any {

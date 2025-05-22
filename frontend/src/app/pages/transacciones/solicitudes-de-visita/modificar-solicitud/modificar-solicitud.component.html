@@ -426,169 +426,137 @@
         </div>
         <div class="signature-container"
           *ngIf="(!isPendiente && !isAprobada && !isRechazada || isValidada) && solicitud?.firma_cliente">
-          <img [src]="solicitud.firma_cliente" alt="Firma del cliente" class="signature-image">
+          <div class="signature-box">
+            <img [src]="solicitud.firma_cliente" alt="Firma del cliente" class="signature-image">
+          </div>
         </div>
 
         <!-- Lista de Inspección -->
-        <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos
-          utilizados en la inspección</div>
-        <div class="lista-container" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
-          @for (lista of listaInspeccion; track lista.id) {
-          <div class="lista-seccion">
-            <div class="seccion-header">{{ lista.name }}</div>
-            <ul class="lista-items">
-              @for (item of lista.items; track item.id) {
-              <li>
-                {{ item.name }}
-                <ul class="lista-subitems">
+        <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos utilizados en la inspección</div>
+
+        <div class="activos-fijos-container" *ngIf="solicitud?.local?.totalActivoFijoLocales > 0">
+          <mat-accordion>
+            <mat-expansion-panel *ngFor="let activoFijo of solicitud.activoFijoRepuestos">
+              <mat-expansion-panel-header style="height: auto;">
+                <mat-panel-title>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    @if (activoFijo.estadoOperativo==='funcionando') {
+                    <small class="dot-green"></small>
+                    } @else {
+                    <small class="dot-red"></small>
+                    }
+                    <div style="font-size: 1rem; font-weight: normal;"><span style="font-weight: bold;">[{{activoFijo.activoFijo.marca}}]</span> {{activoFijo.activoFijo.codigo_activo}} - {{activoFijo.activoFijo.tipo_equipo}} - {{activoFijo.activoFijo.potencia_equipo}}</div>
+                    
+                  </div>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="activo-fijo-content p-5">
+                <!-- Aquí puedes agregar más detalles del activo fijo si lo necesitas --> 
+                <ng-container *ngIf="activoFijo.estadoOperativo==='funcionando'">
+                @for (lista of listaInspeccion; track lista.id) {
+                <h4 class="title-list-inspection">{{lista.name}}</h4>
+                <section class="section-list-inspection">
+                  @for (item of lista.items; track item.id) {
+                  <h5 class="item-list-inspection">{{item.name}}</h5>
                   @for (subItem of item.subItems; track subItem.id) {
-                  <li [class.deshabilitado]="subItem.disabled">
-                    <div class="repuesto-info " style="display: flex; justify-content: space-between; width: 100%;">
-                      <div class="repuesto-detail " style="flex: 0 0 60%; padding-right: 10px;">
-                        <strong>Tarea:</strong>
-                        <span>{{ subItem.name }}</span>
-                      </div>
-                      <div class="repuesto-detail " style="flex: 0 0 40%; text-align: right;">
-                        <strong>Estado:</strong>
-                        <span class="badge" [ngClass]="{
-                            'badge-success': getItemEstado(subItem.id)?.estado === 'conforme',
-                            'badge-warning': getItemEstado(subItem.id)?.estado === 'no_aplica',
-                            'badge-danger': getItemEstado(subItem.id)?.estado === 'no_conforme'
-                          }">
-                          {{ getEstadoLabel(getItemEstado(subItem.id)?.estado) }}
-                        </span>
-                      </div>
-                    </div>
-                    <div class="subitem-actions">
-                      <button mat-button color="primary"
-                        *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
-                        (click)="toggleAddRepuestoForm(subItem.id)" matTooltip="Agregar repuesto">
-                        Agregar repuestos <mat-icon>add</mat-icon>
-                      </button>
-                      @if (subItem.fotos?.length) {
-                      <span class="photo-count">{{ subItem.fotos.length }} foto(s)</span>
-                      }
-                    </div>
-
-                    <!-- Miniaturas de fotos -->
-                    <div class="photos-container">
-                      <div class="photo-grid">
-                        <div class="photo-item" *ngFor="let foto of getItemFotos(subItem.id)?.fotos">
-                          <div class="photo-container">
-                            <button mat-icon-button style="z-index: 9900;" color="primary"
-                              (click)="openPhotoViewer([foto])" matTooltip="Ver imagen">
-                              <mat-icon>visibility</mat-icon>
-                            </button>
-                            <button mat-icon-button style="z-index: 9900;" color="accent"
-                              (click)="downloadPhotos([foto])" matTooltip="Descargar imagen">
-                              <mat-icon>download</mat-icon>
-                            </button> <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
-                            <div class="image-actions">
-
+                    <div class="subitem-container">
+                      <h6 class="subitem-title">{{subItem.name}}</h6>
+                      <ng-container *ngIf="hasPhotos(subItem.id, activoFijo.activoFijo.id).length > 0">
+                      <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
+                      <div class="photos-container">
+                        <div class="photo-grid">
+                          <div class="photo-item" *ngFor="let foto of hasPhotos(subItem.id, activoFijo.activoFijo.id)">
+                            <div class="photo-container">
+                              <button mat-icon-button style="z-index: 9900;" color="primary" (click)="openPhotoViewer([foto])"
+                                matTooltip="Ver imagen">
+                                <mat-icon>visibility</mat-icon>
+                              </button>
+                              <button mat-icon-button style="z-index: 9900;" color="accent" (click)="downloadPhotos([foto])"
+                                matTooltip="Descargar imagen">
+                                <mat-icon>download</mat-icon>
+                              </button> <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
+                              <div class="image-actions">
+                      
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                      </ng-container>
 
-                    @if (showAddRepuestoForm[subItem.id]) {
-                    <div class="add-repuesto-form mat-elevation-z2">
-                      <mat-form-field appearance="fill">
-                        <mat-label>Seleccionar Repuesto</mat-label>
-                        <mat-select [(ngModel)]="selectedRepuesto" [ngModelOptions]="{standalone: true}">
-                          @for (repuesto of repuestosList; track repuesto.id) {
-                          <mat-option [value]="repuesto">
-                            {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ (repuesto.precio_venta ||
-                            repuesto.precio || 0).toLocaleString('es-CL') }}
-                          </mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
+                      <ng-container *ngIf="hasItemStatus(subItem.id, activoFijo.activoFijo.id).comentario">
+                        <div>
+                          <strong>Comentario:</strong>
+                          <span>{{ hasItemStatus(subItem.id, activoFijo.activoFijo.id).comentario || 'N/A' }}</span>
+                        </div>
+                      </ng-container>
 
-                      <mat-form-field appearance="fill">
-                        <mat-label>Cantidad</mat-label>
-                        <input matInput type="number" [(ngModel)]="newRepuestoCantidad"
-                          [ngModelOptions]="{standalone: true}" min="1">
-                      </mat-form-field>
-
-                      <div class="form-actions">
-                        <button mat-button (click)="toggleAddRepuestoForm(subItem.id)">
-                          Cancelar
-                        </button>
-                        <button mat-raised-button color="primary" (click)="addRepuestoToItem(subItem.id)">
-                          Agregar
-                        </button>
-                      </div>
-                    </div>
-                    }
-
-                    <!-- Modificamos esta sección para mostrar repuestos solo si hay repuestos válidos -->
-                    @if (subItem.repuestos?.length) {
-                    <ul class="repuestos-list">
-                      @for (repuesto of getRepuestosPorItem(subItem.id); track repuesto) {
-                      <li class="repuesto-item-horizontal" [class.temporary]="isTemporaryRepuesto(subItem.id, repuesto)"
-                        [class.deleted]="isRepuestoPendingDelete(subItem.id, repuesto)">
-
-                        <div class="repuesto-content">
-                          <!-- Fila 1: Artículo -->
-                          <div class="repuesto-row repuesto-row-articulo">
-                            <strong>Artículo:</strong>
-                            <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
-                          </div>
-
-                          <!-- Fila 2: Detalles -->
-                          <div class="repuesto-row">
-                            <span><strong>Marca:</strong> {{ repuesto.repuesto?.marca || 'N/A' }}</span>
-                            <span><strong>Cantidad:</strong> {{ repuesto.cantidad }}</span>
-                            <span><strong>Precio:</strong> ${{ (repuesto.precio_venta || repuesto.repuesto?.precio_venta
+                      <ng-container *ngIf="hasReplacements(subItem.id, activoFijo.activoFijo.id).length > 0">
+                        @for (repuesto of hasReplacements(subItem.id, activoFijo.activoFijo.id); track repuesto.id) {
+                        <div class="repuesto-item-horizontal">
+                          <div class="repuesto-content">
+                            <div class="repuesto-row">
+                              <strong>Artículo:</strong>
+                              <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
+                            </div>  
+                            <div class="repuesto-row">
+                              <strong>Marca:</strong>
+                              <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
+                            </div>
+                            <div class="repuesto-row">
+                              <strong>Cantidad:</strong>
+                              <span>{{ repuesto.cantidad || 'N/A' }}</span>
+                            </div>
+                            <div class="repuesto-row">    
+                              <strong>Precio:</strong>
+                              <span>${{ (repuesto.precio_venta || repuesto.repuesto?.precio_venta
                               || repuesto.repuesto?.precio || 0).toLocaleString('es-CL') }}</span>
-                            <span><strong>Total:</strong> ${{ ((repuesto.cantidad || 0) * (repuesto.precio_venta ||
+                            </div>
+                            <div class="repuesto-row">
+                              <strong>Total:</strong>
+                              <span>${{ ((repuesto.cantidad || 0) * (repuesto.precio_venta ||
                               repuesto.repuesto?.precio_venta || repuesto.repuesto?.precio ||
                               0)).toLocaleString('es-CL') }}</span>
-
+                            </div>
                           </div>
                         </div>
-
-                        <!-- Icono eliminar -->
-                        <div class="repuesto-actions">
-                          <button class="delete-button"
-                            *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
-                            matTooltip="Eliminar repuesto" (click)="deleteRepuesto(subItem.id, repuesto)">
-                            <mat-icon>delete</mat-icon>
-                          </button>
-                        </div>
-                      </li>
                       }
-                    </ul>
-                    }
-
-                  </li>
+                      </ng-container>
+                    </div>
                   }
-                </ul>
-              </li>
-              }
-            </ul>
-          </div>
-          }
+                  }
+                </section>
+                }
+                <hr/>
+                </ng-container>
+                <h4>Detalle activo fijo</h4>
+                <p>Código: {{activoFijo?.activoFijo?.codigo_activo || '-'}}</p>
+                <p>Marca: {{activoFijo?.activoFijo?.marca || '-'}}</p>
+                <p>Tipo: {{activoFijo?.activoFijo?.tipo_equipo || '-'}}</p>
+                <p>Potencia: {{activoFijo?.activoFijo?.potencia_equipo || '-'}}</p>
+                <p>OnOff: {{activoFijo?.activoFijo?.on_off_inverter || '-'}}</p>
+                <p>Refrigerante: {{activoFijo?.activoFijo?.refrigerante || '-'}}</p>
+                <hr />
+
+              </div>
+              
+            </mat-expansion-panel>
+          </mat-accordion>
         </div>
 
-
-
-        <!-- Estado y Repuestos de Activos Fijos -->
-        <div class="lista-seccion" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
+        <!-- <div class="lista-seccion" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
           <div class="seccion-header">Estado y Repuestos de Activos Fijos</div>
           <div class="lista-items">
             @for (activoFijo of solicitud.activoFijoRepuestos; track activoFijo.id) {
             <li>
-              <!-- Detalles del Activo Fijo -->
               <div class="repuesto-detail">
-                <strong>Tipo:</strong> {{activoFijo.activoFijo.tipo_equipo}}
-                <strong>Marca:</strong> {{activoFijo.activoFijo.marca}}
-                <strong>Potencia:</strong> {{activoFijo.activoFijo.potencia_equipo}}
-                <strong>Código:</strong> {{activoFijo.activoFijo.codigo_activo}}
+                <strong>Tipo:</strong> {{activoFijo?.activoFijo?.tipo_equipo}}
+                <strong>Marca:</strong> {{activoFijo?.activoFijo?.marca}}
+                <strong>Potencia:</strong> {{activoFijo?.activoFijo?.potencia_equipo}}
+                <strong>Código:</strong> {{activoFijo?.activoFijo?.codigo_activo}}
               </div>
 
-              <!-- Lista de Repuestos -->
               <div class="repuestos-list">
                 @for (detalle of activoFijo.detallesRepuestos; track $index) {
                 <div class="repuesto-item-horizontal">
@@ -616,7 +584,6 @@
 
                 }
 
-                <!-- Total del Activo Fijo -->
                 <div class="total-section">
                   <div class="total-amount">
                     <strong>Total Activo Fijo:</strong>
@@ -628,9 +595,8 @@
             </li>
             }
           </div>
-        </div>
+        </div> -->
 
-        <!-- aca mostrar la tabla de checklist de clima -->
         <div class="checklist-clima-section" *ngIf="solicitud?.checklistsClima?.length > 0">
           <h3 class="section-title">Checklist de Clima</h3>
 
@@ -646,7 +612,6 @@
             </mat-card-header>
 
             <mat-card-content>
-              <!-- Mediciones -->
               <div class="mediciones-section">
                 <h4>Mediciones de Temperatura</h4>
                 <table class="table-checklist">
@@ -688,7 +653,6 @@
                 </table>
               </div>
 
-              <!-- Consumos -->
               <div class="consumos-section mt-4">
                 <h4>Consumos y Tensiones</h4>
                 <div class="grid-container">

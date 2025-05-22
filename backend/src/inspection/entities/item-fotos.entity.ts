@@ -37,10 +37,15 @@ export class ItemFotos {
     })
     fotos: string[];
 
+    @Column({ nullable: true, default: null })
+    activo_fijo_id: string;
+
     @CreateDateColumn()
     fechaAgregado: Date;
 
     @ManyToOne(() => SolicitarVisita, solicitud => solicitud.itemFotos)
     @JoinColumn({ name: 'solicitarVisitaId' })
     solicitarVisita: SolicitarVisita;
+
+    
 } 

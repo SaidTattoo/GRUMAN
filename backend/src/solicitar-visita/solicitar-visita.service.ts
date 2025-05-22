@@ -545,6 +545,7 @@ export class SolicitarVisitaService {
         'tecnico_asignado_2',
         'tipo_servicio',
         'activoFijoRepuestos',
+        'activoFijoRepuestos.activoFijo',
         'activoFijoRepuestos.detallesRepuestos',
         'activoFijoRepuestos.detallesRepuestos.repuesto',
         'client',
@@ -816,7 +817,7 @@ export class SolicitarVisitaService {
   async getSolicitudesFinalizadas(): Promise<SolicitarVisita[]> {
     const data = await this.solicitarVisitaRepository.find({
       where: {
-        status: In([SolicitudStatus.FINALIZADA, SolicitudStatus.FINALIZADA]),
+        status: SolicitudStatus.FINALIZADA,
         estado: true,
       },
       relations: [
@@ -1106,7 +1107,7 @@ export class SolicitarVisitaService {
 
               itemActivoFijoRepuestosData.push({
                 estadoOperativo:
-                  estado === 'aprobado' ? 'funcionando' : 'detenido',
+                  item.estadoOperativo === 'aprobado' ? 'funcionando' : 'detenido',
                 observacionesEstado: observaciones,
                 fechaRevision: fechaActual,
                 solicitud_visita_id: id,
@@ -1233,6 +1234,13 @@ export class SolicitarVisitaService {
         `Error al guardar item repuestos: ${error.message}`,
       );
     }
+
+    // TODO: REvisar el detalle de repuestos y el cambio de estado de la solicitud
+    await this.solicitarVisitaRepository.update(id, {
+      status: SolicitudStatus.FINALIZADA,
+      fecha_hora_fin_servicio: new Date(),
+      firma_cliente: data.firma,
+    });
 
     return {
       itemEstadoData,
