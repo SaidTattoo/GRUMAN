@@ -40,7 +40,21 @@ export class SolicitarVisitaService {
 
 
   getSolicitudVisita(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}solicitar-visita/${id}`);
+    return this.http.get<any>(
+      `${this.apiUrl}solicitar-visita/${id}`
+    );
+  }
+
+  getRepuestosById(id: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}repuestos/${id}`
+    );
+  }
+
+  getSolicitudVisitaChecklist(id: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}solicitar-visita/${id}/response-checklist`
+    );
   }
 
   aprobarSolicitudVisita(

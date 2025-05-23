@@ -33,9 +33,14 @@ export class SolicitarVisitaController {
   @Post('finalizar-servicio-v2/:id')
   async finalizarServicioV2(
     @Param('id') id: number,
-    @Body() data: any[]
-  ): Promise<SolicitarVisita> {
-    return this.solicitarVisitaService.finalizarServicioV2(id, data);
+    @Body() data: any,
+  ): Promise<any> {
+    return this.solicitarVisitaService.finalizarServicioJSON(id, data);
+    return {
+      success: true,
+      data: data.data,
+      firma: data.firma
+    }
   }
 
   @Post()
@@ -210,6 +215,18 @@ export class SolicitarVisitaController {
   @Get(':id')
   async getSolicitudVisita(@Param('id') id: number) {
     return this.solicitarVisitaService.getSolicitudVisitaClima(id);
+  }
+
+  @Get(':id/response-checklist')
+  async getResponseChecklist(@Param('id') id: number) {
+    const response = await this.solicitarVisitaService.getResponseChecklist(id);
+    return {
+      solicitud_visita_id: response.solicitud_visita_id,
+      is_climate: response.is_climate || false,
+      climate_data: JSON.parse(response.climate_data) || null,
+      data_normal: JSON.parse(response.data_normal) || null,
+      signature: response.signature
+    }
   }
 
   @Post(':id/aprobar')

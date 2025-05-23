@@ -10,6 +10,7 @@ import { ItemRepuesto } from './entities/item-repuesto.entity';
 import { Repuesto } from '../repuestos/repuestos.entity';
 import { ItemFotos } from './entities/item-fotos.entity';
 import { ClienteRepuestoModule } from '../cliente-repuesto/cliente-repuesto.module';
+import { ResponseChecklist } from './entities/response-checklist.entity';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { ClienteRepuestoModule } from '../cliente-repuesto/cliente-repuesto.modu
       Client,
       ItemRepuesto,
       Repuesto,
-      ItemFotos
+      ItemFotos,
+      ResponseChecklist
     ]),
     ClienteRepuestoModule
   ],

@@ -49,6 +49,7 @@ import * as sgMail from '@sendgrid/mail';
 import * as https from 'https';
 import * as http from 'http';
 import { Readable } from 'stream';
+import { ResponseChecklist } from 'src/inspection/entities/response-checklist.entity';
 
 export interface FotoData {
   url: string;
@@ -180,6 +181,8 @@ export class SolicitarVisitaService {
     private clienteRepuestoRepository: Repository<ClienteRepuesto>,
     @InjectRepository(Item)
     private itemRepository: Repository<Item>,
+    @InjectRepository(ResponseChecklist)
+    private responseChecklistRepository: Repository<ResponseChecklist>,
   ) {}
 
   /**
@@ -1046,259 +1049,306 @@ export class SolicitarVisitaService {
     return this.solicitarVisitaRepository.findOne({ where: { id } });
   }
 
-  async finalizarServicioV2(id: number, data: any): Promise<any> {
-    await this.solicitarVisitaRepository.update(id, {
-      status: SolicitudStatus.FINALIZADA,
-      fecha_hora_fin_servicio: new Date(),
-      firma_cliente: data.firma,
-    });
+  // async finalizarServicioV2(id: number, data: any): Promise<any> {
+  //   await this.solicitarVisitaRepository.update(id, {
+  //     status: SolicitudStatus.FINALIZADA,
+  //     fecha_hora_fin_servicio: new Date(),
+  //     firma_cliente: data.firma,
+  //   });
 
-    const solicitud = await this.solicitarVisitaRepository.findOne({
-      where: { id },
-      relations: ['client'],
-    });
+  //   const solicitud = await this.solicitarVisitaRepository.findOne({
+  //     where: { id },
+  //     relations: ['client'],
+  //   });
 
-    const itemEstadoData = [];
-    const itemFotosData = [];
-    const itemRepuestosData = [];
-    const itemActivoFijoRepuestosData = [];
-    const detalleRepuestoActivoFijoData = [];
+  //   const itemEstadoData = [];
+  //   const itemFotosData = [];
+  //   const itemRepuestosData = [];
+  //   const itemActivoFijoRepuestosData = [];
+  //   const detalleRepuestoActivoFijoData = [];
 
-    if (!data?.data?.length) {
-      return {
-        itemEstadoData,
-        itemActivoFijoRepuestosData,
-        itemFotosData,
-        itemRepuestosData,
-      };
-    }
+  //   if (!data?.data?.length) {
+  //     return {
+  //       itemEstadoData,
+  //       itemActivoFijoRepuestosData,
+  //       itemFotosData,
+  //       itemRepuestosData,
+  //     };
+  //   }
 
-    const fechaActual = new Date();
+  //   const fechaActual = new Date();
 
-    // Procesar datos de forma secuencial para manejar correctamente las promesas
-    for (const item of data.data) {
-      if (!item.checklist?.length) continue;
+  //   // Procesar datos de forma secuencial para manejar correctamente las promesas
+  //   for (const item of data.data) {
+  //     if (!item.checklist?.length) continue;
 
-      for (const category of item.checklist) {
-        if (!category.items?.length) continue;
+  //     for (const category of item.checklist) {
+  //       if (!category.items?.length) continue;
 
-        for (const itemList of category.items) {
-          if (!itemList.subItems?.length) continue;
+  //       for (const itemList of category.items) {
+  //         if (!itemList.subItems?.length) continue;
 
-          for (const subItem of itemList.subItems) {
-            const {
-              id: itemId,
-              estado,
-              observaciones,
-              fotos = [],
-              repuestos = [],
-              activoId = null,
-            } = subItem;
+  //         for (const subItem of itemList.subItems) {
+  //           const {
+  //             id: itemId,
+  //             estado,
+  //             observaciones,
+  //             fotos = [],
+  //             repuestos = [],
+  //             activoId = null,
+  //           } = subItem;
 
-            // Procesar estado
-            if (estado === 'aprobado') {
-              itemEstadoData.push({
-                itemId,
-                estado,
-                comentario: observaciones,
-                solicitarVisitaId: id,
-                activo_fijo_id: activoId,
-              });
+  //           // Procesar estado
+  //           if (estado === 'aprobado') {
+  //             itemEstadoData.push({
+  //               itemId,
+  //               estado,
+  //               comentario: observaciones,
+  //               solicitarVisitaId: id,
+  //               activo_fijo_id: activoId,
+  //             });
 
-              itemActivoFijoRepuestosData.push({
-                estadoOperativo:
-                  item.estadoOperativo === 'aprobado' ? 'funcionando' : 'detenido',
-                observacionesEstado: observaciones,
-                fechaRevision: fechaActual,
-                solicitud_visita_id: id,
-                activo_fijo_id: activoId,
-              });
-            }
+  //             itemActivoFijoRepuestosData.push({
+  //               estadoOperativo:
+  //                 item.estadoOperativo === 'aprobado' ? 'funcionando' : 'detenido',
+  //               observacionesEstado: observaciones,
+  //               fechaRevision: fechaActual,
+  //               solicitud_visita_id: id,
+  //               activo_fijo_id: activoId,
+  //             });
+  //           } else { 
+  //               itemEstadoData.push({
+  //                 itemId,
+  //                 estado,
+  //                 comentario: observaciones,
+  //                 solicitarVisitaId: id,
+  //                 activo_fijo_id: activoId,
+  //               });
 
-            // Procesar fotos
-            if (fotos.length > 0) {
-              itemFotosData.push({
-                itemId,
-                solicitarVisitaId: id,
-                fotos,
-                fechaAgregado: fechaActual,
-                activo_fijo_id: activoId,
-              });
-            }
+  //           }
 
-            // Procesar repuestos
-            if (repuestos.length > 0) {
-              try {
-                const repuestosPromises = repuestos.map(async (repuesto) => {
-                  try {
-                    const responseData = await this.getValorRepuesto(
-                      repuesto.id,
-                      solicitud.client.id,
-                    );
-                    if (responseData) {
-                      return {
-                        itemId,
-                        repuestoId: repuesto.id,
-                        cantidad: repuesto.cantidad,
-                        comentario: '',
-                        solicitarVisitaId: id,
-                        precio_venta: responseData.precio_venta ?? 0,
-                        precio_compra: responseData.precio_compra ?? 0,
-                        estado: 'pendiente',
-                        activo_fijo_id: activoId,
-                      };
-                    }
-                    return null;
-                  } catch (error) {
-                    console.error(
-                      `Error procesando repuesto ${repuesto.id}:`,
-                      error,
-                    );
-                    throw error;
-                  }
-                });
+  //           // Procesar fotos
+  //           if (fotos.length > 0) {
+  //             itemFotosData.push({
+  //               itemId,
+  //               solicitarVisitaId: id,
+  //               fotos,
+  //               fechaAgregado: fechaActual,
+  //               activo_fijo_id: activoId,
+  //             });
+  //           }
 
-                // Esperar a que todas las promesas de repuestos se resuelvan
-                const results = await Promise.all(repuestosPromises);
-                results.forEach((result) => {
-                  if (result) {
-                    itemRepuestosData.push(result);
-                  }
-                });
-              } catch (error) {
-                console.error('Error procesando repuestos:', error);
-                throw new InternalServerErrorException(
-                  `Error al procesar repuestos: ${error.message}`,
-                );
-              }
-            }
-          }
-        }
-      }
-    }
+  //           // Procesar repuestos
+  //           if (repuestos.length > 0) {
+  //             try {
+  //               const repuestosPromises = repuestos.map(async (repuesto) => {
+  //                 try {
+  //                   const responseData = await this.getValorRepuesto(
+  //                     repuesto.id,
+  //                     solicitud.client.id,
+  //                   );
+  //                   if (responseData) {
+  //                     return {
+  //                       itemId,
+  //                       repuestoId: repuesto.id,
+  //                       cantidad: repuesto.cantidad,
+  //                       comentario: '',
+  //                       solicitarVisitaId: id,
+  //                       precio_venta: responseData.precio_venta ?? 0,
+  //                       precio_compra: responseData.precio_compra ?? 0,
+  //                       estado: 'pendiente',
+  //                       activo_fijo_id: activoId,
+  //                     };
+  //                   }
+  //                   return null;
+  //                 } catch (error) {
+  //                   console.error(
+  //                     `Error procesando repuesto ${repuesto.id}:`,
+  //                     error,
+  //                   );
+  //                   throw error;
+  //                 }
+  //               });
 
-    console.log('ESTADO --------------------------------');
-    console.log(itemEstadoData);
+  //               // Esperar a que todas las promesas de repuestos se resuelvan
+  //               const results = await Promise.all(repuestosPromises);
+  //               results.forEach((result) => {
+  //                 if (result) {
+  //                   itemRepuestosData.push(result);
+  //                 }
+  //               });
+  //             } catch (error) {
+  //               console.error('Error procesando repuestos:', error);
+  //               throw new InternalServerErrorException(
+  //                 `Error al procesar repuestos: ${error.message}`,
+  //               );
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
 
-    try {
-      const itemestadoRepositoryEntities =
-        this.itemEstadoRepository.create(itemEstadoData);
+  //   console.log('ESTADO --------------------------------');
+  //   console.log(itemEstadoData);
 
-      await this.itemEstadoRepository.save(itemestadoRepositoryEntities);
-    } catch (error) {
-      console.error('Error guardando estado:', error);
-      throw new InternalServerErrorException(
-        `Error al guardar estado: ${error.message}`,
-      );
-    }
+  //   try {
+  //     const itemestadoRepositoryEntities =
+  //       this.itemEstadoRepository.create(itemEstadoData);
 
-    console.log('ACTIVO FIJO REPUESTOS --------------------------------');
-    console.log(itemActivoFijoRepuestosData);
-    // insertar registro en tabla detalle_repuesto_activo_fijo (id, cantidad, comentario, precio_unitario, activo_fijo_repuesto_id, repuesto_id, estado)
+  //     await this.itemEstadoRepository.save(itemestadoRepositoryEntities);
+  //   } catch (error) {
+  //     console.error('Error guardando estado:', error);
+  //     throw new InternalServerErrorException(
+  //       `Error al guardar estado: ${error.message}`,
+  //     );
+  //   }
 
-    try {
-      const activoFijoRepuestosEntities =
-        this.activoFijoRepuestosRepository.create(itemActivoFijoRepuestosData);
+  //   console.log('ACTIVO FIJO REPUESTOS --------------------------------');
+  //   console.log(itemActivoFijoRepuestosData);
+  //   // insertar registro en tabla detalle_repuesto_activo_fijo (id, cantidad, comentario, precio_unitario, activo_fijo_repuesto_id, repuesto_id, estado)
 
-      await this.activoFijoRepuestosRepository.save(
-        activoFijoRepuestosEntities,
-      );
-    } catch (error) {
-      console.error('Error guardando activo fijo repuestos:', error);
-      throw new InternalServerErrorException(
-        `Error al guardar activo fijo repuestos: ${error.message}`,
-      );
-    }
+  //   try {
+  //     const activoFijoRepuestosEntities =
+  //       this.activoFijoRepuestosRepository.create(itemActivoFijoRepuestosData);
 
-    console.log('ITEM FOTOS --------------------------------');
-    console.log(itemFotosData);
+  //     await this.activoFijoRepuestosRepository.save(
+  //       activoFijoRepuestosEntities,
+  //     );
+  //   } catch (error) {
+  //     console.error('Error guardando activo fijo repuestos:', error);
+  //     throw new InternalServerErrorException(
+  //       `Error al guardar activo fijo repuestos: ${error.message}`,
+  //     );
+  //   }
 
-    try {
-      const itemFotosEntities = this.itemFotosRepository.create(itemFotosData);
-      await this.itemFotosRepository.save(itemFotosEntities);
-    } catch (error) {
-      console.error('Error guardando item fotos:', error);
-      throw new InternalServerErrorException(
-        `Error al guardar item fotos: ${error.message}`,
-      );
-    }
-    console.log('ITEM REPUESTOS --------------------------------');
-    console.log(itemRepuestosData);
+  //   console.log('ITEM FOTOS --------------------------------');
+  //   console.log(itemFotosData);
 
-    try {
-      const itemRepuestosEntities = this.itemRepuestoRepository.create(itemRepuestosData);
-      await this.itemRepuestoRepository.save(itemRepuestosEntities);
-    } catch (error) {
-      console.error('Error guardando item repuestos:', error);
-      throw new InternalServerErrorException(
-        `Error al guardar item repuestos: ${error.message}`,
-      );
-    }
+  //   try {
+  //     const itemFotosEntities = this.itemFotosRepository.create(itemFotosData);
+  //     await this.itemFotosRepository.save(itemFotosEntities);
+  //   } catch (error) {
+  //     console.error('Error guardando item fotos:', error);
+  //     throw new InternalServerErrorException(
+  //       `Error al guardar item fotos: ${error.message}`,
+  //     );
+  //   }
+  //   console.log('ITEM REPUESTOS --------------------------------');
+  //   console.log(itemRepuestosData);
 
-    // TODO: REvisar el detalle de repuestos y el cambio de estado de la solicitud
-    await this.solicitarVisitaRepository.update(id, {
-      status: SolicitudStatus.FINALIZADA,
-      fecha_hora_fin_servicio: new Date(),
-      firma_cliente: data.firma,
-    });
+  //   try {
+  //     const itemRepuestosEntities = this.itemRepuestoRepository.create(itemRepuestosData);
+  //     await this.itemRepuestoRepository.save(itemRepuestosEntities);
+  //   } catch (error) {
+  //     console.error('Error guardando item repuestos:', error);
+  //     throw new InternalServerErrorException(
+  //       `Error al guardar item repuestos: ${error.message}`,
+  //     );
+  //   }
 
-    return {
-      itemEstadoData,
-      itemActivoFijoRepuestosData,
-      itemFotosData,
-      itemRepuestosData,
-    };
+  //   // TODO: REvisar el detalle de repuestos y el cambio de estado de la solicitud
+  //   await this.solicitarVisitaRepository.update(id, {
+  //     status: SolicitudStatus.FINALIZADA,
+  //     fecha_hora_fin_servicio: new Date(),
+  //     firma_cliente: data.firma,
+  //   });
+
+  //   return {
+  //     itemEstadoData,
+  //     itemActivoFijoRepuestosData,
+  //     itemFotosData,
+  //     itemRepuestosData,
+  //   };
 
    
 
-    // console.log('REPUESTOS --------------------------------');
-    // console.log(itemRepuestosData);
-    // // insertar registro en tabla item_repuestos (id, itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, detalle_repuesto_activo_fijo_id)
-    // const queryInsertItemRepuestos = `
-    //       INSERT INTO item_repuestos
-    //       (itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, activo_fijo_id)
-    //       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    //     `;
+  //   // console.log('REPUESTOS --------------------------------');
+  //   // console.log(itemRepuestosData);
+  //   // // insertar registro en tabla item_repuestos (id, itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, detalle_repuesto_activo_fijo_id)
+  //   // const queryInsertItemRepuestos = `
+  //   //       INSERT INTO item_repuestos
+  //   //       (itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, activo_fijo_id)
+  //   //       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  //   //     `;
 
-    // // const queryInsertDetalleRepuestos = `
-    // //     INSERT INTO detalle_repuesto_activo_fijo
-    // //     (cantidad, comentario, precio_unitario, activo_fijo_repuestos_id, repuesto_id, estado)
-    // //     VALUES(?, ?, ?, ?, ?, ?);
-    // //     `;
+  //   // // const queryInsertDetalleRepuestos = `
+  //   // //     INSERT INTO detalle_repuesto_activo_fijo
+  //   // //     (cantidad, comentario, precio_unitario, activo_fijo_repuestos_id, repuesto_id, estado)
+  //   // //     VALUES(?, ?, ?, ?, ?, ?);
+  //   // //     `;
 
-    // // const promisesDetalleRepuestos = itemRepuestosData.map((item) => {
-    // //     return this.detalleRepuestoActivoFijoRepository.query(queryInsertDetalleRepuestos, [
-    // //         item.cantidad,
-    // //         item.comentario,
-    // //         item.precio_venta,
-    // //         item.activo_fijo_repuestos_id,
-    // //         item.repuesto_id,
-    // //         item.estado,
-    // //     ]);
-    // // });
+  //   // // const promisesDetalleRepuestos = itemRepuestosData.map((item) => {
+  //   // //     return this.detalleRepuestoActivoFijoRepository.query(queryInsertDetalleRepuestos, [
+  //   // //         item.cantidad,
+  //   // //         item.comentario,
+  //   // //         item.precio_venta,
+  //   // //         item.activo_fijo_repuestos_id,
+  //   // //         item.repuesto_id,
+  //   // //         item.estado,
+  //   // //     ]);
+  //   // // });
 
-    // const promisesItemRepuestos = itemRepuestosData.map((item) => {
-    //   return this.itemRepuestoRepository.query(queryInsertItemRepuestos, [
-    //     item.itemId,
-    //     item.repuestoId,
-    //     item.cantidad,
-    //     item.comentario,
-    //     item.solicitarVisitaId,
-    //     item.estado,
-    //     item.precio_venta,
-    //     item.precio_compra,
-    //     item.activo_fijo_id,
-    //   ]);
-    // });
+  //   // const promisesItemRepuestos = itemRepuestosData.map((item) => {
+  //   //   return this.itemRepuestoRepository.query(queryInsertItemRepuestos, [
+  //   //     item.itemId,
+  //   //     item.repuestoId,
+  //   //     item.cantidad,
+  //   //     item.comentario,
+  //   //     item.solicitarVisitaId,
+  //   //     item.estado,
+  //   //     item.precio_venta,
+  //   //     item.precio_compra,
+  //   //     item.activo_fijo_id,
+  //   //   ]);
+  //   // });
 
-    // const result = await Promise.all([
-    //   promisesItemRepuestos,
-    //   promisesItemFotos,
-    //   promisesActivoData,
-    //   promisesEstadoData,
-    // ]);
+  //   // const result = await Promise.all([
+  //   //   promisesItemRepuestos,
+  //   //   promisesItemFotos,
+  //   //   promisesActivoData,
+  //   //   promisesEstadoData,
+  //   // ]);
 
-    // return result;
+  //   // return result;
+  // }
+
+  async finalizarServicioJSON(id: number, data: any) {
+
+    const responseChecklist = this.responseChecklistRepository.create({
+      solicitud_visita_id: id,
+      is_climate: data.is_climate || false,
+      climate_data: data.is_climate ? JSON.stringify(data.data) : null,
+      data_normal: data.is_climate ? null : JSON.stringify(data.data),
+      signature: data.firma || null
+    });
+    const savedResponseChecklist = await this.responseChecklistRepository.save(responseChecklist);
+    const updatedSolicitudVisita = await this.solicitarVisitaRepository.update(id, {
+      status: SolicitudStatus.FINALIZADA,
+      fecha_hora_fin_servicio: new Date(),
+      firma_cliente: data.firma,
+    });
+
+    return Promise.all([savedResponseChecklist, updatedSolicitudVisita]);
+
+    // return {
+    //   solicitar_visita_id: id, 
+    //   is_climate: data.is_climate, 
+    //   climate_data: data.is_climate ? JSON.stringify(data.data) : null, 
+    //   data_normal: data.is_climate ? null : JSON.stringify(data.data)
+    // }
+  }
+
+  async getResponseChecklist(id: any) {
+    const responseChecklist = await this.responseChecklistRepository.findOne({
+      where: { solicitud_visita_id: id }
+    });
+
+    if (!responseChecklist) {
+      throw new NotFoundException('No se encontró el checklist de clima');
+    }
+
+    return responseChecklist;
   }
 
   async getValorRepuesto(repuestoId: number, clientId: number) {

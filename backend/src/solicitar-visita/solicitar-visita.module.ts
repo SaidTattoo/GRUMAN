@@ -23,6 +23,7 @@ import { ActivoFijoRepuestosModule } from 'src/activo-fijo-repuestos/activo-fijo
 import { ClienteRepuestoModule } from '../cliente-repuesto/cliente-repuesto.module';
 import { ClienteRepuesto } from '../cliente-repuesto/cliente-repuesto.entity';
 import { Item } from 'src/inspection/entities/item.entity';
+import { ResponseChecklist } from 'src/inspection/entities/response-checklist.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -42,7 +43,8 @@ import { Item } from 'src/inspection/entities/item.entity';
       DetalleRepuestoActivoFijo,
       ChecklistClima,
       ClienteRepuesto,
-      Item
+      Item,
+      ResponseChecklist
     ]),
     FacturacionModule,
     ActivoFijoRepuestosModule,

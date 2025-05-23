@@ -155,6 +155,7 @@ export class ModificarSolicitudComponent implements OnInit {
   solicitudId: string;
   solicitudForm: FormGroup;
   solicitud: any;
+  checklistResponse: any;
   loading = false;
   tipoServicio: any;
   sectorTrabajo: any;
@@ -406,226 +407,297 @@ export class ModificarSolicitudComponent implements OnInit {
 
   loadSolicitud() {
     this.loading = true;
-    this.solicitarVisitaService.getSolicitudVisita(Number(this.solicitudId)).subscribe({
-      next: (data) => {
-        this.solicitud = data;
+    // Primero cargamos los repuestos para asegurarnos de tener la lista completa
+    this.repuestosService.getRepuestos().subscribe({
+      next: (repuestos) => {
+        this.repuestosList = repuestos;
         
-        // Asignar el imagePreview si existe image_ot
-        if (data.image_ot) {
-          const imageUrl = data.image_ot.startsWith('http') ? data.image_ot : `${environment.apiUrl}/${data.image_ot}`;
-          this.imagePreview = imageUrl;
-          this.urlImage = imageUrl;
-          this.solicitudForm.patchValue({
-            image_ot: imageUrl
-          });
-        }
-        
-        // Detectar estado de la solicitud por su estado actual
-        if (this.solicitud?.status === 'pendiente') {
-          this.isPendiente = true;
-        } else if (this.solicitud?.status === 'aprobada') {
-          this.isAprobada = true;
-        } else if (this.solicitud?.status === 'rechazada') {
-          this.isRechazada = true;
-          
-          // Cargar la información del usuario que rechazó la solicitud
-          if (this.solicitud?.rechazada_por_id) {
-            this.loading = true; // Mantener loading mientras cargamos datos adicionales
-            this.usersService.getUserById(this.solicitud.rechazada_por_id).subscribe({
-              next: (usuario) => {
-                this.usuarioRechazo = usuario;
-                console.log('Usuario que rechazó la solicitud:', usuario);
-              },
-              error: (error) => {
-                console.error('Error al cargar información del usuario que rechazó:', error);
-                this.snackBar.open('No se pudo cargar la información completa del usuario que rechazó la solicitud', 'Cerrar', {
-                  duration: 5000
-                });
-              },
-              complete: () => {
-                this.loading = false;
-              }
-            });
-          } else {
-            console.warn('La solicitud está rechazada pero no tiene rechazada_por_id');
-          }
-        } else if (this.solicitud?.status === 'validada') {
-          this.isValidada = true;
-        } else if (this.solicitud?.status === 'reabierta') {
-          this.isReabierta = true;
-        }
-        
-        // Si el estado es pendiente, habilitar los controles necesarios
-        if (this.isPendiente) {
-          this.solicitudForm.get('tecnico_asignado_id')?.enable();
-          this.solicitudForm.get('tecnico_asignado_id_2')?.enable();
-          this.solicitudForm.get('tipoServicioId')?.enable();
-          this.solicitudForm.get('sectorTrabajoId')?.enable();
-        } else {
-          // Si no está en pendiente, deshabilitar los controles
-          this.solicitudForm.get('tecnico_asignado_id')?.disable();
-          this.solicitudForm.get('tecnico_asignado_id_2')?.disable();
-          this.solicitudForm.get('tipoServicioId')?.disable();
-          this.solicitudForm.get('sectorTrabajoId')?.disable();
-        }
-        
-        this.itemRepuestos = data.itemRepuestos || [];
-
-        // Encontrar los nombres de tipo servicio y sector trabajo
-        const tipoServicio = this.tiposServicio.find(t => t.id === data.tipoServicioId);
-        const sectorTrabajo = this.sectoresTrabajos.find(s => s.id === data.sectorTrabajoId);
-
-        // Actualizar el formulario con los datos
-        this.solicitudForm.patchValue({
-          'client.nombre': data.client?.nombre || '',
-          'local.nombre_local': data.local?.nombre_local || '',
-          'local.direccion': data.local?.direccion || '',
-          'tecnico_asignado.name': data.tecnico_asignado?.name || '',
-          'tipoServicioId': data.tipoServicioId || (data.tipoServicio?.id || ''),
-          'sectorTrabajoId': data.sectorTrabajoId || '',
-          'especialidad': data.especialidad || '',
-          'fechaVisita': data.fechaVisita ? new Date(data.fechaVisita) : null,
-          'ticketGruman': data.ticketGruman || '',
-          'status': data.status || '',
-          'observaciones': data.observaciones || '',
-          'fecha_hora_inicio_servicio': data.fecha_hora_inicio_servicio || '',
-          'fecha_hora_fin_servicio': data.fecha_hora_fin_servicio || '',
-          'longitud_movil': data.longitud_movil || '',
-          'latitud_movil': data.latitud_movil || '',
-          'valorPorLocal': data.valorPorLocal !== null ? data.valorPorLocal : data.local?.valorPorLocal || '',
-          'registroVisita': data.registroVisita || '',
-          'tecnico_asignado_id': data.tecnico_asignado?.id || '',
-          'tecnico_asignado_id_2': data.tecnico_asignado_2?.id || '',
-          'tipoServicio': data.tipoServicio?.nombre || '',
-          'sectorTrabajo': data.sectorTrabajo?.nombre || '',
-          'causaRaizId': data.causaRaizId || '',
-          'garantia': data.garantia || '',
-          'turno': data.turno || '',
-          'estado_solicitud': data.estado_solicitud || '',
-        });
-
-        // Si está rechazada, deshabilitar todos los controles
-        if (this.isRechazada) {
-          this.deshabilitarControlesFormulario();
-        }
-        
-        // Si está aprobada, también deshabilitar todos los controles
-        if (this.isAprobada) {
-          this.deshabilitarControlesFormulario();
-        }
-        
-        // Si está validada, también deshabilitar todos los controles
-        if (this.isValidada) {
-          this.deshabilitarControlesFormulario();
-          // Asegurarse explícitamente que registroVisita esté deshabilitado
-          this.solicitudForm.get('registroVisita')?.disable();
-        }
-        
-        // Si está reabierta, NO deshabilitar controles relacionados con valorPorLocal
-        if (this.isReabierta || this.solicitud?.status === 'reabierta') {
-          // Asegurarse que el campo valorPorLocal esté habilitado
-          this.solicitudForm.get('valorPorLocal')?.enable();
-        }
-        
-        // Procesar lista de inspección
-        if (data.client?.listaInspeccion) {
-          this.listaInspeccion = data.client.listaInspeccion.map((lista: any) => ({
-            ...lista,
-            items: lista.items.map((item: any) => ({
-              ...item,
-              subItems: item.subItems.map((subItem: any) => {
-                // Filtrar los repuestos para este subItem
-                const subItemRepuestos = this.itemRepuestos.filter(
-                  repuesto => repuesto.itemId === subItem.id
-                );
-
-                // Obtener el último repuesto para determinar el estado
-                const lastRepuesto = subItemRepuestos
-                  .sort((a, b) => new Date(b.fechaAgregado).getTime() - new Date(a.fechaAgregado).getTime())[0];
-
-                // Obtener todas las fotos de los repuestos
-                const fotos = subItemRepuestos.reduce((acc: string[], repuesto: any) => {
-                  if (repuesto.fotos && Array.isArray(repuesto.fotos)) {
-                    return [...acc, ...repuesto.fotos];
-                  }
-                  return acc;
-                }, []);
-
-                // Asignar las fotos al repuesto en el mapa de repuestos
-                if (!this.repuestos[subItem.id]) {
-                  this.repuestos[subItem.id] = {
-                    estado: lastRepuesto?.estado || subItem.estado || 'no_conforme',
-                    comentario: lastRepuesto?.comentario || '',
-                    fotos: fotos,
-                    repuestos: []
-                  };
+        // Ahora cargamos la solicitud
+        this.solicitarVisitaService.getSolicitudVisita(Number(this.solicitudId)).subscribe({
+          next: (data) => {
+            this.solicitarVisitaService.getSolicitudVisitaChecklist(Number(this.solicitudId)).subscribe({
+              next: (checklist) => {
+                this.checklistResponse = checklist;
+                
+                // Procesar los repuestos en el checklist
+                if (this.checklistResponse?.data_normal) {
+                  let total_final = 0;
+                  this.checklistResponse.data_normal.forEach((data: any) => {
+                    if (data.checklist) {
+                      data.checklist.forEach((lista: any) => {
+                        if (lista.items) {
+                          lista.items.forEach((item: any) => {
+                            if (item.subItems) {
+                              item.subItems.forEach((subItem: any) => {
+                                if (subItem.repuestos) {
+                                  subItem.repuestos = subItem.repuestos.map((repuesto: any) => {
+                                    const repuestoDetalle = this.repuestosList.find(r => r.id === repuesto.id);
+                                    total_final += (repuestoDetalle?.precio_venta || 0) * (repuesto.cantidad || 0);
+                                    return {
+                                      ...repuesto,
+                                      repuesto: repuestoDetalle || null
+                                    };
+                                  });
+                                }
+                              });
+                            }
+                          });
+                        }
+                      });
+                    }
+                  });
+                  this.checklistResponse.total_final = total_final;
                 }
 
-                return {
-                  ...subItem,
-                  estado: lastRepuesto?.estado || subItem.estado || 'no_conforme',
-                  fotos: fotos,
-                  repuestos: subItemRepuestos
+                // Procesar los repuestos en climate_data si existe
+                if (this.checklistResponse?.climate_data) {
+                  this.checklistResponse.climate_data.forEach((activoFijo: any) => {
+                    if (activoFijo.repuestos) {
+                      activoFijo.repuestos = activoFijo.repuestos.map((repuesto: any) => {
+                        const repuestoDetalle = this.repuestosList.find(r => r.id === repuesto.id);
+                        return {
+                          ...repuesto,
+                          repuesto: repuestoDetalle || null
+                        };
+                      });
+                    }
+                  });
+                }
+              }
+            });
+
+            this.solicitud = data;
+            
+            // Asignar el imagePreview si existe image_ot
+            if (data.image_ot) {
+              const imageUrl = data.image_ot.startsWith('http') ? data.image_ot : `${environment.apiUrl}/${data.image_ot}`;
+              this.imagePreview = imageUrl;
+              this.urlImage = imageUrl;
+              this.solicitudForm.patchValue({
+                image_ot: imageUrl
+              });
+            }
+            
+            // Detectar estado de la solicitud por su estado actual
+            if (this.solicitud?.status === 'pendiente') {
+              this.isPendiente = true;
+            } else if (this.solicitud?.status === 'aprobada') {
+              this.isAprobada = true;
+            } else if (this.solicitud?.status === 'rechazada') {
+              this.isRechazada = true;
+              
+              // Cargar la información del usuario que rechazó la solicitud
+              if (this.solicitud?.rechazada_por_id) {
+                this.loading = true; // Mantener loading mientras cargamos datos adicionales
+                this.usersService.getUserById(this.solicitud.rechazada_por_id).subscribe({
+                  next: (usuario) => {
+                    this.usuarioRechazo = usuario;
+                    console.log('Usuario que rechazó la solicitud:', usuario);
+                  },
+                  error: (error) => {
+                    console.error('Error al cargar información del usuario que rechazó:', error);
+                    this.snackBar.open('No se pudo cargar la información completa del usuario que rechazó la solicitud', 'Cerrar', {
+                      duration: 5000
+                    });
+                  },
+                  complete: () => {
+                    this.loading = false;
+                  }
+                });
+              } else {
+                console.warn('La solicitud está rechazada pero no tiene rechazada_por_id');
+              }
+            } else if (this.solicitud?.status === 'validada') {
+              this.isValidada = true;
+            } else if (this.solicitud?.status === 'reabierta') {
+              this.isReabierta = true;
+            }
+            
+            // Si el estado es pendiente, habilitar los controles necesarios
+            if (this.isPendiente) {
+              this.solicitudForm.get('tecnico_asignado_id')?.enable();
+              this.solicitudForm.get('tecnico_asignado_id_2')?.enable();
+              this.solicitudForm.get('tipoServicioId')?.enable();
+              this.solicitudForm.get('sectorTrabajoId')?.enable();
+            } else {
+              // Si no está en pendiente, deshabilitar los controles
+              this.solicitudForm.get('tecnico_asignado_id')?.disable();
+              this.solicitudForm.get('tecnico_asignado_id_2')?.disable();
+              this.solicitudForm.get('tipoServicioId')?.disable();
+              this.solicitudForm.get('sectorTrabajoId')?.disable();
+            }
+            
+            this.itemRepuestos = data.itemRepuestos || [];
+
+            // Encontrar los nombres de tipo servicio y sector trabajo
+            const tipoServicio = this.tiposServicio.find(t => t.id === data.tipoServicioId);
+            const sectorTrabajo = this.sectoresTrabajos.find(s => s.id === data.sectorTrabajoId);
+
+            // Actualizar el formulario con los datos
+            this.solicitudForm.patchValue({
+              'client.nombre': data.client?.nombre || '',
+              'local.nombre_local': data.local?.nombre_local || '',
+              'local.direccion': data.local?.direccion || '',
+              'tecnico_asignado.name': data.tecnico_asignado?.name || '',
+              'tipoServicioId': data.tipoServicioId || (data.tipoServicio?.id || ''),
+              'sectorTrabajoId': data.sectorTrabajoId || '',
+              'especialidad': data.especialidad || '',
+              'fechaVisita': data.fechaVisita ? new Date(data.fechaVisita) : null,
+              'ticketGruman': data.ticketGruman || '',
+              'status': data.status || '',
+              'observaciones': data.observaciones || '',
+              'fecha_hora_inicio_servicio': data.fecha_hora_inicio_servicio || '',
+              'fecha_hora_fin_servicio': data.fecha_hora_fin_servicio || '',
+              'longitud_movil': data.longitud_movil || '',
+              'latitud_movil': data.latitud_movil || '',
+              'valorPorLocal': data.valorPorLocal !== null ? data.valorPorLocal : data.local?.valorPorLocal || '',
+              'registroVisita': data.registroVisita || '',
+              'tecnico_asignado_id': data.tecnico_asignado?.id || '',
+              'tecnico_asignado_id_2': data.tecnico_asignado_2?.id || '',
+              'tipoServicio': data.tipoServicio?.nombre || '',
+              'sectorTrabajo': data.sectorTrabajo?.nombre || '',
+              'causaRaizId': data.causaRaizId || '',
+              'garantia': data.garantia || '',
+              'turno': data.turno || '',
+              'estado_solicitud': data.estado_solicitud || '',
+            });
+
+            // Si está rechazada, deshabilitar todos los controles
+            if (this.isRechazada) {
+              this.deshabilitarControlesFormulario();
+            }
+            
+            // Si está aprobada, también deshabilitar todos los controles
+            if (this.isAprobada) {
+              this.deshabilitarControlesFormulario();
+            }
+            
+            // Si está validada, también deshabilitar todos los controles
+            if (this.isValidada) {
+              this.deshabilitarControlesFormulario();
+              // Asegurarse explícitamente que registroVisita esté deshabilitado
+              this.solicitudForm.get('registroVisita')?.disable();
+            }
+            
+            // Si está reabierta, NO deshabilitar controles relacionados con valorPorLocal
+            if (this.isReabierta || this.solicitud?.status === 'reabierta') {
+              // Asegurarse que el campo valorPorLocal esté habilitado
+              this.solicitudForm.get('valorPorLocal')?.enable();
+            }
+            
+            // Procesar lista de inspección
+            if (data.client?.listaInspeccion) {
+              this.listaInspeccion = data.client.listaInspeccion.map((lista: any) => ({
+                ...lista,
+                items: lista.items.map((item: any) => ({
+                  ...item,
+                  subItems: item.subItems.map((subItem: any) => {
+                    // Filtrar los repuestos para este subItem
+                    const subItemRepuestos = this.itemRepuestos.filter(
+                      repuesto => repuesto.itemId === subItem.id
+                    );
+
+                    // Obtener el último repuesto para determinar el estado
+                    const lastRepuesto = subItemRepuestos
+                      .sort((a, b) => new Date(b.fechaAgregado).getTime() - new Date(a.fechaAgregado).getTime())[0];
+
+                    // Obtener todas las fotos de los repuestos
+                    const fotos = subItemRepuestos.reduce((acc: string[], repuesto: any) => {
+                      if (repuesto.fotos && Array.isArray(repuesto.fotos)) {
+                        return [...acc, ...repuesto.fotos];
+                      }
+                      return acc;
+                    }, []);
+
+                    // Asignar las fotos al repuesto en el mapa de repuestos
+                    if (!this.repuestos[subItem.id]) {
+                      this.repuestos[subItem.id] = {
+                        estado: lastRepuesto?.estado || subItem.estado || 'no_conforme',
+                        comentario: lastRepuesto?.comentario || '',
+                        fotos: fotos,
+                        repuestos: []
+                      };
+                    }
+
+                    return {
+                      ...subItem,
+                      estado: lastRepuesto?.estado || subItem.estado || 'no_conforme',
+                      fotos: fotos,
+                      repuestos: subItemRepuestos
+                    };
+                  })
+                }))
+              }));
+            }
+
+            // Actualizar el mapa de repuestos con los repuestos existentes
+            if (!this.repuestos) {
+              this.repuestos = {}; // Asegurar que repuestos esté inicializado
+            }
+            
+            this.itemRepuestos.forEach(repuesto => {
+              const itemId = repuesto.itemId;
+              
+              // Verificar si itemId es válido
+              if (itemId === undefined || itemId === null) {
+                console.warn('Se encontró un repuesto sin itemId válido:', repuesto);
+                return; // Saltar a la siguiente iteración
+              }
+              
+              if (!this.repuestos[itemId]) {
+                this.repuestos[itemId] = {
+                  estado: repuesto.estado || 'no_conforme',
+                  comentario: repuesto.comentario || '',
+                  fotos: repuesto.fotos || [],
+                  repuestos: [] // Inicializar como array vacío
                 };
-              })
-            }))
-          }));
-        }
+              }
+              
+              // Asegurar que repuestos sea un array
+              if (!this.repuestos[itemId].repuestos) {
+                this.repuestos[itemId].repuestos = [];
+              }
+              
+              // Ahora es seguro hacer push
+              this.repuestos[itemId].repuestos.push({
+                cantidad: repuesto.cantidad || 0,
+                comentario: repuesto.comentario || '',
+                repuesto: repuesto.repuesto
+              });
+            });
 
-        // Actualizar el mapa de repuestos con los repuestos existentes
-        if (!this.repuestos) {
-          this.repuestos = {}; // Asegurar que repuestos esté inicializado
-        }
-        
-        this.itemRepuestos.forEach(repuesto => {
-          const itemId = repuesto.itemId;
-          
-          // Verificar si itemId es válido
-          if (itemId === undefined || itemId === null) {
-            console.warn('Se encontró un repuesto sin itemId válido:', repuesto);
-            return; // Saltar a la siguiente iteración
+            // Inicializar el mapa después de un pequeño retraso para asegurar que el DOM esté listo
+            setTimeout(() => {
+              this.initMap();
+            }, 100);
+
+            console.log('Repuestos cargados:', this.repuestos);
+            this.loading = false;
+          },
+          error: (error) => {
+            console.error('Error loading solicitud:', error);
+            this.loading = false;
+            this.snackBar.open('Error al cargar la solicitud', 'Cerrar', {
+              duration: 3000
+            });
           }
-          
-          if (!this.repuestos[itemId]) {
-            this.repuestos[itemId] = {
-              estado: repuesto.estado || 'no_conforme',
-              comentario: repuesto.comentario || '',
-              fotos: repuesto.fotos || [],
-              repuestos: [] // Inicializar como array vacío
-            };
-          }
-          
-          // Asegurar que repuestos sea un array
-          if (!this.repuestos[itemId].repuestos) {
-            this.repuestos[itemId].repuestos = [];
-          }
-          
-          // Ahora es seguro hacer push
-          this.repuestos[itemId].repuestos.push({
-            cantidad: repuesto.cantidad || 0,
-            comentario: repuesto.comentario || '',
-            repuesto: repuesto.repuesto
-          });
         });
-
-        // Inicializar el mapa después de un pequeño retraso para asegurar que el DOM esté listo
-        setTimeout(() => {
-          this.initMap();
-        }, 100);
-
-        console.log('Repuestos cargados:', this.repuestos);
-        this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading solicitud:', error);
+        console.error('Error loading repuestos:', error);
         this.loading = false;
-        this.snackBar.open('Error al cargar la solicitud', 'Cerrar', {
+        this.snackBar.open('Error al cargar la lista de repuestos', 'Cerrar', {
           duration: 3000
         });
       }
     });
   }
-
+  
+  getRepuestosChecklist(checklist:any){
+    this.solicitarVisitaService.getRepuestosById(checklist).subscribe((res:any)=>{
+      console.log(res);
+    })
+  }
   onCancel(): void {
     this.router.navigate(['/transacciones/solicitudes-de-visita']);
   }
@@ -1147,20 +1219,30 @@ export class ModificarSolicitudComponent implements OnInit {
     let finalTotal = 0;
     
     // Sumar repuestos de inspección
-    this.listaInspeccion.forEach(lista => {
-      lista.items.forEach((item: any) => {
-        item.subItems.forEach((subItem: any) => {
-          if (subItem.repuestos) {
-            finalTotal += this.calculateSubItemTotal(subItem.repuestos);
-          }
-        });
-      });
-    });
+    // this.checklistResponse.forEach((res: any) => {
+    //  res.checklist.forEach((item: any) => {
+    //   item.items.forEach((subItem: any) => {
+    //     if (subItem.repuestos) {
+    //       finalTotal += this.repuestosList.find(r => r.id === subItem.repuestos[0].repuesto.id)?.precio_venta || 0;
+    //     }
+    //   });
+     
+    //  });
+    // });
+    // this.listaInspeccion.forEach(lista => {
+    //   lista.items.forEach((item: any) => {
+    //     item.subItems.forEach((subItem: any) => {
+    //       if (subItem.repuestos) {
+    //         finalTotal += this.calculateSubItemTotal(subItem.repuestos);
+    //       }
+    //     });
+    //   });
+    // });
     
-    // Sumar repuestos de activos fijos
-    if (this.solicitud?.activoFijoRepuestos) {
-      finalTotal += this.calculateTotalActivosFijos();
-    }
+    // // Sumar repuestos de activos fijos
+    // if (this.solicitud?.activoFijoRepuestos) {
+    //   finalTotal += this.calculateTotalActivosFijos();
+    // }
     
     return finalTotal;
   }
