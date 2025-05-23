@@ -420,7 +420,7 @@ export class ModificarSolicitudComponent implements OnInit {
                 this.checklistResponse = checklist;
                 
                 // Procesar los repuestos en el checklist
-                if (this.checklistResponse?.data_normal) {
+                if (!this.checklistResponse?.is_climate) {
                   let total_final = 0;
                   this.checklistResponse.data_normal.forEach((data: any) => {
                     if (data.checklist) {
@@ -447,21 +447,53 @@ export class ModificarSolicitudComponent implements OnInit {
                     }
                   });
                   this.checklistResponse.total_final = total_final;
-                }
-
-                // Procesar los repuestos en climate_data si existe
-                if (this.checklistResponse?.climate_data) {
+                } else {
+                  let total_final = 0;
                   this.checklistResponse.climate_data.forEach((activoFijo: any) => {
-                    if (activoFijo.repuestos) {
-                      activoFijo.repuestos = activoFijo.repuestos.map((repuesto: any) => {
-                        const repuestoDetalle = this.repuestosList.find(r => r.id === repuesto.id);
-                        return {
-                          ...repuesto,
-                          repuesto: repuestoDetalle || null
-                        };
+                    const detailActivoFijo = this.solicitud.local.activoFijoLocales.find((item:any) => item.id.toString() === activoFijo.activo_fijo_id.toString());
+                    activoFijo.detailActivoFijo = detailActivoFijo;
+                    if (activoFijo.checklist) {
+                      activoFijo.checklist.forEach((lista: any) => {
+                        if (lista.items) {
+                          lista.items.forEach((item: any) => {
+                            if (item.subItems) {
+                              item.subItems.forEach((subItem: any) => {
+                                if (subItem.repuestos) {
+                                  subItem.repuestos = subItem.repuestos.map(
+                                    (repuesto: any) => {
+                                      const repuestoDetalle =
+                                        this.repuestosList.find(
+                                          (r) => r.id === repuesto.id
+                                        );
+                                      total_final +=
+                                        (repuestoDetalle?.precio_venta || 0) *
+                                        (repuesto.cantidad || 0);
+                                      return {
+                                        ...repuesto,
+                                        repuesto: repuestoDetalle || null,
+                                      };
+                                    }
+                                  );
+                                }
+                              });
+                            }
+                          });
+                        }
                       });
                     }
+                    // if (activoFijo.repuestos) {
+                    //   activoFijo.repuestos = activoFijo.repuestos.map((repuesto: any) => {
+                    //     const repuestoDetalle = this.repuestosList.find(r => r.id === repuesto.id);
+                    //     console.log(repuestoDetalle);
+                    //     total_final += (repuestoDetalle?.precio_venta || 0) * (repuesto.cantidad || 0);
+                    //     return {
+                    //       ...repuesto,
+                    //       repuesto: repuestoDetalle || null
+                    //     };
+                    //   });
+                    // }
                   });
+                  this.checklistResponse.total_final = total_final;
                 }
               }
             });

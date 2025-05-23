@@ -434,10 +434,132 @@
         <!-- Lista de Inspección -->
         <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos utilizados en la inspección</div>
 
-        @if(checklistResponse.is_climate===true){
+        @if(checklistResponse?.is_climate){
+       <div class="activos-fijos-container">
+
+          <mat-accordion>
+            <mat-expansion-panel *ngFor="let activoFijo of checklistResponse?.climate_data">
+              <mat-expansion-panel-header style="height: auto;">
+                <mat-panel-title>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    @if (activoFijo.estadoOperativo==='funcionando') {
+                    <small class="dot-green"></small>
+                    } @else {
+                    <small class="dot-red"></small>
+                    }
+                    <div style="font-size: 1rem; font-weight: normal;"><span style="font-weight: bold;">[{{activoFijo.detailActivoFijo.marca}}]</span> {{activoFijo.detailActivoFijo.codigo_activo}} - {{activoFijo.detailActivoFijo.tipo_equipo}}</div>
+                    
+                  </div>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="activo-fijo-content p-5">
+                @for (lista of activoFijo.checklist; track lista.id) {
+                <h4 class="title-list-inspection">{{lista.categoria}}</h4>
+                <section class="section-list-inspection">
+                  @for (item of lista.items; track item.id) {
+                  <h5 class="item-list-inspection">{{item.nombre}}</h5>
+                  @for (subItem of item.subItems; track subItem.id) {
+                    <div class="subitem-container">
+                      <div style="display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
+                       
+                  
+                        @if(subItem.estado === 'pendiente') {
+                        <span class="tag tag-warning">N/A</span>
+                        } @else if(subItem.estado === 'rechazado') {
+                        <span class="tag tag-danger">Rechazado</span>
+                        } @else if(subItem.estado === 'aprobado') {
+                        <span class="tag tag-success">Aprobado</span>
+                        }
+                        <h6 class="subitem-title">{{subItem.nombre}}</h6>
+
+                      </div>
+                      <ng-container *ngIf="subItem.fotos.length > 0">
+                      <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
+                      <div class="photos-container">
+                        <div class="photo-grid">
+                          <div class="photo-item" *ngFor="let foto of subItem.fotos">
+                            <div class="photo-container">
+                              <button mat-icon-button style="z-index: 9900;" color="primary" (click)="openPhotoViewer([foto])"
+                                matTooltip="Ver imagen">
+                                <mat-icon>visibility</mat-icon>
+                              </button>
+                              <!-- <button mat-icon-button style="z-index: 9900;" color="accent" (click)="downloadPhotos([foto])"
+                                matTooltip="Descargar imagen">
+                                <mat-icon>download</mat-icon>
+                              </button>  -->
+                              <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
+                              <div class="image-actions">
+                      
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      </ng-container>
+
+                      <ng-container *ngIf="subItem.observaciones">
+                        <div>
+                          <strong>Comentario:</strong>
+                          <span>{{ subItem.observaciones || 'N/A' }}</span>
+                        </div>
+                      </ng-container>
+
+                      <ng-container *ngIf="subItem.repuestos.length > 0">
+                        @for (repuesto of subItem.repuestos; track repuesto.id) {
+                        <div class="repuesto-item-horizontal">
+                          <div class="repuesto-content">
+                            <div class="repuesto-row">
+                              <strong>Artículo:</strong>
+                              <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
+                            </div>
+                            <div class="repuesto-row">
+                              <strong>Marca:</strong>
+                              <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
+                            </div>
+                            <div class="repuesto-row">
+                              <strong>Cantidad:</strong>
+                              <span>{{ repuesto.cantidad || 'N/A' }}</span>
+                            </div>
+                            <div class="repuesto-row">
+                              <strong>Precio:</strong>
+                              <span>${{ repuesto.precio_venta || 0 | number }}</span>
+                            </div>
+                            <div class="repuesto-row">
+                              <strong>Total:</strong>
+                              <span>${{ (repuesto.precio_venta || 0) * (repuesto.cantidad || 0) | number }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                      </ng-container>
+                    </div>
+                  }
+                  }
+                </section>
+                }
+              
+                @if(checklistResponse?.is_climate){
+
+                <h4>Detalle activo fijo</h4>
+                <p>Código: {{activoFijo?.detailActivoFijo?.codigo_activo || '-'}}</p>
+                <p>Marca: {{activoFijo?.detailActivoFijo?.marca || '-'}}</p>
+                <p>Tipo: {{activoFijo?.detailActivoFijo?.tipo_equipo || '-'}}</p>
+                <p>Potencia: {{activoFijo?.detailActivoFijo?.potencia_equipo || '-'}}</p>
+                <p>OnOff: {{activoFijo?.detailActivoFijo?.on_off_inverter || '-'}}</p>
+                <p>Refrigerante: {{activoFijo?.detailActivoFijo?.refrigerante || '-'}}</p>
+
+                }
+
+              </div>
+              
+            </mat-expansion-panel>
+          </mat-accordion>
+          
+        </div>
         } @else {
            <ng-container>
-                @for (lista of checklistResponse.data_normal[0].checklist; track lista.id) {
+                @for (lista of checklistResponse?.data_normal[0].checklist; track lista.id) {
                 <h4 class="title-list-inspection">{{lista.categoria}}</h4>
                 <section class="section-list-inspection">
                   @for (item of lista.items; track item.id) {
@@ -525,159 +647,9 @@
                 </ng-container>
         }
 
-        <div class="activos-fijos-container" *ngIf="checklistResponse.is_climate===true">
-          {{checklistResponse | json}}
-          <mat-accordion>
-            <mat-expansion-panel *ngFor="let activoFijo of checklistResponse.climate_data">
-              <mat-expansion-panel-header style="height: auto;">
-                <mat-panel-title>
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    @if (activoFijo.estadoOperativo==='funcionando') {
-                    <small class="dot-green"></small>
-                    } @else {
-                    <small class="dot-red"></small>
-                    }
-                    <div style="font-size: 1rem; font-weight: normal;"><span style="font-weight: bold;">[{{activoFijo.activoFijo.marca}}]</span> {{activoFijo.activoFijo.codigo_activo}} - {{activoFijo.activoFijo.tipo_equipo}} - {{activoFijo.activoFijo.potencia_equipo}}</div>
-                    
-                  </div>
-                </mat-panel-title>
-              </mat-expansion-panel-header>
-              
-              <div class="activo-fijo-content p-5">
-                <!-- Aquí puedes agregar más detalles del activo fijo si lo necesitas --> 
-                <ng-container *ngIf="activoFijo.estadoOperativo==='funcionando'">
-                @for (lista of listaInspeccion; track lista.id) {
-                <h4 class="title-list-inspection">{{lista.name}}</h4>
-                <section class="section-list-inspection">
-                  @for (item of lista.items; track item.id) {
-                  <h5 class="item-list-inspection">{{item.name}}</h5>
-                  @for (subItem of item.subItems; track subItem.id) {
-                    <div class="subitem-container">
-                      <h6 class="subitem-title">{{subItem.name}}</h6>
-                      <ng-container *ngIf="hasPhotos(subItem.id, activoFijo.activoFijo.id).length > 0">
-                      <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
-                      <div class="photos-container">
-                        <div class="photo-grid">
-                          <div class="photo-item" *ngFor="let foto of hasPhotos(subItem.id, activoFijo.activoFijo.id)">
-                            <div class="photo-container">
-                              <button mat-icon-button style="z-index: 9900;" color="primary" (click)="openPhotoViewer([foto])"
-                                matTooltip="Ver imagen">
-                                <mat-icon>visibility</mat-icon>
-                              </button>
-                              <button mat-icon-button style="z-index: 9900;" color="accent" (click)="downloadPhotos([foto])"
-                                matTooltip="Descargar imagen">
-                                <mat-icon>download</mat-icon>
-                              </button> <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
-                              <div class="image-actions">
-                      
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      </ng-container>
+      
 
-                      <ng-container *ngIf="hasItemStatus(subItem.id, activoFijo.activoFijo.id).comentario">
-                        <div>
-                          <strong>Comentario:</strong>
-                          <span>{{ hasItemStatus(subItem.id, activoFijo.activoFijo.id).comentario || 'N/A' }}</span>
-                        </div>
-                      </ng-container>
-
-                      <ng-container *ngIf="hasReplacements(subItem.id, activoFijo.activoFijo.id).length > 0">
-                        @for (repuesto of hasReplacements(subItem.id, activoFijo.activoFijo.id); track repuesto.id) {
-                        <div class="repuesto-item-horizontal">
-                          <div class="repuesto-content">
-                            <div class="repuesto-row">
-                              <strong>Artículo:</strong>
-                              <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Marca:</strong>
-                              <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Cantidad:</strong>
-                              <span>{{ repuesto.cantidad || 'N/A' }}</span>
-                            </div>
-                          </div>
-                        </div>
-                      }
-                      </ng-container>
-                    </div>
-                  }
-                  }
-                </section>
-                }
-                <hr/>
-                </ng-container>
-                <h4>Detalle activo fijo</h4>
-                <p>Código: {{activoFijo?.activoFijo?.codigo_activo || '-'}}</p>
-                <p>Marca: {{activoFijo?.activoFijo?.marca || '-'}}</p>
-                <p>Tipo: {{activoFijo?.activoFijo?.tipo_equipo || '-'}}</p>
-                <p>Potencia: {{activoFijo?.activoFijo?.potencia_equipo || '-'}}</p>
-                <p>OnOff: {{activoFijo?.activoFijo?.on_off_inverter || '-'}}</p>
-                <p>Refrigerante: {{activoFijo?.activoFijo?.refrigerante || '-'}}</p>
-                <hr />
-
-              </div>
-              
-            </mat-expansion-panel>
-          </mat-accordion>
-        </div>
-
-        <!-- <div class="lista-seccion" *ngIf="solicitud?.activoFijoRepuestos?.length > 0">
-          <div class="seccion-header">Estado y Repuestos de Activos Fijos</div>
-          <div class="lista-items">
-            @for (activoFijo of solicitud.activoFijoRepuestos; track activoFijo.id) {
-            <li>
-              <div class="repuesto-detail">
-                <strong>Tipo:</strong> {{activoFijo?.activoFijo?.tipo_equipo}}
-                <strong>Marca:</strong> {{activoFijo?.activoFijo?.marca}}
-                <strong>Potencia:</strong> {{activoFijo?.activoFijo?.potencia_equipo}}
-                <strong>Código:</strong> {{activoFijo?.activoFijo?.codigo_activo}}
-              </div>
-
-              <div class="repuestos-list">
-                @for (detalle of activoFijo.detallesRepuestos; track $index) {
-                <div class="repuesto-item-horizontal">
-                  <div class="repuesto-content">
-                    <div class="repuesto-row">
-                      <strong>Artículo:</strong>
-                      <span>{{ detalle.repuesto.articulo || 'N/A' }}</span>
-                    </div>
-                    <div class="repuesto-row">
-                      <strong>Marca:</strong>
-                      <span>{{ detalle.repuesto.marca || 'N/A' }}</span>
-
-                      <strong>Cantidad:</strong>
-                      <span>{{ detalle.cantidad }}</span>
-
-                      <strong>Precio:</strong>
-                      <span>${{ detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
-
-                      <strong>Total:</strong>
-                      <span>${{ detalle.cantidad * +detalle.precio_unitario | currency:'CLP':'symbol-narrow':'1.0-0'
-                        }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                }
-
-                <div class="total-section">
-                  <div class="total-amount">
-                    <strong>Total Activo Fijo:</strong>
-                    <span>${{ calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos) |
-                      currency:'CLP':'symbol-narrow':'1.0-0' }}</span>
-                  </div>
-                </div>
-              </div>
-            </li>
-            }
-          </div>
-        </div> -->
-
+        
         <div class="checklist-clima-section" *ngIf="solicitud?.checklistsClima?.length > 0">
           <h3 class="section-title">Checklist de Clima</h3>
 
