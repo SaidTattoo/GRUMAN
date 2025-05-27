@@ -94,7 +94,7 @@
             </mat-select>
           </mat-form-field>
         </div>
-        
+
 
         <div class="row m-b-16">
           <div class="radio-group-container col-md-4">
@@ -134,37 +134,30 @@
           <div class="col-md-12">
             <div class="section-title m-t-0">Imagen de OT</div>
             @if (imagePreview || solicitud?.image_ot) {
-              <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 0px 0px 10px 0px;">
-                <!-- Contenedor de la imagen -->
-                <div class="image-box" style="width: 50%; height: 350px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                  <img 
-                    loading="lazy" 
-                    [src]="imagePreview || solicitud?.image_ot" 
-                    alt="Imagen de OT" 
-                    class="img-preview" 
-                    style="width: 100%; height: 100%; object-fit: cover;"
-                  />
-                </div>
-                <div class="w-100 d-flex justify-content-center gap-5">
-                  <button mat-icon-button (click)="openImageModal()" matTooltip="Ver imagen en tamaño completo">
-                    <mat-icon>visibility</mat-icon>
-                  </button>
-                  @if (!isValidada && !isRechazada) {
-                  <button mat-icon-button (click)="eliminarImagenPreview()" matTooltip="Eliminar imagen">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                  }
-                </div>
-                <!-- Botones de acción -->
-               
+            <div
+              style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 0px 0px 10px 0px;">
+              <!-- Contenedor de la imagen -->
+              <div class="image-box"
+                style="width: 50%; height: 350px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <img loading="lazy" [src]="imagePreview || solicitud?.image_ot" alt="Imagen de OT" class="img-preview"
+                  style="width: 100%; height: 100%; object-fit: cover;" />
               </div>
+              <div class="w-100 d-flex justify-content-center gap-5">
+                <button mat-icon-button (click)="openImageModal()" matTooltip="Ver imagen en tamaño completo">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                @if (!isValidada && !isRechazada) {
+                <button mat-icon-button (click)="eliminarImagenPreview()" matTooltip="Eliminar imagen">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                }
+              </div>
+              <!-- Botones de acción -->
+
+            </div>
             } @else {
-              <div 
-                class="drop-area" 
-                (click)="fileInput.click()" 
-                (dragover)="onDragOver($event)" 
-                (drop)="onDrop($event)"
-                style="
+            <div class="drop-area" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)"
+              style="
                   border: 2px dashed #ccc;
                   border-radius: 8px;
                   padding: 20px;
@@ -179,21 +172,16 @@
                   align-items: center;
                   justify-content: center;
                   margin: 20px auto;
-                "
-              >
-                <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #666; margin-bottom: 10px;">upload_file</mat-icon>
-                <p style="margin: 0; font-size: 16px; color: #333;">Cargar imagen de OT</p>
-                <p style="margin: 5px 0 0; font-size: 14px; color: #666;">Arrastra y suelta aquí o haz clic para seleccionar</p>
-              </div>
+                ">
+              <mat-icon
+                style="font-size: 48px; width: 48px; height: 48px; color: #666; margin-bottom: 10px;">upload_file</mat-icon>
+              <p style="margin: 0; font-size: 16px; color: #333;">Cargar imagen de OT</p>
+              <p style="margin: 5px 0 0; font-size: 14px; color: #666;">Arrastra y suelta aquí o haz clic para
+                seleccionar</p>
+            </div>
             }
-            <input 
-              #fileInput 
-              type="file" 
-              (change)="onFileSelected($event)" 
-              accept="image/*" 
-              style="display: none;" 
-              [disabled]="isValidada || isRechazada"
-            />
+            <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;"
+              [disabled]="isValidada || isRechazada" />
           </div>
         </div>
         }
@@ -432,10 +420,11 @@
         </div>
 
         <!-- Lista de Inspección -->
-        <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos utilizados en la inspección</div>
+        <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos
+          utilizados en la inspección</div>
 
         @if(checklistResponse?.is_climate){
-       <div class="activos-fijos-container">
+        <div class="activos-fijos-container">
 
           <mat-accordion>
             <mat-expansion-panel *ngFor="let activoFijo of checklistResponse?.climate_data">
@@ -447,12 +436,14 @@
                     } @else {
                     <small class="dot-red"></small>
                     }
-                    <div style="font-size: 1rem; font-weight: normal;"><span style="font-weight: bold;">[{{activoFijo.detailActivoFijo.marca}}]</span> {{activoFijo.detailActivoFijo.codigo_activo}} - {{activoFijo.detailActivoFijo.tipo_equipo}}</div>
-                    
+                    <div style="font-size: 1rem; font-weight: normal;"><span
+                        style="font-weight: bold;">[{{activoFijo.detailActivoFijo.marca}}]</span>
+                      {{activoFijo.detailActivoFijo.codigo_activo}} - {{activoFijo.detailActivoFijo.tipo_equipo}}</div>
+
                   </div>
                 </mat-panel-title>
               </mat-expansion-panel-header>
-              
+
               <div class="activo-fijo-content p-5">
                 @for (lista of activoFijo.checklist; track lista.id) {
                 <h4 class="title-list-inspection">{{lista.categoria}}</h4>
@@ -460,28 +451,28 @@
                   @for (item of lista.items; track item.id) {
                   <h5 class="item-list-inspection">{{item.nombre}}</h5>
                   @for (subItem of item.subItems; track subItem.id) {
-                    <div class="subitem-container">
-                      <div style="display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
-                       
-                  
-                        @if(subItem.estado === 'pendiente') {
-                        <span class="tag tag-warning">N/A</span>
-                        } @else if(subItem.estado === 'rechazado') {
-                        <span class="tag tag-danger">Rechazado</span>
-                        } @else if(subItem.estado === 'aprobado') {
-                        <span class="tag tag-success">Aprobado</span>
-                        }
-                        <h6 class="subitem-title">{{subItem.nombre}}</h6>
+                  <div class="subitem-container">
+                    <div style="display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
 
-                      </div>
-                      <ng-container *ngIf="subItem.fotos.length > 0">
+
+                      @if(subItem.estado === 'pendiente') {
+                      <span class="tag tag-warning">N/A</span>
+                      } @else if(subItem.estado === 'rechazado') {
+                      <span class="tag tag-danger">Rechazado</span>
+                      } @else if(subItem.estado === 'aprobado') {
+                      <span class="tag tag-success">Aprobado</span>
+                      }
+                      <h6 class="subitem-title">{{subItem.nombre}}</h6>
+
+                    </div>
+                    <ng-container *ngIf="subItem.fotos.length > 0">
                       <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
                       <div class="photos-container">
                         <div class="photo-grid">
                           <div class="photo-item" *ngFor="let foto of subItem.fotos">
                             <div class="photo-container">
-                              <button mat-icon-button style="z-index: 9900;" color="primary" (click)="openPhotoViewer([foto])"
-                                matTooltip="Ver imagen">
+                              <button mat-icon-button style="z-index: 9900;" color="primary"
+                                (click)="openPhotoViewer([foto])" matTooltip="Ver imagen">
                                 <mat-icon>visibility</mat-icon>
                               </button>
                               <!-- <button mat-icon-button style="z-index: 9900;" color="accent" (click)="downloadPhotos([foto])"
@@ -490,55 +481,69 @@
                               </button>  -->
                               <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
                               <div class="image-actions">
-                      
+
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                      </ng-container>
+                    </ng-container>
 
-                      <ng-container *ngIf="subItem.observaciones">
-                        <div>
-                          <strong>Comentario:</strong>
-                          <span>{{ subItem.observaciones || 'N/A' }}</span>
-                        </div>
-                      </ng-container>
+                    <ng-container *ngIf="subItem.observaciones">
+                      <div>
+                        <strong>Comentario:</strong>
+                        <span>{{ subItem.observaciones || 'N/A' }}</span>
+                      </div>
+                    </ng-container>
 
-                      <ng-container *ngIf="subItem.repuestos.length > 0">
-                        @for (repuesto of subItem.repuestos; track repuesto.id) {
-                        <div class="repuesto-item-horizontal">
-                          <div class="repuesto-content">
-                            <div class="repuesto-row">
-                              <strong>Artículo:</strong>
-                              <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Marca:</strong>
-                              <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Cantidad:</strong>
-                              <span>{{ repuesto.cantidad || 'N/A' }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Precio:</strong>
-                              <span>${{ repuesto.precio_venta || 0 | number }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Total:</strong>
-                              <span>${{ (repuesto.precio_venta || 0) * (repuesto.cantidad || 0) | number }}</span>
-                            </div>
-                          </div>
+                    <ng-container *ngIf="subItem.repuestos.length > 0">
+                      <div class="repuestos-table-container">
+                        <div class="table-header">
+                          <h4>Repuestos</h4>
+                          <button mat-button color="primary" (click)="agregarRepuesto(subItem)" class="small-button">
+                            <mat-icon class="small-icon">add</mat-icon>
+                            [+ Añadir]
+                          </button>
                         </div>
-                      }
-                      </ng-container>
-                    </div>
+                        <table class="repuestos-table">
+                          <thead>
+                            <tr>
+                              <th>Artículo</th>
+                              <th>Marca</th>
+                              <th>Cantidad</th>
+                              <th>Precio</th>
+                              <th>Total</th>
+                              <th>Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (repuesto of subItem.repuestos; track repuesto.id) {
+                            <tr>
+                              <td>{{ repuesto.repuesto?.articulo || 'N/A' }}</td>
+                              <td>{{ repuesto.repuesto?.marca || 'N/A' }}</td>
+                              <td>{{ repuesto.cantidad || 'N/A' }}</td>
+                              <td>${{ repuesto.repuesto.precio_venta | number }}</td>
+                              <td>${{ repuesto.repuesto.precio_venta * repuesto.cantidad | number }}</td>
+                              <td class="actions-cell">
+                                <button mat-icon-button color="primary" (click)="editarRepuesto(repuesto)" matTooltip="Editar">
+                                  <mat-icon>edit</mat-icon>
+                                </button>
+                                <button mat-icon-button color="warn" (click)="eliminarRepuesto(repuesto)" matTooltip="Eliminar">
+                                  <mat-icon>delete</mat-icon>
+                                </button>
+                              </td>
+                            </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    </ng-container>
+                  </div>
                   }
                   }
                 </section>
                 }
-              
+
                 @if(checklistResponse?.is_climate){
 
                 <h4>Detalle activo fijo</h4>
@@ -552,104 +557,110 @@
                 }
 
               </div>
-              
+
             </mat-expansion-panel>
           </mat-accordion>
-          
+
         </div>
         } @else {
-           <ng-container>
-                @for (lista of checklistResponse?.data_normal[0].checklist; track lista.id) {
-                <h4 class="title-list-inspection">{{lista.categoria}}</h4>
-                <section class="section-list-inspection">
-                  @for (item of lista.items; track item.id) {
-                  <h5 class="item-list-inspection">{{item.nombre}}</h5>
-                  @for (subItem of item.subItems; track subItem.id) {
-                    <div class="subitem-container">
-                      <div style="display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
-                       
-                  
-                        @if(subItem.estado === 'pendiente') {
-                        <span class="tag tag-warning">No aplica</span>
-                        } @else if(subItem.estado === 'rechazado') {
-                        <span class="tag tag-danger">Rechazado</span>
-                        } @else if(subItem.estado === 'aprobado') {
-                        <span class="tag tag-success">Aprobado</span>
-                        }
-                        <h6 class="subitem-title">{{subItem.nombre}}</h6>
-
-                      </div>
-                      <ng-container *ngIf="subItem.fotos.length > 0">
-                      <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
-                      <div class="photos-container">
-                        <div class="photo-grid">
-                          <div class="photo-item" *ngFor="let foto of subItem.fotos">
-                            <div class="photo-container">
-                              <button mat-icon-button style="z-index: 9900;" color="primary" (click)="openPhotoViewer([foto])"
-                                matTooltip="Ver imagen">
-                                <mat-icon>visibility</mat-icon>
-                              </button>
-                              <!-- <button mat-icon-button style="z-index: 9900;" color="accent" (click)="downloadPhotos([foto])"
-                                matTooltip="Descargar imagen">
-                                <mat-icon>download</mat-icon>
-                              </button>  -->
-                              <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
-                              <div class="image-actions">
-                      
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      </ng-container>
-
-                      <ng-container *ngIf="subItem.observaciones">
-                        <div>
-                          <strong>Comentario:</strong>
-                          <span>{{ subItem.observaciones || 'N/A' }}</span>
-                        </div>
-                      </ng-container>
-
-                      <ng-container *ngIf="subItem.repuestos.length > 0">
-                        @for (repuesto of subItem.repuestos; track repuesto.id) {
-                        <div class="repuesto-item-horizontal">
-                          <div class="repuesto-content">
-                            <div class="repuesto-row">
-                              <strong>Artículo:</strong>
-                              <span>{{ repuesto.repuesto?.articulo || 'N/A' }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Marca:</strong>
-                              <span>{{ repuesto.repuesto?.marca || 'N/A' }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Cantidad:</strong>
-                              <span>{{ repuesto.cantidad || 'N/A' }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Precio:</strong>
-                              <span>${{ repuesto.repuesto.precio_venta | number }}</span>
-                            </div>
-                            <div class="repuesto-row">
-                              <strong>Total:</strong>
-                              <span>${{ repuesto.repuesto.precio_venta * repuesto.cantidad | number }}</span>
-                            </div>
-                          </div>
-                        </div>
-                      }
-                      </ng-container>
-                    </div>
-                  }
-                  }
-                </section>
+        <ng-container>
+          @for (lista of checklistResponse?.data_normal[0].checklist; track lista.id) {
+          <h4 class="title-list-inspection">{{lista.categoria}}</h4>
+          <section class="section-list-inspection">
+            @for (item of lista.items; track item.id) {
+            <h5 class="item-list-inspection">{{item.nombre}}</h5>
+            @for (subItem of item.subItems; track subItem.id) {
+            <div class="subitem-container">
+              <div style="display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
+                @if(subItem.estado === 'pendiente') {
+                <span class="tag tag-warning">No aplica</span>
+                } @else if(subItem.estado === 'rechazado') {
+                <span class="tag tag-danger">Rechazado</span>
+                } @else if(subItem.estado === 'aprobado') {
+                <span class="tag tag-success">Aprobado</span>
                 }
-                <hr/>
-                </ng-container>
+                <h6 class="subitem-title">{{subItem.nombre}}</h6>
+
+              </div>
+              <ng-container *ngIf="subItem.fotos.length > 0">
+                <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
+                <div class="photos-container">
+                  <div class="photo-grid">
+                    <div class="photo-item" *ngFor="let foto of subItem.fotos">
+                      <div class="photo-container">
+                        <button mat-icon-button style="z-index: 9900;" color="primary" (click)="openPhotoViewer([foto])"
+                          matTooltip="Ver imagen">
+                          <mat-icon>visibility</mat-icon>
+                        </button>
+                        <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
+                        <div class="image-actions"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="subItem.observaciones">
+                <div>
+                  <strong>Comentario:</strong>
+                  <span>{{ subItem.observaciones || 'N/A' }}</span>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="subItem.repuestos.length > 0">
+                <div class="repuestos-table-container">
+                  <div class="table-header">
+                    <h4>Repuestos</h4>
+                    <button mat-button color="primary" (click)="agregarRepuesto(subItem)" class="small-button">
+                      <mat-icon class="small-icon">add</mat-icon>
+                      Añadir
+                    </button>
+                  </div>
+                  <table class="repuestos-table">
+                    <thead>
+                      <tr>
+                        <th>Artículo</th>
+                        <th>Marca</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (repuesto of subItem.repuestos; track repuesto.id) {
+                      <tr>
+                        <td>{{ repuesto.repuesto?.articulo || 'N/A' }}</td>
+                        <td>{{ repuesto.repuesto?.marca || 'N/A' }}</td>
+                        <td>{{ repuesto.cantidad || 'N/A' }}</td>
+                        <td>${{ repuesto.repuesto.precio_venta | number }}</td>
+                        <td>${{ repuesto.repuesto.precio_venta * repuesto.cantidad | number }}</td>
+                        <td class="actions-cell">
+                          <button mat-icon-button color="primary" (click)="editarRepuesto(repuesto)" matTooltip="Editar">
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                          <button mat-icon-button color="warn" (click)="eliminarRepuesto(repuesto)" matTooltip="Eliminar">
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </ng-container>
+            </div>
+            }
+            }
+          </section>
+          }
+          <hr />
+        </ng-container>
         }
 
-      
 
-        
+
+
         <div class="checklist-clima-section" *ngIf="solicitud?.checklistsClima?.length > 0">
           <h3 class="section-title">Checklist de Clima</h3>
 
@@ -803,8 +814,8 @@
             <strong>Total Final:</strong>
             <!-- <span>${{ calculateFinalTotal().toLocaleString('es-CL') || '0' }}</span> -->
 
-             <span>${{checklistResponse?.total_final | number:'1.0-0' }}</span>
-            
+            <span>${{checklistResponse?.total_final | number:'1.0-0' }}</span>
+
           </div>
         </div>
         @if (isPendiente) {
@@ -880,7 +891,7 @@
             Guardar Repuestos
           </button>
           <button mat-raised-button style="background-color: #4CAF50; color: white;" (click)="onValidate()">
-            Validar solicitud 
+            Validar solicitud
           </button>
           } @else {
           <div class="validation-message"

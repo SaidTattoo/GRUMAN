@@ -34,6 +34,7 @@ import { MatRadioGroup } from '@angular/material/radio';
 import { UploadDataService } from 'src/app/services/upload-data.service';
 import { environment } from 'src/app/config';
 import { HttpClient } from '@angular/common/http';
+import { AgregarRepuestoComponent } from 'src/app/components/agregar-repuesto/agregar-repuesto.component';
 
 interface Repuesto {
   id: number;
@@ -2079,5 +2080,80 @@ export class ModificarSolicitudComponent implements OnInit {
         duration: 3000
       });
     }
+  }
+
+  agregarRepuesto(subItem: any) {
+    const dialogRef = this.dialog.open(AgregarRepuestoComponent, {
+      width: '500px',
+      data: { subItem }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Agregar el nuevo repuesto a la lista
+        subItem.repuestos.push(result);
+        this.calcularTotalFinal();
+      }
+    });
+  }
+
+  editarRepuesto(repuesto: any) {
+    const dialogRef = this.dialog.open(AgregarRepuestoComponent, {
+      width: '500px',
+      data: { 
+        repuesto,
+        modoEdicion: true
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Actualizar el repuesto existente
+        const index = repuesto.subItem.repuestos.findIndex((r: any) => r.id === repuesto.id);
+        if (index !== -1) {
+          repuesto.subItem.repuestos[index] = result;
+          this.calcularTotalFinal();
+        }
+      }
+    });
+  }
+
+  eliminarRepuesto(repuesto: any) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Eliminar Repuesto',
+        message: '¿Está seguro que desea eliminar este repuesto?',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Eliminar el repuesto de la lista
+        const index = repuesto.subItem.repuestos.findIndex((r: any) => r.id === repuesto.id);
+        if (index !== -1) {
+          repuesto.subItem.repuestos.splice(index, 1);
+          this.calcularTotalFinal();
+        }
+      }
+    });
+  }
+
+  calcularTotalFinal() {
+    let total = 0;
+    this.checklistResponse?.data_normal?.forEach((lista: any) => {
+      lista.checklist.forEach((item: any) => {
+        item.items.forEach((subItem: any) => {
+          subItem.subItems.forEach((subSubItem: any) => {
+            subSubItem.repuestos.forEach((repuesto: any) => {
+              total += (repuesto.repuesto.precio_venta * repuesto.cantidad);
+            });
+          });
+        });
+      });
+    });
+    this.checklistResponse.total_final = total;
   }
 } 
