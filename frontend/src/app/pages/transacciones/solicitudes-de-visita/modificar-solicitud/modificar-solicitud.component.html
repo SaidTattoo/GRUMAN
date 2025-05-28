@@ -465,6 +465,7 @@
                       <h6 class="subitem-title">{{subItem.nombre}}</h6>
 
                     </div>
+                    <!-- IMAGENES -->
                     <ng-container *ngIf="subItem.fotos.length > 0">
                       <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
                       <div class="photos-container">
@@ -489,6 +490,7 @@
                       </div>
                     </ng-container>
 
+                    <!-- OBSERVACIONES -->
                     <ng-container *ngIf="subItem.observaciones">
                       <div>
                         <strong>Comentario:</strong>
@@ -496,14 +498,48 @@
                       </div>
                     </ng-container>
 
-                    <ng-container *ngIf="subItem.repuestos.length > 0">
+                    <!-- REPUESTOS -->
+                    <ng-container>
                       <div class="repuestos-table-container">
                         <div class="table-header">
                           <h4>Repuestos</h4>
-                          <button mat-button color="primary" (click)="agregarRepuesto(subItem)" class="small-button">
-                            <mat-icon class="small-icon">add</mat-icon>
-                            [+ Añadir]
-                          </button>
+                          <div class="d-flex flex-row items-center justify-content-between gap-2">
+                            <button mat-button color="primary" class="small-button"
+                              *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
+                              (click)="agregarRepuesto(subItem.id, activoFijo)" matTooltip="Agregar repuesto">
+                              Agregar repuestos <mat-icon>add</mat-icon>
+                            </button>
+                            @if (showAddRepuestoForm[subItem.id]) {
+                            <div class="d-flex flex-row gap-2">
+                              <mat-form-field>
+                                <mat-label>Seleccionar Repuesto</mat-label>
+                                <mat-select [(ngModel)]="selectedRepuesto" [ngModelOptions]="{standalone: true}">
+                                  @for (repuesto of repuestosList; track repuesto.id) {
+                                  <mat-option [value]="repuesto">
+                                    {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ (repuesto.precio_venta || repuesto.precio ||
+                                    0).toLocaleString('es-CL') }}
+                                  </mat-option>
+                                  }
+                                </mat-select>
+                              </mat-form-field>
+                    
+                              <mat-form-field>
+                                <mat-label>Cantidad</mat-label>
+                                <input matInput type="number" [(ngModel)]="newRepuestoCantidad" [ngModelOptions]="{standalone: true}"
+                                  min="1">
+                              </mat-form-field>
+                    
+                              <div class="form-actions">
+                                <button mat-button (click)="toggleAddRepuestoForm(subItem.id)">
+                                  Cancelar
+                                </button>
+                                <button mat-raised-button color="primary" (click)="addRepuestoToItem(subItem.id)">
+                                  Agregar
+                                </button>
+                              </div>
+                            </div>
+                            }
+                          </div>
                         </div>
                         <table class="repuestos-table">
                           <thead>
@@ -525,10 +561,10 @@
                               <td>${{ repuesto.repuesto.precio_venta | number }}</td>
                               <td>${{ repuesto.repuesto.precio_venta * repuesto.cantidad | number }}</td>
                               <td class="actions-cell">
-                                <button mat-icon-button color="primary" (click)="editarRepuesto(repuesto)" matTooltip="Editar">
+                                <button mat-icon-button color="primary" (click)="editarRepuesto(subItem.id, repuesto, activoFijo)" matTooltip="Editar">
                                   <mat-icon>edit</mat-icon>
-                                </button>
-                                <button mat-icon-button color="warn" (click)="eliminarRepuesto(repuesto)" matTooltip="Eliminar">
+                                </button> 
+                                <button mat-icon-button color="warn" (click)="eliminarRepuesto(subItem.id, repuesto, activoFijo)" matTooltip="Eliminar">
                                   <mat-icon>delete</mat-icon>
                                 </button>
                               </td>
@@ -582,6 +618,7 @@
                 <h6 class="subitem-title">{{subItem.nombre}}</h6>
 
               </div>
+              <!-- IMAGENES -->
               <ng-container *ngIf="subItem.fotos.length > 0">
                 <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
                 <div class="photos-container">
@@ -600,6 +637,7 @@
                 </div>
               </ng-container>
 
+              <!-- OBSERVACIONES -->
               <ng-container *ngIf="subItem.observaciones">
                 <div>
                   <strong>Comentario:</strong>
@@ -607,14 +645,52 @@
                 </div>
               </ng-container>
 
+              <!-- REPUESTOS -->
               <ng-container *ngIf="subItem.repuestos.length > 0">
                 <div class="repuestos-table-container">
                   <div class="table-header">
                     <h4>Repuestos</h4>
-                    <button mat-button color="primary" (click)="agregarRepuesto(subItem)" class="small-button">
-                      <mat-icon class="small-icon">add</mat-icon>
-                      Añadir
-                    </button>
+                    <div class="d-flex flex-row items-center justify-content-between gap-2">
+                      <!-- <button mat-button color="primary" class="small-button"
+                        *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada" (click)="toggleAddRepuestoForm(subItem.id)"
+                        matTooltip="Agregar repuesto">
+                        Agregar repuestos <mat-icon>add</mat-icon>
+                      </button> -->
+                      <button mat-button color="primary" class="small-button"
+                        *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada" (click)="agregarRepuesto(subItem.id)"
+                        matTooltip="Agregar repuesto">
+                        Agregar repuestos <mat-icon>add</mat-icon>
+                      </button>
+                      @if (showAddRepuestoForm[subItem.id]) {
+                      <div class="d-flex flex-row gap-2">
+                        <mat-form-field >
+                          <mat-label>Seleccionar Repuesto</mat-label>
+                          <mat-select [(ngModel)]="selectedRepuesto" [ngModelOptions]="{standalone: true}">
+                            @for (repuesto of repuestosList; track repuesto.id) {
+                            <mat-option [value]="repuesto">
+                              {{ repuesto.articulo }} - {{ repuesto.marca }} - ${{ (repuesto.precio_venta || repuesto.precio ||
+                              0).toLocaleString('es-CL') }}
+                            </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                    
+                        <mat-form-field >
+                          <mat-label>Cantidad</mat-label>
+                          <input matInput type="number" [(ngModel)]="newRepuestoCantidad" [ngModelOptions]="{standalone: true}" min="1">
+                        </mat-form-field>
+                    
+                        <div class="form-actions">
+                          <button mat-button (click)="toggleAddRepuestoForm(subItem.id)">
+                            Cancelar
+                          </button>
+                          <button mat-raised-button color="primary" (click)="addRepuestoToItem(subItem.id)">
+                            Agregar 2
+                          </button>
+                        </div>
+                      </div>
+                      }
+                    </div>
                   </div>
                   <table class="repuestos-table">
                     <thead>
@@ -636,10 +712,10 @@
                         <td>${{ repuesto.repuesto.precio_venta | number }}</td>
                         <td>${{ repuesto.repuesto.precio_venta * repuesto.cantidad | number }}</td>
                         <td class="actions-cell">
-                          <button mat-icon-button color="primary" (click)="editarRepuesto(repuesto)" matTooltip="Editar">
+                          <button mat-icon-button color="primary" (click)="editarRepuesto(subItem.id, repuesto)" matTooltip="Editar">
                             <mat-icon>edit</mat-icon>
                           </button>
-                          <button mat-icon-button color="warn" (click)="eliminarRepuesto(repuesto)" matTooltip="Eliminar">
+                          <button mat-icon-button color="warn" (click)="eliminarRepuesto(subItem.id, repuesto)" matTooltip="Eliminar">
                             <mat-icon>delete</mat-icon>
                           </button>
                         </td>
@@ -657,6 +733,8 @@
           <hr />
         </ng-container>
         }
+
+      
 
 
 

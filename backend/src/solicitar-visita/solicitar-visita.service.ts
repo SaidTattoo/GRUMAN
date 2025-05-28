@@ -1339,6 +1339,49 @@ export class SolicitarVisitaService {
     // }
   }
 
+  async updateChecklistVisita(id: number, data: any) {
+
+    const responseChecklist = await this.responseChecklistRepository.findOne({
+      where: { solicitud_visita_id: id }
+    });
+
+    console.log('responseChecklist', responseChecklist);
+
+    if (!responseChecklist) {
+      throw new NotFoundException('No se encontró el checklist de clima');
+    }
+
+
+    const responseSave = await this.responseChecklistRepository.update(
+      responseChecklist.id,
+      {
+        is_climate: data.is_climate || false,
+        climate_data: data.is_climate ? JSON.stringify(data.data.climate_data) : null,
+        data_normal: data.is_climate ? null : JSON.stringify(data.data.data_normal),
+      },
+    );
+
+    console.log('responseSave', responseSave);
+
+    const updatedChecklist = await this.responseChecklistRepository.findOne({
+      where: { solicitud_visita_id: id }
+    });
+
+    if (!updatedChecklist) {
+      return {
+        success: false,
+        message: 'No se pudo actualizar el checklist',
+        data: null
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Checklist actualizado correctamente',
+      data: updatedChecklist
+    };
+  }
+
   async getResponseChecklist(id: any) {
     const responseChecklist = await this.responseChecklistRepository.findOne({
       where: { solicitud_visita_id: id }

@@ -6,7 +6,13 @@ import { MatInput, MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SolicitarVisitaService } from 'src/app/services/solicitar-visita.service';
@@ -46,6 +52,7 @@ interface Repuesto {
   precio_venta?: number;
   clima?: boolean;
   valor_uf?: boolean;
+  codigoBarra?: string;
 }
 
 interface SubItem {
@@ -121,6 +128,24 @@ interface ActivoFijoRepuesto {
   }>;
 }
 
+interface ChecklistItem {
+  id: number;
+  nombre: string;
+  subItems: SubItem[];
+}
+
+interface ChecklistCategoria {
+  id: number;
+  categoria: string;
+  items: ChecklistItem[];
+}
+
+interface ChecklistResponse {
+  data_normal: Array<{
+    checklist: ChecklistCategoria[];
+  }>;
+}
+
 @Component({
   selector: 'app-modificar-solicitud',
   standalone: true,
@@ -144,11 +169,9 @@ interface ActivoFijoRepuesto {
     MatRadioModule,
     MatRadioGroup,
     MatInput,
-    MatButton
+    MatButton,
   ],
-  providers: [
-    provideNativeDateAdapter()
-  ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './modificar-solicitud.component.html',
   styleUrls: ['./modificar-solicitud.component.scss'],
 })
@@ -163,17 +186,17 @@ export class ModificarSolicitudComponent implements OnInit {
   listaInspeccion: any[] = [];
   especialidades: any[] = [];
   displayedColumns: string[] = [
-    'id', 
-    'itemId', 
-    'repuestoId', 
-    'cantidad', 
-    'comentario', 
+    'id',
+    'itemId',
+    'repuestoId',
+    'cantidad',
+    'comentario',
     'solicitarVisitaId',
     'articulo',
     'marca',
     'precio',
     'total',
-    'acciones'
+    'acciones',
   ];
   itemRepuestos: any[] = [];
   repuestos: RepuestoMap = {};
@@ -181,8 +204,8 @@ export class ModificarSolicitudComponent implements OnInit {
   selectedRepuesto: Repuesto | null = null;
   newRepuestoCantidad: number = 1;
   showAddRepuestoForm: { [key: number]: boolean } = {};
-  temporaryRepuestos: {[key: number]: any[]} = {};
-  temporaryDeletedRepuestos: {[key: number]: any[]} = {};
+  temporaryRepuestos: { [key: number]: any[] } = {};
+  temporaryDeletedRepuestos: { [key: number]: any[] } = {};
   tiposServicio: any[] = [];
   sectoresTrabajos: any[] = [];
   tecnicos: Tecnico[] = [];
@@ -207,7 +230,7 @@ export class ModificarSolicitudComponent implements OnInit {
     'tension',
     'consumoTotal',
     'presiones',
-    'fecha'
+    'fecha',
   ];
   nuevaFechaVisita: Date | null = null;
 
@@ -215,6 +238,7 @@ export class ModificarSolicitudComponent implements OnInit {
   fileName: string = '';
   imagePreview: string | ArrayBuffer | null = null;
   imageBase64: string | null = null;
+  temporalChecklist = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -240,26 +264,26 @@ export class ModificarSolicitudComponent implements OnInit {
       tipoServicioId: [''],
       sectorTrabajoId: [''],
       especialidad: [''],
-      fechaVisita: [{value: '', disabled: false}, Validators.required],
+      fechaVisita: [{ value: '', disabled: false }, Validators.required],
       ticketGruman: [''],
       observaciones: [''],
-      status: [{value: '', disabled: true}],
+      status: [{ value: '', disabled: true }],
       tecnico_asignado_id: ['', Validators.required],
       tecnico_asignado_id_2: [''],
-      fecha_hora_inicio_servicio: [{value: '', disabled: true}],
-      fecha_hora_fin_servicio: [{value: '', disabled: true}],
+      fecha_hora_inicio_servicio: [{ value: '', disabled: true }],
+      fecha_hora_fin_servicio: [{ value: '', disabled: true }],
       longitud_movil: [''],
       latitud_movil: [''],
       valorPorLocal: [''],
       registroVisita: [''],
       // Campos adicionales de solo lectura
-      'local.nombre_local': [{value: '', disabled: true}],
-      'local.direccion': [{value: '', disabled: true}],
-      'client.nombre': [{value: '', disabled: true}],
-      'tecnico_asignado.name': [{value: '', disabled: true}],
-      'tecnico_asignado_2.name': [{value: '', disabled: true}],
-      'tipoServicio': [{value: '', disabled: true}],
-      'sectorTrabajo': [{value: '', disabled: true}],
+      'local.nombre_local': [{ value: '', disabled: true }],
+      'local.direccion': [{ value: '', disabled: true }],
+      'client.nombre': [{ value: '', disabled: true }],
+      'tecnico_asignado.name': [{ value: '', disabled: true }],
+      'tecnico_asignado_2.name': [{ value: '', disabled: true }],
+      tipoServicio: [{ value: '', disabled: true }],
+      sectorTrabajo: [{ value: '', disabled: true }],
       causaRaizId: [''],
       garantia: [''],
       turno: [''],
@@ -273,9 +297,9 @@ export class ModificarSolicitudComponent implements OnInit {
   ngOnInit() {
     // Inicializar explícitamente repuestos como objeto vacío para evitar errores
     this.repuestos = {};
-    
+
     this.solicitudId = this.route.snapshot.paramMap.get('id') || '';
-    
+
     // Detectar estado de la solicitud por URL
     const url = this.router.url;
     this.isPendiente = url.includes('pendiente');
@@ -283,7 +307,7 @@ export class ModificarSolicitudComponent implements OnInit {
     this.isRechazada = url.includes('rechazada');
     this.isValidada = url.includes('validada');
     this.isReabierta = url.includes('reabierta');
-    
+
     this.inicializarFormulario();
     this.loadRepuestos();
     this.loadCatalogos();
@@ -300,26 +324,26 @@ export class ModificarSolicitudComponent implements OnInit {
       tipoServicioId: [''],
       sectorTrabajoId: [''],
       especialidad: [''],
-      fechaVisita: [{value: '', disabled: false}, Validators.required],
+      fechaVisita: [{ value: '', disabled: false }, Validators.required],
       ticketGruman: [''],
       observaciones: [''],
-      status: [{value: '', disabled: true}],
+      status: [{ value: '', disabled: true }],
       tecnico_asignado_id: ['', Validators.required],
       tecnico_asignado_id_2: [''],
-      fecha_hora_inicio_servicio: [{value: '', disabled: true}],
-      fecha_hora_fin_servicio: [{value: '', disabled: true}],
+      fecha_hora_inicio_servicio: [{ value: '', disabled: true }],
+      fecha_hora_fin_servicio: [{ value: '', disabled: true }],
       longitud_movil: [''],
       latitud_movil: [''],
       valorPorLocal: [''],
       registroVisita: [''],
       // Campos adicionales de solo lectura
-      'local.nombre_local': [{value: '', disabled: true}],
-      'local.direccion': [{value: '', disabled: true}],
-      'client.nombre': [{value: '', disabled: true}],
-      'tecnico_asignado.name': [{value: '', disabled: true}],
-      'tecnico_asignado_2.name': [{value: '', disabled: true}],
-      'tipoServicio': [{value: '', disabled: true}],
-      'sectorTrabajo': [{value: '', disabled: true}],
+      'local.nombre_local': [{ value: '', disabled: true }],
+      'local.direccion': [{ value: '', disabled: true }],
+      'client.nombre': [{ value: '', disabled: true }],
+      'tecnico_asignado.name': [{ value: '', disabled: true }],
+      'tecnico_asignado_2.name': [{ value: '', disabled: true }],
+      tipoServicio: [{ value: '', disabled: true }],
+      sectorTrabajo: [{ value: '', disabled: true }],
       causaRaizId: [''],
       garantia: [''],
       turno: [''],
@@ -329,31 +353,35 @@ export class ModificarSolicitudComponent implements OnInit {
     this.temporaryDeletedRepuestos = {};
 
     // Add validation for duplicate technicians
-    this.solicitudForm.get('tecnico_asignado_id')?.valueChanges.subscribe(value => {
-      const tecnico2Control = this.solicitudForm.get('tecnico_asignado_id_2');
-      if (value && tecnico2Control?.value === value) {
-        tecnico2Control?.setValue('');
-        Swal.fire({
-          title: 'Error',
-          text: 'Este técnico ya está seleccionado como Técnico principal',
-          icon: 'error',
-          confirmButtonText: 'Ok'
-        });
-      }
-    });
+    this.solicitudForm
+      .get('tecnico_asignado_id')
+      ?.valueChanges.subscribe((value) => {
+        const tecnico2Control = this.solicitudForm.get('tecnico_asignado_id_2');
+        if (value && tecnico2Control?.value === value) {
+          tecnico2Control?.setValue('');
+          Swal.fire({
+            title: 'Error',
+            text: 'Este técnico ya está seleccionado como Técnico principal',
+            icon: 'error',
+            confirmButtonText: 'Ok',
+          });
+        }
+      });
 
-    this.solicitudForm.get('tecnico_asignado_id_2')?.valueChanges.subscribe(value => {
-      const tecnico1Control = this.solicitudForm.get('tecnico_asignado_id');
-      if (value && tecnico1Control?.value === value) {
-        this.solicitudForm.get('tecnico_asignado_id_2')?.setValue('');
-        Swal.fire({
-          title: 'Error',
-          text: 'Este técnico ya está seleccionado como Técnico principal',
-          icon: 'error',
-          confirmButtonText: 'Ok'
-        });
-      }
-    });
+    this.solicitudForm
+      .get('tecnico_asignado_id_2')
+      ?.valueChanges.subscribe((value) => {
+        const tecnico1Control = this.solicitudForm.get('tecnico_asignado_id');
+        if (value && tecnico1Control?.value === value) {
+          this.solicitudForm.get('tecnico_asignado_id_2')?.setValue('');
+          Swal.fire({
+            title: 'Error',
+            text: 'Este técnico ya está seleccionado como Técnico principal',
+            icon: 'error',
+            confirmButtonText: 'Ok',
+          });
+        }
+      });
   }
 
   loadCatalogos(): Promise<void> {
@@ -362,28 +390,28 @@ export class ModificarSolicitudComponent implements OnInit {
       forkJoin({
         tiposServicio: this.tipoServicioService.findAll(),
         sectoresTrabajos: this.sectorTrabajoService.getSectores(),
-        repuestos: this.repuestosService.getRepuestos()
+        repuestos: this.repuestosService.getRepuestos(),
       }).subscribe({
         next: (result) => {
           this.tiposServicio = result.tiposServicio;
           this.sectoresTrabajos = result.sectoresTrabajos;
           this.repuestos = result.repuestos;
           this.repuestosList = Object.values(result.repuestos);
-          
-          console.log('Catálogos cargados:', { 
-            tiposServicio: this.tiposServicio, 
+
+          console.log('Catálogos cargados:', {
+            tiposServicio: this.tiposServicio,
             sectoresTrabajos: this.sectoresTrabajos,
-            repuestos: this.repuestos
+            repuestos: this.repuestos,
           });
           resolve();
         },
         error: (error: any) => {
           console.error('Error loading catálogos:', error);
           this.snackBar.open('Error al cargar los catálogos', 'Cerrar', {
-            duration: 3000
+            duration: 3000,
           });
           resolve(); // Resolvemos igual para continuar con la carga
-        }
+        },
       });
     });
   }
@@ -392,17 +420,17 @@ export class ModificarSolicitudComponent implements OnInit {
     this.repuestosService.getRepuestos().subscribe({
       next: (data) => {
         console.log('Repuestos cargados:', data);
-        this.repuestosList = data.map(r => ({
+        this.repuestosList = data.map((r) => ({
           ...r,
-          precio: r.precio_venta || r.precio || 0 // Asegurarnos de que siempre haya un valor de precio
+          precio: r.precio_venta || r.precio || 0, // Asegurarnos de que siempre haya un valor de precio
         }));
       },
       error: (error) => {
         console.error('Error al cargar repuestos:', error);
         this.snackBar.open('Error al cargar la lista de repuestos', 'Cerrar', {
-          duration: 3000
+          duration: 3000,
         });
-      }
+      },
     });
   }
 
@@ -412,423 +440,536 @@ export class ModificarSolicitudComponent implements OnInit {
     this.repuestosService.getRepuestos().subscribe({
       next: (repuestos) => {
         this.repuestosList = repuestos;
-        
+
         // Ahora cargamos la solicitud
-        this.solicitarVisitaService.getSolicitudVisita(Number(this.solicitudId)).subscribe({
-          next: (data) => {
-            this.solicitarVisitaService.getSolicitudVisitaChecklist(Number(this.solicitudId)).subscribe({
-              next: (checklist) => {
-                this.checklistResponse = checklist;
-                
-                // Procesar los repuestos en el checklist
-                if (!this.checklistResponse?.is_climate) {
-                  let total_final = 0;
-                  this.checklistResponse.data_normal.forEach((data: any) => {
-                    if (data.checklist) {
-                      data.checklist.forEach((lista: any) => {
-                        if (lista.items) {
-                          lista.items.forEach((item: any) => {
-                            if (item.subItems) {
-                              item.subItems.forEach((subItem: any) => {
-                                if (subItem.repuestos) {
-                                  subItem.repuestos = subItem.repuestos.map((repuesto: any) => {
-                                    const repuestoDetalle = this.repuestosList.find(r => r.id === repuesto.id);
-                                    total_final += (repuestoDetalle?.precio_venta || 0) * (repuesto.cantidad || 0);
-                                    return {
-                                      ...repuesto,
-                                      repuesto: repuestoDetalle || null
-                                    };
-                                  });
-                                }
-                              });
-                            }
-                          });
-                        }
-                      });
-                    }
-                  });
-                  this.checklistResponse.total_final = total_final;
-                } else {
-                  let total_final = 0;
-                  this.checklistResponse.climate_data.forEach((activoFijo: any) => {
-                    const detailActivoFijo = this.solicitud.local.activoFijoLocales.find((item:any) => item.id.toString() === activoFijo.activo_fijo_id.toString());
-                    activoFijo.detailActivoFijo = detailActivoFijo;
-                    if (activoFijo.checklist) {
-                      activoFijo.checklist.forEach((lista: any) => {
-                        if (lista.items) {
-                          lista.items.forEach((item: any) => {
-                            if (item.subItems) {
-                              item.subItems.forEach((subItem: any) => {
-                                if (subItem.repuestos) {
-                                  subItem.repuestos = subItem.repuestos.map(
-                                    (repuesto: any) => {
-                                      const repuestoDetalle =
-                                        this.repuestosList.find(
-                                          (r) => r.id === repuesto.id
-                                        );
-                                      total_final +=
-                                        (repuestoDetalle?.precio_venta || 0) *
-                                        (repuesto.cantidad || 0);
-                                      return {
-                                        ...repuesto,
-                                        repuesto: repuestoDetalle || null,
-                                      };
-                                    }
-                                  );
-                                }
-                              });
-                            }
-                          });
-                        }
-                      });
-                    }
-                    // if (activoFijo.repuestos) {
-                    //   activoFijo.repuestos = activoFijo.repuestos.map((repuesto: any) => {
-                    //     const repuestoDetalle = this.repuestosList.find(r => r.id === repuesto.id);
-                    //     console.log(repuestoDetalle);
-                    //     total_final += (repuestoDetalle?.precio_venta || 0) * (repuesto.cantidad || 0);
-                    //     return {
-                    //       ...repuesto,
-                    //       repuesto: repuestoDetalle || null
-                    //     };
-                    //   });
-                    // }
-                  });
-                  this.checklistResponse.total_final = total_final;
-                }
-              }
-            });
+        this.solicitarVisitaService
+          .getSolicitudVisita(Number(this.solicitudId))
+          .subscribe({
+            next: (data) => {
+              this.solicitarVisitaService
+                .getSolicitudVisitaChecklist(Number(this.solicitudId))
+                .subscribe({
+                  next: (checklist) => {
+                    this.checklistResponse = checklist;
+                    this.temporalChecklist = checklist;
 
-            this.solicitud = data;
-            
-            // Asignar el imagePreview si existe image_ot
-            if (data.image_ot) {
-              const imageUrl = data.image_ot.startsWith('http') ? data.image_ot : `${environment.apiUrl}/${data.image_ot}`;
-              this.imagePreview = imageUrl;
-              this.urlImage = imageUrl;
-              this.solicitudForm.patchValue({
-                image_ot: imageUrl
-              });
-            }
-            
-            // Detectar estado de la solicitud por su estado actual
-            if (this.solicitud?.status === 'pendiente') {
-              this.isPendiente = true;
-            } else if (this.solicitud?.status === 'aprobada') {
-              this.isAprobada = true;
-            } else if (this.solicitud?.status === 'rechazada') {
-              this.isRechazada = true;
-              
-              // Cargar la información del usuario que rechazó la solicitud
-              if (this.solicitud?.rechazada_por_id) {
-                this.loading = true; // Mantener loading mientras cargamos datos adicionales
-                this.usersService.getUserById(this.solicitud.rechazada_por_id).subscribe({
-                  next: (usuario) => {
-                    this.usuarioRechazo = usuario;
-                    console.log('Usuario que rechazó la solicitud:', usuario);
+                    // Procesar los repuestos en el checklist
+                    if (!this.checklistResponse?.is_climate) {
+                      let total_final = 0;
+                      this.checklistResponse.data_normal.forEach(
+                        (data: any) => {
+                          if (data.checklist) {
+                            data.checklist.forEach((lista: any) => {
+                              if (lista.items) {
+                                lista.items.forEach((item: any) => {
+                                  if (item.subItems) {
+                                    item.subItems.forEach((subItem: any) => {
+                                      if (subItem.repuestos) {
+                                        subItem.repuestos =
+                                          subItem.repuestos.map(
+                                            (repuesto: any) => {
+                                              const repuestoDetalle =
+                                                this.repuestosList.find(
+                                                  (r) => r.id === repuesto.id
+                                                );
+                                              total_final +=
+                                                (repuestoDetalle?.precio_venta ||
+                                                  0) * (repuesto.cantidad || 0);
+                                              return {
+                                                ...repuesto,
+                                                repuesto:
+                                                  repuestoDetalle || null,
+                                              };
+                                            }
+                                          );
+                                      }
+                                    });
+                                  }
+                                });
+                              }
+                            });
+                          }
+                        }
+                      );
+                      this.checklistResponse.total_final = total_final;
+                    } else {
+                      let total_final = 0;
+                      this.checklistResponse.climate_data.forEach(
+                        (activoFijo: any) => {
+                          const detailActivoFijo =
+                            this.solicitud.local.activoFijoLocales.find(
+                              (item: any) =>
+                                item.id.toString() ===
+                                activoFijo.activo_fijo_id.toString()
+                            );
+                          activoFijo.detailActivoFijo = detailActivoFijo;
+                          if (activoFijo.checklist) {
+                            activoFijo.checklist.forEach((lista: any) => {
+                              if (lista.items) {
+                                lista.items.forEach((item: any) => {
+                                  if (item.subItems) {
+                                    item.subItems.forEach((subItem: any) => {
+                                      if (subItem.repuestos) {
+                                        subItem.repuestos =
+                                          subItem.repuestos.map(
+                                            (repuesto: any) => {
+                                              const repuestoDetalle =
+                                                this.repuestosList.find(
+                                                  (r) => r.id === repuesto.id
+                                                );
+                                              total_final +=
+                                                (repuestoDetalle?.precio_venta ||
+                                                  0) * (repuesto.cantidad || 0);
+                                              return {
+                                                ...repuesto,
+                                                repuesto:
+                                                  repuestoDetalle || null,
+                                              };
+                                            }
+                                          );
+                                      }
+                                    });
+                                  }
+                                });
+                              }
+                            });
+                          }
+                          // if (activoFijo.repuestos) {
+                          //   activoFijo.repuestos = activoFijo.repuestos.map((repuesto: any) => {
+                          //     const repuestoDetalle = this.repuestosList.find(r => r.id === repuesto.id);
+                          //     console.log(repuestoDetalle);
+                          //     total_final += (repuestoDetalle?.precio_venta || 0) * (repuesto.cantidad || 0);
+                          //     return {
+                          //       ...repuesto,
+                          //       repuesto: repuestoDetalle || null
+                          //     };
+                          //   });
+                          // }
+                        }
+                      );
+                      this.checklistResponse.total_final = total_final;
+                    }
                   },
-                  error: (error) => {
-                    console.error('Error al cargar información del usuario que rechazó:', error);
-                    this.snackBar.open('No se pudo cargar la información completa del usuario que rechazó la solicitud', 'Cerrar', {
-                      duration: 5000
-                    });
-                  },
-                  complete: () => {
-                    this.loading = false;
-                  }
                 });
+
+              this.solicitud = data;
+
+              // Asignar el imagePreview si existe image_ot
+              if (data.image_ot) {
+                const imageUrl = data.image_ot.startsWith('http')
+                  ? data.image_ot
+                  : `${environment.apiUrl}/${data.image_ot}`;
+                this.imagePreview = imageUrl;
+                this.urlImage = imageUrl;
+                this.solicitudForm.patchValue({
+                  image_ot: imageUrl,
+                });
+              }
+
+              // Detectar estado de la solicitud por su estado actual
+              if (this.solicitud?.status === 'pendiente') {
+                this.isPendiente = true;
+              } else if (this.solicitud?.status === 'aprobada') {
+                this.isAprobada = true;
+              } else if (this.solicitud?.status === 'rechazada') {
+                this.isRechazada = true;
+
+                // Cargar la información del usuario que rechazó la solicitud
+                if (this.solicitud?.rechazada_por_id) {
+                  this.loading = true; // Mantener loading mientras cargamos datos adicionales
+                  this.usersService
+                    .getUserById(this.solicitud.rechazada_por_id)
+                    .subscribe({
+                      next: (usuario) => {
+                        this.usuarioRechazo = usuario;
+                        console.log(
+                          'Usuario que rechazó la solicitud:',
+                          usuario
+                        );
+                      },
+                      error: (error) => {
+                        console.error(
+                          'Error al cargar información del usuario que rechazó:',
+                          error
+                        );
+                        this.snackBar.open(
+                          'No se pudo cargar la información completa del usuario que rechazó la solicitud',
+                          'Cerrar',
+                          {
+                            duration: 5000,
+                          }
+                        );
+                      },
+                      complete: () => {
+                        this.loading = false;
+                      },
+                    });
+                } else {
+                  console.warn(
+                    'La solicitud está rechazada pero no tiene rechazada_por_id'
+                  );
+                }
+              } else if (this.solicitud?.status === 'validada') {
+                this.isValidada = true;
+              } else if (this.solicitud?.status === 'reabierta') {
+                this.isReabierta = true;
+              }
+
+              // Si el estado es pendiente, habilitar los controles necesarios
+              if (this.isPendiente) {
+                this.solicitudForm.get('tecnico_asignado_id')?.enable();
+                this.solicitudForm.get('tecnico_asignado_id_2')?.enable();
+                this.solicitudForm.get('tipoServicioId')?.enable();
+                this.solicitudForm.get('sectorTrabajoId')?.enable();
               } else {
-                console.warn('La solicitud está rechazada pero no tiene rechazada_por_id');
+                // Si no está en pendiente, deshabilitar los controles
+                this.solicitudForm.get('tecnico_asignado_id')?.disable();
+                this.solicitudForm.get('tecnico_asignado_id_2')?.disable();
+                this.solicitudForm.get('tipoServicioId')?.disable();
+                this.solicitudForm.get('sectorTrabajoId')?.disable();
               }
-            } else if (this.solicitud?.status === 'validada') {
-              this.isValidada = true;
-            } else if (this.solicitud?.status === 'reabierta') {
-              this.isReabierta = true;
-            }
-            
-            // Si el estado es pendiente, habilitar los controles necesarios
-            if (this.isPendiente) {
-              this.solicitudForm.get('tecnico_asignado_id')?.enable();
-              this.solicitudForm.get('tecnico_asignado_id_2')?.enable();
-              this.solicitudForm.get('tipoServicioId')?.enable();
-              this.solicitudForm.get('sectorTrabajoId')?.enable();
-            } else {
-              // Si no está en pendiente, deshabilitar los controles
-              this.solicitudForm.get('tecnico_asignado_id')?.disable();
-              this.solicitudForm.get('tecnico_asignado_id_2')?.disable();
-              this.solicitudForm.get('tipoServicioId')?.disable();
-              this.solicitudForm.get('sectorTrabajoId')?.disable();
-            }
-            
-            this.itemRepuestos = data.itemRepuestos || [];
 
-            // Encontrar los nombres de tipo servicio y sector trabajo
-            const tipoServicio = this.tiposServicio.find(t => t.id === data.tipoServicioId);
-            const sectorTrabajo = this.sectoresTrabajos.find(s => s.id === data.sectorTrabajoId);
+              this.itemRepuestos = data.itemRepuestos || [];
 
-            // Actualizar el formulario con los datos
-            this.solicitudForm.patchValue({
-              'client.nombre': data.client?.nombre || '',
-              'local.nombre_local': data.local?.nombre_local || '',
-              'local.direccion': data.local?.direccion || '',
-              'tecnico_asignado.name': data.tecnico_asignado?.name || '',
-              'tipoServicioId': data.tipoServicioId || (data.tipoServicio?.id || ''),
-              'sectorTrabajoId': data.sectorTrabajoId || '',
-              'especialidad': data.especialidad || '',
-              'fechaVisita': data.fechaVisita ? new Date(data.fechaVisita) : null,
-              'ticketGruman': data.ticketGruman || '',
-              'status': data.status || '',
-              'observaciones': data.observaciones || '',
-              'fecha_hora_inicio_servicio': data.fecha_hora_inicio_servicio || '',
-              'fecha_hora_fin_servicio': data.fecha_hora_fin_servicio || '',
-              'longitud_movil': data.longitud_movil || '',
-              'latitud_movil': data.latitud_movil || '',
-              'valorPorLocal': data.valorPorLocal !== null ? data.valorPorLocal : data.local?.valorPorLocal || '',
-              'registroVisita': data.registroVisita || '',
-              'tecnico_asignado_id': data.tecnico_asignado?.id || '',
-              'tecnico_asignado_id_2': data.tecnico_asignado_2?.id || '',
-              'tipoServicio': data.tipoServicio?.nombre || '',
-              'sectorTrabajo': data.sectorTrabajo?.nombre || '',
-              'causaRaizId': data.causaRaizId || '',
-              'garantia': data.garantia || '',
-              'turno': data.turno || '',
-              'estado_solicitud': data.estado_solicitud || '',
-            });
+              // Encontrar los nombres de tipo servicio y sector trabajo
+              const tipoServicio = this.tiposServicio.find(
+                (t) => t.id === data.tipoServicioId
+              );
+              const sectorTrabajo = this.sectoresTrabajos.find(
+                (s) => s.id === data.sectorTrabajoId
+              );
 
-            // Si está rechazada, deshabilitar todos los controles
-            if (this.isRechazada) {
-              this.deshabilitarControlesFormulario();
-            }
-            
-            // Si está aprobada, también deshabilitar todos los controles
-            if (this.isAprobada) {
-              this.deshabilitarControlesFormulario();
-            }
-            
-            // Si está validada, también deshabilitar todos los controles
-            if (this.isValidada) {
-              this.deshabilitarControlesFormulario();
-              // Asegurarse explícitamente que registroVisita esté deshabilitado
-              this.solicitudForm.get('registroVisita')?.disable();
-            }
-            
-            // Si está reabierta, NO deshabilitar controles relacionados con valorPorLocal
-            if (this.isReabierta || this.solicitud?.status === 'reabierta') {
-              // Asegurarse que el campo valorPorLocal esté habilitado
-              this.solicitudForm.get('valorPorLocal')?.enable();
-            }
-            
-            // Procesar lista de inspección
-            if (data.client?.listaInspeccion) {
-              this.listaInspeccion = data.client.listaInspeccion.map((lista: any) => ({
-                ...lista,
-                items: lista.items.map((item: any) => ({
-                  ...item,
-                  subItems: item.subItems.map((subItem: any) => {
-                    // Filtrar los repuestos para este subItem
-                    const subItemRepuestos = this.itemRepuestos.filter(
-                      repuesto => repuesto.itemId === subItem.id
-                    );
-
-                    // Obtener el último repuesto para determinar el estado
-                    const lastRepuesto = subItemRepuestos
-                      .sort((a, b) => new Date(b.fechaAgregado).getTime() - new Date(a.fechaAgregado).getTime())[0];
-
-                    // Obtener todas las fotos de los repuestos
-                    const fotos = subItemRepuestos.reduce((acc: string[], repuesto: any) => {
-                      if (repuesto.fotos && Array.isArray(repuesto.fotos)) {
-                        return [...acc, ...repuesto.fotos];
-                      }
-                      return acc;
-                    }, []);
-
-                    // Asignar las fotos al repuesto en el mapa de repuestos
-                    if (!this.repuestos[subItem.id]) {
-                      this.repuestos[subItem.id] = {
-                        estado: lastRepuesto?.estado || subItem.estado || 'no_conforme',
-                        comentario: lastRepuesto?.comentario || '',
-                        fotos: fotos,
-                        repuestos: []
-                      };
-                    }
-
-                    return {
-                      ...subItem,
-                      estado: lastRepuesto?.estado || subItem.estado || 'no_conforme',
-                      fotos: fotos,
-                      repuestos: subItemRepuestos
-                    };
-                  })
-                }))
-              }));
-            }
-
-            // Actualizar el mapa de repuestos con los repuestos existentes
-            if (!this.repuestos) {
-              this.repuestos = {}; // Asegurar que repuestos esté inicializado
-            }
-            
-            this.itemRepuestos.forEach(repuesto => {
-              const itemId = repuesto.itemId;
-              
-              // Verificar si itemId es válido
-              if (itemId === undefined || itemId === null) {
-                console.warn('Se encontró un repuesto sin itemId válido:', repuesto);
-                return; // Saltar a la siguiente iteración
-              }
-              
-              if (!this.repuestos[itemId]) {
-                this.repuestos[itemId] = {
-                  estado: repuesto.estado || 'no_conforme',
-                  comentario: repuesto.comentario || '',
-                  fotos: repuesto.fotos || [],
-                  repuestos: [] // Inicializar como array vacío
-                };
-              }
-              
-              // Asegurar que repuestos sea un array
-              if (!this.repuestos[itemId].repuestos) {
-                this.repuestos[itemId].repuestos = [];
-              }
-              
-              // Ahora es seguro hacer push
-              this.repuestos[itemId].repuestos.push({
-                cantidad: repuesto.cantidad || 0,
-                comentario: repuesto.comentario || '',
-                repuesto: repuesto.repuesto
+              // Actualizar el formulario con los datos
+              this.solicitudForm.patchValue({
+                'client.nombre': data.client?.nombre || '',
+                'local.nombre_local': data.local?.nombre_local || '',
+                'local.direccion': data.local?.direccion || '',
+                'tecnico_asignado.name': data.tecnico_asignado?.name || '',
+                tipoServicioId:
+                  data.tipoServicioId || data.tipoServicio?.id || '',
+                sectorTrabajoId: data.sectorTrabajoId || '',
+                especialidad: data.especialidad || '',
+                fechaVisita: data.fechaVisita
+                  ? new Date(data.fechaVisita)
+                  : null,
+                ticketGruman: data.ticketGruman || '',
+                status: data.status || '',
+                observaciones: data.observaciones || '',
+                fecha_hora_inicio_servicio:
+                  data.fecha_hora_inicio_servicio || '',
+                fecha_hora_fin_servicio: data.fecha_hora_fin_servicio || '',
+                longitud_movil: data.longitud_movil || '',
+                latitud_movil: data.latitud_movil || '',
+                valorPorLocal:
+                  data.valorPorLocal !== null
+                    ? data.valorPorLocal
+                    : data.local?.valorPorLocal || '',
+                registroVisita: data.registroVisita || '',
+                tecnico_asignado_id: data.tecnico_asignado?.id || '',
+                tecnico_asignado_id_2: data.tecnico_asignado_2?.id || '',
+                tipoServicio: data.tipoServicio?.nombre || '',
+                sectorTrabajo: data.sectorTrabajo?.nombre || '',
+                causaRaizId: data.causaRaizId || '',
+                garantia: data.garantia || '',
+                turno: data.turno || '',
+                estado_solicitud: data.estado_solicitud || '',
               });
-            });
 
-            // Inicializar el mapa después de un pequeño retraso para asegurar que el DOM esté listo
-            setTimeout(() => {
-              this.initMap();
-            }, 100);
+              // Si está rechazada, deshabilitar todos los controles
+              if (this.isRechazada) {
+                this.deshabilitarControlesFormulario();
+              }
 
-            console.log('Repuestos cargados:', this.repuestos);
-            this.loading = false;
-          },
-          error: (error) => {
-            console.error('Error loading solicitud:', error);
-            this.loading = false;
-            this.snackBar.open('Error al cargar la solicitud', 'Cerrar', {
-              duration: 3000
-            });
-          }
-        });
+              // Si está aprobada, también deshabilitar todos los controles
+              if (this.isAprobada) {
+                this.deshabilitarControlesFormulario();
+              }
+
+              // Si está validada, también deshabilitar todos los controles
+              if (this.isValidada) {
+                this.deshabilitarControlesFormulario();
+                // Asegurarse explícitamente que registroVisita esté deshabilitado
+                this.solicitudForm.get('registroVisita')?.disable();
+              }
+
+              // Si está reabierta, NO deshabilitar controles relacionados con valorPorLocal
+              if (this.isReabierta || this.solicitud?.status === 'reabierta') {
+                // Asegurarse que el campo valorPorLocal esté habilitado
+                this.solicitudForm.get('valorPorLocal')?.enable();
+              }
+
+              // Procesar lista de inspección
+              if (data.client?.listaInspeccion) {
+                this.listaInspeccion = data.client.listaInspeccion.map(
+                  (lista: any) => ({
+                    ...lista,
+                    items: lista.items.map((item: any) => ({
+                      ...item,
+                      subItems: item.subItems.map((subItem: any) => {
+                        // Filtrar los repuestos para este subItem
+                        const subItemRepuestos = this.itemRepuestos.filter(
+                          (repuesto) => repuesto.itemId === subItem.id
+                        );
+
+                        // Obtener el último repuesto para determinar el estado
+                        const lastRepuesto = subItemRepuestos.sort(
+                          (a, b) =>
+                            new Date(b.fechaAgregado).getTime() -
+                            new Date(a.fechaAgregado).getTime()
+                        )[0];
+
+                        // Obtener todas las fotos de los repuestos
+                        const fotos = subItemRepuestos.reduce(
+                          (acc: string[], repuesto: any) => {
+                            if (
+                              repuesto.fotos &&
+                              Array.isArray(repuesto.fotos)
+                            ) {
+                              return [...acc, ...repuesto.fotos];
+                            }
+                            return acc;
+                          },
+                          []
+                        );
+
+                        // Asignar las fotos al repuesto en el mapa de repuestos
+                        if (!this.repuestos[subItem.id]) {
+                          this.repuestos[subItem.id] = {
+                            estado:
+                              lastRepuesto?.estado ||
+                              subItem.estado ||
+                              'no_conforme',
+                            comentario: lastRepuesto?.comentario || '',
+                            fotos: fotos,
+                            repuestos: [],
+                          };
+                        }
+
+                        return {
+                          ...subItem,
+                          estado:
+                            lastRepuesto?.estado ||
+                            subItem.estado ||
+                            'no_conforme',
+                          fotos: fotos,
+                          repuestos: subItemRepuestos,
+                        };
+                      }),
+                    })),
+                  })
+                );
+              }
+
+              // Actualizar el mapa de repuestos con los repuestos existentes
+              if (!this.repuestos) {
+                this.repuestos = {}; // Asegurar que repuestos esté inicializado
+              }
+
+              this.itemRepuestos.forEach((repuesto) => {
+                const itemId = repuesto.itemId;
+
+                // Verificar si itemId es válido
+                if (itemId === undefined || itemId === null) {
+                  console.warn(
+                    'Se encontró un repuesto sin itemId válido:',
+                    repuesto
+                  );
+                  return; // Saltar a la siguiente iteración
+                }
+
+                if (!this.repuestos[itemId]) {
+                  this.repuestos[itemId] = {
+                    estado: repuesto.estado || 'no_conforme',
+                    comentario: repuesto.comentario || '',
+                    fotos: repuesto.fotos || [],
+                    repuestos: [], // Inicializar como array vacío
+                  };
+                }
+
+                // Asegurar que repuestos sea un array
+                if (!this.repuestos[itemId].repuestos) {
+                  this.repuestos[itemId].repuestos = [];
+                }
+
+                // Ahora es seguro hacer push
+                this.repuestos[itemId].repuestos.push({
+                  cantidad: repuesto.cantidad || 0,
+                  comentario: repuesto.comentario || '',
+                  repuesto: repuesto.repuesto,
+                });
+              });
+
+              // Inicializar el mapa después de un pequeño retraso para asegurar que el DOM esté listo
+              setTimeout(() => {
+                this.initMap();
+              }, 100);
+
+              console.log('Repuestos cargados:', this.repuestos);
+              this.loading = false;
+            },
+            error: (error) => {
+              console.error('Error loading solicitud:', error);
+              this.loading = false;
+              this.snackBar.open('Error al cargar la solicitud', 'Cerrar', {
+                duration: 3000,
+              });
+            },
+          });
       },
       error: (error) => {
         console.error('Error loading repuestos:', error);
         this.loading = false;
         this.snackBar.open('Error al cargar la lista de repuestos', 'Cerrar', {
-          duration: 3000
+          duration: 3000,
         });
-      }
+      },
     });
   }
-  
-  getRepuestosChecklist(checklist:any){
-    this.solicitarVisitaService.getRepuestosById(checklist).subscribe((res:any)=>{
-      console.log(res);
-    })
+
+  getRepuestosChecklist(checklist: any) {
+    this.solicitarVisitaService
+      .getRepuestosById(checklist)
+      .subscribe((res: any) => {
+        console.log(res);
+      });
   }
   onCancel(): void {
     this.router.navigate(['/transacciones/solicitudes-de-visita']);
   }
 
-  hasPhotos(subItem:any, activoFijo:any) {
-    return this.solicitud?.itemFotos?.find((item:any) => item.itemId.toString() === subItem.toString() && item.activo_fijo_id.toString() === activoFijo.toString())?.fotos || [];
-  }
- 
-  hasItemStatus(subItem:any, activoFijo:any) {
-    return this.solicitud?.itemEstados?.find((item:any) => item.itemId.toString() === subItem.toString() && item.activo_fijo_id.toString() === activoFijo.toString()) || [];
+  hasPhotos(subItem: any, activoFijo: any) {
+    return (
+      this.solicitud?.itemFotos?.find(
+        (item: any) =>
+          item.itemId.toString() === subItem.toString() &&
+          item.activo_fijo_id.toString() === activoFijo.toString()
+      )?.fotos || []
+    );
   }
 
-  hasReplacements(subItem:any, activoFijo:any) {
-    return this.solicitud?.itemRepuestos?.filter((item:any) => 
-      item.itemId.toString() === subItem.toString() && 
-      item.activo_fijo_id.toString() === activoFijo.toString()
-    ) || [];
+  hasItemStatus(subItem: any, activoFijo: any) {
+    return (
+      this.solicitud?.itemEstados?.find(
+        (item: any) =>
+          item.itemId.toString() === subItem.toString() &&
+          item.activo_fijo_id.toString() === activoFijo.toString()
+      ) || []
+    );
+  }
+
+  hasReplacements(subItem: any, activoFijo: any) {
+    return (
+      this.solicitud?.itemRepuestos?.filter(
+        (item: any) =>
+          item.itemId.toString() === subItem.toString() &&
+          item.activo_fijo_id.toString() === activoFijo.toString()
+      ) || []
+    );
   }
 
   aprobarSolicitud(): void {
     // Verificar si el formulario es válido
     if (this.solicitudForm.invalid) {
       // Marcar todos los campos como tocados para mostrar los errores
-      Object.keys(this.solicitudForm.controls).forEach(key => {
+      Object.keys(this.solicitudForm.controls).forEach((key) => {
         const control = this.solicitudForm.get(key);
         control?.markAsTouched();
       });
-      
-      this.snackBar.open('Por favor completa los campos requeridos antes de aprobar la solicitud', 'Cerrar', {
-        duration: 5000,
-        panelClass: ['error-snackbar']
-      });
+
+      this.snackBar.open(
+        'Por favor completa los campos requeridos antes de aprobar la solicitud',
+        'Cerrar',
+        {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        }
+      );
       return;
     }
 
     // Validar que haya un técnico asignado
     if (!this.solicitudForm.get('tecnico_asignado_id')?.value) {
-      this.snackBar.open('No se puede aprobar la solicitud sin un técnico asignado', 'Cerrar', {
-        duration: 5000,
-        panelClass: ['error-snackbar']
-      });
+      this.snackBar.open(
+        'No se puede aprobar la solicitud sin un técnico asignado',
+        'Cerrar',
+        {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        }
+      );
       return;
     }
 
     // Validar que haya una fecha de visita
     if (!this.solicitudForm.get('fechaVisita')?.value) {
-      this.snackBar.open('No se puede aprobar la solicitud sin una fecha de visita', 'Cerrar', {
-        duration: 5000,
-        panelClass: ['error-snackbar']
-      });
+      this.snackBar.open(
+        'No se puede aprobar la solicitud sin una fecha de visita',
+        'Cerrar',
+        {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        }
+      );
       return;
     }
 
     // Proceder con la aprobación
     this.loading = true;
-    
+
     // Primero guardar los cambios en el formulario
-    this.saveChanges().then(() => {
-      // Obtener el ID del técnico asignado y la especialidad
-      const tecnicoAsignadoId = this.solicitudForm.get('tecnico_asignado_id')?.value;
-      const tecnicoAsignadoId2 = this.solicitudForm.get('tecnico_asignado_id_2')?.value;
-      const especialidad = this.solicitudForm.get('especialidad')?.value;
-      const fechaVisita = this.solicitudForm.get('fechaVisita')?.value;
-      const valorPorLocal = this.solicitudForm.get('valorPorLocal')?.value;
-      
-      // Luego aprobar la solicitud
-      this.solicitarVisitaService.aprobarSolicitudVisita(
-        Number(this.solicitudId), 
-        tecnicoAsignadoId,
-        tecnicoAsignadoId2,
-        especialidad,
-        fechaVisita,
-        valorPorLocal
-      ).subscribe({
-        next: () => {
-          this.snackBar.open('Solicitud aprobada correctamente', 'Cerrar', {
-            duration: 3000
+    this.saveChanges()
+      .then(() => {
+        // Obtener el ID del técnico asignado y la especialidad
+        const tecnicoAsignadoId = this.solicitudForm.get(
+          'tecnico_asignado_id'
+        )?.value;
+        const tecnicoAsignadoId2 = this.solicitudForm.get(
+          'tecnico_asignado_id_2'
+        )?.value;
+        const especialidad = this.solicitudForm.get('especialidad')?.value;
+        const fechaVisita = this.solicitudForm.get('fechaVisita')?.value;
+        const valorPorLocal = this.solicitudForm.get('valorPorLocal')?.value;
+
+        // Luego aprobar la solicitud
+        this.solicitarVisitaService
+          .aprobarSolicitudVisita(
+            Number(this.solicitudId),
+            tecnicoAsignadoId,
+            tecnicoAsignadoId2,
+            especialidad,
+            fechaVisita,
+            valorPorLocal
+          )
+          .subscribe({
+            next: () => {
+              this.snackBar.open('Solicitud aprobada correctamente', 'Cerrar', {
+                duration: 3000,
+              });
+              this.router.navigate(['/transacciones/solicitudes-de-visita']);
+            },
+            error: (error: any) => {
+              console.error('Error al aprobar la solicitud:', error);
+              this.snackBar.open('Error al aprobar la solicitud', 'Cerrar', {
+                duration: 3000,
+              });
+              this.loading = false;
+            },
+            complete: () => {
+              this.loading = false;
+            },
           });
-          this.router.navigate(['/transacciones/solicitudes-de-visita']);
-        },
-        error: (error: any) => {
-          console.error('Error al aprobar la solicitud:', error);
-          this.snackBar.open('Error al aprobar la solicitud', 'Cerrar', {
-            duration: 3000
-          });
-          this.loading = false;
-        },
-        complete: () => {
-          this.loading = false;
-        }
+      })
+      .catch((error) => {
+        console.error('Error al guardar los cambios del formulario:', error);
+        this.snackBar.open(
+          'Error al guardar los cambios del formulario',
+          'Cerrar',
+          {
+            duration: 3000,
+          }
+        );
+        this.loading = false;
       });
-    }).catch(error => {
-      console.error('Error al guardar los cambios del formulario:', error);
-      this.snackBar.open('Error al guardar los cambios del formulario', 'Cerrar', {
-        duration: 3000
-      });
-      this.loading = false;
-    });
   }
 
   rechazarSolicitud(): void {
@@ -843,39 +984,45 @@ export class ModificarSolicitudComponent implements OnInit {
         requireInput: true, // Requiere que se ingrese un motivo
         confirmText: 'Rechazar',
         cancelText: 'Cancelar',
-        confirmColor: 'warn'
-      }
+        confirmColor: 'warn',
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loading = true;
-        
+
         // Obtenemos la información del usuario actual
         const currentUser = this.authService.currentUserValue;
         console.log('Usuario actual:', currentUser);
-        
-        this.solicitarVisitaService.rechazarSolicitudVisita(Number(this.solicitudId), {
-          motivo: result,
-          rechazada_por_id: currentUser?.id
-        }).subscribe({
-          next: () => {
-            this.snackBar.open('Solicitud rechazada correctamente', 'Cerrar', {
-              duration: 3000
-            });
-            this.router.navigate(['/transacciones/solicitudes-de-visita']);
-          },
-          error: (error) => {
-            console.error('Error al rechazar la solicitud:', error);
-            this.snackBar.open('Error al rechazar la solicitud', 'Cerrar', {
-              duration: 3000
-            });
-            this.loading = false;
-          },
-          complete: () => {
-            this.loading = false;
-          }
-        });
+
+        this.solicitarVisitaService
+          .rechazarSolicitudVisita(Number(this.solicitudId), {
+            motivo: result,
+            rechazada_por_id: currentUser?.id,
+          })
+          .subscribe({
+            next: () => {
+              this.snackBar.open(
+                'Solicitud rechazada correctamente',
+                'Cerrar',
+                {
+                  duration: 3000,
+                }
+              );
+              this.router.navigate(['/transacciones/solicitudes-de-visita']);
+            },
+            error: (error) => {
+              console.error('Error al rechazar la solicitud:', error);
+              this.snackBar.open('Error al rechazar la solicitud', 'Cerrar', {
+                duration: 3000,
+              });
+              this.loading = false;
+            },
+            complete: () => {
+              this.loading = false;
+            },
+          });
       }
     });
   }
@@ -886,93 +1033,31 @@ export class ModificarSolicitudComponent implements OnInit {
       return;
     }
 
-    debugger
-    
-    console.log('Iniciando guardado de repuestos...');
-    this.loading = true;
-    
-    // Obtener el valorPorLocal del formulario
-    const valorPorLocal = this.solicitudForm.get('valorPorLocal')?.value;
+    console.log('this.checklistResponse', this.checklistResponse);
 
-    // Crear un array de promesas para todas las operaciones
-    const promises: Promise<any>[] = [];
-    
-    // Guardar el valor por local primero
-    if (valorPorLocal !== null && valorPorLocal !== undefined) {
-      const updateData = {
-        valorPorLocal: valorPorLocal
-      };
-      promises.push(this.solicitarVisitaService.updateSolicitudVisita(Number(this.solicitudId), updateData).toPromise());
-    }
-
-    // Manejar repuestos eliminados
-    for (const subItemId in this.temporaryDeletedRepuestos) {
-      for (const repuesto of this.temporaryDeletedRepuestos[subItemId]) {
-        promises.push(
-          this.inspectionService.deleteRepuestoFromItem(repuesto.id).toPromise()
-        );
-      }
-    }
-
-    // Manejar nuevos repuestos
-    for (const subItemId in this.temporaryRepuestos) {
-      // Encontrar el estado actual del subItem si existe
-      let estadoSubItem: string | undefined;
-      const subItemInfo = this.findSubItemById(Number(subItemId));
-      if (subItemInfo) {
-        estadoSubItem = subItemInfo.estado;
-      }
-      
-      for (const repuesto of this.temporaryRepuestos[subItemId]) {
-        if (!repuesto.pendingDelete) {
-          promises.push(
-            this.inspectionService.insertRepuestoInItem(
-              this.solicitud.client.id,
-              String(subItemId),
-              repuesto.repuesto.id,
-              repuesto.cantidad,
-              repuesto.comentario,
-              Number(this.solicitudId),
-              estadoSubItem // Pasar el estado actual si existe
-            ).toPromise()
-          );
+    this.solicitarVisitaService
+      .updateChecklistVisita(Number(this.solicitudId), {
+        is_climate: this.checklistResponse.is_climate,
+        data: this.checklistResponse,
+      })
+      .subscribe((res: any) => {
+        console.log('RESPUESTA ENDPOINT', res);
+        if (res.success) {
+          this.snackBar.open('Repuestos guardados correctamente', 'Cerrar', {
+            duration: 3000,
+          });
+        } else {
+          this.snackBar.open('Error al guardar los repuestos', 'Cerrar', {
+            duration: 3000,
+          });
         }
-      }
-    }
-
-    // Ejecutar todas las operaciones
-    Promise.all(promises)
-      .then(() => {
-        // Limpiar los temporales
-        this.temporaryRepuestos = {};
-        this.temporaryDeletedRepuestos = {};
-        
-        // Recargar los datos
-        this.loadSolicitud();
-        
-        this.snackBar.open('Repuestos guardados correctamente', 'Cerrar', {
-          duration: 3000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top',
-        });
-      })
-      .catch((error) => {
-        console.error('Error al guardar los repuestos:', error);
-        this.snackBar.open('Error al guardar los repuestos', 'Cerrar', {
-          duration: 3000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top',
-        });
-      })
-      .finally(() => {
-        this.loading = false;
       });
   }
 
   // Método auxiliar para encontrar un subItem por su ID
   private findSubItemById(subItemId: number): any {
     if (!this.listaInspeccion) return null;
-    
+
     for (const lista of this.listaInspeccion) {
       for (const item of lista.items) {
         for (const subItem of item.subItems) {
@@ -982,7 +1067,7 @@ export class ModificarSolicitudComponent implements OnInit {
         }
       }
     }
-    
+
     return null;
   }
 
@@ -995,12 +1080,12 @@ export class ModificarSolicitudComponent implements OnInit {
     // Validar campos requeridos cuando el estado es finalizado
     if (this.solicitud?.status === 'finalizada') {
       const formValues = this.solicitudForm.getRawValue();
-      
+
       if (!formValues.garantia) {
         this.snackBar.open('Debe seleccionar si aplica garantía', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'end',
-          verticalPosition: 'top'
+          verticalPosition: 'top',
         });
         return;
       }
@@ -1008,45 +1093,53 @@ export class ModificarSolicitudComponent implements OnInit {
       if (!formValues.turno) {
         this.snackBar.open('Debe seleccionar el turno', 'Cerrar', {
           duration: 3000,
-          horizontalPosition: 'end', 
-          verticalPosition: 'top'
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
         });
         return;
       }
 
       if (!formValues.estado_solicitud) {
-        this.snackBar.open('Debe seleccionar el estado de la solicitud', 'Cerrar', {
-          duration: 3000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top'
-        });
+        this.snackBar.open(
+          'Debe seleccionar el estado de la solicitud',
+          'Cerrar',
+          {
+            duration: 3000,
+            horizontalPosition: 'end',
+            verticalPosition: 'top',
+          }
+        );
         return;
       }
     }
-    
+
     console.log('Iniciando validación...');
-    this.authService.currentUser.subscribe(currentUser => {
+    this.authService.currentUser.subscribe((currentUser) => {
       if (!currentUser || !currentUser.id) {
-        this.snackBar.open('Error: No se pudo obtener el usuario actual', 'Cerrar', {
-          duration: 3000
-        });
+        this.snackBar.open(
+          'Error: No se pudo obtener el usuario actual',
+          'Cerrar',
+          {
+            duration: 3000,
+          }
+        );
         return;
       }
-      console.log('this.temporaryDeletedRepuestos', this.temporaryDeletedRepuestos);
-      // Primero eliminamos los repuestos marcados para eliminar
-      for (const subItemId in this.temporaryDeletedRepuestos) {
-        for (const repuesto of this.temporaryDeletedRepuestos[subItemId]) {
-          console.log('repuesto', repuesto.id);
-          this.inspectionService.deleteRepuestoFromItem(repuesto.id).subscribe({
-            next: () => {
-              console.log('Repuesto eliminado correctamente');
-            },
-            error: (error) => {
-              console.error('Error al eliminar repuesto:', error);
-            }
-          });
-        }
-      }
+      // console.log('this.temporaryDeletedRepuestos', this.temporaryDeletedRepuestos);
+      // // Primero eliminamos los repuestos marcados para eliminar
+      // for (const subItemId in this.temporaryDeletedRepuestos) {
+      //   for (const repuesto of this.temporaryDeletedRepuestos[subItemId]) {
+      //     console.log('repuesto', repuesto.id);
+      //     this.inspectionService.deleteRepuestoFromItem(repuesto.id).subscribe({
+      //       next: () => {
+      //         console.log('Repuesto eliminado correctamente');
+      //       },
+      //       error: (error) => {
+      //         console.error('Error al eliminar repuesto:', error);
+      //       }
+      //     });
+      //   }
+      // }
 
       // Primero actualizamos los datos del formulario
       const formValues = this.solicitudForm.getRawValue();
@@ -1061,84 +1154,103 @@ export class ModificarSolicitudComponent implements OnInit {
         garantia: formValues.garantia,
         turno: formValues.turno,
         estado_solicitud: formValues.estado_solicitud,
-        image_ot: this.urlImage ?? "",
-        listaInspeccion: this.listaInspeccion.map(lista => ({
+        image_ot: this.urlImage ?? '',
+        listaInspeccion: this.listaInspeccion.map((lista) => ({
           ...lista,
           items: lista.items.map((item: any) => ({
             ...item,
             subItems: item.subItems.map((subItem: any) => ({
-              ...subItem
-            }))
-          }))
-        }))
+              ...subItem,
+            })),
+          })),
+        })),
       };
 
-      //agregar los items aca de temporalRepuestos
-      console.log('temporalRepuestos', this.temporaryRepuestos);
-      for (const subItemId in this.temporaryRepuestos) {
-        for (const repuesto of this.temporaryRepuestos[subItemId]) {
-          this.inspectionService.insertRepuestoInItem(this.solicitud?.client?.id, subItemId, repuesto.repuesto.id, repuesto.cantidad, repuesto.comentario, Number(this.solicitudId)).subscribe({
-            next: () => {
-              console.log('Repuesto agregado correctamente');
-            },
-            error: (error) => {
-              console.error('Error al agregar repuesto:', error);
-            }
-          });
-        }
-      }
+      // //agregar los items aca de temporalRepuestos
+      // console.log('temporalRepuestos', this.temporaryRepuestos);
+      // for (const subItemId in this.temporaryRepuestos) {
+      //   for (const repuesto of this.temporaryRepuestos[subItemId]) {
+      //     this.inspectionService.insertRepuestoInItem(this.solicitud?.client?.id, subItemId, repuesto.repuesto.id, repuesto.cantidad, repuesto.comentario, Number(this.solicitudId)).subscribe({
+      //       next: () => {
+      //         console.log('Repuesto agregado correctamente');
+      //       },
+      //       error: (error) => {
+      //         console.error('Error al agregar repuesto:', error);
+      //       }
+      //     });
+      //   }
+      // }
 
       // Actualizar primero los datos del formulario
-      this.solicitarVisitaService.updateSolicitudVisita(Number(this.solicitudId), updateData)
+      this.solicitarVisitaService
+        .updateSolicitudVisita(Number(this.solicitudId), updateData)
         .subscribe({
           next: () => {
             // Una vez actualizado, procedemos a validar
             const validationData = {
               validada_por_id: currentUser?.id || null,
               causaRaizId: this.solicitudForm.get('causaRaizId')?.value || null,
-              valorPorLocal: this.solicitudForm.get('valorPorLocal')?.value || 0,
-              registroVisita: this.solicitudForm.get('registroVisita')?.value || '',
+              valorPorLocal:
+                this.solicitudForm.get('valorPorLocal')?.value || 0,
+              registroVisita:
+                this.solicitudForm.get('registroVisita')?.value || '',
               garantia: this.solicitudForm.get('garantia')?.value || false,
               turno: this.solicitudForm.get('turno')?.value || '',
-              estado_solicitud: this.solicitudForm.get('estado_solicitud')?.value || '',
-              image_ot: this.urlImage ?? "",
+              estado_solicitud:
+                this.solicitudForm.get('estado_solicitud')?.value || '',
+              image_ot: this.urlImage ?? '',
             };
 
-            this.solicitarVisitaService.validarSolicitud(
-              Number(this.solicitudId), 
-              validationData
-            ).subscribe({
-              next: (response) => {
-                console.log('Validación exitosa:', response);
-                this.snackBar.open('Solicitud validada correctamente', 'Cerrar', {
-                  duration: 3000
-                });
-                // EJECUTAR ENVIO DE EMAIL
-                this.solicitarVisitaService.enviarEmail(Number(this.solicitudId)).subscribe({
-                  next: (response) => {
-                    console.log('Email enviado correctamente:', response);
-                  },
-                  error: (error) => {
-                    console.error('Error al enviar el email:', error);
-                  }
-                }); 
+            this.solicitarVisitaService
+              .validarSolicitud(Number(this.solicitudId), validationData)
+              .subscribe({
+                next: (response) => {
+                  console.log('Validación exitosa:', response);
+                  this.snackBar.open(
+                    'Solicitud validada correctamente',
+                    'Cerrar',
+                    {
+                      duration: 3000,
+                    }
+                  );
+                  // EJECUTAR ENVIO DE EMAIL
+                  this.solicitarVisitaService
+                    .enviarEmail(Number(this.solicitudId))
+                    .subscribe({
+                      next: (response) => {
+                        console.log('Email enviado correctamente:', response);
+                      },
+                      error: (error) => {
+                        console.error('Error al enviar el email:', error);
+                      },
+                    });
 
-                this.router.navigate(['/transacciones/solicitudes-de-visita/validadas']);
-              },
-              error: (error) => {
-                console.error('Error en validación:', error);
-                this.snackBar.open('Error al validar la solicitud', 'Cerrar', {
-                  duration: 3000
-                });
-              }
-            });
+                  this.router.navigate([
+                    '/transacciones/solicitudes-de-visita/validadas',
+                  ]);
+                },
+                error: (error) => {
+                  console.error('Error en validación:', error);
+                  this.snackBar.open(
+                    'Error al validar la solicitud',
+                    'Cerrar',
+                    {
+                      duration: 3000,
+                    }
+                  );
+                },
+              });
           },
           error: (error) => {
             console.error('Error al actualizar la solicitud:', error);
-            this.snackBar.open('Error al actualizar los datos de la solicitud', 'Cerrar', {
-              duration: 3000
-            });
-          }
+            this.snackBar.open(
+              'Error al actualizar los datos de la solicitud',
+              'Cerrar',
+              {
+                duration: 3000,
+              }
+            );
+          },
         });
     });
   }
@@ -1152,94 +1264,258 @@ export class ModificarSolicitudComponent implements OnInit {
     }
   }
 
-  addRepuestoToItem(subItemId: number) {
-    console.log('Iniciando addRepuestoToItem:', {
-      subItemId,
-      selectedRepuesto: this.selectedRepuesto,
-      cantidad: this.newRepuestoCantidad
-    });
-
+  addRepuestoToItem(subItemId: number, activoFijo: any = null) {
     if (!this.selectedRepuesto || !this.newRepuestoCantidad) {
       console.log('Validación fallida: repuesto o cantidad no seleccionados');
       return;
     }
 
     // Obtener el estado actual del subítem
-    const subItem = this.findSubItemById(subItemId);
-    
-    const nuevoRepuesto = {
-      itemId: subItemId,
-      repuestoId: this.selectedRepuesto.id,
-      cantidad: this.newRepuestoCantidad,
-      repuesto: this.selectedRepuesto,
-      comentario: ''
-    };
-    console.log('Nuevo repuesto creado:', nuevoRepuesto);
+    // const subItem = this.findSubItemById(subItemId);
 
-    // Inicializar el array temporal si no existe
-    if (!this.temporaryRepuestos[subItemId]) {
-      this.temporaryRepuestos[subItemId] = [];
+    // const nuevoRepuesto = {
+    //   itemId: subItemId,
+    //   repuestoId: this.selectedRepuesto.id,
+    //   cantidad: this.newRepuestoCantidad,
+    //   repuesto: this.selectedRepuesto,
+    //   comentario: '',
+    // };
+
+    // Añadir el repuesto al checklistResponse
+    if (this.checklistResponse) {
+      if (this.checklistResponse.is_climate) {
+        // Para checklist de clima
+        this.checklistResponse.climate_data.forEach((currentActivoFijo: any) => {
+          if (activoFijo.activo_fijo_id === currentActivoFijo.activo_fijo_id) {
+            debugger
+            activoFijo.checklist.forEach((lista: any) => {
+              lista.items.forEach((item: any) => {
+                item.subItems.forEach((subItem: any) => {
+                  if (subItem.id === subItemId) {
+                    if (!subItem.repuestos) {
+                      subItem.repuestos = [];
+                    }
+
+                    const hasCurrentRepuesto = subItem.repuestos.findIndex(
+                      (r: any) => r.id === this.selectedRepuesto?.id
+                    );
+                    if (hasCurrentRepuesto !== -1) {
+                      subItem.repuestos[hasCurrentRepuesto].cantidad +=
+                        this.newRepuestoCantidad;
+                    } else {
+                      subItem.repuestos.push({
+                        cantidad: this.newRepuestoCantidad,
+                        id: this.selectedRepuesto?.id,
+                        repuesto: {
+                          id: this.selectedRepuesto?.id,
+                          familia: this.selectedRepuesto?.familia,
+                          articulo: this.selectedRepuesto?.articulo,
+                          marca: this.selectedRepuesto?.marca,
+                          codigoBarra: this.selectedRepuesto?.codigoBarra || '',
+                          precio_compra:
+                            this.selectedRepuesto?.precio_compra || '0.00',
+                          precio_venta:
+                            this.selectedRepuesto?.precio_venta || '0.00',
+                          valor_uf: this.selectedRepuesto?.valor_uf || false,
+                          clima: this.selectedRepuesto?.clima || false,
+                        },
+                      });
+                    }
+                  }
+                });
+              });
+            });
+          }
+        });
+      } else {
+        // Para checklist normal
+        this.checklistResponse.data_normal[0].checklist.forEach(
+          (lista: ChecklistCategoria) => {
+            lista.items.forEach((item: ChecklistItem) => {
+              item.subItems.forEach((subItem: SubItem) => {
+                if (subItem.id === subItemId) {
+                  if (!subItem.repuestos) {
+                    subItem.repuestos = [];
+                  }
+                  const hasCurrentRepuesto = subItem.repuestos.findIndex(
+                    (r: any) => r.id === this.selectedRepuesto?.id
+                  );
+                  if (hasCurrentRepuesto !== -1) {
+                    subItem.repuestos[hasCurrentRepuesto].cantidad +=
+                      this.newRepuestoCantidad;
+                  } else {
+                    subItem.repuestos.push({
+                      cantidad: this.newRepuestoCantidad,
+                      id: this.selectedRepuesto?.id,
+                      repuesto: {
+                        id: this.selectedRepuesto?.id,
+                        familia: this.selectedRepuesto?.familia,
+                        articulo: this.selectedRepuesto?.articulo,
+                        marca: this.selectedRepuesto?.marca,
+                        codigoBarra: this.selectedRepuesto?.codigoBarra || '',
+                        precio_compra:
+                          this.selectedRepuesto?.precio_compra || '0.00',
+                        precio_venta:
+                          this.selectedRepuesto?.precio_venta || '0.00',
+                        valor_uf: this.selectedRepuesto?.valor_uf || false,
+                        clima: this.selectedRepuesto?.clima || false,
+                      },
+                    });
+                  }
+                }
+              });
+            });
+          }
+        );
+      }
     }
 
-    // Agregar al array temporal
-    this.temporaryRepuestos[subItemId].push(nuevoRepuesto);
-    console.log('Estado actual de repuestos temporales:', this.temporaryRepuestos);
+    // this.temporaryRepuestos[subItemId].push(nuevoRepuesto);
+    // console.log('Estado actual de repuestos temporales:', this.temporaryRepuestos);
 
     // Limpiar y actualizar
     this.selectedRepuesto = null;
     this.newRepuestoCantidad = 1;
     this.showAddRepuestoForm[subItemId] = false;
     this.updateListaInspeccion();
+    this.calcularTotalFinal();
 
     console.log('Repuesto agregado exitosamente');
   }
 
-  deleteRepuesto(subItemId: number, repuesto: any) {
+  deleteRepuesto(subItemId: number, repuesto: any, activoFijo:any = null) {
     // Verificar si el repuesto tiene ID (es un repuesto existente)
     if (repuesto.id) {
       // Es un repuesto existente, agregarlo a temporaryDeletedRepuestos
       if (!this.temporaryDeletedRepuestos[subItemId]) {
         this.temporaryDeletedRepuestos[subItemId] = [];
       }
-      
+
       const isAlreadyDeleted = this.temporaryDeletedRepuestos[subItemId].some(
-        deletedRepuesto => deletedRepuesto.id === repuesto.id
+        (deletedRepuesto) => deletedRepuesto.id === repuesto.id
       );
-      
+
       if (!isAlreadyDeleted) {
         this.temporaryDeletedRepuestos[subItemId].push(repuesto);
+      }
+
+      // Eliminar el repuesto del checklistResponse
+      if (this.checklistResponse) {
+        if (this.checklistResponse.is_climate) {
+          // Para checklist de clima
+          this.checklistResponse.climate_data.forEach(
+            (currentActivoFijo: any) => {
+              if (
+                activoFijo.activo_fijo_id === currentActivoFijo.activo_fijo_id
+              ) {
+                currentActivoFijo.checklist.forEach((lista: any) => {
+                  lista.items.forEach((item: any) => {
+                    item.subItems.forEach((subItem: any) => {
+                      if (subItem.id === subItemId && subItem.repuestos) {
+                        subItem.repuestos = subItem.repuestos.filter(
+                          (r: any) => r.id !== repuesto.id
+                        );
+                      }
+                    });
+                  });
+                });
+              }
+            }
+          );
+        } else {
+          // Para checklist normal
+          this.checklistResponse.data_normal[0].checklist.forEach(
+            (lista: any) => {
+              lista.items.forEach((item: any) => {
+                item.subItems.forEach((subItem: any) => {
+                  if (subItem.id === subItemId && subItem.repuestos) {
+                    subItem.repuestos = subItem.repuestos.filter(
+                      (r: any) => r.id !== repuesto.id
+                    );
+                  }
+                });
+              });
+            }
+          );
+        }
       }
     } else {
       // Es un repuesto temporal, eliminarlo de temporaryRepuestos
       if (this.temporaryRepuestos[subItemId]) {
-        this.temporaryRepuestos[subItemId] = this.temporaryRepuestos[subItemId].filter(
-          tempRepuesto => 
+        this.temporaryRepuestos[subItemId] = this.temporaryRepuestos[
+          subItemId
+        ].filter(
+          (tempRepuesto) =>
             tempRepuesto.repuesto.id !== repuesto.repuesto.id ||
             tempRepuesto.cantidad !== repuesto.cantidad
         );
-        
+
         if (this.temporaryRepuestos[subItemId].length === 0) {
           delete this.temporaryRepuestos[subItemId];
         }
+
+        // Eliminar el repuesto del checklistResponse
+        if (this.checklistResponse) {
+          if (this.checklistResponse.is_climate) {
+            // Para checklist de clima
+            this.checklistResponse.climate_data.forEach((activoFijo: any) => {
+              activoFijo.checklist.forEach((lista: any) => {
+                lista.items.forEach((item: any) => {
+                  item.subItems.forEach((subItem: any) => {
+                    if (subItem.id === subItemId && subItem.repuestos) {
+                      subItem.repuestos = subItem.repuestos.filter(
+                        (r: any) => r.repuesto.id !== repuesto.repuesto.id
+                      );
+                    }
+                  });
+                });
+              });
+            });
+          } else {
+            // Para checklist normal
+            this.checklistResponse.data_normal[0].checklist.forEach(
+              (lista: any) => {
+                lista.items.forEach((item: any) => {
+                  item.subItems.forEach((subItem: any) => {
+                    if (subItem.id === subItemId && subItem.repuestos) {
+                      subItem.repuestos = subItem.repuestos.filter(
+                        (r: any) => r.repuesto.id !== repuesto.repuesto.id
+                      );
+                    }
+                  });
+                });
+              }
+            );
+          }
+        }
       }
     }
+
+    // Recalcular el total final
+    this.calcularTotalFinal();
   }
 
   isRepuestoPendingDelete(subItemId: number, repuesto: any): boolean {
-    return this.temporaryDeletedRepuestos[subItemId]?.some(
-      deletedRepuesto => deletedRepuesto.id === repuesto.id
-    ) || false;
+    return (
+      this.temporaryDeletedRepuestos[subItemId]?.some(
+        (deletedRepuesto) => deletedRepuesto.id === repuesto.id
+      ) || false
+    );
   }
 
   calculateSubItemTotal(repuestos: any[]): number {
     if (!repuestos) return 0;
     return repuestos
-        .filter(r => r && r.repuesto) // Solo considerar repuestos válidos
-        .reduce((total, repuesto) => {
-            const cantidad = repuesto.cantidad || 0;
-            const precio = repuesto.precio_venta || repuesto.repuesto?.precio_venta || repuesto.repuesto?.precio || 0;
-            return total + (cantidad * precio);
-        }, 0);
+      .filter((r) => r && r.repuesto) // Solo considerar repuestos válidos
+      .reduce((total, repuesto) => {
+        const cantidad = repuesto.cantidad || 0;
+        const precio =
+          repuesto.precio_venta ||
+          repuesto.repuesto?.precio_venta ||
+          repuesto.repuesto?.precio ||
+          0;
+        return total + cantidad * precio;
+      }, 0);
   }
 
   calculateItemTotal(repuestos: any[]): number {
@@ -1250,7 +1526,7 @@ export class ModificarSolicitudComponent implements OnInit {
   }
   calculateFinalTotal(): number {
     let finalTotal = 0;
-    
+
     // Sumar repuestos de inspección
     // this.checklistResponse.forEach((res: any) => {
     //  res.checklist.forEach((item: any) => {
@@ -1259,7 +1535,7 @@ export class ModificarSolicitudComponent implements OnInit {
     //       finalTotal += this.repuestosList.find(r => r.id === subItem.repuestos[0].repuesto.id)?.precio_venta || 0;
     //     }
     //   });
-     
+
     //  });
     // });
     // this.listaInspeccion.forEach(lista => {
@@ -1271,19 +1547,20 @@ export class ModificarSolicitudComponent implements OnInit {
     //     });
     //   });
     // });
-    
+
     // // Sumar repuestos de activos fijos
     // if (this.solicitud?.activoFijoRepuestos) {
     //   finalTotal += this.calculateTotalActivosFijos();
     // }
-    
+
     return finalTotal;
   }
 
   getRepuestosPorItem(subItemId: number): any[] {
     // Obtener repuestos existentes que no estén marcados para eliminar
-    const existingRepuestos = this.itemRepuestos
-      .filter(repuesto => repuesto.itemId === subItemId);
+    const existingRepuestos = this.itemRepuestos.filter(
+      (repuesto) => repuesto.itemId === subItemId
+    );
 
     // Obtener repuestos temporales
     const tempRepuestos = this.temporaryRepuestos[subItemId] || [];
@@ -1294,7 +1571,7 @@ export class ModificarSolicitudComponent implements OnInit {
 
   private updateListaInspeccion() {
     if (!this.listaInspeccion || !this.itemRepuestos) return;
-  
+
     // Crear un mapa de fotos por itemId
     const fotosPorItem: { [key: number]: string[] } = {};
     if (this.solicitud?.itemFotos) {
@@ -1302,85 +1579,86 @@ export class ModificarSolicitudComponent implements OnInit {
         fotosPorItem[itemFoto.itemId] = itemFoto.fotos || [];
       });
     }
-  
-    this.listaInspeccion = this.listaInspeccion.map(lista => ({
+
+    this.listaInspeccion = this.listaInspeccion.map((lista) => ({
       ...lista,
       items: lista.items.map((item: any) => ({
         ...item,
         subItems: item.subItems.map((subItem: any) => {
           // Obtener repuestos existentes
           const existingRepuestos = this.itemRepuestos.filter(
-            repuesto => repuesto.itemId === subItem.id
+            (repuesto) => repuesto.itemId === subItem.id
           );
-  
+
           // Obtener repuestos temporales
           const tempRepuestos = this.temporaryRepuestos[subItem.id] || [];
-  
+
           // Combinar repuestos existentes y temporales
-          const allRepuestos = [
-            ...existingRepuestos,
-            ...tempRepuestos
-          ].map(repuesto => ({
-            ...repuesto,
-            pendingDelete: this.temporaryDeletedRepuestos[subItem.id]?.some(
-              deletedRepuesto => deletedRepuesto.id === repuesto.id
-            ) || repuesto.pendingDelete
-          }));
-  
+          const allRepuestos = [...existingRepuestos, ...tempRepuestos].map(
+            (repuesto) => ({
+              ...repuesto,
+              pendingDelete:
+                this.temporaryDeletedRepuestos[subItem.id]?.some(
+                  (deletedRepuesto) => deletedRepuesto.id === repuesto.id
+                ) || repuesto.pendingDelete,
+            })
+          );
+
           // Verificar si hay fotos asociadas a este subItem
           const fotosDelItem = fotosPorItem[subItem.id] || [];
-  
+
           return {
             ...subItem,
             estado: subItem.estado,
             fotos: fotosDelItem.length > 0 ? fotosDelItem : [],
-            repuestos: allRepuestos
+            repuestos: allRepuestos,
           };
-        })
-      }))
+        }),
+      })),
     }));
-  
+
     console.log('Lista actualizada con fotos:', this.listaInspeccion);
   }
-  
-  
+
   openPhotoViewer(imageUrls: string[]): void {
     console.log('Opening photo viewer with URLs:', imageUrls); // Para debugging
-    
+
     if (!imageUrls || imageUrls.length === 0) {
       this.snackBar.open('No hay imágenes disponibles', 'Cerrar', {
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
-    
+
     const dialogRef = this.dialog.open(DialogPhotoViewerComponent, {
       data: { imageUrls },
       maxWidth: '90vw',
-      maxHeight: '90vh'
+      maxHeight: '90vh',
     });
   }
 
   getItemEstado(itemId: number) {
-    return this.solicitud?.itemEstados?.find((estado: any) => estado.itemId === itemId);
+    return this.solicitud?.itemEstados?.find(
+      (estado: any) => estado.itemId === itemId
+    );
   }
 
   getEstadoLabel(estado: string | undefined): string {
     if (!estado) return 'Sin Estado';
-    
+
     const estados = {
-      'conforme': 'Conforme',
-      'no_conforme': 'No Conforme',
-      'no_aplica': 'No Aplica',
-      'pendiente': 'Pendiente'
+      conforme: 'Conforme',
+      no_conforme: 'No Conforme',
+      no_aplica: 'No Aplica',
+      pendiente: 'Pendiente',
     };
-    
+
     return estados[estado as keyof typeof estados] || estado;
   }
 
   getEstadoClass(estado: string | null): string {
     if (!estado) return '';
-    
+
     switch (estado.toLowerCase()) {
       case 'conforme':
         return 'badge-success';
@@ -1394,30 +1672,39 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   getItemFotos(itemId: number) {
-    return this.solicitud?.itemFotos?.find((item: any) => item.itemId === itemId);
+    return this.solicitud?.itemFotos?.find(
+      (item: any) => item.itemId === itemId
+    );
   }
 
   async saveChanges() {
     try {
       // Preparar los datos para guardar
       const changes = {
-        addedRepuestos: Object.entries(this.temporaryRepuestos).flatMap(([itemId, repuestos]) => 
-          repuestos.filter(r => !r.pendingDelete).map(r => ({
-            itemId: parseInt(itemId),
-            repuestoId: r.repuesto.id,
-            cantidad: r.cantidad,
-            solicitarVisitaId: Number(this.solicitudId),
-            comentario: r.comentario || '',
-            garantia: r.garantia || '',
-            turno: r.turno || '',
-            estado_solicitud: r.estado_solicitud || '',
-          }))
+        addedRepuestos: Object.entries(this.temporaryRepuestos).flatMap(
+          ([itemId, repuestos]) =>
+            repuestos
+              .filter((r) => !r.pendingDelete)
+              .map((r) => ({
+                itemId: parseInt(itemId),
+                repuestoId: r.repuesto.id,
+                cantidad: r.cantidad,
+                solicitarVisitaId: Number(this.solicitudId),
+                comentario: r.comentario || '',
+                garantia: r.garantia || '',
+                turno: r.turno || '',
+                estado_solicitud: r.estado_solicitud || '',
+              }))
         ),
-        deletedRepuestos: Object.values(this.temporaryDeletedRepuestos).flat().map(r => r.id)
+        deletedRepuestos: Object.values(this.temporaryDeletedRepuestos)
+          .flat()
+          .map((r) => r.id),
       };
 
       // Guardar los cambios
-      await this.solicitarVisitaService.updateRepuestos(this.solicitudId, changes).toPromise();
+      await this.solicitarVisitaService
+        .updateRepuestos(this.solicitudId, changes)
+        .toPromise();
 
       // Limpiar los temporales
       this.temporaryRepuestos = {};
@@ -1426,16 +1713,35 @@ export class ModificarSolicitudComponent implements OnInit {
       // Recargar la solicitud
       this.loadSolicitud();
 
-      this.snackBar.open('Cambios guardados correctamente', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('Cambios guardados correctamente', 'Cerrar', {
+        duration: 3000,
+      });
     } catch (error) {
       console.error('Error al guardar los cambios:', error);
-      this.snackBar.open('Error al guardar los cambios', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('Error al guardar los cambios', 'Cerrar', {
+        duration: 3000,
+      });
     }
   }
 
   hasChanges(): boolean {
-    return Object.values(this.temporaryRepuestos).some(repuestos => repuestos.length > 0) ||
-           Object.values(this.temporaryDeletedRepuestos).some(repuestos => repuestos.length > 0);
+    // return (
+    //   Object.values(this.temporaryRepuestos).some(
+    //     (repuestos) => repuestos.length > 0
+    //   ) ||
+    //   Object.values(this.temporaryDeletedRepuestos).some(
+    //     (repuestos) => repuestos.length > 0
+    //   )
+    // );
+    return (
+      Object.values(this.temporaryRepuestos).some(
+        (repuestos) => repuestos.length > 0
+      ) ||
+      Object.values(this.temporaryDeletedRepuestos).some(
+        (repuestos) => repuestos.length > 0
+      ) ||
+      JSON.stringify(this.temporalChecklist) !== JSON.stringify(this.checklistResponse)
+    );
   }
 
   private initMap(): void {
@@ -1451,7 +1757,7 @@ export class ModificarSolicitudComponent implements OnInit {
         const iconRetinaUrl = 'assets/marker-icon-2x.png';
         const iconUrl = 'assets/marker-icon.png';
         const shadowUrl = 'assets/marker-shadow.png';
-        
+
         const iconDefault = L.icon({
           iconRetinaUrl,
           iconUrl,
@@ -1460,30 +1766,30 @@ export class ModificarSolicitudComponent implements OnInit {
           iconAnchor: [12, 41],
           popupAnchor: [1, -34],
           tooltipAnchor: [16, -28],
-          shadowSize: [41, 41]
+          shadowSize: [41, 41],
         });
         L.Marker.prototype.options.icon = iconDefault;
 
         // Inicializar el mapa en Santiago de Chile por defecto
         this.map = L.map('map', {
           center: [-33.4569, -70.6483],
-          zoom: 13
+          zoom: 13,
         });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 18,
           minZoom: 3,
-          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution:
+            '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(this.map);
 
         // Usar latitud y longitud del móvil si están disponibles
         if (this.solicitud?.latitud_movil && this.solicitud?.longitud_movil) {
           const lat = parseFloat(this.solicitud.latitud_movil);
           const lng = parseFloat(this.solicitud.longitud_movil);
-          
+
           if (!isNaN(lat) && !isNaN(lng)) {
-            const marker = L.marker([lat, lng])
-              .bindPopup(`
+            const marker = L.marker([lat, lng]).bindPopup(`
                 <b>${this.solicitud.local?.nombre_local || 'Local'}</b><br>
                 ${this.solicitud.local?.direccion || ''}<br>
                 ${this.solicitud.local?.comuna || ''}<br>
@@ -1493,19 +1799,21 @@ export class ModificarSolicitudComponent implements OnInit {
                      style="cursor:pointer; width: 24px; height: 24px;">
                 Abrir en Waze
               `);
-            
+
             marker.addTo(this.map);
             this.map.setView([lat, lng], 15);
           }
         }
         // Si no hay coordenadas del móvil, usar las del local
-        else if (this.solicitud?.local?.latitud && this.solicitud?.local?.longitud) {
+        else if (
+          this.solicitud?.local?.latitud &&
+          this.solicitud?.local?.longitud
+        ) {
           const lat = parseFloat(this.solicitud.local.latitud);
           const lng = parseFloat(this.solicitud.local.longitud);
-          
+
           if (!isNaN(lat) && !isNaN(lng)) {
-            const marker = L.marker([lat, lng])
-              .bindPopup(`
+            const marker = L.marker([lat, lng]).bindPopup(`
                 <b>${this.solicitud.local?.nombre_local || 'Local'}</b><br>
                 ${this.solicitud.local?.direccion || ''}<br>
                 ${this.solicitud.local?.comuna || ''}<br>
@@ -1514,7 +1822,7 @@ export class ModificarSolicitudComponent implements OnInit {
                      style="cursor:pointer; width: 24px; height: 24px;">
                 Abrir en Waze
               `);
-            
+
             marker.addTo(this.map);
             this.map.setView([lat, lng], 15);
           }
@@ -1524,7 +1832,6 @@ export class ModificarSolicitudComponent implements OnInit {
         setTimeout(() => {
           this.map?.invalidateSize();
         }, 200);
-
       } catch (error) {
         console.error('Error al inicializar el mapa:', error);
       }
@@ -1534,34 +1841,39 @@ export class ModificarSolicitudComponent implements OnInit {
   // Método para guardar los cambios
   async onSubmit() {
     if (this.solicitudForm.invalid) {
-        return;
+      return;
     }
 
     const formData = this.solicitudForm.getRawValue();
     console.log('Form data before update:', formData); // Debug log
 
     const updateData = {
-        especialidad: formData.especialidad,
-        ticketGruman: formData.ticketGruman,
-        observaciones: formData.observaciones,
-        longitud_movil: formData.longitud_movil,
-        latitud_movil: formData.latitud_movil,
-        valorPorLocal: formData.valorPorLocal,
-        registroVisita: formData.registroVisita,
-        causaRaizId: formData.causaRaizId || null,
-        listaInspeccion: this.listaInspeccion
+      especialidad: formData.especialidad,
+      ticketGruman: formData.ticketGruman,
+      observaciones: formData.observaciones,
+      longitud_movil: formData.longitud_movil,
+      latitud_movil: formData.latitud_movil,
+      valorPorLocal: formData.valorPorLocal,
+      registroVisita: formData.registroVisita,
+      causaRaizId: formData.causaRaizId || null,
+      listaInspeccion: this.listaInspeccion,
     };
 
     console.log('Update data being sent:', updateData); // Debug log
-    debugger
 
     try {
-        await this.solicitarVisitaService.updateSolicitudVisita(Number(this.solicitudId), updateData).toPromise();
-        this.snackBar.open('Solicitud actualizada correctamente', 'Cerrar', { duration: 3000 });
-        this.router.navigate(['/transacciones/solicitudes-de-visita']);
+      await this.solicitarVisitaService
+        .updateSolicitudVisita(Number(this.solicitudId), updateData)
+        .toPromise();
+      this.snackBar.open('Solicitud actualizada correctamente', 'Cerrar', {
+        duration: 3000,
+      });
+      this.router.navigate(['/transacciones/solicitudes-de-visita']);
     } catch (error) {
-        console.error('Error al actualizar la solicitud:', error);
-        this.snackBar.open('Error al actualizar la solicitud', 'Cerrar', { duration: 3000 });
+      console.error('Error al actualizar la solicitud:', error);
+      this.snackBar.open('Error al actualizar la solicitud', 'Cerrar', {
+        duration: 3000,
+      });
     }
   }
 
@@ -1573,7 +1885,7 @@ export class ModificarSolicitudComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error cargando técnicos:', error);
-      }
+      },
     });
   }
 
@@ -1582,23 +1894,31 @@ export class ModificarSolicitudComponent implements OnInit {
    */
   private deshabilitarControlesFormulario(): void {
     // Deshabilitar todos los controles excepto los especiales
-    Object.keys(this.solicitudForm.controls).forEach(key => {
+    Object.keys(this.solicitudForm.controls).forEach((key) => {
       // Solo permitir editar observaciones siempre
       // Para valorPorLocal, permitir edición solo si es pendiente, reabierta o finalizada,
       // pero nunca si está rechazada, aprobada o validada
       // Para registroVisita, permitir edición solo si es finalizada o reabierta
       // pero debe estar deshabilitado si es validada (aunque visible)
       if (
-        key !== 'observaciones' && 
+        key !== 'observaciones' &&
         !(
-          key === 'valorPorLocal' && 
-          (this.isPendiente || this.isReabierta || this.solicitud?.status === 'reabierta' || this.solicitud?.status === 'finalizada') &&
-          !this.isRechazada && !this.isAprobada && !this.isValidada
+          key === 'valorPorLocal' &&
+          (this.isPendiente ||
+            this.isReabierta ||
+            this.solicitud?.status === 'reabierta' ||
+            this.solicitud?.status === 'finalizada') &&
+          !this.isRechazada &&
+          !this.isAprobada &&
+          !this.isValidada
         ) &&
         !(
-          key === 'registroVisita' && 
-          (this.solicitud?.status === 'finalizada' || this.solicitud?.status === 'reabierta' || this.isReabierta) &&
-          !this.isValidada && this.solicitud?.status !== 'validada'
+          key === 'registroVisita' &&
+          (this.solicitud?.status === 'finalizada' ||
+            this.solicitud?.status === 'reabierta' ||
+            this.isReabierta) &&
+          !this.isValidada &&
+          this.solicitud?.status !== 'validada'
         )
       ) {
         this.solicitudForm.get(key)?.disable();
@@ -1609,27 +1929,34 @@ export class ModificarSolicitudComponent implements OnInit {
   // Método para calcular el total general
   calculateTotal(): number {
     if (!this.listaInspeccion) return 0;
-    
+
     return this.listaInspeccion.reduce((totalItems, item) => {
       if (!item.items) return totalItems;
-      
-      const subItemsTotal = item.items.reduce((totalSubItems: number, subItem: any  ) => {
-        if (!subItem.repuestos) return totalSubItems;
-        
-        // Filtramos repuestos válidos (no nulos) y no marcados para eliminar
-        const validRepuestos = subItem.repuestos.filter((rep: any) => 
-          rep.repuesto && !this.isRepuestoPendingDelete(subItem.id, rep)
-        );
-        
-        const subItemTotal = validRepuestos.reduce((total: number, repuesto: any) => {
-          const precio = repuesto.repuesto?.precio || 0;
-          const cantidad = repuesto.cantidad || 0;
-          return total + (precio * cantidad);
-        }, 0);
-        
-        return totalSubItems + subItemTotal;
-      }, 0);
-      
+
+      const subItemsTotal = item.items.reduce(
+        (totalSubItems: number, subItem: any) => {
+          if (!subItem.repuestos) return totalSubItems;
+
+          // Filtramos repuestos válidos (no nulos) y no marcados para eliminar
+          const validRepuestos = subItem.repuestos.filter(
+            (rep: any) =>
+              rep.repuesto && !this.isRepuestoPendingDelete(subItem.id, rep)
+          );
+
+          const subItemTotal = validRepuestos.reduce(
+            (total: number, repuesto: any) => {
+              const precio = repuesto.repuesto?.precio || 0;
+              const cantidad = repuesto.cantidad || 0;
+              return total + precio * cantidad;
+            },
+            0
+          );
+
+          return totalSubItems + subItemTotal;
+        },
+        0
+      );
+
       return totalItems + subItemsTotal;
     }, 0);
   }
@@ -1642,32 +1969,34 @@ export class ModificarSolicitudComponent implements OnInit {
         if (this.solicitud?.especialidad) {
           const especialidadId = Number(this.solicitud.especialidad);
           this.solicitudForm.patchValue({
-            especialidad: especialidadId
+            especialidad: especialidadId,
           });
         }
       },
       error: (error) => {
         console.error('Error cargando especialidades:', error);
-      }
+      },
     });
   }
 
   getEspecialidadNombre(especialidadId: string | null): string {
     if (!especialidadId) return 'Sin especialidad';
-    
-    const especialidad = this.especialidades.find(e => e.id === Number(especialidadId));
+
+    const especialidad = this.especialidades.find(
+      (e) => e.id === Number(especialidadId)
+    );
     return especialidad ? especialidad.nombre : 'Sin especialidad';
   }
 
   getTipoServicioNombre(tipoServicioId: number | null): string {
     if (!tipoServicioId) return 'Sin tipo de servicio';
-    const tipo = this.tiposServicio.find(t => t.id === tipoServicioId);
+    const tipo = this.tiposServicio.find((t) => t.id === tipoServicioId);
     return tipo ? tipo.nombre : 'Sin tipo de servicio';
   }
 
   getSectorTrabajoNombre(sectorTrabajoId: number | null): string {
     if (!sectorTrabajoId) return 'Sin sector de trabajo';
-    const sector = this.sectoresTrabajos.find(s => s.id === sectorTrabajoId);
+    const sector = this.sectoresTrabajos.find((s) => s.id === sectorTrabajoId);
     return sector ? sector.nombre : 'Sin sector de trabajo';
   }
 
@@ -1675,25 +2004,30 @@ export class ModificarSolicitudComponent implements OnInit {
   tecnicoTieneEspecialidad(tecnico: any): boolean {
     if (!this.solicitud?.especialidad) return false;
     const especialidadId = Number(this.solicitud.especialidad);
-    return tecnico.especialidades?.some((esp: any) => esp.id === especialidadId);
+    return tecnico.especialidades?.some(
+      (esp: any) => esp.id === especialidadId
+    );
   }
 
   // Opcional: Agregar un método para obtener el nombre de las especialidades del técnico
   getTecnicoEspecialidades(tecnico: Tecnico): string {
-    return tecnico.especialidades
-      ?.map(esp => esp.nombre)
-      .join(', ') || 'Sin especialidades';
+    return (
+      tecnico.especialidades?.map((esp) => esp.nombre).join(', ') ||
+      'Sin especialidades'
+    );
   }
 
   private watchEspecialidadChanges() {
-    this.solicitudForm.get('especialidad')?.valueChanges.subscribe(newValue => {
-      // Actualizar la especialidad en la solicitud para que tecnicoTieneEspecialidad funcione correctamente
-      if (this.solicitud) {
-        this.solicitud.especialidad = newValue?.toString();
-      }
-      // Forzar la actualización de la vista
-      this.cd.detectChanges();
-    });
+    this.solicitudForm
+      .get('especialidad')
+      ?.valueChanges.subscribe((newValue) => {
+        // Actualizar la especialidad en la solicitud para que tecnicoTieneEspecialidad funcione correctamente
+        if (this.solicitud) {
+          this.solicitud.especialidad = newValue?.toString();
+        }
+        // Forzar la actualización de la vista
+        this.cd.detectChanges();
+      });
   }
 
   // Watch for changes in the tipo servicio field to update the label
@@ -1707,7 +2041,7 @@ export class ModificarSolicitudComponent implements OnInit {
   // Add method to filter available technicians for second select
   getTecnicosDisponiblesParaSegundoSelect(): any[] {
     const tecnico1Id = this.solicitudForm.get('tecnico_asignado_id')?.value;
-    return this.tecnicos.filter(tecnico => tecnico.id !== tecnico1Id);
+    return this.tecnicos.filter((tecnico) => tecnico.id !== tecnico1Id);
   }
 
   private loadCausasRaiz(): void {
@@ -1718,46 +2052,58 @@ export class ModificarSolicitudComponent implements OnInit {
       error: (error) => {
         console.error('Error cargando causas raíz:', error);
         this.snackBar.open('Error al cargar las causas raíz', 'Cerrar', {
-          duration: 3000
+          duration: 3000,
         });
-      }
+      },
     });
   }
 
   getEstadoOperativoLabel(estado: string): string {
     const labels: Record<string, string> = {
-        'funcionando': 'Funcionando',
-        'detenido': 'Detenido',
-        'funcionando_con_observaciones': 'Funcionando con observaciones'
+      funcionando: 'Funcionando',
+      detenido: 'Detenido',
+      funcionando_con_observaciones: 'Funcionando con observaciones',
     };
     return labels[estado] || '';
   }
 
   getEstadoOperativoClass(estado: string): string {
     const classes: Record<string, string> = {
-        'funcionando': 'text-success',
-        'detenido': 'text-danger',
-        'funcionando_con_observaciones': 'text-warning'
+      funcionando: 'text-success',
+      detenido: 'text-danger',
+      funcionando_con_observaciones: 'text-warning',
     };
     return classes[estado] || '';
   }
 
   calculateActivoFijoRepuestoTotal(detallesRepuestos: any[]): number {
-    return detallesRepuestos?.reduce((sum: number, detalle: any) => 
-        sum + (detalle.cantidad * detalle.precio_unitario), 0) || 0;
+    return (
+      detallesRepuestos?.reduce(
+        (sum: number, detalle: any) =>
+          sum + detalle.cantidad * detalle.precio_unitario,
+        0
+      ) || 0
+    );
   }
 
   calculateTotalActivosFijos(): number {
     if (!this.solicitud?.activoFijoRepuestos) return 0;
-    
-    return this.solicitud.activoFijoRepuestos.reduce((total: number, activoFijo: any) => {
-        return total + this.calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos);
-    }, 0);
+
+    return this.solicitud.activoFijoRepuestos.reduce(
+      (total: number, activoFijo: any) => {
+        return (
+          total +
+          this.calculateActivoFijoRepuestoTotal(activoFijo.detallesRepuestos)
+        );
+      },
+      0
+    );
   }
 
   getActivoFijoInfo(activoFijoId: number): string {
-    debugger
-    const activoFijo = this.solicitud?.local?.activoFijoLocales?.find((af:any) => af.id === activoFijoId);
+    const activoFijo = this.solicitud?.local?.activoFijoLocales?.find(
+      (af: any) => af.id === activoFijoId
+    );
     if (activoFijo) {
       return `${activoFijo.tipo_equipo} - ${activoFijo.marca} (${activoFijo.codigo_activo})`;
     }
@@ -1765,7 +2111,9 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   getResponsesChecklist(activoFijoId: number): any {
-    const activoFijo = this.solicitud?.local?.listaInspeccion?.find((af: any) => af.id === activoFijoId);
+    const activoFijo = this.solicitud?.local?.listaInspeccion?.find(
+      (af: any) => af.id === activoFijoId
+    );
     if (activoFijo) {
       return activoFijo;
     }
@@ -1773,7 +2121,9 @@ export class ModificarSolicitudComponent implements OnInit {
   }
 
   getActivoFijoDetails(activoFijoId: number): any {
-    const activoFijo = this.solicitud?.local?.activoFijoLocales?.find((af: any) => af.id === activoFijoId);
+    const activoFijo = this.solicitud?.local?.activoFijoLocales?.find(
+      (af: any) => af.id === activoFijoId
+    );
     if (activoFijo) {
       return {
         tipo_equipo: activoFijo.tipo_equipo || 'No especificado',
@@ -1782,7 +2132,7 @@ export class ModificarSolicitudComponent implements OnInit {
         potencia_equipo: activoFijo.potencia_equipo || 'No especificada',
         refrigerante: activoFijo.refrigerante || 'No especificado',
         on_off_inverter: activoFijo.on_off_inverter || 'No especificado',
-        suministra: activoFijo.suministra || 'No especificado'
+        suministra: activoFijo.suministra || 'No especificado',
       };
     }
     return {
@@ -1792,51 +2142,58 @@ export class ModificarSolicitudComponent implements OnInit {
       potencia_equipo: 'No encontrado',
       refrigerante: 'No encontrado',
       on_off_inverter: 'No encontrado',
-      suministra: 'No encontrado'
+      suministra: 'No encontrado',
     };
   }
 
   isTemporaryRepuesto(subItemId: number, repuesto: any): boolean {
-    return this.temporaryRepuestos[subItemId]?.some(
-        (tempRepuesto: any) => 
-            tempRepuesto.id === repuesto.id &&
-            tempRepuesto.repuesto.id === repuesto.repuesto.id &&
-            tempRepuesto.cantidad === repuesto.cantidad
-    ) || false;
+    return (
+      this.temporaryRepuestos[subItemId]?.some(
+        (tempRepuesto: any) =>
+          tempRepuesto.id === repuesto.id &&
+          tempRepuesto.repuesto.id === repuesto.repuesto.id &&
+          tempRepuesto.cantidad === repuesto.cantidad
+      ) || false
+    );
   }
 
   hasTemporaryRepuestos(): boolean {
     // Check if there are any temporary repuestos
-    return Object.values(this.temporaryRepuestos).some(repuestos => repuestos && repuestos.length > 0);
+    return Object.values(this.temporaryRepuestos).some(
+      (repuestos) => repuestos && repuestos.length > 0
+    );
   }
 
   cambiarFechaVisita(): void {
     if (this.nuevaFechaVisita) {
-      this.solicitarVisitaService.updateSolicitudVisita(
-        Number(this.solicitudId),
-        { fechaVisita: this.nuevaFechaVisita }
-      ).subscribe({
-        next: () => {
-          Swal.fire({
-            title: 'Éxito',
-            text: 'Fecha de visita actualizada correctamente',
-            icon: 'success',
-            timer: 1500,
-            showConfirmButton: false
-          }).then(() => {
-            // Redirigir a la lista de solicitudes aprobadas
-            this.router.navigate(['/transacciones/solicitudes-de-visita/aprobadas']);
-          });
-        },
-        error: (error) => {
-          console.error('Error al actualizar la fecha:', error);
-          Swal.fire({
-            title: 'Error',
-            text: 'No se pudo actualizar la fecha de visita',
-            icon: 'error'
-          });
-        }
-      });
+      this.solicitarVisitaService
+        .updateSolicitudVisita(Number(this.solicitudId), {
+          fechaVisita: this.nuevaFechaVisita,
+        })
+        .subscribe({
+          next: () => {
+            Swal.fire({
+              title: 'Éxito',
+              text: 'Fecha de visita actualizada correctamente',
+              icon: 'success',
+              timer: 1500,
+              showConfirmButton: false,
+            }).then(() => {
+              // Redirigir a la lista de solicitudes aprobadas
+              this.router.navigate([
+                '/transacciones/solicitudes-de-visita/aprobadas',
+              ]);
+            });
+          },
+          error: (error) => {
+            console.error('Error al actualizar la fecha:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'No se pudo actualizar la fecha de visita',
+              icon: 'error',
+            });
+          },
+        });
     }
   }
 
@@ -1845,7 +2202,7 @@ export class ModificarSolicitudComponent implements OnInit {
       Swal.fire({
         title: 'Error',
         text: 'No hay fotos disponibles para descargar',
-        icon: 'error'
+        icon: 'error',
       });
       return;
     }
@@ -1858,7 +2215,7 @@ export class ModificarSolicitudComponent implements OnInit {
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
-        }
+        },
       });
 
       // Descargar cada imagen
@@ -1866,22 +2223,24 @@ export class ModificarSolicitudComponent implements OnInit {
         const url = imageUrls[i];
         const response = await fetch(url);
         const blob = await response.blob();
-        
+
         // Crear un nombre de archivo basado en la fecha y un contador
-        const fileName = `foto_${new Date().toISOString().split('T')[0]}_${i + 1}.jpg`;
-        
+        const fileName = `foto_${new Date().toISOString().split('T')[0]}_${
+          i + 1
+        }.jpg`;
+
         // Crear un elemento <a> para descargar
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
         link.download = fileName;
-        
+
         // Agregar al DOM, hacer clic y remover
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Esperar un poco entre descargas para evitar bloqueos del navegador
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
       // Mostrar mensaje de éxito
@@ -1890,14 +2249,14 @@ export class ModificarSolicitudComponent implements OnInit {
         text: `Se han descargado ${imageUrls.length} foto(s)`,
         icon: 'success',
         timer: 2000,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
     } catch (error) {
       console.error('Error al descargar las fotos:', error);
       Swal.fire({
         title: 'Error',
         text: 'Hubo un error al descargar las fotos',
-        icon: 'error'
+        icon: 'error',
       });
     }
   }
@@ -1907,25 +2266,25 @@ export class ModificarSolicitudComponent implements OnInit {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       this.fileName = file.name;
-      
+
       // Crear un canvas para comprimir la imagen
       const img = new Image();
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         img.src = e.target?.result as string;
-        
+
         img.onload = async () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          
+
           // Establecer el tamaño máximo deseado
           const MAX_WIDTH = 800;
           const MAX_HEIGHT = 800;
-          
+
           let width = img.width;
           let height = img.height;
-          
+
           // Redimensionar si es necesario
           if (width > height) {
             if (width > MAX_WIDTH) {
@@ -1938,74 +2297,89 @@ export class ModificarSolicitudComponent implements OnInit {
               height = MAX_HEIGHT;
             }
           }
-          
+
           canvas.width = width;
           canvas.height = height;
-          
+
           // Dibujar la imagen comprimida
           ctx?.drawImage(img, 0, 0, width, height);
-          
+
           try {
             // Convertir canvas a blob
             const blob = await new Promise<Blob>((resolve) => {
-              canvas.toBlob((blob) => {
-                resolve(blob as Blob);
-              }, 'image/jpeg', 0.7);
+              canvas.toBlob(
+                (blob) => {
+                  resolve(blob as Blob);
+                },
+                'image/jpeg',
+                0.7
+              );
             });
 
             // Crear FormData
             const formData = new FormData();
-            const compressedFile = new File([blob], this.fileName, { type: 'image/jpeg' });
+            const compressedFile = new File([blob], this.fileName, {
+              type: 'image/jpeg',
+            });
             formData.append('file', compressedFile);
 
-            const response = await this.uploadDataService.uploadFileFirebase(
-              formData,
-              `?path=solicitudes-visita/${this.solicitudId}/ot`
-            ).toPromise();
+            const response = await this.uploadDataService
+              .uploadFileFirebase(
+                formData,
+                `?path=solicitudes-visita/${this.solicitudId}/ot`
+              )
+              .toPromise();
 
             if (response && response.url) {
               // Guardar la URL de la imagen y actualizar el preview
-              const imageUrl = response.url.startsWith('http') ? response.url : `${environment.apiUrl}/${response.url}`;
+              const imageUrl = response.url.startsWith('http')
+                ? response.url
+                : `${environment.apiUrl}/${response.url}`;
               this.imagePreview = imageUrl;
               this.urlImage = imageUrl;
 
               // Actualizar el formulario con la nueva URL
               this.solicitudForm.patchValue({
-                image_ot: imageUrl
+                image_ot: imageUrl,
               });
 
               // Actualizar la solicitud en el backend
-              await this.solicitarVisitaService.updateSolicitudVisita(
-                Number(this.solicitudId),
-                { image_ot: imageUrl }
-              ).toPromise();
+              await this.solicitarVisitaService
+                .updateSolicitudVisita(Number(this.solicitudId), {
+                  image_ot: imageUrl,
+                })
+                .toPromise();
 
               // Forzar la detección de cambios
               this.cd.detectChanges();
 
               // Mostrar mensaje de éxito
               this.snackBar.open('Imagen de OT subida exitosamente', 'Cerrar', {
-                duration: 3000
+                duration: 3000,
               });
             } else {
               throw new Error('No se recibió una URL válida del servidor');
             }
           } catch (error) {
             console.error('Error al subir la imagen:', error);
-            this.snackBar.open('Error al subir la imagen. Por favor, verifica la conexión e intenta nuevamente', 'Cerrar', {
-              duration: 5000
-            });
+            this.snackBar.open(
+              'Error al subir la imagen. Por favor, verifica la conexión e intenta nuevamente',
+              'Cerrar',
+              {
+                duration: 5000,
+              }
+            );
           }
         };
       };
-      
+
       reader.readAsDataURL(file);
     }
   }
   onDragOver(event: DragEvent) {
     event.preventDefault();
   }
-  
+
   onDrop(event: DragEvent) {
     event.preventDefault();
     const files = event.dataTransfer?.files;
@@ -2020,7 +2394,7 @@ export class ModificarSolicitudComponent implements OnInit {
   openImageModal(): void {
     if (!this.imagePreview) {
       this.snackBar.open('No hay imagen para visualizar', 'Cerrar', {
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
@@ -2029,7 +2403,7 @@ export class ModificarSolicitudComponent implements OnInit {
       data: { imageUrls: [this.imagePreview] },
       maxWidth: '90vw',
       maxHeight: '90vh',
-      panelClass: 'image-viewer-dialog'
+      panelClass: 'image-viewer-dialog',
     });
   }
 
@@ -2052,108 +2426,124 @@ export class ModificarSolicitudComponent implements OnInit {
 
       // Actualizar el formulario
       this.solicitudForm.patchValue({
-        image_ot: null
+        image_ot: null,
       });
 
       // Actualizar en el backend
-      await this.solicitarVisitaService.updateSolicitudVisita(
-        Number(this.solicitudId),
-        { image_ot: null }
-      ).toPromise();
+      await this.solicitarVisitaService
+        .updateSolicitudVisita(Number(this.solicitudId), { image_ot: null })
+        .toPromise();
 
       // Forzar la detección de cambios
       this.cd.detectChanges();
 
       // Mostrar mensaje de éxito
       this.snackBar.open('Imagen eliminada correctamente', 'Cerrar', {
-        duration: 3000
+        duration: 3000,
       });
 
       // Limpiar el input file
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
       if (fileInput) {
         fileInput.value = '';
       }
     } catch (error) {
       console.error('Error al eliminar la imagen:', error);
       this.snackBar.open('Error al eliminar la imagen', 'Cerrar', {
-        duration: 3000
+        duration: 3000,
       });
     }
   }
 
-  agregarRepuesto(subItem: any) {
+  agregarRepuesto(subItem: any, activoFijo: any = null) {
     const dialogRef = this.dialog.open(AgregarRepuestoComponent, {
       width: '500px',
-      data: { subItem }
+      data: { subItem },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // Agregar el nuevo repuesto a la lista
-        subItem.repuestos.push(result);
+        this.selectedRepuesto = result.repuesto;
+        this.newRepuestoCantidad = result.cantidad;
+        this.addRepuestoToItem(subItem, activoFijo);
         this.calcularTotalFinal();
       }
     });
   }
 
-  editarRepuesto(repuesto: any) {
+  editarRepuesto(subItemId: number, repuesto: any, activoFijo: any = null) {
     const dialogRef = this.dialog.open(AgregarRepuestoComponent, {
       width: '500px',
-      data: { 
+      data: {
         repuesto,
-        modoEdicion: true
-      }
+        modoEdicion: true,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // Actualizar el repuesto existente
-        const index = repuesto.subItem.repuestos.findIndex((r: any) => r.id === repuesto.id);
-        if (index !== -1) {
-          repuesto.subItem.repuestos[index] = result;
-          this.calcularTotalFinal();
-        }
+        console.log('EDITANDO', result);
+        this.deleteRepuesto(subItemId, repuesto, activoFijo);
+        this.selectedRepuesto = result.repuesto;
+        this.newRepuestoCantidad = result.cantidad;
+        this.addRepuestoToItem(subItemId, activoFijo);
       }
     });
   }
 
-  eliminarRepuesto(repuesto: any) {
+  eliminarRepuesto(subItemId: number, repuesto: any, activoFijo: any = null) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
         title: 'Eliminar Repuesto',
         message: '¿Está seguro que desea eliminar este repuesto?',
         confirmText: 'Eliminar',
-        cancelText: 'Cancelar'
-      }
+        cancelText: 'Cancelar',
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // Eliminar el repuesto de la lista
-        const index = repuesto.subItem.repuestos.findIndex((r: any) => r.id === repuesto.id);
-        if (index !== -1) {
-          repuesto.subItem.repuestos.splice(index, 1);
-          this.calcularTotalFinal();
-        }
+        this.deleteRepuesto(subItemId, repuesto, activoFijo);
       }
     });
   }
 
   calcularTotalFinal() {
     let total = 0;
-    this.checklistResponse?.data_normal?.forEach((lista: any) => {
-      lista.checklist.forEach((item: any) => {
-        item.items.forEach((subItem: any) => {
-          subItem.subItems.forEach((subSubItem: any) => {
-            subSubItem.repuestos.forEach((repuesto: any) => {
-              total += (repuesto.repuesto.precio_venta * repuesto.cantidad);
+
+    if (this.checklistResponse.is_climate) {
+      this.checklistResponse.climate_data.forEach((activoFijo: any) => {
+
+        activoFijo.checklist.forEach((lista: any) => {
+          lista.items.forEach((item: any) => {
+            item.subItems.forEach((subItem: any) => {
+              subItem.repuestos.forEach((repuesto: any) => {
+
+                total += repuesto.repuesto.precio_venta * repuesto.cantidad;
+              });
             });
           });
         });
       });
-    });
+    } else {
+      this.checklistResponse?.data_normal?.forEach((lista: any) => {
+        lista.checklist.forEach((item: any) => {
+          item.items.forEach((subItem: any) => {
+            subItem.subItems.forEach((subSubItem: any) => {
+              subSubItem.repuestos.forEach((repuesto: any) => {
+                total += repuesto.repuesto.precio_venta * repuesto.cantidad;
+              });
+            });
+          });
+        });
+      });
+    }
     this.checklistResponse.total_final = total;
   }
-} 
+}

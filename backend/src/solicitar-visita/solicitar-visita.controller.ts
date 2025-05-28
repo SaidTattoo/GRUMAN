@@ -43,6 +43,11 @@ export class SolicitarVisitaController {
     }
   }
 
+  @Post('update-checklist-visita/:id')
+  async updateChecklistVisita(@Param('id') id: number, @Body() data: any): Promise<any> {
+    return this.solicitarVisitaService.updateChecklistVisita(id, data);
+  } 
+
   @Post()
   async create(@Body() createSolicitarVisitaDto: any) {
     console.log('Datos recibidos:', createSolicitarVisitaDto);

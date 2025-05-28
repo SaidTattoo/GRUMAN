@@ -222,4 +222,8 @@ export class SolicitarVisitaService {
   enviarEmail(id: number): Observable<any> {
     return this.http.post(`${this.apiUrl}solicitar-visita/${id}/enviar-email`, {});
   }
+
+  updateChecklistVisita(id: number, data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}solicitar-visita/update-checklist-visita/${id}`, data);
+  } 
 }
