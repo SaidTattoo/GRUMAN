@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { RepuestosService } from 'src/app/services/repuestos.service';
 import { MatSelectModule } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-agregar-repuesto',
@@ -19,6 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
+    FormsModule,
   ],
   template: `
     <h2 mat-dialog-title>
@@ -29,7 +31,14 @@ import { MatSelectModule } from '@angular/material/select';
       <mat-form-field class="full-width">
         <mat-label>Repuesto</mat-label>
         <mat-select formControlName="articulo">
-          @for (repuesto of repuestosList; track repuesto.id) {
+          <div class="search-box">
+            <mat-form-field class="search-field">
+              <input matInput
+                     (keyup)="filterRepuestos($event)"
+                     placeholder="Buscar repuesto...">
+            </mat-form-field>
+          </div>
+          @for (repuesto of filteredRepuestos; track repuesto.id) {
             <mat-option [value]="repuesto">
               {{ repuesto.articulo }} - {{ repuesto.marca }} - {{ repuesto.precio_venta | number:'1.0-0' }}
             </mat-option>
@@ -62,12 +71,22 @@ import { MatSelectModule } from '@angular/material/select';
       .full-width {
         width: 100%;
       }
+      .search-box {
+        padding: 8px 16px;
+      }
+      .search-field {
+        width: 100%;
+      }
+      .search-field .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+      }
     `,
   ],
 })
 export class AgregarRepuestoComponent implements OnInit {
   repuestoForm: FormGroup;
   repuestosList: any[] = [];
+  filteredRepuestos: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -84,6 +103,7 @@ export class AgregarRepuestoComponent implements OnInit {
   ngOnInit() {
     this.repuestosService.getRepuestos().subscribe((res: any) => {
       this.repuestosList = res;
+      this.filteredRepuestos = res;
       
       if (this.data.modoEdicion && this.data.repuesto) {
         const repuestoSeleccionado = this.repuestosList.find(
@@ -97,6 +117,18 @@ export class AgregarRepuestoComponent implements OnInit {
         });
       }
     });
+  }
+
+  filterRepuestos(event: Event) {
+    const searchText = (event.target as HTMLInputElement).value.toLowerCase();
+    if (!searchText) {
+      this.filteredRepuestos = this.repuestosList;
+    } else {
+      this.filteredRepuestos = this.repuestosList.filter(repuesto => 
+        repuesto.articulo.toLowerCase().includes(searchText) ||
+        repuesto.marca.toLowerCase().includes(searchText)
+      );
+    }
   }
 
   onSubmit() {
