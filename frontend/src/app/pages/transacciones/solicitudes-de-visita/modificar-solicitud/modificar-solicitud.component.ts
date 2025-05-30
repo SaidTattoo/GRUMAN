@@ -1287,7 +1287,6 @@ export class ModificarSolicitudComponent implements OnInit {
         // Para checklist de clima
         this.checklistResponse.climate_data.forEach((currentActivoFijo: any) => {
           if (activoFijo.activo_fijo_id === currentActivoFijo.activo_fijo_id) {
-            debugger
             activoFijo.checklist.forEach((lista: any) => {
               lista.items.forEach((item: any) => {
                 item.subItems.forEach((subItem: any) => {
@@ -1378,6 +1377,7 @@ export class ModificarSolicitudComponent implements OnInit {
     this.newRepuestoCantidad = 1;
     this.showAddRepuestoForm[subItemId] = false;
     this.updateListaInspeccion();
+    this.onSaveRepuestos();
     this.calcularTotalFinal();
 
     console.log('Repuesto agregado exitosamente');
@@ -1386,18 +1386,18 @@ export class ModificarSolicitudComponent implements OnInit {
   deleteRepuesto(subItemId: number, repuesto: any, activoFijo:any = null) {
     // Verificar si el repuesto tiene ID (es un repuesto existente)
     if (repuesto.id) {
-      // Es un repuesto existente, agregarlo a temporaryDeletedRepuestos
-      if (!this.temporaryDeletedRepuestos[subItemId]) {
-        this.temporaryDeletedRepuestos[subItemId] = [];
-      }
+      // // Es un repuesto existente, agregarlo a temporaryDeletedRepuestos
+      // if (!this.temporaryDeletedRepuestos[subItemId]) {
+      //   this.temporaryDeletedRepuestos[subItemId] = [];
+      // }
 
-      const isAlreadyDeleted = this.temporaryDeletedRepuestos[subItemId].some(
-        (deletedRepuesto) => deletedRepuesto.id === repuesto.id
-      );
+      // const isAlreadyDeleted = this.temporaryDeletedRepuestos[subItemId].some(
+      //   (deletedRepuesto) => deletedRepuesto.id === repuesto.id
+      // );
 
-      if (!isAlreadyDeleted) {
-        this.temporaryDeletedRepuestos[subItemId].push(repuesto);
-      }
+      // if (!isAlreadyDeleted) {
+      //   this.temporaryDeletedRepuestos[subItemId].push(repuesto);
+      // }
 
       // Eliminar el repuesto del checklistResponse
       if (this.checklistResponse) {
@@ -1492,6 +1492,7 @@ export class ModificarSolicitudComponent implements OnInit {
     }
 
     // Recalcular el total final
+    this.onSaveRepuestos();
     this.calcularTotalFinal();
   }
 
