@@ -419,6 +419,13 @@
           </div>
         </div>
 
+        <div class="section-title" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Comentario General</div>
+        <div class="form-row" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">
+          <mat-form-field appearance="fill">
+            <textarea matInput [value]="solicitud?.comentario_general" rows="4" disabled></textarea>
+          </mat-form-field>
+        </div>
+
         <!-- Lista de Inspección -->
         <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos
           utilizados en la inspección</div>

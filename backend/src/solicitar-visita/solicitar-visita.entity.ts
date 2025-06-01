@@ -246,5 +246,8 @@ export class SolicitarVisita {
   @Column({ type: 'int', nullable: true })
   activo_fijo_id: number;
 
+  @Column({ type: 'text', nullable: true })
+  comentario_general: string;
+
 }
  

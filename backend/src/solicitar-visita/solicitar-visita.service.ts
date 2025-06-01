@@ -1327,6 +1327,7 @@ export class SolicitarVisitaService {
       status: SolicitudStatus.FINALIZADA,
       fecha_hora_fin_servicio: new Date(),
       firma_cliente: data.firma,
+      comentario_general: data.comentario_general || "",
     });
 
     return Promise.all([savedResponseChecklist, updatedSolicitudVisita]);
