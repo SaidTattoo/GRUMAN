@@ -345,9 +345,9 @@ export class ModificarSolicitudComponent implements OnInit {
       tipoServicio: [{ value: '', disabled: true }],
       sectorTrabajo: [{ value: '', disabled: true }],
       causaRaizId: [''],
-      garantia: [''],
-      turno: [''],
-      estado_solicitud: [''],
+      garantia: ['no'],
+      turno: ['diurno'],
+      estado_solicitud: ['resuelto'],
     });
     this.temporaryRepuestos = {};
     this.temporaryDeletedRepuestos = {};
@@ -670,9 +670,9 @@ export class ModificarSolicitudComponent implements OnInit {
                 tipoServicio: data.tipoServicio?.nombre || '',
                 sectorTrabajo: data.sectorTrabajo?.nombre || '',
                 causaRaizId: data.causaRaizId || '',
-                garantia: data.garantia || '',
-                turno: data.turno || '',
-                estado_solicitud: data.estado_solicitud || '',
+                garantia: data.garantia || 'no',
+                turno: data.turno || 'diurno',
+                estado_solicitud: data.estado_solicitud || 'resuelto',
               });
 
               // Si está rechazada, deshabilitar todos los controles
@@ -1692,9 +1692,9 @@ export class ModificarSolicitudComponent implements OnInit {
                 cantidad: r.cantidad,
                 solicitarVisitaId: Number(this.solicitudId),
                 comentario: r.comentario || '',
-                garantia: r.garantia || '',
-                turno: r.turno || '',
-                estado_solicitud: r.estado_solicitud || '',
+                garantia: r.garantia || 'no',
+                turno: r.turno || 'diurno',
+                estado_solicitud: r.estado_solicitud || 'resuelto',
               }))
         ),
         deletedRepuestos: Object.values(this.temporaryDeletedRepuestos)
