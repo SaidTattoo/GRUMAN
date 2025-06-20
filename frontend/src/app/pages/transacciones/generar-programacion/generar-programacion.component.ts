@@ -112,6 +112,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
       especialidadId: new FormControl('', [Validators.required]),
       status: new FormControl(SolicitudStatus.APROBADA, [Validators.required]),
       fechaVisita: new FormControl('', [Validators.required]),
+      ticketGruman: new FormControl(''),
       tecnico_asignado_id: new FormControl('', [Validators.required]),
       tecnico_asignado_id_2: new FormControl(''),
       observaciones: new FormControl('', [Validators.maxLength(500)]),
@@ -406,6 +407,7 @@ export class GenerarProgramacionComponent implements OnInit, OnDestroy {
         const formData = this.programacionForm.value;
         
         // Mantener el status original del formulario ('programada')
+        debugger
         const programacionData = {
           ...formData,
           aprobada_por_id: this.currentUser?.id,

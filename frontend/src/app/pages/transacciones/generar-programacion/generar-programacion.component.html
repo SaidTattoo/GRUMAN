@@ -161,6 +161,26 @@
 
       <div class="row">
         <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Ticket Gruman</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Ticket Gruman</mat-label>
+            <input type="text"
+                   matInput
+                   formControlName="ticketGruman"
+                   placeholder="Ingrese ticket Gruman">
+            @if (programacionForm.get('ticketGruman')?.touched && programacionForm.get('ticketGruman')?.invalid) {
+            <mat-error>
+              {{ getErrorMessage('ticketGruman') }}
+            </mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
           <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Técnico *</mat-label>
         </div>
         <div class="col-sm-8">
