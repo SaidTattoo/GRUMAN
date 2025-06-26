@@ -27,6 +27,29 @@
         </div>
       </div>
 
+      <!-- Tipo Solicitud -->
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo solicitud</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Tipo solicitud</mat-label>
+            <input type="text" matInput formControlName="tipoSolicitudId" [matAutocomplete]="autoTipoSolicitud"
+              (focus)="onTipoSolicitudFocus()" (keyup)="filtrarTipoSolicitud($event)">
+            <mat-autocomplete #autoTipoSolicitud="matAutocomplete" [displayWith]="displayTipoSolicitudFn">
+              <mat-option *ngFor="let tipo of filteredTipoSolicitud | async" [value]="tipo">
+                <b>{{tipo.nombre | uppercase}}</b><br><small style="font-size: 10px;margin-top:-5px;">Día(s):{{tipo.sla_dias}} / Hora(s): {{tipo.sla_hora}}</small>
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="visitaForm.get('tipoSolicitudId')?.hasError('required')">
+              El tipo de solicitud es requerido
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      
+
       <!-- Local -->
       <div class="row">
         <div class="col-sm-4 d-flex align-items-center">

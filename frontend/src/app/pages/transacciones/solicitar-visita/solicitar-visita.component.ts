@@ -27,6 +27,7 @@ import { map, startWith, takeUntil } from 'rxjs/operators';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { S } from '@angular/cdk/keycodes';
 import { ActivoFijoLocalService } from 'src/app/services/activo-fijo-local.service';
+import { TipoSolicitudService } from '../../mantenedores/tipo-solicitud/tipo-solicitud.service';
 
 
 interface Client {
@@ -65,6 +66,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   selectedFiles: File[] = [];
   previewUrls: { [key: number]: SafeUrl } = {};
   locales: any[] = [];
+  tipoSolicitud: any[] = [];
   sectores: any[] = [];
   tipoServicio: any[] = [];
   especialidades: Especialidad[] = [];
@@ -79,6 +81,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   private destroy$ = new Subject<void>();
   filteredEspecialidades: Observable<Especialidad[]>;
   filteredTipoServicio: Observable<any[]>;
+  filteredTipoSolicitud: Observable<any[]>;
   isReactivo: boolean = false;
   showClimaInput: boolean = false;
   activosFijos: any[] = [];
@@ -96,10 +99,12 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     private clientesService: ClientesService,
     private storage: StorageService,
     private especialidadesService: EspecialidadesService,
-    private activoFijoLocalService: ActivoFijoLocalService
+    private activoFijoLocalService: ActivoFijoLocalService,
+    private tipoSolicitudService: TipoSolicitudService
   ) {
     this.visitaForm = this.fb.group({
       tipoServicioId: [null, Validators.required],
+      tipoSolicitudId: [null, Validators.required],
       localId: [null, Validators.required],
       clientId: [null, Validators.required],
       sectorTrabajoId: [null, Validators.required],
@@ -146,14 +151,17 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
         this.getTipoServicio();
         this.getSectoresTrabajo();
         this.loadEspecialidades();
+      
         this.visitaForm.patchValue({
           clientId: this.clientId
         });
       }
     });
+    this.getTipoSolicitud();
     this.setupLocalAutocomplete();
     this.setupEspecialidadAutocomplete();
     this.setupTipoServicioAutocomplete();
+    this.setupTipoSolicitudAutocomplete();
 
     // Modificar el observer del tipo de servicio
     this.visitaForm.get('tipoServicioId')?.valueChanges
@@ -207,25 +215,101 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     this.destroy$.complete();
   }
 
+  async getTipoSolicitud() {
+    const response = await this.tipoSolicitudService.findByClienteId(this.clientId);
+    this.tipoSolicitud = response || [];
+  }
+
   async subirImagenes(visitaId: number): Promise<string[]> {
     try {
       const path = `solicitar_visita/${visitaId}/imagenes`;
+      const uploadPromises = this.selectedFiles.map(async (file) => {
+        // Crear un canvas para comprimir la imagen
+        const img = new Image();
+        const reader = new FileReader();
 
-      const uploadPromises = this.selectedFiles.map((file) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('originalname', file.name);
+        return new Promise<string>((resolve, reject) => {
+          reader.onload = (e) => {
+            img.src = e.target?.result as string;
 
-        return this.uploadDataService.uploadFile(formData, path).toPromise();
+            img.onload = async () => {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+
+              // Establecer el tamaño máximo deseado
+              const MAX_WIDTH = 800;
+              const MAX_HEIGHT = 800;
+
+              let width = img.width;
+              let height = img.height;
+
+              // Redimensionar si es necesario
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height *= MAX_WIDTH / width;
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width *= MAX_HEIGHT / height;
+                  height = MAX_HEIGHT;
+                }
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+
+              // Dibujar la imagen comprimida
+              ctx?.drawImage(img, 0, 0, width, height);
+
+              try {
+                // Convertir canvas a blob
+                const blob = await new Promise<Blob>((resolveBlob) => {
+                  canvas.toBlob(
+                    (blob) => {
+                      resolveBlob(blob as Blob);
+                    },
+                    'image/jpeg',
+                    0.7
+                  );
+                });
+
+                // Crear FormData
+                const formData = new FormData();
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                });
+                formData.append('file', compressedFile);
+
+                const response = await this.uploadDataService
+                  .uploadFileFirebase(formData, `?path=${path}`)
+                  .toPromise();
+
+                if (response && response.url) {
+                  const imageUrl = response.url.startsWith('http')
+                    ? response.url
+                    : `${environment.apiUrl}/${response.url}`;
+                  resolve(imageUrl);
+                } else {
+                  throw new Error('No se recibió una URL válida del servidor');
+                }
+              } catch (error) {
+                console.error('Error al subir la imagen:', error);
+                reject(error);
+              }
+            };
+          };
+
+          reader.onerror = (error) => {
+            reject(error);
+          };
+
+          reader.readAsDataURL(file);
+        });
       });
 
-      const responses = await Promise.all(uploadPromises);
-      this.urlImage = responses.map((res: any) => {
-        if (res && res.url) {
-          return res.url.replace(/http:\/\/localhost:3000|https?:\/\/[^\/]+/, environment.apiUrl);
-        }
-        return res.url;
-      });
+      const uploadedUrls = await Promise.all(uploadPromises);
+      this.urlImage = uploadedUrls;
 
       return this.urlImage;
     } catch (error) {
@@ -250,28 +334,34 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       try {
         const fechaActual = new Date();
         
+        // Subir imágenes primero si hay archivos seleccionados
+        let imagenesUrls: string[] = [];
+        if (this.selectedFiles.length > 0) {
+          // Crear un ID temporal para la carpeta (usaremos timestamp)
+          const tempId = Date.now();
+          imagenesUrls = await this.subirImagenes(tempId);
+        }
+        
         const formData = {
-          ...this.visitaForm.value,
           clientId: this.clientId,
           generada_por_id: this.currentUserId,
           tipoServicioId: this.visitaForm.value.tipoServicioId?.id || null,
+          tipoSolicitudId: this.visitaForm.value.tipoSolicitudId?.id || null,
           localId: this.visitaForm.value.localId?.id || null,
           especialidad: this.visitaForm.value.especialidad?.id || null,
           activoFijoId: this.visitaForm.value.activoFijoId?.id || null,
+          sectorTrabajoId: this.visitaForm.value.sectorTrabajoId || null,
+          observaciones: this.visitaForm.value.observaciones || '',
           fecha: fechaActual.toISOString(),
           fechaIngreso: this.visitaForm.value.fechaIngreso ? 
             new Date(this.visitaForm.value.fechaIngreso).toISOString() : 
             fechaActual.toISOString(),
-          imagenes: []
+          imagenes: imagenesUrls
         };
 
         const response:any = await this.solicitarVisitaService.crearSolicitudVisita(formData).toPromise();
         
         if (response?.success && response?.data) {
-          // Si hay archivos para subir, procesarlos
-          if (this.selectedFiles.length > 0) {
-            await this.subirImagenes(response.data.id);
-          }
           
           // Mostrar el modal de éxito con la información detallada
           await Swal.fire({
@@ -394,9 +484,11 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
       .pipe(
         map(response => ({
           ...response,
-          tipoServicio: response.tipoServicio.sort((a:any, b:any) => 
-            a.nombre.toLowerCase().localeCompare(b.nombre.toLowerCase(), 'es')
-          )
+          tipoServicio: response.tipoServicio
+            .filter((tipo: any) => tipo.nombre.toLowerCase() !== 'preventivo')
+            .sort((a:any, b:any) => 
+              a.nombre.toLowerCase().localeCompare(b.nombre.toLowerCase(), 'es')
+            )
         }))
       )
       .subscribe((response) => {
@@ -547,26 +639,60 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     );
   }
 
+  private setupTipoSolicitudAutocomplete() {
+    this.filteredTipoSolicitud = this.visitaForm.get('tipoSolicitudId')!.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterTipoSolicitud(value))
+    );
+  }
+
+  private _filterTipoSolicitud(value: any): any[] {
+    if (!this.tipoSolicitud) return [];
+    
+    const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+    return this.tipoSolicitud.filter(tipo => 
+      tipo.nombre.toLowerCase().includes(filterValue)
+    );
+  }
+
   private _filterTipoServicio(value: any): any[] {
     if (!this.tipoServicio) return [];
     
     const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
     return this.tipoServicio.filter(tipo => 
-      tipo.nombre.toLowerCase().includes(filterValue)
+      tipo.nombre.toLowerCase().includes(filterValue) && 
+      tipo.nombre.toLowerCase() !== 'preventivo'
     );
   }
 
   onTipoServicioFocus() {
-    this.filteredTipoServicio = of(this.tipoServicio);
+    this.filteredTipoServicio = of(this.tipoServicio.filter(tipo => 
+      tipo.nombre.toLowerCase() !== 'preventivo'
+    ));
+  }
+ 
+  onTipoSolicitudFocus() {
+    this.filteredTipoSolicitud = of(this.tipoSolicitud);
   }
 
   displayTipoServicioFn = (tipo: any): string => {
     return tipo ? tipo.nombre : '';
   }
 
+  displayTipoSolicitudFn = (tipo: any): string => {
+    return tipo ? `${tipo.nombre.toUpperCase()} - Día(s): ${tipo.sla_dias} / Hora(s): ${tipo.sla_hora}` : '';
+  }
+
   filtrarTipoServicio(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
     this.filteredTipoServicio = of(this.tipoServicio.filter(tipo =>
+      tipo.nombre.toLowerCase().includes(filterValue) && 
+      tipo.nombre.toLowerCase() !== 'preventivo'
+    ));
+  }
+  filtrarTipoSolicitud(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
+    this.filteredTipoSolicitud = of(this.tipoSolicitud.filter(tipo =>
       tipo.nombre.toLowerCase().includes(filterValue)
     ));
   }

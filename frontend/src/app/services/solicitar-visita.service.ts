@@ -14,6 +14,7 @@ export class SolicitarVisitaService {
   constructor(private http: HttpClient, private authService: AuthService) { }
 
   crearSolicitudVisita(solicitud: any) {
+    debugger
     return this.http.post(`${this.apiUrl}solicitar-visita`, solicitud);
   }
 

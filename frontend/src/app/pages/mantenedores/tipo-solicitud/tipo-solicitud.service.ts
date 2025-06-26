@@ -33,4 +33,10 @@ export class TipoSolicitudService {
   findAllClientes() {
     return this.http.get<any[]>(`${environment.apiUrl}/client`);
   }
+
+  findByClienteId(clienteId: number) {
+    return this.http.get<any[]>(this.apiUrl).toPromise().then((response: any[] | undefined) => {
+      return (response || []).filter((item: any) => item.cliente?.id === clienteId);
+    });
+  }
 }
