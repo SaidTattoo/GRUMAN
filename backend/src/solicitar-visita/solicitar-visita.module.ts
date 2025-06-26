@@ -24,13 +24,15 @@ import { ClienteRepuestoModule } from '../cliente-repuesto/cliente-repuesto.modu
 import { ClienteRepuesto } from '../cliente-repuesto/cliente-repuesto.entity';
 import { Item } from 'src/inspection/entities/item.entity';
 import { ResponseChecklist } from 'src/inspection/entities/response-checklist.entity';
+import { Sla } from '../sla/entity/sla.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       SolicitarVisita, 
       Locales, 
       SectorTrabajo, 
-      TipoServicio, 
+      TipoServicio,
+      Sla,
       Client,
       User,
       ItemRepuesto,

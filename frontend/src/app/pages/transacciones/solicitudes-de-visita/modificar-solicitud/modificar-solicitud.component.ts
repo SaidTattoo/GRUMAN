@@ -33,6 +33,7 @@ import * as L from 'leaflet';
 import { UsersService } from 'src/app/services/users.service';
 import { ConfirmDialogComponent } from '../../../../components/confirm-dialog/confirm-dialog.component';
 import { EspecialidadesService } from '../../../../services/especialidades.service';
+import { TipoSolicitudService } from '../../../mantenedores/tipo-solicitud/tipo-solicitud.service';
 import Swal from 'sweetalert2';
 import { CausaRaizService } from '../../../../services/causa-raiz.service';
 import { MatRadioModule } from '@angular/material/radio';
@@ -207,6 +208,7 @@ export class ModificarSolicitudComponent implements OnInit {
   temporaryRepuestos: { [key: number]: any[] } = {};
   temporaryDeletedRepuestos: { [key: number]: any[] } = {};
   tiposServicio: any[] = [];
+  tiposSolicitud: any[] = [];
   sectoresTrabajos: any[] = [];
   tecnicos: Tecnico[] = [];
   private map: L.Map | null = null;
@@ -246,6 +248,7 @@ export class ModificarSolicitudComponent implements OnInit {
     private fb: FormBuilder,
     private solicitarVisitaService: SolicitarVisitaService,
     private tipoServicioService: TipoServicioService,
+    private tipoSolicitudService: TipoSolicitudService,
     private sectoresService: SectoresService,
     private snackBar: MatSnackBar,
     private authService: AuthService,
@@ -322,6 +325,7 @@ export class ModificarSolicitudComponent implements OnInit {
   inicializarFormulario() {
     this.solicitudForm = this.fb.group({
       tipoServicioId: [''],
+      tipoSolicitudId: [''],
       sectorTrabajoId: [''],
       especialidad: [''],
       fechaVisita: [{ value: '', disabled: false }, Validators.required],
@@ -551,8 +555,13 @@ export class ModificarSolicitudComponent implements OnInit {
                     }
                   },
                 });
-
+                debugger
               this.solicitud = data;
+
+              // Cargar tipos de solicitud
+              if (data.client?.id) {
+                this.loadTiposSolicitud(data.client.id);
+              }
 
               // Asignar el imagePreview si existe image_ot
               if (data.image_ot) {
@@ -620,12 +629,14 @@ export class ModificarSolicitudComponent implements OnInit {
                 this.solicitudForm.get('tecnico_asignado_id')?.enable();
                 this.solicitudForm.get('tecnico_asignado_id_2')?.enable();
                 this.solicitudForm.get('tipoServicioId')?.enable();
+                this.solicitudForm.get('tipoSolicitudId')?.enable();
                 this.solicitudForm.get('sectorTrabajoId')?.enable();
               } else {
                 // Si no está en pendiente, deshabilitar los controles
                 this.solicitudForm.get('tecnico_asignado_id')?.disable();
                 this.solicitudForm.get('tecnico_asignado_id_2')?.disable();
                 this.solicitudForm.get('tipoServicioId')?.disable();
+                this.solicitudForm.get('tipoSolicitudId')?.disable();
                 this.solicitudForm.get('sectorTrabajoId')?.disable();
               }
 
@@ -647,6 +658,7 @@ export class ModificarSolicitudComponent implements OnInit {
                 'tecnico_asignado.name': data.tecnico_asignado?.name || '',
                 tipoServicioId:
                   data.tipoServicioId || data.tipoServicio?.id || '',
+                tipoSolicitudId: data.tipoSolicitudId || '',
                 sectorTrabajoId: data.sectorTrabajoId || '',
                 especialidad: data.especialidad || '',
                 fechaVisita: data.fechaVisita
@@ -2546,5 +2558,18 @@ export class ModificarSolicitudComponent implements OnInit {
       });
     }
     this.checklistResponse.total_final = total;
+  }
+
+  loadTiposSolicitud(clienteId: number) {
+    this.tipoSolicitudService.findByClienteId(clienteId).then((tipos) => {
+      this.tiposSolicitud = tipos || [];
+    }).catch((error) => {
+      console.error('Error cargando tipos de solicitud:', error);
+    });
+  }
+
+  getTipoSolicitudNombre(id: number): string {
+    const tipoSolicitud = this.tiposSolicitud.find(tipo => tipo.id === id);
+    return tipoSolicitud ? `${tipoSolicitud.nombre.toUpperCase()} - Día(s): ${tipoSolicitud.sla_dias} / Hora(s): ${tipoSolicitud.sla_hora}` : 'No especificado';
   }
 }

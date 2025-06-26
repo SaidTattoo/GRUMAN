@@ -341,7 +341,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
           const tempId = Date.now();
           imagenesUrls = await this.subirImagenes(tempId);
         }
-        
+        debugger
         const formData = {
           clientId: this.clientId,
           generada_por_id: this.currentUserId,

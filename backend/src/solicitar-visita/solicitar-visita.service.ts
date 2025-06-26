@@ -31,6 +31,7 @@ import { ItemFotos } from 'src/inspection/entities/item-fotos.entity';
 import { DetalleRepuestoActivoFijo } from '../activo-fijo-repuestos/entities/detalle-repuesto-activo-fijo.entity';
 import { ActivoFijoRepuestos } from '../activo-fijo-repuestos/entities/activo-fijo-repuestos.entity';
 import { ChecklistClima } from 'src/checklist_clima/checklist_clima.entity';
+import { Sla } from '../sla/entity/sla.entity';
 import { ActivoFijoRepuestosService } from 'src/activo-fijo-repuestos/activo-fijo-repuestos.service';
 import {
   ItemRepuestoDataDto,
@@ -157,6 +158,8 @@ export class SolicitarVisitaService {
     private clientRepository: Repository<Client>,
     @InjectRepository(TipoServicio)
     private tipoServicioRepository: Repository<TipoServicio>,
+    @InjectRepository(Sla)
+    private slaRepository: Repository<Sla>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     @InjectRepository(ItemRepuesto)
@@ -199,6 +202,16 @@ export class SolicitarVisitaService {
       where: { id: solicitud.tipoServicioId },
     });
     solicitudVisita.tipoServicioId = tipoServicio.id;
+
+    // Busca y asigna el tipo de solicitud (SLA) seleccionado
+    if (solicitud.tipoSolicitudId) {
+      const tipoSolicitud = await this.slaRepository.findOne({
+        where: { id: solicitud.tipoSolicitudId },
+      });
+      if (tipoSolicitud) {
+        solicitudVisita.tipoSolicitudId = tipoSolicitud.id;
+      }
+    }
 
     // Busca y asigna el local y cliente relacionados
     solicitudVisita.local = await this.localesRepository.findOne({
@@ -547,6 +560,7 @@ export class SolicitarVisitaService {
         'tecnico_asignado',
         'tecnico_asignado_2',
         'tipo_servicio',
+        'tipo_solicitud',
         'activoFijoRepuestos',
         'activoFijoRepuestos.activoFijo',
         'activoFijoRepuestos.detallesRepuestos',
@@ -1623,7 +1637,7 @@ export class SolicitarVisitaService {
     mesFacturacion: string,
     tipoServicio: string,
     tipoBusqueda: string,
-    tipo_mantenimiento: string,
+    tipoSolicitud: string,
   ): Promise<SolicitarVisita[]> {
     try {
       const whereClause: any = {
@@ -1672,9 +1686,9 @@ export class SolicitarVisitaService {
         }
       }
 
-      // Add tipo_mantenimiento filter if provided
-      if (tipo_mantenimiento && tipo_mantenimiento !== 'todos') {
-        whereClause.tipo_mantenimiento = tipo_mantenimiento;
+      // Add tipoSolicitud filter if provided
+      if (tipoSolicitud && tipoSolicitud !== 'todos') {
+        whereClause.tipoSolicitudId = parseInt(tipoSolicitud);
       }
 
       const data = await this.solicitarVisitaRepository.find({
@@ -1687,6 +1701,7 @@ export class SolicitarVisitaService {
           'tecnico_asignado',
           'tecnico_asignado_2',
           'tipoServicio',
+          'tipoSolicitud',
         ],
         order: { id: 'ASC' },
       });

@@ -2,6 +2,8 @@ import { Client } from "src/client/client.entity";
 import { Locales } from "../locales/locales.entity";
 import { SectorTrabajo } from "../sectores-trabajo/sectores-trabajo.entity";
 import { TipoServicio } from "../tipo-servicio/tipo-servicio.entity";
+import { Sla } from "../sla/entity/sla.entity";
+
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "src/users/users.entity";
 import { ItemRepuesto } from "src/inspection/entities/item-repuesto.entity";
@@ -38,12 +40,16 @@ export class SolicitarVisita {
   @ManyToOne(() => TipoServicio)
   @JoinColumn({ name: 'tipoServicioId' })
   tipoServicio: TipoServicio;
+ 
+  @ManyToOne(() => Sla)
+  @JoinColumn({ name: 'tipoSolicitudId' })
+  tipoSolicitud: Sla;
 
   @Column({ nullable: true })
   tipoServicioId: number;
 
   @Column({ nullable: true })
-  tipoSolicitud: string;
+  tipoSolicitudId: number;
 
   // Relación con la tabla Locales
   @ManyToOne(() => Locales, (local) => local.id, { nullable: true })
@@ -182,6 +188,10 @@ export class SolicitarVisita {
   @ManyToOne(() => TipoServicio, (tipoServicio) => tipoServicio.id, { nullable: true })
   @JoinColumn({ name: 'tipoServicioId' })
   tipo_servicio: TipoServicio;
+
+  @ManyToOne(() => Sla, (tipoSolicitud) => tipoSolicitud.id, { nullable: true })
+  @JoinColumn({ name: 'tipoSolicitudId' })
+  tipo_solicitud: Sla;
 
   @Column({ type: 'int', nullable: true })
   generada_por_id: number;

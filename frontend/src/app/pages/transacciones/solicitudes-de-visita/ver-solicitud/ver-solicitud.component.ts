@@ -19,6 +19,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatInputModule } from '@angular/material/input';
 import { SectoresService } from 'src/app/services/sectores.service';
 import { EspecialidadesService } from 'src/app/services/especialidades.service';
+import { TipoSolicitudService } from '../../../mantenedores/tipo-solicitud/tipo-solicitud.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -53,6 +54,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class VerSolicitudComponent implements OnInit {
   @Input() activity!: any;
   tiposServicio: any[] = [];
+  tiposSolicitud: any[] = [];
   tecnicos: any[] = [];
   sectores: any[] = [];
   especialidades: any[] = [];
@@ -64,6 +66,7 @@ export class VerSolicitudComponent implements OnInit {
     private router: Router, 
     private dialog: MatDialog, 
     private tipoServicioService: TipoServicioService,
+    private tipoSolicitudService: TipoSolicitudService,
     private usersService: UsersService,
     private sectoresService: SectoresService,
     private especialidadesService: EspecialidadesService,
@@ -80,6 +83,7 @@ export class VerSolicitudComponent implements OnInit {
         console.log('Solicitud cargada:', data);
         this.activity = data;
         this.loadTiposServicio();
+        this.loadTiposSolicitud();
         this.loadTecnicos();
         this.loadSectores();
         this.loadEspecialidades();
@@ -167,6 +171,21 @@ export class VerSolicitudComponent implements OnInit {
     const tipoServicio = this.tiposServicio.find(tipo => tipo.id === id);
     return tipoServicio ? tipoServicio.nombre : 'No especificado';
   }
+
+  loadTiposSolicitud() {
+    if (this.activity?.client?.id) {
+      this.tipoSolicitudService.findByClienteId(this.activity.client.id).then((tipos) => {
+        this.tiposSolicitud = tipos || [];
+      }).catch((error) => {
+        console.error('Error cargando tipos de solicitud:', error);
+      });
+    }
+  }
+
+  getTipoSolicitudNombre(id: number): string {
+    const tipoSolicitud = this.tiposSolicitud.find(tipo => tipo.id === id);
+    return tipoSolicitud ? `${tipoSolicitud.nombre.toUpperCase()} - Día(s): ${tipoSolicitud.sla_dias} / Hora(s): ${tipoSolicitud.sla_hora}` : 'No especificado';
+  }
   loadTecnicos() {
     this.usersService.getAllTecnicos().subscribe({
       next: (data: any[]) => {
@@ -208,6 +227,7 @@ export class VerSolicitudComponent implements OnInit {
           especialidad: this.activity.especialidad,
           sectorTrabajoId: this.activity.sectorTrabajoId,
           tipoServicioId: this.activity.tipoServicioId,
+          tipoSolicitudId: this.activity.tipoSolicitudId,
           tecnico_asignado_id: this.activity.tecnico_asignado_id,
           tecnico_asignado_id_2: this.activity.tecnico_asignado_id_2,
           observaciones: this.activity.observaciones,

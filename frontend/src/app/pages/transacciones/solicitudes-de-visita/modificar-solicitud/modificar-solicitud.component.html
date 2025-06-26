@@ -264,6 +264,24 @@
           </mat-form-field>
 
           <mat-form-field appearance="fill">
+            <mat-label>Tipo Solicitud</mat-label>
+            @if (isPendiente && !isRechazada) {
+            <mat-select formControlName="tipoSolicitudId">
+              <mat-option *ngFor="let tipo of tiposSolicitud" [value]="tipo.id">
+                <div>
+                  <strong>{{ tipo.nombre | uppercase }}</strong><br>
+                  <small style="font-size: 10px;">Día(s): {{ tipo.sla_dias }} / Hora(s): {{ tipo.sla_hora }}</small>
+                </div>
+              </mat-option>
+            </mat-select>
+            } @else {
+            <input matInput [value]="getTipoSolicitudNombre(solicitud?.tipoSolicitudId)" disabled>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="fill">
             <mat-label>Sector de trabajo</mat-label>
             @if (isPendiente && !isRechazada) {
             <mat-select formControlName="sectorTrabajoId">
@@ -275,9 +293,7 @@
             <input matInput [value]="getSectorTrabajoNombre(solicitud?.sectorTrabajoId)" disabled>
             }
           </mat-form-field>
-        </div>
 
-        <div class="form-row">
           <mat-form-field appearance="fill">
             <mat-label>Especialidad</mat-label>
             @if (isPendiente && !isRechazada) {
@@ -291,7 +307,9 @@
             <input matInput [value]="getEspecialidadNombre(solicitud?.especialidad)" disabled>
             }
           </mat-form-field>
+        </div>
 
+        <div class="form-row">
           <mat-form-field appearance="fill">
             <mat-label>Fecha de visita</mat-label>
             @if (solicitud?.status === 'validada' || isRechazada || isAprobada) {

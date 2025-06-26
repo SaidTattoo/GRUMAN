@@ -1,5 +1,6 @@
 <mat-card class="cardWithShadow">
     <mat-card-content class="p-24">
+      {{activity | json}}
     
         @if (activity) {
           <mat-card-header>
@@ -125,6 +126,20 @@
                   </mat-form-field>
 
                   <mat-form-field class="w-100">
+                    <mat-label>Tipo Solicitud</mat-label>
+                    <mat-select [(ngModel)]="activity.tipoSolicitudId">
+                      @for (tipo of tiposSolicitud; track tipo.id) {
+                        <mat-option [value]="tipo.id">
+                          <div>
+                            <strong>{{ tipo.nombre | uppercase }}</strong><br>
+                            <small style="font-size: 10px;">Día(s): {{ tipo.sla_dias }} / Hora(s): {{ tipo.sla_hora }}</small>
+                          </div>
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field class="w-100">
                     <mat-label>Sector de Trabajo</mat-label>
                     <mat-select [(ngModel)]="activity.sectorTrabajoId">
                       @for (sector of sectores; track sector.id) {
@@ -143,6 +158,7 @@
                   </mat-form-field>
                 } @else {
                   <p><strong>Tipo de Servicio:</strong> {{ getTipoServicioNombre(activity.tipoServicioId) }}</p>
+                  <p><strong>Tipo Solicitud:</strong> {{ getTipoSolicitudNombre(activity.tipoSolicitudId) }}</p>
                   <p><strong>Sector de Trabajo:</strong> {{ getSectorNombre(activity.sectorTrabajoId) }}</p>
                   <p><strong>Especialidad:</strong> {{ activity.especialidad || 'No especificada' }}</p>
                 }
