@@ -98,12 +98,13 @@ export class SolicitudesDeVisitaComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'id',
     'fechaIngreso',	
-  
     'cliente',
     'local',
     'ticketGruman',
     'generado_por',
-    'observaciones',
+    // 'observaciones',
+    'tipo_solicitud',
+    'tiempo_restante',
     'estado',
     'imagenes',
     'acciones'
@@ -254,16 +255,16 @@ export class SolicitudesDeVisitaComponent implements OnInit, OnDestroy {
 
     // Preparar los datos para la exportación
     const datosParaExportar = this.dataSource.data.map(solicitud => ({
-      'Número de Solicitud': solicitud.id,
+      'Número de solicitud': solicitud.id,
       'Cliente': solicitud.client?.nombre || 'No asignado',
       'Local': solicitud.local?.nombre_local || 'No asignado',
-      'Fecha de Ingreso': this.formatDate(solicitud.fechaIngreso),
+      'Fecha de ingreso': this.formatDate(solicitud.fechaIngreso),
       'Ticket Gruman': solicitud.ticketGruman || 'Sin ticket',
       'Especialidad': solicitud.especialidad || 'No especificada',
       'Generado por': solicitud.generada_por ? `${solicitud.generada_por.name} ${solicitud.generada_por.lastName}` : 'Sin usuario',
       'Estado': solicitud.status || 'No definido',
       'Técnico': solicitud.tecnico_asignado ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}` : 'No asignado',
-      'Observaciones': solicitud.observaciones || 'Sin observaciones'
+      // 'Observaciones': solicitud.observaciones || 'Sin observaciones'
     }));
 
     // Crear el libro de trabajo y la hoja
@@ -301,6 +302,71 @@ export class SolicitudesDeVisitaComponent implements OnInit, OnDestroy {
       timer: 2000,
       showConfirmButton: false
     });
+  }
+
+  getTiempoRestante(solicitud: any) {
+    if (!solicitud.tipo_solicitud) {
+      return '-';
+    }
+
+    const fechaIngreso = new Date(solicitud.fechaIngreso);
+    const fechaActual = new Date();
+    
+    const slaDias = solicitud.tipo_solicitud.sla_dias || 0;
+    const slaHoras = solicitud.tipo_solicitud.sla_hora || 0;
+    
+    // Calcular la fecha límite basada en el SLA
+    let fechaLimite = new Date(fechaIngreso);
+    
+    if (slaDias > 0) {
+      // Si hay días definidos, usamos los días como referencia
+      fechaLimite.setDate(fechaLimite.getDate() + slaDias);
+      if (slaHoras > 0) {
+        // Si también hay horas, las agregamos
+        fechaLimite.setHours(fechaLimite.getHours() + slaHoras);
+      }
+    } else if (slaHoras > 0) {
+      // Si no hay días pero sí horas, usamos solo las horas
+      fechaLimite.setHours(fechaLimite.getHours() + slaHoras);
+    } else {
+      return '-';
+    }
+    
+    // Calcular el tiempo restante en milisegundos
+    const tiempoRestanteMs = fechaLimite.getTime() - fechaActual.getTime();
+    
+    // Si ya se venció el SLA
+    if (tiempoRestanteMs <= 0) {
+      const tiempoVencido = Math.abs(tiempoRestanteMs);
+      const diasVencidos = Math.floor(tiempoVencido / (1000 * 60 * 60 * 24));
+      const horasVencidas = Math.floor((tiempoVencido % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutosVencidos = Math.floor((tiempoVencido % (1000 * 60 * 60)) / (1000 * 60));
+      
+      if (diasVencidos > 0) {
+        // return `Vencido: ${diasVencidos}d ${horasVencidas}h ${minutosVencidos}m`;
+        return `Vencido`;
+      } else if (horasVencidas > 0) {
+        return `Vencido`;
+        // return `Vencido: ${horasVencidas}h ${minutosVencidos}m`;
+      } else {
+        // return `Vencido: ${minutosVencidos}m`;
+        return `Vencido`;
+      }
+    }
+    
+    // Calcular días, horas y minutos restantes
+    const diasRestantes = Math.floor(tiempoRestanteMs / (1000 * 60 * 60 * 24));
+    const horasRestantes = Math.floor((tiempoRestanteMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutosRestantes = Math.floor((tiempoRestanteMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    // Formatear la respuesta
+    if (diasRestantes > 0) {
+      return `${diasRestantes}d ${horasRestantes}h ${minutosRestantes}m`;
+    } else if (horasRestantes > 0) {
+      return `${horasRestantes}h ${minutosRestantes}m`;
+    } else {
+      return `${minutosRestantes}m`;
+    }
   }
 }
 

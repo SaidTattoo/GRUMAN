@@ -686,6 +686,7 @@ export class SolicitarVisitaService {
         'tecnico_asignado',
         'generada_por',
         'facturacion',
+        'tipo_solicitud'
       ],
       order: { fechaIngreso: 'DESC' },
     });
