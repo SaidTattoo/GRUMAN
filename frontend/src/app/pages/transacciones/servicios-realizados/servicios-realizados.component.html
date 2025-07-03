@@ -1,286 +1,315 @@
-<!-- Card de Filtros -->
-<mat-card class="cardWithShadow mb-4">
-  <mat-card-header>
-    <mat-card-title>Filtros de Búsqueda</mat-card-title>
-  </mat-card-header>
-  
-  <mat-expansion-panel [expanded]="panelOpenState">
-    <mat-expansion-panel-header>
-      <mat-panel-description>
-        Click para {{ panelOpenState ? 'ocultar' : 'mostrar' }} filtros
-      </mat-panel-description>
-    </mat-expansion-panel-header>
+<div style="padding:1rem; background:#fff; border-radius: 15px;margin-bottom: 1rem;">
+  <form [formGroup]="programacionForm" (ngSubmit)="onSubmit()">
+    <!-- Selector de clientes solo para Gruman -->
+    <div class="row d-flex justify-content-center">
+      @if (isGruman) {
+      <mat-form-field appearance="outline" class="col-sm-4">
+        <mat-label>Cliente</mat-label>
+        <mat-select formControlName="clientId">
+          <mat-option>Seleccione un cliente</mat-option>
+          @for (cliente of clientes; track cliente.id) {
+          <mat-option [value]="cliente.id">
+            {{ cliente.nombre }}
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      }
 
-    <mat-card-content class="p-24">
-      <form [formGroup]="programacionForm" (ngSubmit)="onSubmit()">
-        <!-- Selector de clientes solo para Gruman -->
-        @if (isGruman) {
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Cliente</mat-label>
-            <mat-select formControlName="clientId">
-              <mat-option>Seleccione un cliente</mat-option>
-              @for (cliente of clientes; track cliente.id) {
-                <mat-option [value]="cliente.id">
-                  {{cliente.nombre}}
-                </mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        }
+      <!-- Selector de tipo de servicio -->
+      <mat-form-field appearance="outline" class="col-sm-4">
+        <mat-label>Tipo de servicio</mat-label>
+        <mat-select formControlName="tipoServicio">
+          <mat-option value="todos">Todos</mat-option>
+          <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
+            {{ tipo.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="programacionForm.get('tipoServicio')?.hasError('required')">
+          Debe seleccionar un tipo de servicio
+        </mat-error>
+      </mat-form-field>
 
-        <!-- Selector de tipo de servicio -->
+      <!-- Selector de tipo de solicitud -->
+      <mat-form-field appearance="outline" class="col-sm-4">
+        <mat-label>Tipo de solicitud</mat-label>
+        <mat-select formControlName="tipoSolicitud">
+          <mat-option>Seleccione un tipo de solicitud</mat-option>
+          @for (tipo of tiposSolicitud; track tipo.id) {
+          <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-error *ngIf="
+                  programacionForm.get('tipoSolicitud')?.hasError('required')
+                ">
+          Debe seleccionar un tipo de solicitud
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Layout reorganizado: Fechas en 2 columnas + Tipo de Búsqueda -->
+    <div class="row align-items-between">
+      <div class="col-md-4 d-flex align-items-baseline">
+        <div class="w-100">
+          <mat-label>Tipo de búsqueda</mat-label>
+          <mat-radio-group formControlName="tipoBusqueda" class="d-flex flex-row gap-0">
+            <mat-radio-button value="mesFacturacion">Mes facturación</mat-radio-button>
+            <mat-radio-button value="rangoFechas">Fechas</mat-radio-button>
+          </mat-radio-group>
+        </div>
+      </div>
+      <!-- Fecha Inicio - Primera columna -->
+      <div class="col-md-4" *ngIf="programacionForm.get('tipoBusqueda')?.value === 'rangoFechas'">
         <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Tipo de Servicio</mat-label>
-          <mat-select formControlName="tipoServicio">
-            <mat-option value="todos">Todos</mat-option>
-            <mat-option *ngFor="let tipo of tiposServicio" [value]="tipo.id">
-              {{ tipo.nombre }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="programacionForm.get('tipoServicio')?.hasError('required')">
-            Debe seleccionar un tipo de servicio
+          <mat-label>Día Inicio</mat-label>
+          <input matInput [matDatepicker]="pickerInicio" formControlName="diaSeleccionadoInicio"
+            placeholder="Seleccionar Día Inicio" />
+          <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+          <mat-datepicker #pickerInicio></mat-datepicker>
+          <mat-error *ngIf="programacionForm.get('diaSeleccionadoInicio')?.hasError('required')">
+            Día inicio es requerido
           </mat-error>
         </mat-form-field>
+      </div>
 
-        <!-- Selector de tipo de solicitud -->
+      <!-- Fecha Término - Segunda columna -->
+      <div class="col-md-4" *ngIf="programacionForm.get('tipoBusqueda')?.value === 'rangoFechas'">
         <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Tipo de Solicitud</mat-label>
-          <mat-select formControlName="tipoSolicitud">
-            <mat-option>Seleccione un tipo de solicitud</mat-option>
-            @for (tipo of tiposSolicitud; track tipo.id) {
-              <mat-option [value]="tipo.id">{{tipo.nombre}}</mat-option>
+          <mat-label>Día Término</mat-label>
+          <input matInput [matDatepicker]="pickerTermino" formControlName="diaSeleccionadoTermino"
+            placeholder="Seleccionar Día Término" />
+          <mat-datepicker-toggle matSuffix [for]="pickerTermino"></mat-datepicker-toggle>
+          <mat-datepicker #pickerTermino></mat-datepicker>
+          <mat-error *ngIf="programacionForm.get('diaSeleccionadoTermino')?.hasError('required')">
+            Día término es requerido
+          </mat-error>
+          <mat-error *ngIf="programacionForm.hasError('fechaTerminoMayorQueInicio')">
+            La fecha de término no puede ser menor que la de inicio.
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Mes de Facturación - Para cuando se selecciona esa opción -->
+      <div class="col-md-4" *ngIf="programacionForm.get('tipoBusqueda')?.value === 'mesFacturacion'">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Mes de Facturación</mat-label>
+          <mat-select formControlName="mesFacturacion">
+            @for (mes of meses; track mes.mes) {
+            <mat-option [value]="mes.mes">{{ mes.mes }}</mat-option>
             }
           </mat-select>
-          <mat-error *ngIf="programacionForm.get('tipoSolicitud')?.hasError('required')">
-            Debe seleccionar un tipo de solicitud
+          <mat-error *ngIf="programacionForm.get('mesFacturacion')?.hasError('required')">
+            Mes de facturación es requerido
           </mat-error>
         </mat-form-field>
+      </div>
 
-        <!-- Campos de Rango de Fechas -->
-        <div class="row" *ngIf="programacionForm.get('tipoBusqueda')?.value === 'rangoFechas'">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Día Inicio</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field appearance="outline" class="w-100">
-              <input matInput [matDatepicker]="pickerInicio" formControlName="diaSeleccionadoInicio" placeholder="Seleccionar Día Inicio">
-              <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
-              <mat-datepicker #pickerInicio></mat-datepicker>
-            </mat-form-field>
-          </div>
-        </div>
+      <!-- Tipo de Búsqueda - Tercera columna -->
 
-        <!-- Seleccionar Día Término -->
-        <div class="row" *ngIf="programacionForm.get('tipoBusqueda')?.value === 'rangoFechas'">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Día Término</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-form-field appearance="outline" class="w-100">
-              <input matInput [matDatepicker]="pickerTermino" formControlName="diaSeleccionadoTermino" placeholder="Seleccionar Día Término">
-              <mat-datepicker-toggle matSuffix [for]="pickerTermino"></mat-datepicker-toggle>
-              <mat-datepicker #pickerTermino></mat-datepicker>
-              <mat-error *ngIf="programacionForm.hasError('fechaTerminoMayorQueInicio')">
-                La fecha de término no puede ser menor que la de inicio.
-              </mat-error>
-            </mat-form-field>
-          </div>
-        </div>
+    </div>
 
-        <!-- Mes de Facturación -->
-        <div class="row" *ngIf="programacionForm.get('tipoBusqueda')?.value === 'mesFacturacion'">
-          <div class="col-12 d-flex justify-content-center">
-            <div class="col-md-4">
-              <mat-form-field appearance="outline" class="w-100">
-                <mat-label>Mes de Facturación</mat-label>
-                <mat-select formControlName="mesFacturacion">
-                  @for (mes of meses; track mes.mes) {
-                    <mat-option [value]="mes.mes">{{ mes.mes }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-            </div>
-          </div>
-        </div>
 
-        <!-- Tipo de Búsqueda -->
-        <div class="row">
-          <div class="col-sm-4 d-flex align-items-center">
-            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Tipo de Búsqueda</mat-label>
-          </div>
-          <div class="col-sm-8">
-            <mat-radio-group formControlName="tipoBusqueda">
-              <mat-radio-button value="rangoFechas">Rango de Fechas</mat-radio-button>
-              <mat-radio-button value="mesFacturacion">Mes de Facturación</mat-radio-button>
-            </mat-radio-group>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12 d-flex justify-content-end">
-            <button mat-flat-button color="primary" type="submit">Buscar</button>
-          </div>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-expansion-panel>
-</mat-card>
+    <div class="row">
+      <div class="col-sm-12 d-flex justify-content-end">
+        <button mat-flat-button color="primary" type="submit">
+          Buscar
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
 
 <!-- Card de Resultados -->
 @if (serviciosRealizados.length > 0) {
-  <mat-card class="cardWithShadow">
-    <mat-card-header>
-      <mat-card-title>Resultados de la Búsqueda</mat-card-title>
-      <mat-card-subtitle>Total: {{serviciosRealizados.length}} registros encontrados </mat-card-subtitle>
-    </mat-card-header>
-
-    <mat-card-content class="p-24">
-      <!-- Botón de exportar al principio -->
-      <div class="action-buttons mb-3">
-        <button mat-stroked-button color="primary" (click)="exportarExcel()">
-          <mat-icon>file_download</mat-icon>
-          Exportar a Excel
-        </button>
+<mat-card class="cardWithShadow">
+  <mat-card-header>
+    <mat-card-title>Resultados de la Búsqueda</mat-card-title>
+    <mat-card-subtitle>
+      <div class="d-flex justify-content-between">
+        <span>Total: {{ serviciosRealizados.length }} registros encontrados</span>
+        <div class="action-buttons mb-3">
+          <button mat-stroked-button color="primary" (click)="exportarExcel()">
+            <mat-icon>file_download</mat-icon>
+            Exportar a Excel
+          </button>
+        </div>
       </div>
+    </mat-card-subtitle>
+  </mat-card-header>
 
-      <div>
-        <table mat-table [dataSource]="serviciosRealizados" class="w-100">
+  <mat-card-content class="p-24">
+
+
+    <!-- Contenedor scrolleable para la tabla -->
+    <div class="table-container">
+      <div class="table-scroll-wrapper">
+        <table mat-table [dataSource]="serviciosRealizados" class="responsive-table">
           <!-- ID Column -->
           <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef> Numero de solicitud</th>
-            <td mat-cell *matCellDef="let servicio"> {{servicio.id}} </td>
+            <th mat-header-cell *matHeaderCellDef class="column-id">Nº Solicitud</th>
+            <td mat-cell *matCellDef="let servicio" class="column-id">
+              <span class="font-weight-bold">{{ servicio.id }}</span>
+            </td>
           </ng-container>
 
           <!-- Fecha Column -->
           <ng-container matColumnDef="fechaIngreso">
-            <th mat-header-cell *matHeaderCellDef> Fecha </th>
-            <td mat-cell *matCellDef="let servicio"> {{formatDate(servicio.fechaIngreso)}} </td>
+            <th mat-header-cell *matHeaderCellDef class="column-fecha">Fecha Ingreso</th>
+            <td mat-cell *matCellDef="let servicio" class="column-fecha" style="font-size: 12px;width:140px;">
+              <span >{{ formatDate(servicio.fechaIngreso) }}</span>
+            </td>
           </ng-container>
-
 
           <!-- Tipo Servicio Column -->
           <ng-container matColumnDef="tipoServicio">
-            <th mat-header-cell *matHeaderCellDef> Tipo Servicio </th>
-            <td mat-cell *matCellDef="let servicio"> {{servicio.tipoServicio?.nombre}} </td>
-          </ng-container>
-
-          <!-- Tarea Column -->
-          <ng-container matColumnDef="cliente" >
-            <th mat-header-cell *matHeaderCellDef>Cliente</th>
-            <td mat-cell *matCellDef="let servicio">
-              {{servicio.client?.nombre}}
+            <th mat-header-cell *matHeaderCellDef class="column-tipo-servicio">Tipo Servicio</th>
+            <td mat-cell *matCellDef="let servicio" class="column-tipo-servicio">
+              <span class="badge badge-info">{{ servicio.tipoServicio?.nombre || 'N/A' }}</span>
             </td>
           </ng-container>
 
+          <!-- Cliente Column -->
+          <ng-container matColumnDef="cliente">
+            <th mat-header-cell *matHeaderCellDef class="column-cliente">Cliente</th>
+            <td mat-cell *matCellDef="let servicio" class="column-cliente">
+              {{ servicio.client?.nombre || 'No asignado' }}
+            </td>
+          </ng-container>
 
-          <!-- Tarea Column -->
+          <!-- Solicita Column -->
           <ng-container matColumnDef="solicita">
-            <th mat-header-cell *matHeaderCellDef>Solicita</th>
-            <td mat-cell *matCellDef="let servicio">
-              {{servicio.generada_por?.name}} {{servicio.generada_por?.lastName || ''}}
+            <th mat-header-cell *matHeaderCellDef class="column-solicita">Solicita</th>
+            <td mat-cell *matCellDef="let servicio" class="column-solicita">
+              {{ (servicio.generada_por?.name || '') + ' ' + (servicio.generada_por?.lastName || '') || 'No asignado' }}
             </td>
           </ng-container>
+
           <!-- Local Column -->
           <ng-container matColumnDef="local">
-            <th mat-header-cell *matHeaderCellDef>Local</th>
-            <td mat-cell *matCellDef="let servicio" 
-                [matTooltip]="servicio.local?.direccion || 'Dirección no disponible'"
-                matTooltipPosition="above">
-              {{servicio.local?.nombre_local}}
+            <th mat-header-cell *matHeaderCellDef class="column-local">Local</th>
+            <td mat-cell *matCellDef="let servicio" class="column-local"
+              [matTooltip]="servicio.local?.direccion || 'Dirección no disponible'" matTooltipPosition="above">
+              {{ servicio.local?.nombre_local || 'No asignado' }}
             </td>
           </ng-container>
 
-          <!-- Fecha Column -->
+          <!-- Fecha Visita Column -->
           <ng-container matColumnDef="fechaVisita">
-            <th mat-header-cell *matHeaderCellDef>Fecha Visita</th>
-            <td mat-cell *matCellDef="let servicio">
-              {{servicio.fechaVisita ? (servicio.fechaVisita | date:'dd/MM/yyyy ') : 'Sin fecha'}}
+            <th mat-header-cell *matHeaderCellDef class="column-fecha-visita">Fecha Visita</th>
+            <td mat-cell *matCellDef="let servicio" class="column-fecha-visita">
+              <span [class]="servicio.fechaVisita ? 'text-success' : 'text-muted'">
+                {{ servicio.fechaVisita ? (servicio.fechaVisita | date : "dd/MM/yyyy") : "Sin fecha" }}
+              </span>
             </td>
           </ng-container>
 
           <!-- Técnico Column -->
           <ng-container matColumnDef="tecnico">
-            <th mat-header-cell *matHeaderCellDef> Técnico </th>
-            <td mat-cell *matCellDef="let servicio"> 
-              {{servicio.tecnico_asignado?.name}} {{servicio.tecnico_asignado?.lastName}}
+            <th mat-header-cell *matHeaderCellDef class="column-tecnico">Técnico</th>
+            <td mat-cell *matCellDef="let servicio" class="column-tecnico">
+              {{ (servicio.tecnico_asignado?.name || '') + ' ' + (servicio.tecnico_asignado?.lastName || '') || 'No
+              asignado' }}
             </td>
           </ng-container>
 
           <!-- Status Column -->
           <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef> Estado </th>
-            <td mat-cell *matCellDef="let servicio"> {{servicio.status}} </td>
+            <th mat-header-cell *matHeaderCellDef class="column-status">Estado</th>
+            <td mat-cell *matCellDef="let servicio" class="column-status">
+              <span class="status-badge" [ngClass]="getStatusClass(servicio.status)">
+                {{ servicio.status || 'No definido' }}
+              </span>
+            </td>
           </ng-container>
 
           <!-- Observaciones Column -->
           <ng-container matColumnDef="observaciones">
-            <th mat-header-cell *matHeaderCellDef> Observaciones </th>
-            <td mat-cell *matCellDef="let servicio"> {{servicio.observaciones}} </td>
-          </ng-container>
-
-          <!-- fecha validacion -->
-          <ng-container matColumnDef="fechaValidacion">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Validación</th>
-            <!-- formatear con pipepipe  -->
-            <td mat-cell *matCellDef="let servicio">
-              {{ servicio.fecha_hora_validacion ? (servicio.fecha_hora_validacion | date:'dd/MM/yyyy HH:mm') : 'Sin fecha' }}
+            <th mat-header-cell *matHeaderCellDef class="column-observaciones">Observaciones</th>
+            <td mat-cell *matCellDef="let servicio" class="column-observaciones"
+              [matTooltip]="servicio.observaciones || 'Sin observaciones'" matTooltipPosition="above">
+              <span class="text-truncate">{{ servicio.observaciones || 'Sin observaciones' }}</span>
             </td>
           </ng-container>
-          <!-- mes facturacion -->
+
+          <!-- Fecha Validación Column -->
+          <ng-container matColumnDef="fechaValidacion">
+            <th mat-header-cell *matHeaderCellDef class="column-fecha-validacion">Fecha Validación</th>
+            <td mat-cell *matCellDef="let servicio" class="column-fecha-validacion">
+              {{ servicio.fecha_hora_validacion ? (servicio.fecha_hora_validacion | date : "dd/MM/yyyy HH:mm") : "Sin
+              fecha" }}
+            </td>
+          </ng-container>
+
+          <!-- Mes Facturación Column -->
           <ng-container matColumnDef="mesFacturacion">
-            <th mat-header-cell *matHeaderCellDef> Mes Facturación </th>
-            <td mat-cell *matCellDef="let servicio"> {{servicio.facturacion.mes}} </td>
+            <th mat-header-cell *matHeaderCellDef class="column-mes-facturacion">Mes Facturación</th>
+            <td mat-cell *matCellDef="let servicio" class="column-mes-facturacion">
+              <span class="badge badge-secondary">{{ servicio.facturacion?.mes || 'No asignado' }}</span>
+            </td>
           </ng-container>
-          <!-- SLA -->
+
+          <!-- SLA Column -->
           <ng-container matColumnDef="sla">
-            <th mat-header-cell *matHeaderCellDef> SLA </th>
-            <td mat-cell *matCellDef="let servicio">  </td>
+            <th mat-header-cell *matHeaderCellDef class="column-sla">SLA</th>
+            <td mat-cell *matCellDef="let servicio" class="column-sla">
+              <div class="sla-info">
+                <small>{{ servicio?.tipoSolicitud?.sla_dias || 0 }} días</small><br>
+                <small>{{ servicio?.tipoSolicitud?.sla_horas || 0 }} horas</small>
+              </div>
+            </td>
           </ng-container>
 
-          <!-- Tiempo -->
+          <!-- Tiempo Restante Column -->
+          <ng-container matColumnDef="tiempoRestante">
+            <th mat-header-cell *matHeaderCellDef class="column-tiempo-restante">Tiempo Restante</th>
+            <td mat-cell *matCellDef="let servicio" class="column-tiempo-restante">
+              <small [ngStyle]="{
+                'color': getTiempoRestante(servicio).includes('Vencido') ? '#dc3545' : 
+                        getTiempoRestante(servicio) === '-' ? '#000000' : '#28a745'
+              }">
+                {{ getTiempoRestante(servicio) }}
+              </small>
+            </td>
+          </ng-container>
+
+          <!-- Tiempo Column -->
           <ng-container matColumnDef="tiempo">
-            <th mat-header-cell *matHeaderCellDef> Tiempo </th>
-            <td mat-cell *matCellDef="let servicio">  </td>
+            <th mat-header-cell *matHeaderCellDef class="column-tiempo">Tiempo</th>
+            <td mat-cell *matCellDef="let servicio" class="column-tiempo">
+              <span class="text-muted">-</span>
+            </td>
           </ng-container>
 
-          <!-- Cumplimiento -->
+          <!-- Cumplimiento Column -->
           <ng-container matColumnDef="cumplimiento">
-            <th mat-header-cell *matHeaderCellDef> Cumplimiento </th>
-            <td mat-cell *matCellDef="let servicio">  </td>
+            <th mat-header-cell *matHeaderCellDef class="column-cumplimiento">Cumplimiento</th>
+            <td mat-cell *matCellDef="let servicio" class="column-cumplimiento">
+              <span class="text-muted">-</span>
+            </td>
           </ng-container>
-          
-          
+
           <!-- Acciones Column -->
           <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef> Acciones </th>
-            <td mat-cell *matCellDef="let servicio">
-              <button mat-icon-button color="primary" (click)="verDetalle(servicio)" matTooltip="Ver en nueva pestaña">
-                <mat-icon>visibility</mat-icon>
-              </button>
-              <button mat-icon-button color="primary" 
-              (click)="downloadPdf(servicio); $event.stopPropagation(); "
-              matTooltip="Descargar PDF">
-          <mat-icon>picture_as_pdf</mat-icon>
-        </button>
-           <!--    @if (isGruman) {
-                <button mat-raised-button (click)="aprobarSolicitud(servicio)" 
-                        color="primary" 
-                        matTooltip="Aprobar solicitud">
-                 <mat-icon style="color: #28a745">check_circle</mat-icon> 
+            <th mat-header-cell *matHeaderCellDef class="column-acciones">Acciones</th>
+            <td mat-cell *matCellDef="let servicio" class="column-acciones">
+              <div class="action-buttons">
+                <button mat-icon-button color="primary" (click)="verDetalle(servicio)" matTooltip="Ver en nueva pestaña"
+                  class="action-btn">
+                  <mat-icon>visibility</mat-icon>
                 </button>
-                
-                <button mat-raised-button (click)="rechazarSolicitud(servicio)" 
-                        color="warn" 
-                        matTooltip="Rechazar solicitud">
-                   <mat-icon>cancel</mat-icon> 
+                <button mat-icon-button color="accent" (click)="downloadPdf(servicio); $event.stopPropagation()"
+                  matTooltip="Descargar PDF" class="action-btn">
+                  <mat-icon>picture_as_pdf</mat-icon>
                 </button>
-              } -->
+              </div>
             </td>
           </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" class="table-header"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns" class="table-row" [class.row-hover]="true"></tr>
         </table>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </mat-card-content>
+</mat-card>
 }

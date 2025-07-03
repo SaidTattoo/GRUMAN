@@ -6,6 +6,7 @@ import { ActivoFijoLocal } from '../activo-fijo-local/activo-fijo-local.entity';
 import { TipoServicio } from '../tipo-servicio/tipo-servicio.entity';
 import { Facturacion } from '../facturacion/facturacion.entity';
 import { ClienteRepuesto } from '../cliente-repuesto/cliente-repuesto.entity';
+import { Sla } from 'src/sla/entity/sla.entity';
 
 
 
@@ -68,6 +69,9 @@ export class Client {
 
   @OneToMany(() => ClienteRepuesto, clienteRepuesto => clienteRepuesto.cliente)
   clienteRepuestos: ClienteRepuesto[];
+
+  @OneToMany(() => Sla, sla => sla.cliente)
+  tipoSolicitud: Sla[];
 
   @Column({ default: false })
   clima :boolean

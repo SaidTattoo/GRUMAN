@@ -17,6 +17,12 @@ export class ClientController {
     findAllClients(): Promise<Client[]> {
         return this.clientService.findAllClients();
     }
+    
+    @Get('tipo-solicitud')
+    @ApiOperation({ summary: 'Obtener todos los clientes con tipo de solicitud' })
+    findAllClientsWithTipoSolicitud(): Promise<Client[]> {
+        return this.clientService.findAllClientsWithTipoSolicitud();
+    }
 
     @Get('gruman')
     @ApiOperation({ summary: 'Obtener todos los clientes con GRUMAN' })

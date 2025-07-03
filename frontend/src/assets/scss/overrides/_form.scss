@@ -32,3 +32,174 @@
 .mat-mdc-dialog-container .mdc-dialog__surface {
   border-radius: $border-radius !important;
 }
+
+// ========================================
+// ESTILOS GLOBALES PARA REDUCIR ALTURA DE FORM FIELDS
+// ========================================
+
+// Reducir altura general de los form fields
+.mat-mdc-form-field {
+  // Reducir altura del contenedor principal
+  .mat-mdc-text-field-wrapper {
+    min-height: 40px !important; // Default era 56px
+    
+    .mdc-text-field {
+      height: 40px !important;
+      
+      // Ajustar padding interno
+      .mdc-text-field__input {
+        padding: 8px 12px !important; // Reducir padding vertical
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      
+      // Ajustar posición del label
+      .mdc-floating-label {
+        font-size: 14px;
+        
+        &--float-above {
+          font-size: 12px;
+          transform: translateY(-26px) scale(0.85) !important;
+        }
+      }
+    }
+  }
+  
+  // Reducir altura de los outlined form fields
+  &.mat-form-field-appearance-outline {
+    .mat-mdc-text-field-wrapper {
+      .mdc-text-field--outlined {
+        height: 40px !important;
+        
+        .mdc-notched-outline {
+          .mdc-notched-outline__leading,
+          .mdc-notched-outline__trailing,
+          .mdc-notched-outline__notch {
+            border-width: 1px;
+          }
+          
+          .mdc-notched-outline__leading {
+            height: 40px !important;
+          }
+          
+          .mdc-notched-outline__trailing {
+            height: 40px !important;
+          }
+          
+          .mdc-notched-outline__notch {
+            height: 40px !important;
+            max-height: 40px !important;
+          }
+        }
+      }
+    }
+  }
+  
+  // Ajustar espaciado inferior
+  .mat-mdc-form-field-subscript-wrapper {
+    margin-top: 4px !important;
+    min-height: 16px !important;
+    font-size: 12px;
+  }
+  
+  // Reducir altura de los iconos y sufijos
+  .mat-mdc-form-field-icon-prefix,
+  .mat-mdc-form-field-icon-suffix {
+    .mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+    }
+  }
+}
+
+// Ajustes específicos para mat-select
+.mat-mdc-select {
+  .mat-mdc-select-trigger {
+    height: 24px !important; // Reducir altura del trigger
+    line-height: 24px !important;
+    
+    .mat-mdc-select-value {
+      font-size: 14px;
+      line-height: 24px;
+    }
+    
+    .mat-mdc-select-arrow-wrapper {
+      .mat-mdc-select-arrow {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+}
+
+// Ajustes para date picker
+.mat-mdc-form-field .mat-datepicker-toggle {
+  .mat-icon-button {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    
+    .mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// Reducir altura de los radio buttons
+.mat-mdc-radio-group {
+  .mat-mdc-radio-button {
+    .mdc-form-field {
+      padding: 8px 16px 8px 0;
+      
+      .mdc-radio {
+        width: 16px;
+        height: 16px;
+        
+        .mdc-radio__outer-circle,
+        .mdc-radio__inner-circle {
+          border-width: 1px;
+        }
+      }
+      
+      label {
+        font-size: 14px;
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// Ajustes para botones más compactos
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-flat-button,
+.mat-mdc-stroked-button {
+  min-height: 36px !important; // Default era 40px
+  padding: 8px 16px !important;
+  font-size: 14px;
+  line-height: 1.4;
+  
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+  }
+}
+
+// Ajustes específicos para inputs de solo lectura o disabled
+.mat-mdc-form-field {
+  &.mat-form-field-disabled {
+    .mat-mdc-text-field-wrapper {
+      .mdc-text-field {
+        background-color: #f5f5f5;
+        opacity: 0.7;
+      }
+    }
+  }
+}

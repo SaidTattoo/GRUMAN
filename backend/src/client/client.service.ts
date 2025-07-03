@@ -32,6 +32,21 @@ export class ClientService {
         });
     }
 
+    async findAllClientsWithTipoSolicitud(): Promise<Client[]> {
+       return this.clientRepository
+         .createQueryBuilder('c')
+         .select(['c.nombre', 'c.id', 'tse.nombre', 'tse.id', 'tse.activo'])
+         .innerJoin('c.tipoSolicitud', 'ts')
+         .innerJoin('c.tipoServicio', 'tse')
+         .where('c.deleted = :deleted', { deleted: false })
+         .andWhere('c.nombre != :nombre', { nombre: 'GRUMAN' })
+         .addGroupBy('ts.id')
+         .addGroupBy('tse.id')
+         .addGroupBy('c.id')
+         .orderBy('c.nombre', 'ASC')
+         .getMany();
+    }
+
     async findAllClientsWithGruman(): Promise<Client[]> {
         return this.clientRepository.find({ 
             where: { deleted: false },

@@ -13,6 +13,9 @@ export class ClientesService {
   getClientes() {
     return this.http.get<any[]>(this.apiUrl + 'client');
   }
+  getClientesWithTipoSolicitud() {
+    return this.http.get<any[]>(this.apiUrl + 'client/tipo-solicitud');
+  }
   
   getClientesWithGruman() {
     return this.http.get<any[]>(this.apiUrl + 'client/gruman');

@@ -1,1 +1,29 @@
+// Mejorar el espaciado de los labels
+mat-label {
+  &.mat-subtitle-2 {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+}
 
+// Ajustar radio buttons para mejor espaciado
+mat-radio-group {
+  display: flex;
+  gap: 1rem;
+  
+  mat-radio-button {
+    margin-right: 0;
+  }
+}
+
+// Botón de búsqueda más compacto
+button[type="submit"] {
+  padding: 8px 24px;
+  font-weight: 500;
+}
+
+// Contenedor principal con mejor espaciado
+div[style*="padding:1rem"] {
+  padding: 1.5rem !important;
+}

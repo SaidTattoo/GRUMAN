@@ -52,6 +52,7 @@ $bluetheme: mat.m2-define-light-theme(
         $body-1: mat.m2-define-typography-level(14px, 20px, 400),
         $body-2: mat.m2-define-typography-level(16px, 22px, 400),
       ),
+    density: -1, // Configuración de density para componentes más compactos
   )
 );
 
@@ -73,6 +74,7 @@ $darkbluetheme: mat.m2-define-dark-theme(
         $body-1: mat.m2-define-typography-level(14px, 20px, 400),
         $body-2: mat.m2-define-typography-level(16px, 22px, 400),
       ),
+    density: -1, // Configuración de density para componentes más compactos
   )
 );
 
