@@ -86,6 +86,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
   showClimaInput: boolean = false;
   activosFijos: any[] = [];
   filteredActivosFijos: Observable<any[]>;
+  currentUser: any;
 
   constructor(
    private userService: UserService,
@@ -105,6 +106,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
     this.visitaForm = this.fb.group({
       tipoServicioId: [null, Validators.required],
       tipoSolicitudId: [null, Validators.required],
+      ticketGruman: [''],
       localId: [null, Validators.required],
       clientId: [null, Validators.required],
       sectorTrabajoId: [null, Validators.required],
@@ -116,6 +118,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
 
     // Obtener el cliente seleccionado del localStorage o de un servicio
     const selectedClient = localStorage.getItem('selectedClient');
+    this.currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     this.client = selectedClient ? JSON.parse(selectedClient) : null;
 
     // Obtener el ID del usuario actual del storage
@@ -347,6 +350,7 @@ export class SolicitarVisitaComponent implements OnInit, OnDestroy{
           generada_por_id: this.currentUserId,
           tipoServicioId: this.visitaForm.value.tipoServicioId?.id || null,
           tipoSolicitudId: this.visitaForm.value.tipoSolicitudId?.id || null,
+          ticketGruman: this.visitaForm.value.ticketGruman || null,
           localId: this.visitaForm.value.localId?.id || null,
           especialidad: this.visitaForm.value.especialidad?.id || null,
           activoFijoId: this.visitaForm.value.activoFijoId?.id || null,

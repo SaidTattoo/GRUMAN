@@ -77,6 +77,18 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="col-sm-4 d-flex align-items-center">
+          <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Ticket {{currentUser?.selectedCompany?.nombre || 'interno'}}</mat-label>
+        </div>
+        <div class="col-sm-8">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Ticket {{currentUser?.selectedCompany?.nombre || 'interno'}}</mat-label>
+            <input type="text" matInput formControlName="ticketGruman" placeholder="Ingrese ticket">
+          </mat-form-field>
+        </div>
+      </div>
+
       <!-- Activo Fijo -->
       <div class="row" *ngIf="shouldShowClimaInput()">
         <div class="col-sm-4 d-flex align-items-center">
