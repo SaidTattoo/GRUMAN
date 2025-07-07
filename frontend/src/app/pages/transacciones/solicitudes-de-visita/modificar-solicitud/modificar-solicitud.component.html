@@ -516,10 +516,22 @@
                     </ng-container>
 
                     <!-- OBSERVACIONES -->
-                    <ng-container *ngIf="subItem.observaciones">
+                    <ng-container>
                       <div>
                         <strong>Comentario:</strong>
+                        @if (solicitud?.status === 'validada' || isRechazada || isValidada) {
                         <span>{{ subItem.observaciones || 'N/A' }}</span>
+                        } @else {
+                        <mat-form-field appearance="outline" style="width: 100%; margin-top: 8px;">
+                          <textarea matInput 
+                                    [(ngModel)]="subItem.observaciones" 
+                                    [ngModelOptions]="{standalone: true}"
+                                    (ngModelChange)="actualizarObservacionesEnChecklist(subItem.id, $event, activoFijo)"
+                                    rows="2" 
+                                    placeholder="Ingrese comentario">
+                          </textarea>
+                        </mat-form-field>
+                        }
                       </div>
                     </ng-container>
 
@@ -663,10 +675,22 @@
               </ng-container>
 
               <!-- OBSERVACIONES -->
-              <ng-container *ngIf="subItem.observaciones">
+              <ng-container>
                 <div>
                   <strong>Comentario:</strong>
+                  @if (solicitud?.status === 'validada' || isRechazada || isValidada) {
                   <span>{{ subItem.observaciones || 'N/A' }}</span>
+                  } @else {
+                  <mat-form-field appearance="outline" style="width: 100%; margin-top: 8px;">
+                    <textarea matInput 
+                              [(ngModel)]="subItem.observaciones" 
+                              [ngModelOptions]="{standalone: true}"
+                              (ngModelChange)="actualizarObservacionesEnChecklist(subItem.id, $event)"
+                              rows="2" 
+                              placeholder="Ingrese comentario">
+                    </textarea>
+                  </mat-form-field>
+                  }
                 </div>
               </ng-container>
 

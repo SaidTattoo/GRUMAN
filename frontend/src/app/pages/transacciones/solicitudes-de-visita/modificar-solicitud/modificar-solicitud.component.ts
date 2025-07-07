@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -28,7 +28,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RepuestosService } from 'src/app/services/repuestos.service';
 import { InspectionService } from 'src/app/services/inspection.service';
 import { DialogPhotoViewerComponent } from '../../../../components/dialog-photo-viewer/dialog-photo-viewer.component';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import * as L from 'leaflet';
 import { UsersService } from 'src/app/services/users.service';
 import { ConfirmDialogComponent } from '../../../../components/confirm-dialog/confirm-dialog.component';
@@ -176,7 +177,7 @@ interface ChecklistResponse {
   templateUrl: './modificar-solicitud.component.html',
   styleUrls: ['./modificar-solicitud.component.scss'],
 })
-export class ModificarSolicitudComponent implements OnInit {
+export class ModificarSolicitudComponent implements OnInit, OnDestroy {
   solicitudId: string;
   solicitudForm: FormGroup;
   solicitud: any;
@@ -241,6 +242,10 @@ export class ModificarSolicitudComponent implements OnInit {
   imagePreview: string | ArrayBuffer | null = null;
   imageBase64: string | null = null;
   temporalChecklist = null;
+
+  // Subject para manejar el debounce de observaciones
+  private observacionesSubject = new Subject<{subItemId: number, observaciones: string, activoFijo: any}>();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
@@ -320,6 +325,26 @@ export class ModificarSolicitudComponent implements OnInit {
     this.watchEspecialidadChanges();
     this.watchTipoServicioChanges();
     this.loadCausasRaiz();
+    this.setupObservacionesDebounce();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setupObservacionesDebounce() {
+    this.observacionesSubject
+      .pipe(
+        debounceTime(1000), // Esperar 1 segundo después del último cambio
+        distinctUntilChanged((prev, curr) => 
+          prev.subItemId === curr.subItemId && prev.observaciones === curr.observaciones
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(({ subItemId, observaciones, activoFijo }) => {
+        this.actualizarObservacionesEnChecklistInterno(subItemId, observaciones, activoFijo);
+      });
   }
 
   inicializarFormulario() {
@@ -555,7 +580,6 @@ export class ModificarSolicitudComponent implements OnInit {
                     }
                   },
                 });
-                debugger
               this.solicitud = data;
 
               // Cargar tipos de solicitud
@@ -2571,5 +2595,70 @@ export class ModificarSolicitudComponent implements OnInit {
   getTipoSolicitudNombre(id: number): string {
     const tipoSolicitud = this.tiposSolicitud.find(tipo => tipo.id === id);
     return tipoSolicitud ? `${tipoSolicitud.nombre.toUpperCase()} - Día(s): ${tipoSolicitud.sla_dias} / Hora(s): ${tipoSolicitud.sla_hora}` : 'No especificado';
+  }
+
+  // Función para actualizar observaciones en checklistResponse con debounce
+  actualizarObservacionesEnChecklist(subItemId: number, observaciones: string, activoFijo: any = null) {
+    // Emitir al Subject para que sea procesado con debounce
+    this.observacionesSubject.next({ subItemId, observaciones, activoFijo });
+  }
+
+  // Función interna que realiza la actualización real
+  private actualizarObservacionesEnChecklistInterno(subItemId: number, observaciones: string, activoFijo: any = null) {
+    if (!this.checklistResponse) {
+      return;
+    }
+
+    if (this.checklistResponse.is_climate && activoFijo) {
+      // Para checklist de clima
+      this.checklistResponse.climate_data.forEach((currentActivoFijo: any) => {
+        if (activoFijo.activo_fijo_id === currentActivoFijo.activo_fijo_id) {
+          currentActivoFijo.checklist.forEach((lista: any) => {
+            lista.items.forEach((item: any) => {
+              item.subItems.forEach((subItem: any) => {
+                if (subItem.id === subItemId) {
+                  subItem.observaciones = observaciones;
+                }
+              });
+            });
+          });
+        }
+      });
+    } else {
+      // Para checklist normal
+      if (this.checklistResponse.data_normal && this.checklistResponse.data_normal[0]) {
+        this.checklistResponse.data_normal[0].checklist.forEach((lista: any) => {
+          lista.items.forEach((item: any) => {
+            item.subItems.forEach((subItem: any) => {
+              if (subItem.id === subItemId) {
+                subItem.observaciones = observaciones;
+              }
+            });
+          });
+        });
+      }
+    }
+
+
+    this.solicitarVisitaService
+      .updateChecklistVisita(Number(this.solicitudId), {
+        is_climate: this.checklistResponse.is_climate,
+        data: this.checklistResponse,
+      })
+      .subscribe((res: any) => {
+        console.log('RESPUESTA ENDPOINT', res);
+        if (res.success) {
+          this.snackBar.open('Comentario actualizado correctamente', 'Cerrar', {
+            duration: 3000,
+          });
+        } else {
+          this.snackBar.open('Error al guardar los comentarios', 'Cerrar', {
+            duration: 3000,
+          });
+        }
+      });
+  
+    
+    console.log('Observaciones actualizadas en checklistResponse:', observaciones);
   }
 }
