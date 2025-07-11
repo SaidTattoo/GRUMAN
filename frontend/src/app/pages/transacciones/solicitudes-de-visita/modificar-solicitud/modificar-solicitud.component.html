@@ -491,28 +491,45 @@
 
                     </div>
                     <!-- IMAGENES -->
-                    <ng-container *ngIf="subItem.fotos.length > 0">
+                    <ng-container>
                       <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
                       <div class="photos-container">
                         <div class="photo-grid">
-                          <div class="photo-item" *ngFor="let foto of subItem.fotos">
+                          <!-- Imágenes existentes -->
+                          <div class="photo-item" *ngFor="let foto of subItem.fotos; let i = index">
                             <div class="photo-container">
                               <button mat-icon-button style="z-index: 9900;" color="primary"
                                 (click)="openPhotoViewer([foto])" matTooltip="Ver imagen">
                                 <mat-icon>visibility</mat-icon>
                               </button>
-                              <!-- <button mat-icon-button style="z-index: 9900;" color="accent" (click)="downloadPhotos([foto])"
-                                matTooltip="Descargar imagen">
-                                <mat-icon>download</mat-icon>
-                              </button>  -->
+                              @if (solicitud?.status !== 'validada' && !isRechazada && !isValidada) {
+                              <button mat-icon-button style="z-index: 9900;" color="warn" 
+                                (click)="eliminarImagenSubitem(subItem.id, i, activoFijo)" matTooltip="Eliminar imagen">
+                                <mat-icon>delete</mat-icon>
+                              </button>
+                              }
                               <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
-                              <div class="image-actions">
-
-                              </div>
                             </div>
                           </div>
+                          
+                          <!-- Botón para agregar nueva imagen -->
+                          @if (solicitud?.status !== 'validada' && !isRechazada && !isValidada) {
+                          <div class="photo-item add-photo-item">
+                            <div class="add-photo-container" (click)="triggerFileInput(subItem.id)">
+                              <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #666;">add</mat-icon>
+                              <span style="font-size: 12px; color: #666; margin-top: 8px;">Agregar imagen</span>
+                            </div>
+                          </div>
+                          }
                         </div>
                       </div>
+                      <!-- Input file oculto para cada subitem -->
+                      <input #fileInputSubitem type="file" 
+                             (change)="onFileSelectedForSubitem($event, subItem.id, activoFijo)" 
+                             accept="image/*" 
+                             style="display: none;"
+                             [id]="'fileInput-' + subItem.id"
+                             [disabled]="solicitud?.status === 'validada' || isRechazada || isValidada" />
                     </ng-container>
 
                     <!-- OBSERVACIONES -->
@@ -528,7 +545,8 @@
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="actualizarObservacionesEnChecklist(subItem.id, $event, activoFijo)"
                                     rows="2" 
-                                    placeholder="Ingrese comentario">
+                                    placeholder="Ingrese comentario"
+                                    style="border-radius: 10px !important;">
                           </textarea>
                         </mat-form-field>
                         }
@@ -656,22 +674,45 @@
 
               </div>
               <!-- IMAGENES -->
-              <ng-container *ngIf="subItem.fotos.length > 0">
+              <ng-container>
                 <small style="font-size: 12px; font-weight: bold;">Imágenes</small>
                 <div class="photos-container">
                   <div class="photo-grid">
-                    <div class="photo-item" *ngFor="let foto of subItem.fotos">
+                    <!-- Imágenes existentes -->
+                    <div class="photo-item" *ngFor="let foto of subItem.fotos; let i = index">
                       <div class="photo-container">
                         <button mat-icon-button style="z-index: 9900;" color="primary" (click)="openPhotoViewer([foto])"
                           matTooltip="Ver imagen">
                           <mat-icon>visibility</mat-icon>
                         </button>
+                        @if (solicitud?.status !== 'validada' && !isRechazada && !isValidada) {
+                        <button mat-icon-button style="z-index: 9900;" color="warn" 
+                          (click)="eliminarImagenSubitem(subItem.id, i)" matTooltip="Eliminar imagen">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                        }
                         <img [src]="foto" [alt]="'Foto de ' + subItem.name" class="inspection-photo">
-                        <div class="image-actions"></div>
                       </div>
                     </div>
+                    
+                    <!-- Botón para agregar nueva imagen -->
+                    @if (solicitud?.status !== 'validada' && !isRechazada && !isValidada) {
+                    <div class="photo-item add-photo-item">
+                      <div class="add-photo-container" (click)="triggerFileInput(subItem.id)">
+                        <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #666;">add</mat-icon>
+                        <span style="font-size: 12px; color: #666; margin-top: -10px;">Agregar imagen</span>
+                      </div>
+                    </div>
+                    }
                   </div>
                 </div>
+                <!-- Input file oculto para cada subitem -->
+                <input #fileInputSubitem type="file" 
+                       (change)="onFileSelectedForSubitem($event, subItem.id)" 
+                       accept="image/*" 
+                       style="display: none;"
+                       [id]="'fileInput-' + subItem.id"
+                       [disabled]="solicitud?.status === 'validada' || isRechazada || isValidada" />
               </ng-container>
 
               <!-- OBSERVACIONES -->

@@ -2661,4 +2661,218 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
     
     console.log('Observaciones actualizadas en checklistResponse:', observaciones);
   }
+
+  /**
+   * Activa el input file para un subitem específico
+   */
+  triggerFileInput(subitemId: number): void {
+    const fileInput = document.getElementById(`fileInput-${subitemId}`) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  /**
+   * Maneja la selección de archivo para subitems
+   */
+  async onFileSelectedForSubitem(event: Event, subitemId: number, activoFijo: any = null): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      try {
+        // Crear un canvas para comprimir la imagen
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          img.src = e.target?.result as string;
+
+          img.onload = async () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Establecer el tamaño máximo deseado
+            const MAX_WIDTH = 800;
+            const MAX_HEIGHT = 800;
+
+            let width = img.width;
+            let height = img.height;
+
+            // Redimensionar si es necesario
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Dibujar la imagen comprimida
+            ctx?.drawImage(img, 0, 0, width, height);
+
+            try {
+              // Convertir canvas a blob
+              const blob = await new Promise<Blob>((resolve) => {
+                canvas.toBlob(
+                  (blob) => {
+                    resolve(blob as Blob);
+                  },
+                  'image/jpeg',
+                  0.7
+                );
+              });
+
+              // Crear FormData
+              const formData = new FormData();
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+              });
+              formData.append('file', compressedFile);
+
+              const response = await this.uploadDataService
+                .uploadFileFirebase(
+                  formData,
+                  `?path=solicitudes-visita/${this.solicitudId}/subitem-${subitemId}`
+                )
+                .toPromise();
+
+              if (response && response.url) {
+                // Guardar la URL de la imagen
+                const imageUrl = response.url.startsWith('http')
+                  ? response.url
+                  : `${environment.apiUrl}/${response.url}`;
+
+                // Agregar la imagen al subitem correspondiente
+                this.agregarImagenASubitem(subitemId, imageUrl, activoFijo);
+
+                // Mostrar mensaje de éxito
+                this.snackBar.open('Imagen agregada exitosamente', 'Cerrar', {
+                  duration: 3000,
+                });
+
+                // Limpiar el input file
+                input.value = '';
+              }
+            } catch (error) {
+              console.error('Error al subir la imagen:', error);
+              this.snackBar.open('Error al subir la imagen', 'Cerrar', {
+                duration: 3000,
+              });
+            }
+          };
+        };
+
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error al procesar la imagen:', error);
+        this.snackBar.open('Error al procesar la imagen', 'Cerrar', {
+          duration: 3000,
+        });
+      }
+    }
+  }
+
+  /**
+   * Agrega una imagen al subitem correspondiente
+   */
+  private agregarImagenASubitem(subitemId: number, imageUrl: string, activoFijo: any = null): void {
+    if (this.checklistResponse?.is_climate && activoFijo) {
+      // Para checklist de clima
+      const climateData = this.checklistResponse.climate_data.find((activo: any) => activo.id === activoFijo.id);
+      if (climateData) {
+        for (const lista of climateData.checklist) {
+          for (const item of lista.items) {
+            const subitem = item.subItems.find((sub: any) => sub.id === subitemId);
+            if (subitem) {
+              if (!subitem.fotos) {
+                subitem.fotos = [];
+              }
+              subitem.fotos.push(imageUrl);
+              this.actualizarChecklistEnBackend();
+              return;
+            }
+          }
+        }
+      }
+    } else {
+      // Para checklist normal
+      for (const lista of this.checklistResponse?.data_normal[0].checklist || []) {
+        for (const item of lista.items) {
+          const subitem = item.subItems.find((sub: any) => sub.id === subitemId);
+          if (subitem) {
+            if (!subitem.fotos) {
+              subitem.fotos = [];
+            }
+            subitem.fotos.push(imageUrl);
+            this.actualizarChecklistEnBackend();
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Elimina una imagen de un subitem
+   */
+  eliminarImagenSubitem(subitemId: number, imageIndex: number, activoFijo: any = null): void {
+    if (this.checklistResponse?.is_climate && activoFijo) {
+      // Para checklist de clima
+      const climateData = this.checklistResponse.climate_data.find((activo: any) => activo.id === activoFijo.id);
+      if (climateData) {
+        for (const lista of climateData.checklist) {
+          for (const item of lista.items) {
+            const subitem = item.subItems.find((sub: any) => sub.id === subitemId);
+            if (subitem && subitem.fotos && subitem.fotos.length > imageIndex) {
+              subitem.fotos.splice(imageIndex, 1);
+              this.actualizarChecklistEnBackend();
+              this.snackBar.open('Imagen eliminada correctamente', 'Cerrar', {
+                duration: 3000,
+              });
+              return;
+            }
+          }
+        }
+      }
+    } else {
+      // Para checklist normal
+      for (const lista of this.checklistResponse?.data_normal[0].checklist || []) {
+        for (const item of lista.items) {
+          const subitem = item.subItems.find((sub: any) => sub.id === subitemId);
+          if (subitem && subitem.fotos && subitem.fotos.length > imageIndex) {
+            subitem.fotos.splice(imageIndex, 1);
+            this.actualizarChecklistEnBackend();
+            this.snackBar.open('Imagen eliminada correctamente', 'Cerrar', {
+              duration: 3000,
+            });
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Actualiza el checklist en el backend
+   */
+  private actualizarChecklistEnBackend(): void {
+    this.solicitarVisitaService.updateChecklistVisita(Number(this.solicitudId), {
+      is_climate: this.checklistResponse.is_climate,
+      data: this.checklistResponse,
+    }).subscribe((res: any) => {
+      if (res.success) {
+        console.log('Checklist actualizado correctamente');
+      } else {
+        console.error('Error al actualizar el checklist');
+      }
+    });
+  }
 }
