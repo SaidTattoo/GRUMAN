@@ -2114,3 +2114,185 @@ h6.subitem-title {
     font-weight: 500;
   }
 }
+
+// Estilos para la sección de detalle de activo fijo
+.detalle-activo-fijo-section {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #e9ecef;
+  
+  .detail-section-title {
+    color: #2c3e50;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 8px;
+  }
+  
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .detail-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    .detail-label {
+      font-weight: 600;
+      color: #6c757d;
+      min-width: 100px;
+      margin-right: 12px;
+    }
+    
+    .detail-value {
+      color: #2c3e50;
+      font-weight: 500;
+      flex: 1;
+    }
+  }
+}
+
+// Estilos para la sección de no operatividad
+.no-operatividad-section {
+  background-color: #faf3f3;
+  border: 1px solid #f9c6c6;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 10px;
+  
+  .no-operatividad-title {
+    color: #e53e3e;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .warning-icon {
+      font-size: 24px;
+      color: #f56565;
+    }
+  }
+  
+  .no-operatividad-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .observacion-item {
+    background-color: white;
+    border: 1px solid #fed7d7;
+    border-radius: 6px;
+    padding: 16px;
+    
+    .observacion-label {
+      font-weight: 600;
+      color: #702459;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .observacion-value {
+      color: #2d3748;
+      font-size: 1rem;
+    }
+  }
+  
+  .imagen-no-operatividad {
+    background-color: white;
+    border: 1px solid #fed7d7;
+    border-radius: 6px;
+    padding: 16px;
+    
+    .observacion-label {
+      font-weight: 600;
+      color: #702459;
+      margin-bottom: 12px;
+      display: block;
+    }
+    
+    .imagen-container {
+      position: relative;
+      display: inline-block;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+      }
+    }
+    
+    .no-operatividad-image {
+      width: 250px;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+      
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+    
+    .view-image-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #3182ce;
+      border: 1px solid #3182ce;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      
+      &:hover {
+        background-color: #3182ce;
+        color: white;
+      }
+    }
+    
+    .imagen-container:hover .view-image-btn {
+      opacity: 1;
+    }
+  }
+}
+
+// Responsive design para móviles
+@media (max-width: 768px) {
+  .detalle-activo-fijo-section {
+    .detail-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .no-operatividad-section {
+    .imagen-no-operatividad {
+      .no-operatividad-image {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  }
+}

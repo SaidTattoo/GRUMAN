@@ -445,8 +445,7 @@
         </div>
 
         <!-- Lista de Inspección -->
-        <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos
-          utilizados en la inspección</div>
+        <div class="section-title mt-4" *ngIf="!isPendiente && !isAprobada && !isRechazada || isValidada">Repuestos utilizados en la inspección</div>
 
         @if(checklistResponse?.is_climate){
         <div class="activos-fijos-container">
@@ -637,13 +636,70 @@
 
                 @if(checklistResponse?.is_climate){
 
-                <h4>Detalle activo fijo</h4>
-                <p>Código: {{activoFijo?.detailActivoFijo?.codigo_activo || '-'}}</p>
-                <p>Marca: {{activoFijo?.detailActivoFijo?.marca || '-'}}</p>
-                <p>Tipo: {{activoFijo?.detailActivoFijo?.tipo_equipo || '-'}}</p>
-                <p>Potencia: {{activoFijo?.detailActivoFijo?.potencia_equipo || '-'}}</p>
-                <p>OnOff: {{activoFijo?.detailActivoFijo?.on_off_inverter || '-'}}</p>
-                <p>Refrigerante: {{activoFijo?.detailActivoFijo?.refrigerante || '-'}}</p>
+                <div class="detalle-activo-fijo-section">
+                  <h4 class="detail-section-title">Detalle activo fijo</h4>
+                  <div class="detail-grid">
+                    <div class="detail-item">
+                      <span class="detail-label">Código:</span>
+                      <span class="detail-value">{{activoFijo?.detailActivoFijo?.codigo_activo || '-'}}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Marca:</span>
+                      <span class="detail-value">{{activoFijo?.detailActivoFijo?.marca || '-'}}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Tipo:</span>
+                      <span class="detail-value">{{activoFijo?.detailActivoFijo?.tipo_equipo || '-'}}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Potencia:</span>
+                      <span class="detail-value">{{activoFijo?.detailActivoFijo?.potencia_equipo || '-'}}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">OnOff:</span>
+                      <span class="detail-value">{{activoFijo?.detailActivoFijo?.on_off_inverter || '-'}}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Refrigerante:</span>
+                      <span class="detail-value">{{activoFijo?.detailActivoFijo?.refrigerante || '-'}}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Sección de no operatividad - Solo se muestra si hay observaciones -->
+                  @if (activoFijo.observacionesEstado) {
+                  <div class="no-operatividad-section">
+                    <h5 class="no-operatividad-title">
+                      <mat-icon class="warning-icon">warning</mat-icon>
+                      No operativo
+                    </h5>
+                    <div class="no-operatividad-content">
+                      <div class="observacion-item">
+                        <span class="observacion-label">Comentario:</span>
+                        <div class="observacion-value">{{activoFijo.observacionesEstado}}</div>
+                      </div>
+                      @if (activoFijo.photo_not_operational) {
+                      <div class="imagen-no-operatividad">
+                        <span class="observacion-label">Imagen evidencia:</span>
+                        <div class="imagen-container">
+                          <img [src]="activoFijo.photo_not_operational" 
+                               alt="Imagen de no operatividad" 
+                               class="no-operatividad-image"
+                               (click)="openPhotoViewer([activoFijo.photo_not_operational])" 
+                               style="cursor: pointer;">
+                          <button mat-icon-button 
+                                  color="primary" 
+                                  (click)="openPhotoViewer([activoFijo.photo_not_operational])" 
+                                  matTooltip="Ver imagen completa"
+                                  class="view-image-btn">
+                            <mat-icon>visibility</mat-icon>
+                          </button>
+                        </div>
+                      </div>
+                      }
+                    </div>
+                  </div>
+                  }
+                </div>
 
                 }
 
