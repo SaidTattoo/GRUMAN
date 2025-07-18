@@ -4,6 +4,7 @@ import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'ty
 import { Locales } from '../locales/locales.entity';
 import { ChecklistClima } from '../checklist_clima/checklist_clima.entity';
 import { SolicitarVisita } from '../solicitar-visita/solicitar-visita.entity';
+import { Section } from 'src/inspection/entities/section.entity';
 
 @Entity('activo_fijo_local')
 export class ActivoFijoLocal {
@@ -46,4 +47,13 @@ export class ActivoFijoLocal {
 
     @OneToMany(() => SolicitarVisita, solicitud => solicitud.activoFijo)
     solicitudesVisita: SolicitarVisita[];
+
+    @Column({ default: false })
+    require_checklist?: boolean;
+
+    @Column({ nullable: true })
+    sectionId?: number;
+
+    @ManyToOne(() => Section, { nullable: true })
+    section?: Section;
 }

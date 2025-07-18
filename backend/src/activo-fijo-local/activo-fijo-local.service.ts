@@ -19,7 +19,7 @@ export class ActivoFijoLocalService {
     async getActivoFijoLocalById(id: number): Promise<ActivoFijoLocal> {
         return this.activoFijoLocalRepository.findOne({
             where: { id },
-            relations: ['client', 'locales', 'tipoActivo'],
+            relations: ['client', 'locales', 'tipoActivo', 'section'],
         });
     }
 
@@ -28,7 +28,10 @@ export class ActivoFijoLocalService {
         activoFijoLocal: ActivoFijoLocal,
     ): Promise<ActivoFijoLocal> {
         await this.activoFijoLocalRepository.update(id, activoFijoLocal);
-        return this.activoFijoLocalRepository.findOne({ where: { id } });
+        return this.activoFijoLocalRepository.findOne({ 
+            where: { id },
+            relations: ['client', 'locales', 'tipoActivo', 'section']
+        });
     }
 
     async deleteActivoFijoLocal(id: number): Promise<void> {
@@ -37,7 +40,7 @@ export class ActivoFijoLocalService {
 
     async getAllActivoFijoLocal(): Promise<ActivoFijoLocal[]> {
         return this.activoFijoLocalRepository.find({
-            relations: ['client', 'locales', 'tipoActivo'],
+            relations: ['client', 'locales', 'tipoActivo', 'section'],
         });
     }
 

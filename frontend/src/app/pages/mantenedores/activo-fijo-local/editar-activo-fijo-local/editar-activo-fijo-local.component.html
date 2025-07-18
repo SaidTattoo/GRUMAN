@@ -34,8 +34,8 @@
           <div class="col-sm-8">
             <mat-form-field appearance="outline" class="w-100">
               <mat-select formControlName="tipoActivo">
-                @for (tipoActivo of tipoActivo; track tipoActivo.id) {
-                  <mat-option [value]="tipoActivo.id">{{ tipoActivo.name }}</mat-option>
+                @for (tipo of tipoActivo; track tipo.id) {
+                  <mat-option [value]="tipo.id">{{ tipo.name }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -82,8 +82,8 @@
           <div class="col-sm-8">
             <mat-form-field appearance="outline" class="w-100">
               <mat-select formControlName="on_off_inverter">
-                @for (onOffInverter of onOffInverter; track onOffInverter) {
-                  <mat-option [value]="onOffInverter">{{ onOffInverter }}</mat-option>
+                @for (inverter of onOffInverter; track inverter) {
+                  <mat-option [value]="inverter">{{ inverter }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -106,6 +106,29 @@
               <input matInput placeholder="Ingrese el código" formControlName="codigo_activo">
             </mat-form-field>
           </div>
+          
+          <div class="col-sm-4 d-flex align-items-center">
+            <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Requiere Checklist</mat-label>
+          </div>
+          <div class="col-sm-8 d-flex align-items-center">
+            <mat-checkbox formControlName="require_checklist">
+            </mat-checkbox>
+          </div>
+          
+          @if (requiresChecklist) {
+            <div class="col-sm-4 d-flex align-items-center">
+              <mat-label class="mat-subtitle-2 f-w-600 d-block m-b-16">Checklist <span class="text-danger">*</span></mat-label>
+            </div>
+            <div class="col-sm-8">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-select formControlName="sectionId" placeholder="Seleccione un checklist">
+                  @for (section of sections; track section.id) {
+                    <mat-option [value]="section.id">{{ section.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
         </div>
         <div class="row justify-content-end">
           <div class="col-sm-8">
