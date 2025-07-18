@@ -666,7 +666,7 @@
                   </div>
                   
                   <!-- Sección de no operatividad - Solo se muestra si hay observaciones -->
-                  @if (activoFijo.observacionesEstado) {
+                  @if (activoFijo.observacionesEstado && activoFijo.estadoOperativo === 'detenido') {
                   <div class="no-operatividad-section">
                     <h5 class="no-operatividad-title">
                       <mat-icon class="warning-icon">warning</mat-icon>

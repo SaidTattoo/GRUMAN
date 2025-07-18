@@ -46,6 +46,7 @@ import * as fs from 'fs';
 import { format } from 'date-fns';
 import { existsSync, readFileSync } from 'fs';
 import { Item } from 'src/inspection/entities/item.entity';
+import { Section } from 'src/inspection/entities/section.entity';
 import * as sgMail from '@sendgrid/mail';
 import * as https from 'https';
 import * as http from 'http';
@@ -186,6 +187,8 @@ export class SolicitarVisitaService {
     private itemRepository: Repository<Item>,
     @InjectRepository(ResponseChecklist)
     private responseChecklistRepository: Repository<ResponseChecklist>,
+    @InjectRepository(Section)
+    private sectionRepository: Repository<Section>,
   ) {}
 
   /**
@@ -572,7 +575,48 @@ export class SolicitarVisitaService {
     solicitudBase.local.totalActivoFijoLocales =
       solicitudBase.local.activoFijoLocales.length || 0;
 
-    if (solicitudBase.local.activoFijoLocales.length > 0) {
+    // Obtener checklists completos para activos fijos que lo requieren
+    if (solicitudBase.local.activoFijoLocales) {
+      // Obtener IDs de secciones que necesitamos consultar
+      const sectionIds = solicitudBase.local.activoFijoLocales
+        .filter(activo => activo.require_checklist === true && activo.sectionId != null)
+        .map(activo => activo.sectionId);
+
+      // Si hay secciones que consultar, obtenerlas con todos sus items y subitems
+      let sectionsData = [];
+      if (sectionIds.length > 0) {
+        sectionsData = await this.sectionRepository.find({
+          where: { id: In(sectionIds) },
+          relations: ['items', 'items.subItems'],
+        });
+      }
+
+      // Mapear cada activo fijo con su checklist correspondiente
+      solicitudBase.local.activoFijoLocales = solicitudBase.local.activoFijoLocales.map((activo) => {
+        // Solo agregar checklist si require_checklist es true y sectionId no es null
+        if (activo.require_checklist === true && activo.sectionId != null) {
+          // Buscar la sección correspondiente en los datos obtenidos
+          const sectionData = sectionsData.find(section => section.id === activo.sectionId);
+          
+          return {
+            ...activo,
+            checklist: sectionData ? {
+              id: sectionData.id,
+              name: sectionData.name,
+              items: sectionData.items || [],
+            } : {
+              id: activo.sectionId,
+              name: `Checklist ${activo.sectionId}`,
+              items: [],
+            }
+          };
+        }
+        // Si no cumple las condiciones, devolver el activo sin checklist
+        return {
+          ...activo,
+          checklist: null
+        };
+      });
     }
 
     return solicitudBase;
