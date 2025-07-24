@@ -5,3 +5,4 @@
 .notes
 backend/uploads/
 backend/.env
+frontend/dist/*
