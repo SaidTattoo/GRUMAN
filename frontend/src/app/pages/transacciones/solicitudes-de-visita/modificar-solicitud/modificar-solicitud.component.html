@@ -477,14 +477,14 @@
                   @for (subItem of item.subItems; track subItem.id) {
                   <div class="subitem-container">
                     <div style="display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
-
-
-                      @if(subItem.estado === 'pendiente') {
-                      <span class="tag tag-warning">N/A</span>
+                      @if(subItem.estado === 'no_aplica') {
+                      <span class="tag tag-warning">No aplica</span>
                       } @else if(subItem.estado === 'rechazado') {
                       <span class="tag tag-danger">Rechazado</span>
                       } @else if(subItem.estado === 'aprobado') {
                       <span class="tag tag-success">Aprobado</span>
+                      } @else {
+                      <span class="tag tag-warning">No aplica</span>
                       }
                       <h6 class="subitem-title">{{subItem.nombre}}</h6>
 
@@ -719,12 +719,14 @@
             @for (subItem of item.subItems; track subItem.id) {
             <div class="subitem-container">
               <div style="display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
-                @if(subItem.estado === 'pendiente') {
+                @if(subItem.estado === 'no_aplica') {
                 <span class="tag tag-warning">No aplica</span>
                 } @else if(subItem.estado === 'rechazado') {
                 <span class="tag tag-danger">Rechazado</span>
                 } @else if(subItem.estado === 'aprobado') {
                 <span class="tag tag-success">Aprobado</span>
+                } @else {
+                  <span class="tag tag-warning">No aplica</span>
                 }
                 <h6 class="subitem-title">{{subItem.nombre}}</h6>
 
@@ -831,7 +833,7 @@
                             Cancelar
                           </button>
                           <button mat-raised-button color="primary" (click)="addRepuestoToItem(subItem.id)">
-                            Agregar 2
+                            Agregar
                           </button>
                         </div>
                       </div>
