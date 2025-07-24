@@ -474,7 +474,7 @@
                 <section class="section-list-inspection">
                   @for (item of lista.items; track item.id) {
                   <h5 class="item-list-inspection">{{item.nombre}}</h5>
-                  @for (subItem of item.subItems; track subItem.id) {
+                  @for (subItem of item.subItems; track subItem.id; let i = $index) {
                   <div class="subitem-container">
                     <div style="display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
                       @if(subItem.estado === 'no_aplica') {
@@ -503,7 +503,7 @@
                               </button>
                               @if (solicitud?.status !== 'validada' && !isRechazada && !isValidada) {
                               <button mat-icon-button style="z-index: 9900;" color="warn" 
-                                (click)="eliminarImagenSubitem(subItem.id, i, activoFijo)" matTooltip="Eliminar imagen">
+                                (click)="eliminarImagenSubitem(subItem.id, i, subItem.activoId)" matTooltip="Eliminar imagen">
                                 <mat-icon>delete</mat-icon>
                               </button>
                               }
@@ -511,10 +511,11 @@
                             </div>
                           </div>
                           
+                          
                           <!-- Botón para agregar nueva imagen -->
                           @if (solicitud?.status !== 'validada' && !isRechazada && !isValidada) {
                           <div class="photo-item add-photo-item">
-                            <div class="add-photo-container" (click)="triggerFileInput(subItem.id)">
+                            <div class="add-photo-container" (click)="triggerFileInput(subItem.id, subItem.activoId, i)">
                               <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #666;">add</mat-icon>
                               <span style="font-size: 12px; color: #666; margin-top: 8px;">Agregar imagen</span>
                             </div>
@@ -524,12 +525,14 @@
                       </div>
                       <!-- Input file oculto para cada subitem -->
                       <input #fileInputSubitem type="file" 
-                             (change)="onFileSelectedForSubitem($event, subItem.id, activoFijo)" 
+                             (change)="onFileSelectedForSubitem($event, subItem.id, subItem.activoId)" 
                              accept="image/*" 
                              style="display: none;"
-                             [id]="'fileInput-' + subItem.id"
+                             [id]="'fileInput-' + subItem.id + '-' + subItem.activoId + '-' + i"
                              [disabled]="solicitud?.status === 'validada' || isRechazada || isValidada" />
                     </ng-container>
+                    <!-- Debug: verificar activoId -->
+                    <small style="color: #666; font-size: 11px;">SubItem ID: {{subItem.id}} - Activo ID: {{subItem.activoId}}</small>
 
                     <!-- OBSERVACIONES -->
                     <ng-container>
@@ -542,7 +545,7 @@
                           <textarea matInput 
                                     [(ngModel)]="subItem.observaciones" 
                                     [ngModelOptions]="{standalone: true}"
-                                    (ngModelChange)="actualizarObservacionesEnChecklist(subItem.id, $event, activoFijo)"
+                                    (ngModelChange)="actualizarObservacionesEnChecklist(subItem.id, $event, subItem.activoId)"
                                     rows="2" 
                                     placeholder="Ingrese comentario"
                                     style="border-radius: 10px !important;">
@@ -560,7 +563,7 @@
                           <div class="d-flex flex-row items-center justify-content-between gap-2">
                             <button mat-button color="primary" class="small-button"
                               *ngIf="solicitud?.status !== 'validada' && !isRechazada && !isValidada"
-                              (click)="agregarRepuesto(subItem.id, activoFijo)" matTooltip="Agregar repuesto">
+                              (click)="agregarRepuesto(subItem.id, subItem.activoId)" matTooltip="Agregar repuesto">
                               Agregar repuestos <mat-icon>add</mat-icon>
                             </button>
                             @if (showAddRepuestoForm[subItem.id]) {
@@ -615,10 +618,10 @@
                               <td>${{ repuesto.repuesto.precio_venta | number }}</td>
                               <td>${{ repuesto.repuesto.precio_venta * repuesto.cantidad | number }}</td>
                               <td class="actions-cell">
-                                <button mat-icon-button color="primary" (click)="editarRepuesto(subItem.id, repuesto, activoFijo)" matTooltip="Editar">
+                                <button mat-icon-button color="primary" (click)="editarRepuesto(subItem.id, repuesto, subItem.activoId)" matTooltip="Editar">
                                   <mat-icon>edit</mat-icon>
                                 </button> 
-                                <button mat-icon-button color="warn" (click)="eliminarRepuesto(subItem.id, repuesto, activoFijo)" matTooltip="Eliminar">
+                                <button mat-icon-button color="warn" (click)="eliminarRepuesto(subItem.id, repuesto, subItem.activoId)" matTooltip="Eliminar">
                                   <mat-icon>delete</mat-icon>
                                 </button>
                               </td>

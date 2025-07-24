@@ -63,6 +63,7 @@ interface SubItem {
   disabled?: boolean;
   fotos?: string[];
   repuestos?: any[];
+  activoId?: number;
 }
 
 interface Item {
@@ -538,6 +539,9 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
                                 lista.items.forEach((item: any) => {
                                   if (item.subItems) {
                                     item.subItems.forEach((subItem: any) => {
+                                      // Asignar el activoId al subitem
+                                      subItem.activoId = activoFijo.activo_fijo_id;
+                                      
                                       if (subItem.repuestos) {
                                         subItem.repuestos =
                                           subItem.repuestos.map(
@@ -2494,7 +2498,7 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
     }
   }
 
-  agregarRepuesto(subItem: any, activoFijo: any = null) {
+  agregarRepuesto(subItem: any, activoId: number | null = null) {
     const dialogRef = this.dialog.open(AgregarRepuestoComponent, {
       width: '500px',
       data: { subItem },
@@ -2505,13 +2509,14 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
         // Agregar el nuevo repuesto a la lista
         this.selectedRepuesto = result.repuesto;
         this.newRepuestoCantidad = result.cantidad;
-        this.addRepuestoToItem(subItem, activoFijo);
+        const activoFijoFound = activoId ? this.findActivoFijoByActivoId(activoId) : null;
+        this.addRepuestoToItem(subItem, activoFijoFound);
         this.calcularTotalFinal();
       }
     });
   }
 
-  editarRepuesto(subItemId: number, repuesto: any, activoFijo: any = null) {
+  editarRepuesto(subItemId: number, repuesto: any, activoId: number | null = null) {
     const dialogRef = this.dialog.open(AgregarRepuestoComponent, {
       width: '500px',
       data: {
@@ -2524,15 +2529,16 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
       if (result) {
         // Actualizar el repuesto existente
         console.log('EDITANDO', result);
-        this.deleteRepuesto(subItemId, repuesto, activoFijo);
+        const activoFijoFound = activoId ? this.findActivoFijoByActivoId(activoId) : null;
+        this.deleteRepuesto(subItemId, repuesto, activoFijoFound);
         this.selectedRepuesto = result.repuesto;
         this.newRepuestoCantidad = result.cantidad;
-        this.addRepuestoToItem(subItemId, activoFijo);
+        this.addRepuestoToItem(subItemId, activoFijoFound);
       }
     });
   }
 
-  eliminarRepuesto(subItemId: number, repuesto: any, activoFijo: any = null) {
+  eliminarRepuesto(subItemId: number, repuesto: any, activoId: number | null = null) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
@@ -2546,7 +2552,8 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // Eliminar el repuesto de la lista
-        this.deleteRepuesto(subItemId, repuesto, activoFijo);
+        const activoFijoFound = activoId ? this.findActivoFijoByActivoId(activoId) : null;
+        this.deleteRepuesto(subItemId, repuesto, activoFijoFound);
       }
     });
   }
@@ -2598,9 +2605,21 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
   }
 
   // Función para actualizar observaciones en checklistResponse con debounce
-  actualizarObservacionesEnChecklist(subItemId: number, observaciones: string, activoFijo: any = null) {
+  actualizarObservacionesEnChecklist(subItemId: number, observaciones: string, activoId: number | null = null) {
     // Emitir al Subject para que sea procesado con debounce
-    this.observacionesSubject.next({ subItemId, observaciones, activoFijo });
+    const activoFijoFound = activoId ? this.findActivoFijoByActivoId(activoId) : null;
+    this.observacionesSubject.next({ subItemId, observaciones, activoFijo: activoFijoFound });
+  }
+
+  /**
+   * Encuentra el activo fijo correcto basado en el activoId
+   */
+  private findActivoFijoByActivoId(activoId: number): any {
+    if (!this.checklistResponse?.climate_data) return null;
+    
+    return this.checklistResponse.climate_data.find((activo: any) => 
+      activo.activo_fijo_id === activoId
+    );
   }
 
   // Función interna que realiza la actualización real
@@ -2665,17 +2684,36 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
   /**
    * Activa el input file para un subitem específico
    */
-  triggerFileInput(subitemId: number): void {
-    const fileInput = document.getElementById(`fileInput-${subitemId}`) as HTMLInputElement;
+  triggerFileInput(subitemId: number, activoId?: number, index?: number): void {
+    let inputId: string;
+    
+    if (activoId !== undefined && index !== undefined) {
+      // Para checklist de clima: incluir activoId
+      inputId = `fileInput-${subitemId}-${activoId}-${index}`;
+    } else if (index !== undefined) {
+      // Para checklist normal con índice
+      inputId = `fileInput-${subitemId}-${index}`;
+    } else {
+      // Para checklist normal sin índice
+      inputId = `fileInput-${subitemId}`;
+    }
+    
+    console.log('triggerFileInput llamado con:', { subitemId, activoId, index, inputId });
+    
+    const fileInput = document.getElementById(inputId) as HTMLInputElement;
     if (fileInput) {
       fileInput.click();
+      console.log('Input encontrado y clickeado:', inputId);
+    } else {
+      console.error(`No se encontró el input con ID: ${inputId}`);
     }
   }
 
   /**
    * Maneja la selección de archivo para subitems
    */
-  async onFileSelectedForSubitem(event: Event, subitemId: number, activoFijo: any = null): Promise<void> {
+  async onFileSelectedForSubitem(event: Event, subitemId: number, activoId: number | null = null): Promise<void> {
+    console.log('onFileSelectedForSubitem called with:', { subitemId, activoId });
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
@@ -2751,7 +2789,8 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
                   : `${environment.apiUrl}/${response.url}`;
 
                 // Agregar la imagen al subitem correspondiente
-                this.agregarImagenASubitem(subitemId, imageUrl, activoFijo);
+                const activoFijoFound = activoId ? this.findActivoFijoByActivoId(activoId) : null;
+                this.agregarImagenASubitem(subitemId, imageUrl, activoFijoFound);
 
                 // Mostrar mensaje de éxito
                 this.snackBar.open('Imagen agregada exitosamente', 'Cerrar', {
@@ -2784,24 +2823,27 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
    * Agrega una imagen al subitem correspondiente
    */
   private agregarImagenASubitem(subitemId: number, imageUrl: string, activoFijo: any = null): void {
+    console.log('agregarImagenASubitem called with:', { subitemId, imageUrl, activoFijo });
+    
     if (this.checklistResponse?.is_climate && activoFijo) {
-      // Para checklist de clima
-      const climateData = this.checklistResponse.climate_data.find((activo: any) => activo.id === activoFijo.id);
-      if (climateData) {
-        for (const lista of climateData.checklist) {
-          for (const item of lista.items) {
-            const subitem = item.subItems.find((sub: any) => sub.id === subitemId);
-            if (subitem) {
-              if (!subitem.fotos) {
-                subitem.fotos = [];
-              }
-              subitem.fotos.push(imageUrl);
-              this.actualizarChecklistEnBackend();
-              return;
+      // Para checklist de clima - usar directamente el activoFijo encontrado
+      console.log('Buscando en activo fijo específico:', activoFijo.activo_fijo_id);
+      
+      for (const lista of activoFijo.checklist) {
+        for (const item of lista.items) {
+          const subitem = item.subItems.find((sub: any) => sub.id === subitemId);
+          if (subitem) {
+            console.log('Subitem encontrado en activo fijo:', activoFijo.activo_fijo_id);
+            if (!subitem.fotos) {
+              subitem.fotos = [];
             }
+            subitem.fotos.push(imageUrl);
+            this.actualizarChecklistEnBackend();
+            return;
           }
         }
       }
+      console.error('No se encontró el subitem en el activo fijo especificado');
     } else {
       // Para checklist normal
       for (const lista of this.checklistResponse?.data_normal[0].checklist || []) {
@@ -2823,15 +2865,20 @@ export class ModificarSolicitudComponent implements OnInit, OnDestroy {
   /**
    * Elimina una imagen de un subitem
    */
-  eliminarImagenSubitem(subitemId: number, imageIndex: number, activoFijo: any = null): void {
-    if (this.checklistResponse?.is_climate && activoFijo) {
-      // Para checklist de clima
-      const climateData = this.checklistResponse.climate_data.find((activo: any) => activo.id === activoFijo.id);
-      if (climateData) {
-        for (const lista of climateData.checklist) {
+  eliminarImagenSubitem(subitemId: number, imageIndex: number, activoId: number | null = null): void {
+    console.log('eliminarImagenSubitem called with:', { subitemId, imageIndex, activoId });
+    
+    if (this.checklistResponse?.is_climate && activoId) {
+      // Para checklist de clima - encontrar el activo fijo específico
+      const activoFijoFound = this.findActivoFijoByActivoId(activoId);
+      console.log('Activo fijo encontrado:', activoFijoFound?.activo_fijo_id);
+      
+      if (activoFijoFound) {
+        for (const lista of activoFijoFound.checklist) {
           for (const item of lista.items) {
             const subitem = item.subItems.find((sub: any) => sub.id === subitemId);
             if (subitem && subitem.fotos && subitem.fotos.length > imageIndex) {
+              console.log('Eliminando imagen del activo fijo:', activoFijoFound.activo_fijo_id);
               subitem.fotos.splice(imageIndex, 1);
               this.actualizarChecklistEnBackend();
               this.snackBar.open('Imagen eliminada correctamente', 'Cerrar', {
