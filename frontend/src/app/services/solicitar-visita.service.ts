@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { environment } from '../config';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 
 @Injectable({
@@ -200,9 +200,47 @@ export class SolicitarVisitaService {
   }
 
   downloadPdf(id: number): Observable<Blob> {
+    console.log('🌐 Realizando petición HTTP para PDF, ID:', id);
+    console.log('🔗 URL completa:', `${this.apiUrl}solicitar-visita/${id}/pdf`);
+    
     return this.http.get(`${this.apiUrl}solicitar-visita/${id}/pdf`, {
-      responseType: 'blob'
-    });
+      responseType: 'blob',
+      observe: 'response'
+    }).pipe(
+      map(response => {
+        console.log('📡 Respuesta HTTP recibida:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: {
+            contentType: response.headers.get('Content-Type'),
+            contentLength: response.headers.get('Content-Length'),
+            contentDisposition: response.headers.get('Content-Disposition')
+          },
+          bodySize: response.body?.size
+        });
+        
+        if (!response.body) {
+          throw new Error('Respuesta HTTP sin cuerpo');
+        }
+        
+        return response.body;
+      }),
+      catchError(error => {
+        console.error('🚨 Error en petición HTTP del PDF:', error);
+        console.error('📊 Estado de la respuesta:', error.status);
+        console.error('📝 Mensaje de error:', error.message);
+        
+        if (error.status === 0) {
+          console.error('❌ Error de red o CORS');
+        } else if (error.status >= 500) {
+          console.error('❌ Error del servidor backend');
+        } else if (error.status >= 400) {
+          console.error('❌ Error del cliente (solicitud incorrecta)');
+        }
+        
+        return throwError(() => error);
+      })
+    );
   }
   subirCargaMasiva(datos: any[]): Observable<any> {
     return this.http.post(`${this.apiUrl}solicitar-visita/subir-carga-masiva`, datos);

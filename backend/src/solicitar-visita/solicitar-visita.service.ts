@@ -579,8 +579,11 @@ export class SolicitarVisitaService {
     if (solicitudBase.local.activoFijoLocales) {
       // Obtener IDs de secciones que necesitamos consultar
       const sectionIds = solicitudBase.local.activoFijoLocales
-        .filter(activo => activo.require_checklist === true && activo.sectionId != null)
-        .map(activo => activo.sectionId);
+        .filter(
+          (activo) =>
+            activo.require_checklist === true && activo.sectionId != null,
+        )
+        .map((activo) => activo.sectionId);
 
       // Si hay secciones que consultar, obtenerlas con todos sus items y subitems
       let sectionsData = [];
@@ -592,31 +595,36 @@ export class SolicitarVisitaService {
       }
 
       // Mapear cada activo fijo con su checklist correspondiente
-      solicitudBase.local.activoFijoLocales = solicitudBase.local.activoFijoLocales.map((activo) => {
-        // Solo agregar checklist si require_checklist es true y sectionId no es null
-        if (activo.require_checklist === true && activo.sectionId != null) {
-          // Buscar la sección correspondiente en los datos obtenidos
-          const sectionData = sectionsData.find(section => section.id === activo.sectionId);
-          
+      solicitudBase.local.activoFijoLocales =
+        solicitudBase.local.activoFijoLocales.map((activo) => {
+          // Solo agregar checklist si require_checklist es true y sectionId no es null
+          if (activo.require_checklist === true && activo.sectionId != null) {
+            // Buscar la sección correspondiente en los datos obtenidos
+            const sectionData = sectionsData.find(
+              (section) => section.id === activo.sectionId,
+            );
+
+            return {
+              ...activo,
+              checklist: sectionData
+                ? {
+                    id: sectionData.id,
+                    name: sectionData.name,
+                    items: sectionData.items || [],
+                  }
+                : {
+                    id: activo.sectionId,
+                    name: `Checklist ${activo.sectionId}`,
+                    items: [],
+                  },
+            };
+          }
+          // Si no cumple las condiciones, devolver el activo sin checklist
           return {
             ...activo,
-            checklist: sectionData ? {
-              id: sectionData.id,
-              name: sectionData.name,
-              items: sectionData.items || [],
-            } : {
-              id: activo.sectionId,
-              name: `Checklist ${activo.sectionId}`,
-              items: [],
-            }
+            checklist: null,
           };
-        }
-        // Si no cumple las condiciones, devolver el activo sin checklist
-        return {
-          ...activo,
-          checklist: null
-        };
-      });
+        });
     }
 
     return solicitudBase;
@@ -730,7 +738,7 @@ export class SolicitarVisitaService {
         'tecnico_asignado',
         'generada_por',
         'facturacion',
-        'tipo_solicitud'
+        'tipo_solicitud',
       ],
       order: { fechaIngreso: 'DESC' },
     });
@@ -1175,7 +1183,7 @@ export class SolicitarVisitaService {
   //               solicitud_visita_id: id,
   //               activo_fijo_id: activoId,
   //             });
-  //           } else { 
+  //           } else {
   //               itemEstadoData.push({
   //                 itemId,
   //                 estado,
@@ -1320,8 +1328,6 @@ export class SolicitarVisitaService {
   //     itemRepuestosData,
   //   };
 
-   
-
   //   // console.log('REPUESTOS --------------------------------');
   //   // console.log(itemRepuestosData);
   //   // // insertar registro en tabla item_repuestos (id, itemId, repuestoId, cantidad, comentario, solicitarVisitaId, estado, precio_venta, precio_compra, detalle_repuesto_activo_fijo_id)
@@ -1373,36 +1379,38 @@ export class SolicitarVisitaService {
   // }
 
   async finalizarServicioJSON(id: number, data: any) {
-
     const responseChecklist = this.responseChecklistRepository.create({
       solicitud_visita_id: id,
-      is_climate: data.is_climate || false,
+      is_climate: data.is_climate || false,
       climate_data: data.is_climate ? JSON.stringify(data.data) : null,
       data_normal: data.is_climate ? null : JSON.stringify(data.data),
-      signature: data.firma || null
+      signature: data.firma || null,
     });
-    const savedResponseChecklist = await this.responseChecklistRepository.save(responseChecklist);
-    const updatedSolicitudVisita = await this.solicitarVisitaRepository.update(id, {
-      status: SolicitudStatus.FINALIZADA,
-      fecha_hora_fin_servicio: new Date(),
-      firma_cliente: data.firma,
-      comentario_general: data.comentario_general || "",
-    });
+    const savedResponseChecklist =
+      await this.responseChecklistRepository.save(responseChecklist);
+    const updatedSolicitudVisita = await this.solicitarVisitaRepository.update(
+      id,
+      {
+        status: SolicitudStatus.FINALIZADA,
+        fecha_hora_fin_servicio: new Date(),
+        firma_cliente: data.firma,
+        comentario_general: data.comentario_general || '',
+      },
+    );
 
     return Promise.all([savedResponseChecklist, updatedSolicitudVisita]);
 
     // return {
-    //   solicitar_visita_id: id, 
-    //   is_climate: data.is_climate, 
-    //   climate_data: data.is_climate ? JSON.stringify(data.data) : null, 
+    //   solicitar_visita_id: id,
+    //   is_climate: data.is_climate,
+    //   climate_data: data.is_climate ? JSON.stringify(data.data) : null,
     //   data_normal: data.is_climate ? null : JSON.stringify(data.data)
     // }
   }
 
   async updateChecklistVisita(id: number, data: any) {
-
     const responseChecklist = await this.responseChecklistRepository.findOne({
-      where: { solicitud_visita_id: id }
+      where: { solicitud_visita_id: id },
     });
 
     console.log('responseChecklist', responseChecklist);
@@ -1411,40 +1419,43 @@ export class SolicitarVisitaService {
       throw new NotFoundException('No se encontró el checklist de clima');
     }
 
-
     const responseSave = await this.responseChecklistRepository.update(
       responseChecklist.id,
       {
         is_climate: data.is_climate || false,
-        climate_data: data.is_climate ? JSON.stringify(data.data.climate_data) : null,
-        data_normal: data.is_climate ? null : JSON.stringify(data.data.data_normal),
+        climate_data: data.is_climate
+          ? JSON.stringify(data.data.climate_data)
+          : null,
+        data_normal: data.is_climate
+          ? null
+          : JSON.stringify(data.data.data_normal),
       },
     );
 
     console.log('responseSave', responseSave);
 
     const updatedChecklist = await this.responseChecklistRepository.findOne({
-      where: { solicitud_visita_id: id }
+      where: { solicitud_visita_id: id },
     });
 
     if (!updatedChecklist) {
       return {
         success: false,
         message: 'No se pudo actualizar el checklist',
-        data: null
+        data: null,
       };
     }
 
     return {
       success: true,
       message: 'Checklist actualizado correctamente',
-      data: updatedChecklist
+      data: updatedChecklist,
     };
   }
 
   async getResponseChecklist(id: any) {
     const responseChecklist = await this.responseChecklistRepository.findOne({
-      where: { solicitud_visita_id: id }
+      where: { solicitud_visita_id: id },
     });
 
     if (!responseChecklist) {
@@ -2246,6 +2257,7 @@ export class SolicitarVisitaService {
 
   async generatePdf(id: number): Promise<Buffer> {
     try {
+      const checklist = await this.getResponseChecklist(id);
       const solicitud = await this.solicitarVisitaRepository.findOne({
         where: { id },
         relations: [
@@ -2300,108 +2312,365 @@ export class SolicitarVisitaService {
         tableCell: { font: 'Helvetica', size: 8, fillColor: '#333' },
       };
 
-      // Header con logo y título
-      const logoPath = existsSync(
-        join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg'),
-      )
-        ? join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg')
-        : join(__dirname, '..', 'images', 'atlantis_logo.jpg');
+      // ============================================
+      // PRIMERA PÁGINA - INFORMACIÓN PRINCIPAL
+      // ============================================
+      await this.generateFirstPage(
+        doc,
+        solicitud,
+        styles,
+        marginLeft,
+        marginRight,
+        contentWidth,
+      );
 
-      if (existsSync(logoPath)) {
-        doc.image(logoPath, marginLeft, 40, { width: 60 });
+      // ============================================
+      // PÁGINAS DEL CHECKLIST DINÁMICO
+      // ============================================
+      if (checklist) {
+        console.log('====== DATOS DEL CHECKLIST ======');
+
+        // Parsear climate_data si viene como string JSON
+        let climateDataForDisplay = checklist.climate_data;
+        if (typeof climateDataForDisplay === 'string') {
+          try {
+            climateDataForDisplay = JSON.parse(climateDataForDisplay);
+            console.log(
+              'climate_data era un string JSON, se parseó correctamente',
+            );
+          } catch (error) {
+            console.error(
+              'Error parseando climate_data JSON para mostrar:',
+              error,
+            );
+            climateDataForDisplay = null;
+          }
+        }
+
+        console.log('Checklist data:', {
+          is_climate: checklist.is_climate,
+          has_climate_data: !!checklist.climate_data,
+          climate_data_type: typeof checklist.climate_data,
+          climate_data_length: Array.isArray(climateDataForDisplay)
+            ? climateDataForDisplay.length
+            : 'No es array',
+          has_data_normal: !!checklist.data_normal,
+          data_normal_length: checklist.data_normal?.length,
+        });
+
+        if (
+          climateDataForDisplay &&
+          Array.isArray(climateDataForDisplay) &&
+          climateDataForDisplay.length > 0
+        ) {
+          console.log('Activos fijos encontrados:');
+          climateDataForDisplay.forEach((cd, index) => {
+            console.log(
+              `  ${index + 1}. ID: ${cd.activo_fijo_id}, Código: ${cd.detailActivoFijo?.codigo_activo}, Tipo: ${cd.detailActivoFijo?.tipo_equipo}`,
+            );
+          });
+        }
+
+        if (checklist.is_climate && checklist.climate_data) {
+          // Checklist con activos fijos (climatización)
+          console.log('Iniciando generación de páginas de checklist...');
+          await this.generateChecklistPages(
+            doc,
+            checklist,
+            styles,
+            marginLeft,
+            marginRight,
+            contentWidth,
+          );
+        } else if (
+          !checklist.is_climate &&
+          checklist.data_normal &&
+          checklist.data_normal.length > 0
+        ) {
+          // Checklist sin activos fijos (normal)
+          console.log('Iniciando generación de checklist normal...');
+          await this.generateNormalChecklistPages(
+            doc,
+            checklist,
+            styles,
+            marginLeft,
+            marginRight,
+            contentWidth,
+          );
+        } else {
+          console.log('No se pudo generar checklist: no hay datos válidos');
+        }
+      } else {
+        console.log('No hay checklist disponible');
       }
 
+      // ============================================
+      // PÁGINAS DE FOTOS (Si existen) - Organizadas por activo/item/subitem
+      // ============================================
+      console.log('Iniciando generación de páginas de fotos...');
+      try {
+        await this.generatePhotoPages(
+          doc,
+          checklist,
+          styles,
+          marginLeft,
+          marginRight,
+          contentWidth,
+        );
+        console.log('Páginas de fotos generadas exitosamente');
+      } catch (photoError) {
+        console.error('Error en generación de fotos:', photoError);
+        // Continuar sin fotos si hay error
+      }
+
+      console.log('Finalizando documento PDF...');
+      doc.end();
+
+      return new Promise((resolve, reject) => {
+        doc.on('end', () => {
+          console.log(
+            'PDF finalizado exitosamente, tamaño del buffer:',
+            finalBuffer?.length,
+          );
+          finalBuffer ? resolve(finalBuffer) : reject(new Error('PDF vacío'));
+        });
+        doc.on('error', (error) => {
+          console.error('Error en finalización del PDF:', error);
+          reject(error);
+        });
+      });
+    } catch (err) {
+      console.error('Error completo en generatePdf:', err);
+      console.error('Stack trace:', err.stack);
+      throw new InternalServerErrorException(
+        `Error generando PDF: ${err.message}`,
+      );
+    }
+  }
+
+  // ============================================
+  // MÉTODO PARA GENERAR PRIMERA PÁGINA
+  // ============================================
+  private async generateFirstPage(
+    doc: any,
+    solicitud: any,
+    styles: any,
+    marginLeft: number,
+    marginRight: number,
+    contentWidth: number,
+  ) {
+    const pageWidth = doc.page.width;
+
+    // Header con logo y título
+    const logoPath = existsSync(
+      join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg'),
+    )
+      ? join(__dirname, '..', '..', 'src', 'images', 'atlantis_logo.jpg')
+      : join(__dirname, '..', 'images', 'atlantis_logo.jpg');
+
+    if (existsSync(logoPath)) {
+      doc.image(logoPath, marginLeft, 40, { width: 60 });
+    }
+
+    doc
+      .font(styles.title.font)
+      .fontSize(styles.title.size)
+      .fillColor(styles.title.fillColor)
+      .text('REPORTE DE VISITA TÉCNICA', marginLeft + 80, 50);
+
+    doc
+      .font(styles.subtitle.font)
+      .fontSize(styles.subtitle.size)
+      .fillColor(styles.subtitle.fillColor)
+      .text(`N° Solicitud: ${solicitud.id}`, marginLeft + 80, 80);
+
+    // Línea separadora
+    doc
+      .moveTo(marginLeft, 120)
+      .lineTo(pageWidth - marginRight, 120)
+      .stroke('#333333');
+
+    let currentY = 140;
+
+    // --- TABLA INFORMACIÓN PRINCIPAL ---
+    const infoTable = [
+      ['Cliente', solicitud.client?.nombre || 'No especificado'],
+      ['Local', solicitud.local?.nombre_local || 'No especificado'],
+      ['Dirección', solicitud.local?.direccion || 'No especificada'],
+      ['Teléfono', solicitud.local?.telefono || 'No especificado'],
+      [
+        'Fecha visita',
+        solicitud.fechaVisita
+          ? format(new Date(solicitud.fechaVisita), 'dd-MM-yyyy')
+          : 'No especificada',
+      ],
+      [
+        'Tipo de servicio',
+        solicitud.tipo_servicio?.nombre || 'No especificado',
+      ],
+      [
+        'Técnico asignado',
+        solicitud.tecnico_asignado
+          ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}`
+          : 'No especificado',
+      ],
+      [
+        'Hora inicio',
+        solicitud.fecha_hora_inicio_servicio
+          ? format(new Date(solicitud.fecha_hora_inicio_servicio), 'HH:mm')
+          : 'No especificada',
+      ],
+      [
+        'Hora término',
+        solicitud.fecha_hora_fin_servicio
+          ? format(new Date(solicitud.fecha_hora_fin_servicio), 'HH:mm')
+          : 'No especificada',
+      ],
+    ];
+
+    // Dibujar tabla elegante
+    const tableX = marginLeft;
+    let tableY = currentY;
+    const rowHeight = 22;
+    const col1Width = 150;
+    const col2Width = contentWidth - col1Width;
+    const borderColor = '#cccccc';
+
+    // Encabezado de sección
+    doc
+      .font(styles.header.font)
+      .fontSize(styles.header.size)
+      .fillColor(styles.header.fillColor)
+      .text('INFORMACIÓN DE LA VISITA', tableX, tableY);
+    tableY += 18;
+
+    // Borde exterior
+    doc.save();
+    doc
+      .roundedRect(
+        tableX,
+        tableY,
+        contentWidth,
+        rowHeight * infoTable.length,
+        6,
+      )
+      .lineWidth(0.7)
+      .stroke(borderColor);
+    doc.restore();
+
+    // Filas
+    for (let i = 0; i < infoTable.length; i++) {
+      const y = tableY + i * rowHeight;
+      // Línea horizontal
+      if (i > 0) {
+        doc
+          .moveTo(tableX, y)
+          .lineTo(tableX + contentWidth, y)
+          .strokeColor(borderColor)
+          .lineWidth(0.5)
+          .stroke();
+      }
+      // Columna 1
       doc
-        .font(styles.title.font)
-        .fontSize(styles.title.size)
-        .fillColor(styles.title.fillColor)
-        .text('REPORTE DE VISITA TÉCNICA', marginLeft + 80, 50);
-
+        .font(styles.tableHeader.font)
+        .fontSize(styles.tableHeader.size)
+        .fillColor('#222')
+        .text(infoTable[i][0], tableX + 8, y + 6, { width: col1Width - 10 });
+      // Línea vertical
       doc
-        .font(styles.subtitle.font)
-        .fontSize(styles.subtitle.size)
-        .fillColor(styles.subtitle.fillColor)
-        .text(`N° Solicitud: ${solicitud.id}`, marginLeft + 80, 80);
-
-      // Línea separadora
+        .moveTo(tableX + col1Width, y)
+        .lineTo(tableX + col1Width, y + rowHeight)
+        .strokeColor(borderColor)
+        .lineWidth(0.5)
+        .stroke();
+      // Columna 2
       doc
-        .moveTo(marginLeft, 120)
-        .lineTo(pageWidth - marginRight, 120)
-        .stroke('#333333');
+        .font(styles.tableCell.font)
+        .fontSize(styles.tableCell.size)
+        .fillColor('#333')
+        .text(infoTable[i][1], tableX + col1Width + 8, y + 6, {
+          width: col2Width - 10,
+        });
+    }
 
-      let currentY = 140;
+    tableY += rowHeight * infoTable.length + 16;
+    currentY = tableY;
 
-      // --- TABLA INFORMACIÓN PRINCIPAL ---
-      const infoTable = [
-        ['Cliente', solicitud.client?.nombre || 'No especificado'],
-        ['Local', solicitud.local?.nombre_local || 'No especificado'],
-        ['Dirección', solicitud.local?.direccion || 'No especificada'],
-        ['Teléfono', solicitud.local?.telefono || 'No especificado'],
-        [
-          'Fecha visita',
-          solicitud.fechaVisita
-            ? format(new Date(solicitud.fechaVisita), 'dd-MM-yyyy')
-            : 'No especificada',
-        ],
-        [
-          'Tipo de servicio',
-          solicitud.tipo_servicio?.nombre || 'No especificado',
-        ],
-        [
-          'Técnico asignado',
-          solicitud.tecnico_asignado
-            ? `${solicitud.tecnico_asignado.name} ${solicitud.tecnico_asignado.lastName}`
-            : 'No especificado',
-        ],
-        [
-          'Hora inicio',
-          solicitud.fecha_hora_inicio_servicio
-            ? format(new Date(solicitud.fecha_hora_inicio_servicio), 'HH:mm')
-            : 'No especificada',
-        ],
-        [
-          'Hora término',
-          solicitud.fecha_hora_fin_servicio
-            ? format(new Date(solicitud.fecha_hora_fin_servicio), 'HH:mm')
-            : 'No especificada',
-        ],
-      ];
-
-      // Dibujar tabla elegante
-      const tableX = marginLeft;
-      let tableY = currentY;
-      const rowHeight = 22;
-      const col1Width = 150;
-      const col2Width = contentWidth - col1Width;
-      const borderColor = '#cccccc';
-
-      // Encabezado de sección
+    // --- TABLA EQUIPOS INTERVENIDOS ---
+    if (solicitud.activoFijoRepuestos?.length > 0) {
       doc
         .font(styles.header.font)
         .fontSize(styles.header.size)
         .fillColor(styles.header.fillColor)
-        .text('INFORMACIÓN DE LA VISITA', tableX, tableY);
-      tableY += 18;
-
+        .text('EQUIPOS INTERVENIDOS', tableX, currentY);
+      currentY += 18;
+      // Encabezados
+      const equiposHeaders = [
+        'Código',
+        'Tipo',
+        'Marca',
+        'Estado',
+        'Observaciones',
+      ];
+      const colWidths = [100, 90, 90, 70, contentWidth - 340];
       // Borde exterior
       doc.save();
       doc
         .roundedRect(
           tableX,
-          tableY,
+          currentY,
           contentWidth,
-          rowHeight * infoTable.length,
+          rowHeight * (solicitud.activoFijoRepuestos.length + 1),
           6,
         )
         .lineWidth(0.7)
         .stroke(borderColor);
       doc.restore();
-
-      // Filas
-      for (let i = 0; i < infoTable.length; i++) {
-        const y = tableY + i * rowHeight;
+      // Encabezados
+      let x = tableX;
+      // for (let i = 0; i < equiposHeaders.length; i++) {
+      //   doc
+      //     .font(styles.tableHeader.font)
+      //     .fontSize(styles.tableHeader.size)
+      //     .fillColor('#222')
+      //     .text(equiposHeaders[i], x + 8, currentY + 6, {
+      //       width: colWidths[i] - 10,
+      //     });
+      //   x += colWidths[i];
+      //   if (i < equiposHeaders.length - 1) {
+      //     doc
+      //       .moveTo(x, currentY)
+      //       .lineTo(
+      //         x,
+      //         currentY + rowHeight * (solicitud.activoFijoRepuestos.length + 1),
+      //       )
+      //       .strokeColor(borderColor)
+      //       .lineWidth(0.5)
+      //       .stroke();
+      //   }
+      // }
+      // Filas de equipos
+      for (let i = 0; i < solicitud.activoFijoRepuestos.length; i++) {
+        const afr = solicitud.activoFijoRepuestos[i];
+        let y = currentY + rowHeight * (i + 1);
+        let x = tableX;
+        const values = [
+          afr.activoFijo?.codigo_activo || '',
+          afr.activoFijo?.tipo_equipo || '',
+          afr.activoFijo?.marca || '',
+          afr.estadoOperativo || '',
+          afr.observacionesEstado || 'Sin observaciones',
+        ];
+        for (let j = 0; j < values.length; j++) {
+          doc
+            .font(styles.tableCell.font)
+            .fontSize(styles.tableCell.size)
+            .fillColor('#333')
+            .text(values[j], x + 8, y + 6, { width: colWidths[j] - 10 });
+          x += colWidths[j];
+        }
         // Línea horizontal
-        if (i > 0) {
+        if (i < solicitud.activoFijoRepuestos.length) {
           doc
             .moveTo(tableX, y)
             .lineTo(tableX + contentWidth, y)
@@ -2409,565 +2678,1329 @@ export class SolicitarVisitaService {
             .lineWidth(0.5)
             .stroke();
         }
-        // Columna 1
-        doc
-          .font(styles.tableHeader.font)
-          .fontSize(styles.tableHeader.size)
-          .fillColor('#222')
-          .text(infoTable[i][0], tableX + 8, y + 6, { width: col1Width - 10 });
-        // Línea vertical
-        doc
-          .moveTo(tableX + col1Width, y)
-          .lineTo(tableX + col1Width, y + rowHeight)
-          .strokeColor(borderColor)
-          .lineWidth(0.5)
-          .stroke();
-        // Columna 2
-        doc
-          .font(styles.tableCell.font)
-          .fontSize(styles.tableCell.size)
-          .fillColor('#333')
-          .text(infoTable[i][1], tableX + col1Width + 8, y + 6, {
-            width: col2Width - 10,
-          });
       }
+      currentY += rowHeight * (solicitud.activoFijoRepuestos.length + 1) + 16;
+    }
 
-      tableY += rowHeight * infoTable.length + 16;
-      currentY = tableY;
-
-      // --- TABLA EQUIPOS INTERVENIDOS ---
-      if (solicitud.activoFijoRepuestos?.length > 0) {
-        doc
-          .font(styles.header.font)
-          .fontSize(styles.header.size)
-          .fillColor(styles.header.fillColor)
-          .text('EQUIPOS INTERVENIDOS', tableX, currentY);
-        currentY += 18;
-        // Encabezados
-        const equiposHeaders = [
-          'Código',
-          'Tipo',
-          'Marca',
-          'Estado',
-          'Observaciones',
-        ];
-        const colWidths = [100, 90, 90, 70, contentWidth - 340];
-        // Borde exterior
-        doc.save();
-        doc
-          .roundedRect(
-            tableX,
-            currentY,
-            contentWidth,
-            rowHeight * (solicitud.activoFijoRepuestos.length + 1),
-            6,
-          )
-          .lineWidth(0.7)
-          .stroke(borderColor);
-        doc.restore();
-        // Encabezados
-        let x = tableX;
-        for (let i = 0; i < equiposHeaders.length; i++) {
-          doc
-            .font(styles.tableHeader.font)
-            .fontSize(styles.tableHeader.size)
-            .fillColor('#222')
-            .text(equiposHeaders[i], x + 8, currentY + 6, {
-              width: colWidths[i] - 10,
-            });
-          x += colWidths[i];
-          if (i < equiposHeaders.length - 1) {
-            doc
-              .moveTo(x, currentY)
-              .lineTo(
-                x,
-                currentY +
-                  rowHeight * (solicitud.activoFijoRepuestos.length + 1),
-              )
-              .strokeColor(borderColor)
-              .lineWidth(0.5)
-              .stroke();
-          }
-        }
-        // Filas de equipos
-        for (let i = 0; i < solicitud.activoFijoRepuestos.length; i++) {
-          const afr = solicitud.activoFijoRepuestos[i];
-          let y = currentY + rowHeight * (i + 1);
-          let x = tableX;
-          const values = [
-            afr.activoFijo?.codigo_activo || '',
-            afr.activoFijo?.tipo_equipo || '',
-            afr.activoFijo?.marca || '',
-            afr.estadoOperativo || '',
-            afr.observacionesEstado || 'Sin observaciones',
-          ];
-          for (let j = 0; j < values.length; j++) {
-            doc
-              .font(styles.tableCell.font)
-              .fontSize(styles.tableCell.size)
-              .fillColor('#333')
-              .text(values[j], x + 8, y + 6, { width: colWidths[j] - 10 });
-            x += colWidths[j];
-          }
-          // Línea horizontal
-          if (i < solicitud.activoFijoRepuestos.length) {
-            doc
-              .moveTo(tableX, y)
-              .lineTo(tableX + contentWidth, y)
-              .strokeColor(borderColor)
-              .lineWidth(0.5)
-              .stroke();
-          }
-        }
-        currentY += rowHeight * (solicitud.activoFijoRepuestos.length + 1) + 16;
-      }
-
-      if (solicitud.firma_cliente) {
-        // --- FIRMA DEL CLIENTE ---
-        doc
-          .font(styles.header.font)
-          .fontSize(styles.header.size)
-          .fillColor(styles.header.fillColor)
-          .text('FIRMA DEL CLIENTE', tableX, currentY);
-        currentY += 18;
-        try {
-          const signatureBuffer = Buffer.from(
-            solicitud.firma_cliente.replace(/^data:image\/\w+;base64,/, ''),
-            'base64',
-          );
-          doc.image(signatureBuffer, tableX, currentY, {
-            width: 100,
-            height: 100,
-            fit: [100, 100],
-          });
-          currentY += 100;
-        } catch (error) {
-          doc
-            .font(styles.text.font)
-            .fontSize(styles.text.size)
-            .fillColor(styles.text.fillColor)
-            .text('Firma no disponible', tableX, currentY);
-          currentY += 30;
-        }
-      }
-
-      // --- LISTADO DE REPUESTOS UTILIZADOS ---
-      if (solicitud.itemRepuestos?.length > 0) {
-        // Verificar si hay suficiente espacio para la sección
-        if (currentY + 100 > doc.page.height - 50) {
-          doc.addPage();
-          currentY = 50;
-        }
-
-        doc
-          .font(styles.header.font)
-          .fontSize(styles.header.size)
-          .fillColor(styles.header.fillColor)
-          .text('REPUESTOS UTILIZADOS', tableX, currentY);
-        currentY += 18;
-
-        // Encabezados
-        const repuestosHeaders = [
-          'Artículo',
-          'Marca',
-          'Familia',
-          'Código',
-          'Cantidad',
-          'Precio',
-        ];
-        const colWidths = [
-          contentWidth * 0.25,
-          contentWidth * 0.15,
-          contentWidth * 0.15,
-          contentWidth * 0.15,
-          contentWidth * 0.15,
-          contentWidth * 0.15,
-        ];
-
-        // Borde exterior
-        doc.save();
-        doc
-          .roundedRect(
-            tableX,
-            currentY,
-            contentWidth,
-            rowHeight * (solicitud.itemRepuestos.length + 1),
-            6,
-          )
-          .lineWidth(0.7)
-          .stroke(borderColor);
-        doc.restore();
-
-        // Encabezados
-        let x = tableX;
-        for (let i = 0; i < repuestosHeaders.length; i++) {
-          doc
-            .font(styles.tableHeader.font)
-            .fontSize(styles.tableHeader.size)
-            .fillColor('#222')
-            .text(repuestosHeaders[i], x + 8, currentY + 6, {
-              width: colWidths[i] - 10,
-            });
-          x += colWidths[i];
-          if (i < repuestosHeaders.length - 1) {
-            doc
-              .moveTo(x, currentY)
-              .lineTo(
-                x,
-                currentY + rowHeight * (solicitud.itemRepuestos.length + 1),
-              )
-              .strokeColor(borderColor)
-              .lineWidth(0.5)
-              .stroke();
-          }
-        }
-
-        // Línea horizontal después de los encabezados
-        doc
-          .moveTo(tableX, currentY + rowHeight)
-          .lineTo(tableX + contentWidth, currentY + rowHeight)
-          .strokeColor(borderColor)
-          .lineWidth(0.5)
-          .stroke();
-
-        // Filas de repuestos
-        for (let i = 0; i < solicitud.itemRepuestos.length; i++) {
-          const repuesto = solicitud.itemRepuestos[i];
-          let y = currentY + rowHeight * (i + 1);
-          let x = tableX;
-
-          // Preparar los valores a mostrar
-          const articulo = repuesto.repuesto?.articulo || 'N/A';
-          const marca = repuesto.repuesto?.marca || 'N/A';
-          const familia = repuesto.repuesto?.familia || 'N/A';
-          const codigo = repuesto.repuesto?.codigoBarra || 'N/A';
-          const cantidad = repuesto.cantidad?.toString() || '0';
-          const precio = repuesto.precio_venta
-            ? `$${Number(repuesto.precio_venta).toLocaleString('es-CL')}`
-            : repuesto.repuesto?.precio_venta
-              ? `$${Number(repuesto.repuesto.precio_venta).toLocaleString('es-CL')}`
-              : 'N/A';
-
-          const values = [articulo, marca, familia, codigo, cantidad, precio];
-
-          for (let j = 0; j < values.length; j++) {
-            doc
-              .font(styles.tableCell.font)
-              .fontSize(styles.tableCell.size)
-              .fillColor('#333')
-              .text(values[j], x + 8, y + 6, { width: colWidths[j] - 10 });
-            x += colWidths[j];
-          }
-
-          // Línea horizontal entre filas
-          if (i < solicitud.itemRepuestos.length - 1) {
-            doc
-              .moveTo(tableX, y + rowHeight)
-              .lineTo(tableX + contentWidth, y + rowHeight)
-              .strokeColor(borderColor)
-              .lineWidth(0.5)
-              .stroke();
-          }
-        }
-
-        currentY += rowHeight * (solicitud.itemRepuestos.length + 1) + 16;
-
-        // Información adicional (Total, condiciones, etc.)
-        let totalRepuestos = 0;
-        solicitud.itemRepuestos.forEach((item) => {
-          const precio =
-            item.precio_venta ||
-            (item.repuesto ? Number(item.repuesto.precio_venta) : 0);
-          totalRepuestos += precio * item.cantidad;
+    // Firma del cliente
+    if (solicitud.firma_cliente) {
+      doc
+        .font(styles.header.font)
+        .fontSize(styles.header.size)
+        .fillColor(styles.header.fillColor)
+        .text('FIRMA DEL CLIENTE', tableX, currentY);
+      currentY += 18;
+      try {
+        const signatureBuffer = Buffer.from(
+          solicitud.firma_cliente.replace(/^data:image\/\w+;base64,/, ''),
+          'base64',
+        );
+        doc.image(signatureBuffer, tableX, currentY, {
+          width: 100,
+          height: 100,
+          fit: [100, 100],
         });
-
-        if (totalRepuestos > 0) {
-          doc
-            .font(styles.tableHeader.font)
-            .fontSize(styles.tableHeader.size)
-            .fillColor('#222')
-            .text(
-              `Total repuestos: $${totalRepuestos.toLocaleString('es-CL')}`,
-              tableX,
-              currentY,
-              { align: 'right', width: contentWidth },
-            );
-          currentY += 20;
-        }
+        currentY += 100;
+      } catch (error) {
+        doc
+          .font(styles.text.font)
+          .fontSize(styles.text.size)
+          .fillColor(styles.text.fillColor)
+          .text('Firma no disponible', tableX, currentY);
+        currentY += 30;
       }
+    }
+  }
 
-      // --- LISTADO DE ITEMS DE INSPECCIÓN ---
+  // ============================================
+  // MÉTODO PARA GENERAR PÁGINAS DEL CHECKLIST CON ACTIVOS FIJOS
+  // ============================================
+  private async generateChecklistPages(
+    doc: any,
+    checklist: any,
+    styles: any,
+    marginLeft: number,
+    marginRight: number,
+    contentWidth: number,
+  ) {
+    // Verificar y parsear climate_data si viene como string JSON
+    let climateDataArray = checklist.climate_data;
+
+    if (typeof climateDataArray === 'string') {
+      try {
+        console.log('climate_data es un string JSON, parseando...');
+        climateDataArray = JSON.parse(climateDataArray);
+        console.log(
+          'climate_data parseado exitosamente, length:',
+          climateDataArray?.length,
+        );
+      } catch (error) {
+        console.error('Error parseando climate_data JSON:', error);
+        return;
+      }
+    }
+
+    if (!climateDataArray || !Array.isArray(climateDataArray)) {
       console.log(
-        'solicitud.client.listaInspeccion',
-        solicitud.client?.listaInspeccion,
+        'No hay climate_data válida para generar checklist. Tipo:',
+        typeof climateDataArray,
+        'Es Array:',
+        Array.isArray(climateDataArray),
       );
-      if (solicitud.client?.listaInspeccion?.length > 0) {
-        for (const lista of solicitud.client.listaInspeccion) {
-          // Verificar todos los ítems para estimar altura total de la sección
-          let alturaEstimadaSeccion = 20; // Altura del título
+      return;
+    }
 
-          // Estimar altura para al menos el primer ítem
-          if (lista.items?.length > 0) {
-            const primerItem = lista.items[0];
-            alturaEstimadaSeccion += 25; // Título del ítem
+    console.log(
+      `Generando ${climateDataArray.length} páginas de checklist para activos fijos`,
+    );
 
-            // Al menos el primer sub-ítem del primer ítem (si existe)
-            if (primerItem.subItems?.length > 0) {
-              alturaEstimadaSeccion += 100; // Altura aproximada de un sub-ítem
-            }
-          }
+    for (let i = 0; i < climateDataArray.length; i++) {
+      const climateData = climateDataArray[i];
 
-          // Si no hay espacio para el título y al menos un ítem, saltar página
-          if (currentY + alturaEstimadaSeccion > doc.page.height - 50) {
-            doc.addPage();
-            currentY = 50;
-          }
+      if (climateData && climateData.detailActivoFijo) {
+        // Agregar nueva página para cada activo fijo
+        doc.addPage();
+        console.log(
+          `Generando página ${i + 1} para activo fijo:`,
+          climateData.detailActivoFijo.codigo_activo,
+        );
+        await this.generateActivoFijoChecklistPage(
+          doc,
+          climateData,
+          styles,
+          marginLeft,
+          marginRight,
+          contentWidth,
+        );
+      } else {
+        console.log('Saltando climateData inválida:', climateData);
+      }
+    }
 
-          // Dibujar título de sección con fondo gris
-          doc.save();
-          doc
-            .roundedRect(tableX - 10, currentY - 5, contentWidth + 20, 25, 5)
-            .fillColor('#f2f2f2')
-            .fill();
-          doc.restore();
+    console.log('Terminó la generación de páginas de checklist');
+  }
 
-          doc
-            .font(styles.header.font)
-            .fontSize(styles.header.size)
-            .fillColor(styles.header.fillColor)
-            .text(lista.name, tableX, currentY + 2, {
-              width: contentWidth,
-              align: 'center',
-            });
-          currentY += 27;
+  // ============================================
+  // MÉTODO PARA GENERAR PÁGINAS DEL CHECKLIST SIN ACTIVOS FIJOS (NORMAL)
+  // ============================================
+  private async generateNormalChecklistPages(
+    doc: any,
+    checklist: any,
+    styles: any,
+    marginLeft: number,
+    marginRight: number,
+    contentWidth: number,
+  ) {
+    // Agregar nueva página para el checklist
+    doc.addPage();
 
-          // Iterar por los ítems
-          for (const item of lista.items) {
-            // Estimar altura de este ítem y sus subitems
-            let alturaEstimadaItem = 25; // Título del ítem
-            if (item.subItems?.length > 0) {
-              // Estimar altura para al menos 1 subitem
-              alturaEstimadaItem += Math.min(item.subItems.length, 2) * 110;
-            }
+    if (!checklist.data_normal || checklist.data_normal.length === 0) {
+      console.log('No hay data_normal disponible');
+      return;
+    }
 
-            // Verificar si hay espacio para el ítem completo o al menos su título y un subítem
-            if (currentY + alturaEstimadaItem > doc.page.height - 40) {
+    const normalData = checklist.data_normal[0];
+    await this.generateNormalChecklistPage(
+      doc,
+      normalData,
+      styles,
+      marginLeft,
+      marginRight,
+      contentWidth,
+    );
+  }
+
+  // ============================================
+  // MÉTODO PARA GENERAR PÁGINA DE CHECKLIST NORMAL (SIN ACTIVO FIJO)
+  // ============================================
+  private async generateNormalChecklistPage(
+    doc: any,
+    normalData: any,
+    styles: any,
+    marginLeft: number,
+    marginRight: number,
+    contentWidth: number,
+  ) {
+    let currentY = 50;
+    const pageHeight = doc.page.height;
+
+    // Título del checklist
+    doc.save();
+    doc
+      .roundedRect(marginLeft - 10, currentY - 10, contentWidth + 20, 40, 8)
+      .fillColor('#2c3e50')
+      .fill();
+    doc.restore();
+
+    // doc
+    //   .font('Helvetica-Bold')
+    //   .fontSize(16)
+    //   .fillColor('#ffffff')
+    //   .text('LISTA DE VERIFICACIÓN', marginLeft, currentY + 5, {
+    //     width: contentWidth,
+    //     align: 'center',
+    //   });
+
+    // currentY += 50;
+
+    // Título de verificación
+    // doc
+    //   .font('Helvetica-Bold')
+    //   .fontSize(10)
+    //   .fillColor('#333333')
+    //   .text('VERIFICACIÓN DEL SERVICIO', marginLeft, currentY);
+
+    // currentY += 25;
+
+    // Encabezados de tabla de verificación
+    const headers = [
+      'ITEM',
+      'ACTIVIDAD',
+      'ESTADO',
+      'OBSERVACIÓN / RECOMENDACIÓN',
+    ];
+    const colWidths = [40, 200, 80, contentWidth - 320];
+
+    this.drawTableHeaders(
+      doc,
+      headers,
+      colWidths,
+      marginLeft,
+      currentY,
+      styles,
+    );
+    currentY += 25;
+
+    // Procesar checklist dinámicamente
+    if (normalData.checklist && normalData.checklist.length > 0) {
+      let itemCounter = 1;
+
+      for (const categoria of normalData.checklist) {
+        for (const item of categoria.items) {
+          for (const subItem of item.subItems) {
+            // Verificar si necesitamos nueva página
+            if (currentY + 30 > pageHeight - 50) {
               doc.addPage();
               currentY = 50;
+
+              // Repetir encabezados en nueva página
+              this.drawTableHeaders(
+                doc,
+                headers,
+                colWidths,
+                marginLeft,
+                currentY,
+                styles,
+              );
+              currentY += 25;
             }
 
-            // Título del item con fondo suave
-            doc.save();
-            doc
-              .roundedRect(tableX - 5, currentY - 5, contentWidth + 10, 25, 3)
-              .fillColor('#e0e0e0')
-              .fill();
-            doc.restore();
-
-            doc
-              .font(styles.subtitle.font)
-              .fontSize(styles.subtitle.size)
-              .fillColor(styles.subtitle.fillColor)
-              .text(item.name, tableX, currentY, {
-                width: contentWidth,
-                align: 'left',
-              });
-            currentY += 30;
-
-            // Formato para subitems (diseño como en el ejemplo)
-            for (const subItem of item.subItems) {
-              // Obtener estado y comentario
-              let estado = 'Sin estado';
-              try {
-                const estadoRes = await this.getNameStatus(subItem.estado);
-                console.log('estadoRes', estadoRes);
-                estado = estadoRes || 'Sin estado';
-              } catch (e) {
-                estado = 'Sin estado';
-              }
-              const comentario = subItem.comentario || 'Sin observaciones';
-
-              // Color según estado
-              let estadoColor = '#4CAF50'; // Verde por defecto (conforme)
-              if (estado.toLowerCase().includes('no conforme')) {
-                estadoColor = '#F44336'; // Rojo
-              } else if (estado.toLowerCase().includes('no aplica')) {
-                estadoColor = '#FF9800'; // Naranja
-              } else if (estado.toLowerCase().includes('-')) {
-                estadoColor = '#bbbbbb'; // Naranja
-              }
-
-              // Calcular alturas
-              const subItemName = subItem.name || 'Sin información';
-              const nameHeight = doc.heightOfString(subItemName, {
-                width: contentWidth - 120, // Ajustado para estado más pequeño
-                lineGap: 1,
-              });
-
-              const observacionesTexto = 'Observaciones: ' + comentario;
-              const observacionesHeight = doc.heightOfString(
-                observacionesTexto,
-                {
-                  width: contentWidth - 30,
-                  lineGap: 1,
-                },
-              );
-
-              // Altura total del bloque
-              const totalHeight =
-                Math.max(nameHeight, 22) + observacionesHeight + 15;
-
-              // Verificar si hay espacio
-              if (currentY + totalHeight + 20 > doc.page.height - 40) {
-                doc.addPage();
-                currentY = 50;
-              }
-
-              // ---- DIBUJAR SUBITEM ----
-
-              // 1. Nombre del subitem (a la izquierda)
-              doc
-                .font('Helvetica-Bold')
-                .fontSize(styles.tableCell.size)
-                .fillColor('#333')
-                .text(subItemName, tableX, currentY, {
-                  width: contentWidth - 120,
-                  lineGap: 1,
-                });
-
-              // Calcular altura real del nombre para centrar el estado
-              const actualNameHeight = Math.min(
-                doc.heightOfString(subItemName, {
-                  width: contentWidth - 120,
-                  lineGap: 1,
-                }),
-                20, // altura máxima para considerar
-              );
-
-              // 2. Estado (botón a la derecha, más pequeño y centrado)
-              const estadoHeight = 18; // Altura reducida del botón
-              const estadoY =
-                currentY + actualNameHeight / 2 - estadoHeight / 2; // Centrado vertical
-
-              // Dibujar el botón de estado
-              doc.save();
-              doc
-                .roundedRect(
-                  tableX + contentWidth - 110,
-                  estadoY,
-                  110,
-                  estadoHeight,
-                  3,
-                )
-                .fillColor(estadoColor)
-                .fill();
-              doc.restore();
-
-              // Texto del estado centrado (usando align center y ajustando Y manualmente)
-              const estadoTexto = estado.toUpperCase();
-
-              // Establecer la fuente antes de calcular dimensiones
-              doc.font('Helvetica-Bold').fontSize(styles.tableCell.size - 1);
-
-              // Centrado vertical calculado manualmente
-              // Para el centrado vertical perfecto, ajustamos el valor Y
-              const verticalOffset = estadoHeight * 0.3; // Aproximadamente 30% de la altura del botón
-
-              doc
-                .fillColor('#FFFFFF')
-                .text(
-                  estadoTexto,
-                  tableX + contentWidth - 110,
-                  estadoY + verticalOffset,
-                  {
-                    width: 110,
-                    align: 'center',
-                  },
-                );
-
-              // Avanzar a las observaciones
-              currentY += Math.max(nameHeight, 22) + 5;
-
-              // Ya no hay línea divisoria aquí
-
-              // 3. Observaciones
-              doc
-                .font('Helvetica-Bold')
-                .fontSize(styles.tableCell.size - 1)
-                .fillColor('#333')
-                .text('Observaciones: ', tableX, currentY, {
-                  continued: true,
-                });
-
-              doc
-                .font('Helvetica')
-                .fontSize(styles.tableCell.size - 1)
-                .fillColor('#666')
-                .text(comentario);
-
-              // Avanzar posición Y después de las observaciones
-              currentY += observacionesHeight + 5;
-
-              // Línea divisoria entre subitems completos
-              doc
-                .moveTo(tableX, currentY)
-                .lineTo(tableX + contentWidth, currentY)
-                .strokeColor('#e0e0e0')
-                .stroke();
-
-              currentY += 10; // Espacio entre subitems
-            }
-
-            // Espacio adicional entre items principales
-            currentY += 15;
+            // Dibujar fila del subitem
+            await this.drawChecklistRow(
+              doc,
+              subItem,
+              itemCounter,
+              marginLeft,
+              currentY,
+              colWidths,
+              styles,
+            );
+            currentY += 25;
+            itemCounter++;
           }
         }
       }
+    }
+  }
 
-      const hasPhotos = solicitud.itemFotos?.some((f) => f.fotos?.length);
-      if (hasPhotos) {
-        doc.addPage();
+  // ============================================
+  // MÉTODO PARA GENERAR PÁGINA POR ACTIVO FIJO - FORMATO ESPECÍFICO
+  // ============================================
+  private async generateActivoFijoChecklistPage(
+    doc: any,
+    climateData: any,
+    styles: any,
+    marginLeft: number,
+    marginRight: number,
+    contentWidth: number,
+  ) {
+    let currentY = 40;
+    const pageHeight = doc.page.height;
+    const activoFijo = climateData.detailActivoFijo;
+    const borderColor = '#cccccc';
+
+    // Debug log para entender la estructura
+    console.log('ClimateData structure:', {
+      hasChecklist: !!climateData.checklist,
+      checklistLength: climateData.checklist?.length,
+      checklistType: Array.isArray(climateData.checklist),
+      firstItemStructure: climateData.checklist?.[0]
+        ? Object.keys(climateData.checklist[0])
+        : 'undefined',
+      activoFijoInfo: {
+        id: activoFijo?.id,
+        codigo: activoFijo?.codigo_activo,
+        tipo: activoFijo?.tipo_equipo,
+      },
+    });
+
+    // Encabezado principal similar al formato de la imagen
+    // Logo GRUMAN y título
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(12)
+      .fillColor('#000000')
+      .text('GRUMAN', marginLeft, currentY);
+
+    // Título del checklist (obtener de la categoría) con validación robusta
+    let tituloChecklist = 'Lista de verificación de activos';
+    if (
+      climateData.checklist &&
+      Array.isArray(climateData.checklist) &&
+      climateData.checklist.length > 0
+    ) {
+      const primeraCategoria = climateData.checklist[0];
+      if (primeraCategoria && primeraCategoria.categoria) {
+        tituloChecklist = primeraCategoria.categoria;
+      }
+    }
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(12)
+      .fillColor('#000000')
+      .text(tituloChecklist, marginLeft + 200, currentY, {
+        width: contentWidth - 200,
+        align: 'center',
+      });
+
+    currentY += 25;
+
+    // // Tabla superior con información básica (similar al formato)
+    // await this.drawMainInfoTable(
+    //   doc,
+    //   activoFijo,
+    //   marginLeft,
+    //   currentY,
+    //   contentWidth,
+    //   styles,
+    // );
+    // currentY += 100;
+
+    // // Información del equipo
+    // await this.drawEquipmentDetailsTable(
+    //   doc,
+    //   activoFijo,
+    //   marginLeft,
+    //   currentY,
+    //   contentWidth,
+    //   styles,
+    // );
+    // currentY += 60;
+
+    // Título "VERIFICACIÓN DEL SERVICIO"
+    // doc
+    //   .font('Helvetica-Bold')
+    //   .fontSize(8)
+    //   .strokeColor(borderColor)
+    //   .lineWidth(0.5)
+    //   .stroke()
+    //   .text(
+    //     'VERIFICACIÓN DEL SERVICIO',
+    //     marginLeft + contentWidth / 2 - 50,
+    //     currentY,
+    //     {
+    //       align: 'center',
+    //     },
+    //   );
+
+    // currentY += 15;
+
+    // Tabla principal del checklist (formato exacto de la imagen)
+    console.log('Dibujando tabla principal del checklist...');
+    try {
+      await this.drawMainChecklistTable(
+        doc,
+        climateData,
+        marginLeft,
+        currentY,
+        contentWidth,
+        styles,
+        pageHeight,
+      );
+      console.log('Tabla principal dibujada exitosamente');
+    } catch (tableError) {
+      console.error('Error dibujando tabla principal:', tableError);
+      throw tableError;
+    }
+  }
+
+  // ============================================
+  // MÉTODO PARA DIBUJAR TABLA DE INFORMACIÓN PRINCIPAL
+  // ============================================
+  private async drawMainInfoTable(
+    doc: any,
+    activoFijo: any,
+    marginLeft: number,
+    currentY: number,
+    contentWidth: number,
+    styles: any,
+  ) {
+    console.log('Dibujando tabla de información principal...');
+    // ... existing code ...
+    const tableData = [
+      ['SOLICITANTE', '', 'PROFESIONAL', ''],
+      ['EMPRESA', '', 'RUT TÉCNICO', ''],
+      ['FECHA', '', 'FIRMA TÉCNICO', ''],
+      ['DIRECCIÓN', '', 'HORA INICIO', ''],
+      ['TELÉFONO', '', 'HORA TÉRMINO', ''],
+    ];
+
+    const rowHeight = 20;
+    const colWidths = [120, 120, 120, 140];
+
+    let yPos = currentY;
+    // for (const row of tableData) {
+    //   let xPos = marginLeft;
+    //   for (let i = 0; i < row.length; i++) {
+    //     doc
+    //       .rect(xPos, yPos, colWidths[i], rowHeight)
+    //       .fillColor(i % 2 === 0 ? '#f0f0f0' : '#ffffff')
+    //       .fill()
+    //       .strokeColor('#000000')
+    //       .lineWidth(0.5)
+    //       .stroke();
+
+    //     doc
+    //       .font('Helvetica-Bold')
+    //       .fontSize(7)
+    //       .fillColor('#000000')
+    //       .text(row[i], xPos + 3, yPos + 7, {
+    //         width: colWidths[i] - 6,
+    //       });
+
+    //     xPos += colWidths[i];
+    //   }
+    //   yPos += rowHeight;
+    // }
+    console.log('Tabla de información principal dibujada exitosamente');
+  }
+
+  // ============================================
+  // MÉTODO PARA DIBUJAR INFORMACIÓN DETALLADA DEL EQUIPO
+  // ============================================
+  private async drawEquipmentDetailsTable(
+    doc: any,
+    activoFijo: any,
+    marginLeft: number,
+    currentY: number,
+    contentWidth: number,
+    styles: any,
+  ) {
+    console.log('Dibujando tabla de detalles del equipo...');
+    // ... existing code ...
+    // const equipmentData = [
+    //   ['MARCA', activoFijo?.marca || ''],
+    //   ['MODELO', ''],
+    //   ['TIPO EQUIPO', activoFijo?.tipo_equipo || ''],
+    //   ['POTENCIA', activoFijo?.potencia_equipo || ''],
+    //   ['REFRIGERANTE', activoFijo?.refrigerante || ''],
+    //   ['UBICACIÓN', activoFijo?.suministra || ''],
+    // ];
+
+    // const rowHeight = 15;
+    // const col1Width = 100;
+    // const col2Width = contentWidth - col1Width;
+
+    // let yPos = currentY;
+    // for (const row of equipmentData) {
+    //   // Columna 1
+    //   doc
+    //     .rect(marginLeft, yPos, col1Width, rowHeight)
+    //     .fillColor('#e0e0e0')
+    //     .fill()
+    //     .strokeColor('#000000')
+    //     .lineWidth(0.5)
+    //     .stroke();
+
+    //   doc
+    //     .font('Helvetica-Bold')
+    //     .fontSize(7)
+    //     .fillColor('#000000')
+    //     .text(row[0], marginLeft + 3, yPos + 5, {
+    //       width: col1Width - 6,
+    //     });
+
+    //   // Columna 2
+    //   doc
+    //     .rect(marginLeft + col1Width, yPos, col2Width, rowHeight)
+    //     .fillColor('#ffffff')
+    //     .fill()
+    //     .strokeColor('#000000')
+    //     .lineWidth(0.5)
+    //     .stroke();
+
+    //   doc
+    //     .font('Helvetica')
+    //     .fontSize(7)
+    //     .fillColor('#000000')
+    //     .text(row[1], marginLeft + col1Width + 3, yPos + 5, {
+    //       width: col2Width - 6,
+    //     });
+
+    //   yPos += rowHeight;
+    // }
+    console.log('Tabla de detalles del equipo dibujada exitosamente');
+  }
+
+  // ============================================
+  // MÉTODO PARA DIBUJAR TABLA PRINCIPAL DEL CHECKLIST (FORMATO EXACTO)
+  // ============================================
+  private async drawMainChecklistTable(
+    doc: any,
+    climateData: any,
+    marginLeft: number,
+    currentY: number,
+    contentWidth: number,
+    styles: any,
+    pageHeight: number,
+  ) {
+    console.log('Iniciando drawMainChecklistTable...');
+    let yPos = currentY;
+    const rowHeight = 20;
+
+    // Encabezados con anchos ajustados para texto largo en observaciones
+    const headers = [
+      { text: 'ITEM', width: 40 },
+      { text: 'ACTIVIDAD', width: 200 }, // Reducido de 300 a 200
+      { text: 'ESTADO', width: 80 },     // Aumentado de 60 a 80
+      { text: 'OBSERVACIÓN / RECOMENDACIÓN', width: contentWidth - 320 }, // Más espacio para texto largo
+    ];
+
+    // Borde exterior de la tabla headers (como en la primera página)
+    const tableWidth = headers.reduce((sum, h) => sum + h.width, 0);
+    const borderColor = '#cccccc';
+    
+    // Variables para control de páginas y bordes
+    let pageStartY = yPos;
+    let isFirstPage = true;
+    
+    doc.save();
+    doc
+      .rect(marginLeft, yPos, tableWidth, rowHeight)
+      .fillColor('#cccccc')
+      .fill()
+      .strokeColor(borderColor)
+      .lineWidth(0.7)
+      .stroke();
+    doc.restore();
+
+    // Dibujar encabezados y líneas verticales
+    let xPos = marginLeft;
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i];
+      
+      // Línea vertical entre columnas (excepto la primera)
+      if (i > 0) {
         doc
-          .fontSize(16)
+          .moveTo(xPos, yPos)
+          .lineTo(xPos, yPos + rowHeight)
+          .strokeColor(borderColor)
+          .lineWidth(0.5)
+          .stroke();
+      }
+
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(7)
+        .fillColor('#000000')
+        .text(header.text, xPos + 3, yPos + 7, {
+          width: header.width - 6,
+          align: 'center',
+        });
+
+      xPos += header.width;
+    }
+
+    yPos += rowHeight;
+    let itemCounter = 1;
+
+    // Procesar checklist dinámicamente
+    if (
+      climateData.checklist &&
+      Array.isArray(climateData.checklist) &&
+      climateData.checklist.length > 0
+    ) {
+      for (const categoria of climateData.checklist) {
+        for (const item of categoria.items) {
+          for (const subItem of item.subItems) {
+            // Verificar si necesitamos nueva página
+            if (yPos + rowHeight > pageHeight - 100) {
+              // Dibujar bordes laterales de la página actual antes de cambiar
+              const currentPageHeight = yPos - pageStartY;
+              
+              // Borde izquierdo
+              doc
+                .moveTo(marginLeft, pageStartY)
+                .lineTo(marginLeft, yPos)
+                .strokeColor(borderColor)
+                .lineWidth(0.7)
+                .stroke();
+              
+              // Borde derecho
+              doc
+                .moveTo(marginLeft + tableWidth, pageStartY)
+                .lineTo(marginLeft + tableWidth, yPos)
+                .strokeColor(borderColor)
+                .lineWidth(0.7)
+                .stroke();
+              
+              // Borde inferior de la página actual
+              doc
+                .moveTo(marginLeft, yPos)
+                .lineTo(marginLeft + tableWidth, yPos)
+                .strokeColor(borderColor)
+                .lineWidth(0.7)
+                .stroke();
+
+              doc.addPage();
+              yPos = 50;
+              pageStartY = yPos; // Actualizar inicio de nueva página
+              isFirstPage = false;
+
+              // Repetir encabezados en nueva página (patrón primera página)
+              doc.save();
+              doc
+                .rect(marginLeft, yPos, tableWidth, rowHeight)
+                .fillColor('#cccccc')
+                .fill()
+                .strokeColor(borderColor)
+                .lineWidth(0.7)
+                .stroke();
+              doc.restore();
+
+              // Dibujar encabezados y líneas verticales
+              let headerXPos = marginLeft;
+              for (let i = 0; i < headers.length; i++) {
+                const header = headers[i];
+                
+                // Línea vertical entre columnas (excepto la primera)
+                if (i > 0) {
+                  doc
+                    .moveTo(headerXPos, yPos)
+                    .lineTo(headerXPos, yPos + rowHeight)
+                    .strokeColor(borderColor)
+                    .lineWidth(0.5)
+                    .stroke();
+                }
+
+                doc
+                  .font('Helvetica-Bold')
+                  .fontSize(7)
+                  .fillColor('#000000')
+                  .text(header.text, headerXPos + 3, yPos + 7, {
+                    width: header.width - 6,
+                    align: 'center',
+                  });
+
+                headerXPos += header.width;
+              }
+              yPos += rowHeight;
+            }
+
+            // Dibujar línea horizontal (como en la primera página)
+            doc
+              .moveTo(marginLeft, yPos + rowHeight)
+              .lineTo(marginLeft + tableWidth, yPos + rowHeight)
+              .strokeColor(borderColor)
+              .lineWidth(0.5)
+              .stroke();
+
+            // Contenido de la fila (sin rectángulos individuales)
+            xPos = marginLeft;
+
+            // ITEM (número)
+            doc
+              .font('Helvetica')
+              .fontSize(7)
+              .fillColor('#000000')
+              .text(itemCounter.toString(), xPos + 3, yPos + 7, {
+                width: headers[0].width - 6,
+                align: 'center',
+              });
+            xPos += headers[0].width;
+
+            // Línea vertical 1
+            doc
+              .moveTo(xPos, yPos)
+              .lineTo(xPos, yPos + rowHeight)
+              .strokeColor(borderColor)
+              .lineWidth(0.5)
+              .stroke();
+
+            // ACTIVIDAD
+            doc
+              .font('Helvetica')
+              .fontSize(7)
+              .fillColor('#000000')
+              .text(subItem.nombre || '', xPos + 3, yPos + 7, {
+                width: headers[1].width - 6,
+              });
+            xPos += headers[1].width;
+
+            // Línea vertical 2
+            doc
+              .moveTo(xPos, yPos)
+              .lineTo(xPos, yPos + rowHeight)
+              .strokeColor(borderColor)
+              .lineWidth(0.5)
+              .stroke();
+
+            // ESTADO
+            const estadoTexto = this.getEstadoTextForTable(subItem.estado);
+            console.log(
+              `Estado original: ${subItem.estado} -> Texto mapeado: ${estadoTexto}`,
+            );
+            doc
+              .font('Helvetica-Bold')
+              .fontSize(7)
+              .fillColor('#000000')
+              .text(estadoTexto, xPos + 3, yPos + 7, {
+                width: headers[2].width - 6,
+                align: 'center',
+              });
+            xPos += headers[2].width;
+
+            // Línea vertical 3
+            doc
+              .moveTo(xPos, yPos)
+              .lineTo(xPos, yPos + rowHeight)
+              .strokeColor(borderColor)
+              .lineWidth(0.5)
+              .stroke();
+
+            // OBSERVACIÓN (con ajuste automático de altura)
+            const observationText = subItem.observaciones || '';
+            
+            // Calcular altura necesaria para el texto largo
+            const textHeight = doc.heightOfString(observationText, {
+              width: headers[3].width - 6,
+              fontSize: 7
+            });
+            
+            // Usar mayor altura entre rowHeight estándar y texto calculado
+            const cellHeight = Math.max(rowHeight, textHeight + 14); // +14 para padding
+            
+            doc
+              .font('Helvetica')
+              .fontSize(7)
+              .fillColor('#000000')
+              .text(observationText, xPos + 3, yPos + 7, {
+                width: headers[3].width - 6,
+                height: cellHeight - 14, // Espacio para padding
+                ellipsis: false // No cortar el texto
+              });
+
+            // Si la celda es más alta, dibujar líneas horizontales adicionales para mantener la estructura
+            if (cellHeight > rowHeight) {
+              // Extender las líneas verticales para esta fila más alta
+              for (let i = 0; i < 3; i++) { // Para las 3 líneas verticales
+                let lineX = marginLeft;
+                for (let j = 0; j <= i; j++) {
+                  lineX += headers[j].width;
+                }
+                doc
+                  .moveTo(lineX, yPos + rowHeight)
+                  .lineTo(lineX, yPos + cellHeight)
+                  .strokeColor(borderColor)
+                  .lineWidth(0.5)
+                  .stroke();
+              }
+              
+              yPos += cellHeight;
+            } else {
+              yPos += rowHeight;
+            }
+            itemCounter++;
+          }
+        }
+      }
+    }
+
+    // Dibujar bordes exteriores de la página actual (última página)
+    const currentPageHeight = yPos - pageStartY;
+    
+    // Borde izquierdo de la página actual
+    doc
+      .moveTo(marginLeft, pageStartY)
+      .lineTo(marginLeft, yPos)
+      .strokeColor(borderColor)
+      .lineWidth(0.7)
+      .stroke();
+    
+    // Borde derecho de la página actual
+    doc
+      .moveTo(marginLeft + tableWidth, pageStartY)
+      .lineTo(marginLeft + tableWidth, yPos)
+      .strokeColor(borderColor)
+      .lineWidth(0.7)
+      .stroke();
+    
+    // Borde inferior final de la tabla
+    doc
+      .moveTo(marginLeft, yPos)
+      .lineTo(marginLeft + tableWidth, yPos)
+      .strokeColor(borderColor)
+      .lineWidth(0.7)
+      .stroke();
+
+    // Si es la primera página (tabla completa en una página), también dibujar borde superior
+    if (isFirstPage) {
+      doc
+        .moveTo(marginLeft, pageStartY)
+        .lineTo(marginLeft + tableWidth, pageStartY)
+        .strokeColor(borderColor)
+        .lineWidth(0.7)
+        .stroke();
+    }
+
+    // Solo agregar sección de observaciones si hay observaciones reales
+    const hasObservations = this.hasRealObservations(climateData);
+    if (hasObservations) {
+      yPos += 20;
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#000000')
+        .text('OBSERVACIONES GENERALES', marginLeft, yPos);
+    }
+
+    console.log('drawMainChecklistTable completado exitosamente');
+  }
+
+  // ============================================
+  // MÉTODO PARA VERIFICAR SI HAY OBSERVACIONES REALES EN EL CHECKLIST
+  // ============================================
+  private hasRealObservations(climateData: any): boolean {
+    if (!climateData.checklist || !Array.isArray(climateData.checklist)) {
+      return false;
+    }
+
+    for (const categoria of climateData.checklist) {
+      if (!categoria.items || !Array.isArray(categoria.items)) continue;
+
+      for (const item of categoria.items) {
+        if (!item.subItems || !Array.isArray(item.subItems)) continue;
+
+        for (const subItem of item.subItems) {
+          if (subItem.observaciones && subItem.observaciones.trim() !== '') {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  // ============================================
+  // MÉTODO AUXILIAR PARA ESTADO EN TABLA
+  // ============================================
+  private getEstadoTextForTable(estado: string): string {
+    switch (estado?.toLowerCase()) {
+      case 'aprobado':
+        return 'Aprobado.';
+      case 'rechazado':
+        return 'Rechazado';
+      case 'no_aplica':
+        return 'N/A';
+      case 'no_conforme':
+        return 'No conforme';
+      default:
+        return 'N/A';
+    }
+  }
+
+  // ============================================
+  // MÉTODO PARA DIBUJAR ENCABEZADOS DE TABLA
+  // ============================================
+  private drawTableHeaders(
+    doc: any,
+    headers: string[],
+    colWidths: number[],
+    marginLeft: number,
+    currentY: number,
+    styles: any,
+  ) {
+    let x = marginLeft;
+
+    for (let i = 0; i < headers.length; i++) {
+      // Fondo del encabezado
+      doc.save();
+      doc.rect(x, currentY, colWidths[i], 25).fillColor('#34495e').fill();
+      doc.restore();
+
+      // Texto del encabezado
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(8)
+        .fillColor('#ffffff')
+        .text(headers[i], x + 5, currentY + 8, {
+          width: colWidths[i] - 10,
+          align: 'center',
+        });
+
+      // Borde
+      doc.rect(x, currentY, colWidths[i], 25).stroke('#cccccc');
+
+      x += colWidths[i];
+    }
+  }
+
+  // ============================================
+  // MÉTODO PARA DIBUJAR FILA DEL CHECKLIST
+  // ============================================
+  private async drawChecklistRow(
+    doc: any,
+    subItem: any,
+    itemNumber: number,
+    marginLeft: number,
+    currentY: number,
+    colWidths: number[],
+    styles: any,
+  ) {
+    let x = marginLeft;
+    const rowHeight = 25;
+
+    // Número de item
+    doc
+      .rect(x, currentY, colWidths[0], rowHeight)
+      .fillColor('#ecf0f1')
+      .fill()
+      .stroke('#cccccc');
+
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(8)
+      .fillColor('#333333')
+      .text(itemNumber.toString(), x + 5, currentY + 8, {
+        width: colWidths[0] - 10,
+        align: 'center',
+      });
+    x += colWidths[0];
+
+    // Actividad
+    doc
+      .rect(x, currentY, colWidths[1], rowHeight)
+      .fillColor('#ffffff')
+      .fill()
+      .stroke('#cccccc');
+
+    doc
+      .font('Helvetica')
+      .fontSize(7)
+      .fillColor('#333333')
+      .text(subItem.nombre || '', x + 5, currentY + 4, {
+        width: colWidths[1] - 10,
+        lineGap: 1,
+      });
+    x += colWidths[1];
+
+    // Estado
+    const estadoColor = this.getEstadoColor(subItem.estado);
+    doc
+      .rect(x, currentY, colWidths[2], rowHeight)
+      .fillColor('#ffffff')
+      .fill()
+      .stroke('#cccccc');
+
+    // Pequeño círculo de estado
+    const circleX = x + colWidths[2] / 2;
+    const circleY = currentY + rowHeight / 2;
+    doc.circle(circleX, circleY, 6).fillColor(estadoColor).fill();
+
+    doc
+      .font('Helvetica')
+      .fontSize(7)
+      .fillColor('#333333')
+      .text(this.getEstadoText(subItem.estado), x + 5, currentY + 17, {
+        width: colWidths[2] - 10,
+        align: 'center',
+      });
+    x += colWidths[2];
+
+    // Observaciones
+    doc
+      .rect(x, currentY, colWidths[3], rowHeight)
+      .fillColor('#ffffff')
+      .fill()
+      .stroke('#cccccc');
+
+    doc
+      .font('Helvetica')
+      .fontSize(7)
+      .strokeColor('#000000')
+      .lineWidth(0.5)
+      .stroke()
+      .text(subItem.observaciones || 'Sin observaciones', x + 5, currentY + 4, {
+        width: colWidths[3] - 10,
+        lineGap: 1,
+      });
+  }
+
+  // ============================================
+  // MÉTODO PARA DIBUJAR TABLA DE RENDIMIENTO
+  // ============================================
+  private async drawPerformanceTable(
+    doc: any,
+    climateData: any,
+    marginLeft: number,
+    currentY: number,
+    contentWidth: number,
+    styles: any,
+  ) {
+    // Título
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(10)
+      .fillColor('#333333')
+      .text('TABLA DE MEDICIÓN DE RENDIMIENTO', marginLeft, currentY);
+
+    currentY += 25;
+
+    // Encontrar mediciones en el checklist
+    const mediciones = [];
+    if (climateData.checklist && Array.isArray(climateData.checklist)) {
+      for (const categoria of climateData.checklist) {
+        for (const item of categoria.items) {
+          if (item.nombre === 'Inspección de rendimiento') {
+            for (const subItem of item.subItems) {
+              if (
+                subItem.observaciones &&
+                subItem.observaciones !== 'Sin observaciones'
+              ) {
+                mediciones.push({
+                  medicion: subItem.nombre,
+                  valor: subItem.observaciones,
+                  unidad: this.getUnidadMedicion(subItem.nombre),
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (mediciones.length > 0) {
+      // Encabezados
+      const headers = ['ITEM', 'MEDICIÓN', '[°C]', 'OBSERVACIÓN'];
+      const colWidths = [40, 150, 60, contentWidth - 250];
+
+      let x = marginLeft;
+      for (let i = 0; i < headers.length; i++) {
+        doc.save();
+        doc.rect(x, currentY, colWidths[i], 20).fillColor('#95a5a6').fill();
+        doc.restore();
+
+        doc
           .font('Helvetica-Bold')
-          .fillColor('#333')
-          .text('REGISTRO FOTOGRÁFICO', marginLeft, 40, {
+          .fontSize(8)
+          .fillColor('#ffffff')
+          .text(headers[i], x + 5, currentY + 6, {
+            width: colWidths[i] - 10,
             align: 'center',
-            underline: true,
           });
 
-        let y = 80;
-        const imageSize = 160;
-        const gap = 20;
-        const imagesPerRow = 3;
-        const xPositions = Array.from(
-          { length: imagesPerRow },
-          (_, i) => marginLeft + i * (imageSize + gap),
-        );
+        doc.rect(x, currentY, colWidths[i], 20).stroke('#cccccc');
 
-        for (const item of solicitud.itemFotos) {
-          if (!item.fotos?.length) continue;
+        x += colWidths[i];
+      }
 
-          if (y + imageSize + 40 > doc.page.height - 60) {
+      currentY += 20;
+
+      // Filas de mediciones
+      for (let i = 0; i < mediciones.length; i++) {
+        const medicion = mediciones[i];
+        let x = marginLeft;
+
+        // Item
+        doc
+          .rect(x, currentY, colWidths[0], 20)
+          .fillColor('#ecf0f1')
+          .fill()
+          .stroke('#cccccc');
+        doc
+          .font('Helvetica')
+          .fontSize(8)
+          .fillColor('#333333')
+          .text((i + 1).toString(), x + 5, currentY + 6, {
+            width: colWidths[0] - 10,
+            align: 'center',
+          });
+        x += colWidths[0];
+
+        // Medición
+        doc
+          .rect(x, currentY, colWidths[1], 20)
+          .fillColor('#ffffff')
+          .fill()
+          .stroke('#cccccc');
+        doc
+          .font('Helvetica')
+          .fontSize(7)
+          .fillColor('#333333')
+          .text(medicion.medicion, x + 5, currentY + 6, {
+            width: colWidths[1] - 10,
+          });
+        x += colWidths[1];
+
+        // Valor
+        doc
+          .rect(x, currentY, colWidths[2], 20)
+          .fillColor('#ffffff')
+          .fill()
+          .stroke('#cccccc');
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(8)
+          .fillColor('#2980b9')
+          .text(medicion.valor, x + 5, currentY + 6, {
+            width: colWidths[2] - 10,
+            align: 'center',
+          });
+        x += colWidths[2];
+
+        // Observación
+        doc
+          .rect(x, currentY, colWidths[3], 20)
+          .fillColor('#ffffff')
+          .fill()
+          .stroke('#cccccc');
+        doc
+          .font('Helvetica')
+          .fontSize(7)
+          .fillColor('#333333')
+          .text('', x + 5, currentY + 6, {
+            width: colWidths[3] - 10,
+          });
+
+        currentY += 20;
+      }
+    }
+  }
+
+  // ============================================
+  // MÉTODO PARA GENERAR PÁGINAS DE FOTOS - ORGANIZADAS POR ACTIVO/ITEM/SUBITEM
+  // ============================================
+  private async generatePhotoPages(
+    doc: any,
+    checklist: any,
+    styles: any,
+    marginLeft: number,
+    marginRight: number,
+    contentWidth: number,
+  ) {
+    if (!checklist) return;
+
+    let hasPhotos = false;
+    let photosData = [];
+
+    // Verificar y organizar fotos según el tipo de checklist
+    if (checklist.is_climate && checklist.climate_data) {
+      // Parsear climate_data si viene como string JSON
+      let climateDataArray = checklist.climate_data;
+      if (typeof climateDataArray === 'string') {
+        try {
+          climateDataArray = JSON.parse(climateDataArray);
+        } catch (error) {
+          console.error(
+            'Error parseando climate_data JSON en generatePhotoPages:',
+            error,
+          );
+          climateDataArray = [];
+        }
+      }
+
+      // Checklist con activos fijos (climatización)
+      if (Array.isArray(climateDataArray)) {
+        for (const climateData of climateDataArray) {
+          if (climateData.checklist && Array.isArray(climateData.checklist)) {
+            for (const categoria of climateData.checklist) {
+              for (const item of categoria.items) {
+                for (const subItem of item.subItems) {
+                  if (subItem.fotos && subItem.fotos.length > 0) {
+                    hasPhotos = true;
+                    photosData.push({
+                      activoFijo: climateData.detailActivoFijo,
+                      categoria: categoria.categoria,
+                      item: item.nombre,
+                      subItem: subItem.nombre,
+                      fotos: subItem.fotos,
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } else if (
+      !checklist.is_climate &&
+      checklist.data_normal &&
+      checklist.data_normal.length > 0
+    ) {
+      // Checklist sin activos fijos (normal)
+      const normalData = checklist.data_normal[0];
+      if (normalData && normalData.checklist) {
+        for (const categoria of normalData.checklist) {
+          for (const item of categoria.items) {
+            for (const subItem of item.subItems) {
+              if (subItem.fotos && subItem.fotos.length > 0) {
+                hasPhotos = true;
+                photosData.push({
+                  activoFijo: null,
+                  categoria: categoria.categoria,
+                  item: item.nombre,
+                  subItem: subItem.nombre,
+                  fotos: subItem.fotos,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (!hasPhotos) return;
+
+    // Agregar página de fotos
+    doc.addPage();
+
+    doc
+      .fontSize(16)
+      .font('Helvetica-Bold')
+      .fillColor('#333')
+      .text('REGISTRO FOTOGRÁFICO', marginLeft, 40, {
+        align: 'center',
+        underline: true,
+      });
+
+    let y = 80;
+    const imageSize = 150;
+    const gap = 15;
+    const imagesPerRow = 3;
+    const pageWidth = doc.page.width;
+    const xPositions = Array.from(
+      { length: imagesPerRow },
+      (_, i) => marginLeft + i * (imageSize + gap),
+    );
+
+    // Agrupar fotos por activo fijo
+    const groupedByActivo = {};
+
+    for (const photoData of photosData) {
+      const activoKey = photoData.activoFijo
+        ? photoData.activoFijo.codigo_activo
+        : 'GENERAL';
+      if (!groupedByActivo[activoKey]) {
+        groupedByActivo[activoKey] = {
+          activoFijo: photoData.activoFijo,
+          items: {},
+        };
+      }
+
+      const itemKey = photoData.item;
+      if (!groupedByActivo[activoKey].items[itemKey]) {
+        groupedByActivo[activoKey].items[itemKey] = [];
+      }
+
+      groupedByActivo[activoKey].items[itemKey].push({
+        subItem: photoData.subItem,
+        fotos: photoData.fotos,
+      });
+    }
+
+    // Generar fotos organizadas por activo fijo -> item -> subitem
+    for (const [activoKey, activoData] of Object.entries(groupedByActivo)) {
+      // Título del activo fijo
+      if (y + 80 > doc.page.height - 60) {
+        doc.addPage();
+        y = 80;
+      }
+
+      doc.save();
+      doc
+        .roundedRect(marginLeft - 5, y - 5, contentWidth + 10, 30, 5)
+        .fillColor('#2c3e50')
+        .fill();
+      doc.restore();
+
+      const activoTitle = (activoData as any).activoFijo
+        ? `${(activoData as any).activoFijo.codigo_activo} - ${(activoData as any).activoFijo.tipo_equipo} ${(activoData as any).activoFijo.marca}`
+        : 'INSPECCIÓN GENERAL';
+
+      doc
+        .fontSize(12)
+        .font('Helvetica-Bold')
+        .fillColor('#ffffff')
+        .text(activoTitle, marginLeft, y + 5, {
+          width: contentWidth,
+          align: 'center',
+        });
+
+      y += 40;
+
+      // Generar fotos por item
+      for (const [itemName, subItems] of Object.entries(
+        (activoData as any).items,
+      )) {
+        // Título del item
+        if (y + 50 > doc.page.height - 60) {
+          doc.addPage();
+          y = 80;
+        }
+
+        doc.save();
+        doc
+          .roundedRect(marginLeft - 3, y - 3, contentWidth + 6, 25, 3)
+          .fillColor('#34495e')
+          .fill();
+        doc.restore();
+
+        doc
+          .fontSize(10)
+          .font('Helvetica-Bold')
+          .fillColor('#ffffff')
+          .text(itemName, marginLeft, y + 5, {
+            width: contentWidth,
+            align: 'left',
+          });
+
+        y += 30;
+
+        // Generar fotos por subitem
+        for (const subItemData of subItems as any[]) {
+          if (!subItemData.fotos?.length) continue;
+
+          // Título del subitem
+          if (y + imageSize + 50 > doc.page.height - 60) {
             doc.addPage();
             y = 80;
           }
 
-          const nameItem = await this.getNameItem(item.itemId);
           doc
-            .rect(marginLeft, y, pageWidth - marginLeft * 2, 25)
-            .fillColor('#f5f5f5')
-            .fill();
-          doc
-            .fontSize(12)
+            .fontSize(9)
             .font('Helvetica-Bold')
-            .fillColor('#333')
-            .text(nameItem, marginLeft + 10, y + 7);
-          y += 35;
+            .strokeColor('#2c3e50')
+            .lineWidth(0.5)
+            .stroke()
+            .fillColor('#2c3e50')
+            .text(`• ${subItemData.subItem}`, marginLeft, y);
+
+          y += 20;
 
           let currentCol = 0;
 
-          for (const fotoUrl of item.fotos) {
+          for (const fotoUrl of subItemData.fotos) {
             try {
               const imageResult = await this.downloadImage(fotoUrl);
 
@@ -2983,19 +4016,31 @@ export class SolicitarVisitaService {
               if (y + imageSize > doc.page.height - 60) {
                 doc.addPage();
                 y = 80;
+                currentCol = 0;
               }
 
-              // Marco con sombra para la imagen
+              // Marco para la imagen con sombra
               doc
                 .save()
+                .rect(
+                  xPositions[currentCol] - 2,
+                  y - 2,
+                  imageSize + 4,
+                  imageSize + 4,
+                )
+                .fillColor('#bdc3c7')
+                .fill();
+
+              doc
                 .rect(xPositions[currentCol], y, imageSize, imageSize)
                 .fillColor('#fff')
                 .fill()
                 .lineWidth(1)
-                .strokeColor('#ccc')
+                .strokeColor('#95a5a6')
                 .stroke();
+              doc.restore();
 
-              // Imagen cuadrada con fit usando el buffer descargado
+              // Imagen
               doc.image(imageResult.data, xPositions[currentCol], y, {
                 fit: [imageSize, imageSize],
                 align: 'center',
@@ -3004,42 +4049,78 @@ export class SolicitarVisitaService {
 
               currentCol++;
             } catch (err) {
+              if (currentCol >= imagesPerRow) {
+                currentCol = 0;
+                y += imageSize + gap;
+              }
+
               doc
                 .font('Helvetica')
                 .fontSize(8)
-                .fillColor('#ff0000')
+                .fillColor('#e74c3c')
                 .text(
-                  `Error: ${err.message}`,
+                  `Error cargando imagen`,
                   xPositions[currentCol],
                   y + imageSize / 2,
+                  {
+                    width: imageSize,
+                    align: 'center',
+                  },
                 );
               currentCol++;
             }
           }
 
-          y += imageSize + gap * 2;
+          y += imageSize + gap + 10;
         }
+
+        y += 10; // Espacio entre items
       }
 
-      // Footer
-      // const footerY = doc.page.height - 50;
-      // doc.font(styles.small.font)
-      //    .fontSize(styles.small.size)
-      //    .fillColor(styles.small.fillColor)
-      //    .text('Documento generado automáticamente por el Sistema de Gestión Técnica',
-      //          marginLeft, footerY);
-
-      doc.end();
-      return new Promise((resolve, reject) => {
-        doc.on('end', () =>
-          finalBuffer ? resolve(finalBuffer) : reject(new Error('PDF vacío')),
-        );
-      });
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `Error generando PDF: ${err.message}`,
-      );
+      y += 20; // Espacio entre activos fijos
     }
+  }
+
+  // ============================================
+  // MÉTODOS AUXILIARES
+  // ============================================
+  private getEstadoColor(estado: string): string {
+    switch (estado?.toLowerCase()) {
+      case 'aprobado':
+        return '#27ae60'; // Verde
+      case 'no_conforme':
+        return '#e74c3c'; // Rojo
+      case 'no_aplica':
+        return '#f39c12'; // Naranja
+      default:
+        return '#95a5a6'; // Gris
+    }
+  }
+
+  private getEstadoText(estado: string): string {
+    switch (estado?.toLowerCase()) {
+      case 'aprobado':
+        return 'OBS.';
+      case 'no_conforme':
+        return 'X';
+      case 'no_aplica':
+        return 'N/A';
+      default:
+        return '-';
+    }
+  }
+
+  private getUnidadMedicion(nombre: string): string {
+    if (nombre.includes('Temperatura') || nombre.includes('T°')) {
+      return '[°C]';
+    } else if (nombre.includes('Presión')) {
+      return '[PSI]';
+    } else if (nombre.includes('Consumo')) {
+      return '[A]';
+    } else if (nombre.includes('Tensión')) {
+      return '[V]';
+    }
+    return '';
   }
 
   async subirCargaMasiva(datos: any[]): Promise<SolicitarVisita[]> {
@@ -3100,19 +4181,6 @@ export class SolicitarVisitaService {
   }
   async cambiarEstadoSolicitud(id, status) {
     this.solicitarVisitaRepository.update(id, { status });
-  }
-
-  private getEstadoColor(estado: string): string {
-    switch (estado.toLowerCase()) {
-      case 'conforme':
-        return '#4CAF50';
-      case 'no conforme':
-        return '#F44336';
-      case 'no aplica':
-        return '#FF9800';
-      default:
-        return '#9E9E9E';
-    }
   }
 
   async enviarEmail(id: number) {

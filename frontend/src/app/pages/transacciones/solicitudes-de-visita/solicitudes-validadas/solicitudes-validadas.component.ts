@@ -248,9 +248,21 @@ export class SolicitudesValidadasComponent implements OnInit, OnDestroy {
       }
     });
 
+    console.log('🔍 Iniciando descarga de PDF para solicitud:', row.id);
+
     this.solicitarVisitaService.downloadPdf(row.id).subscribe({
       next: (blob: Blob) => {
-        if (blob.size === 0) {
+        console.log('📁 Blob recibido:', {
+          size: blob.size,
+          type: blob.type,
+          blob: blob
+        });
+
+        Swal.close();
+
+        // Validación mejorada del blob
+        if (!blob || blob.size === 0) {
+          console.error('❌ PDF vacío recibido');
           Swal.fire({
             icon: 'error',
             title: 'Error',
@@ -259,16 +271,53 @@ export class SolicitudesValidadasComponent implements OnInit, OnDestroy {
           return;
         }
 
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `solicitud-${row.id}.pdf`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-        Swal.close();
+        // Verificar que el tipo de contenido sea correcto
+        if (blob.type !== 'application/pdf' && blob.type !== 'application/octet-stream') {
+          console.warn('⚠️ Tipo de blob inesperado:', blob.type);
+        }
+
+        try {
+          // Crear URL y descargar
+          const url = window.URL.createObjectURL(blob);
+          console.log('🔗 URL creada:', url);
+          
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `solicitud-${row.id}.pdf`;
+          
+          console.log('📥 Iniciando descarga del archivo:', link.download);
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Limpiar URL después de un delay
+          setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+            console.log('🧹 URL limpiada');
+          }, 1000);
+
+          console.log('✅ Descarga completada exitosamente');
+
+        } catch (downloadError) {
+          console.error('❌ Error en el proceso de descarga:', downloadError);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error de Descarga',
+            text: 'Error al procesar el archivo PDF'
+          });
+        }
       },
       error: (error) => {
-        console.error('Error descargando PDF:', error);
+        console.error('❌ Error descargando PDF:', error);
+        console.error('📋 Detalles del error:', {
+          status: error.status,
+          statusText: error.statusText,
+          message: error.message,
+          error: error.error
+        });
+        
+        Swal.close();
         Swal.fire({
           icon: 'error',
           title: 'Error',
