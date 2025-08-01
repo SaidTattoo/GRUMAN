@@ -2976,44 +2976,26 @@ export class SolicitarVisitaService {
     currentY += 25;
 
     // // Tabla superior con información básica (similar al formato)
-    // await this.drawMainInfoTable(
-    //   doc,
-    //   activoFijo,
-    //   marginLeft,
-    //   currentY,
-    //   contentWidth,
-    //   styles,
-    // );
-    // currentY += 100;
+    await this.drawMainInfoTable(
+      doc,
+      activoFijo,
+      marginLeft,
+      currentY,
+      contentWidth,
+      styles,
+    );
+    currentY += 35;
 
     // // Información del equipo
-    // await this.drawEquipmentDetailsTable(
-    //   doc,
-    //   activoFijo,
-    //   marginLeft,
-    //   currentY,
-    //   contentWidth,
-    //   styles,
-    // );
-    // currentY += 60;
-
-    // Título "VERIFICACIÓN DEL SERVICIO"
-    // doc
-    //   .font('Helvetica-Bold')
-    //   .fontSize(8)
-    //   .strokeColor(borderColor)
-    //   .lineWidth(0.5)
-    //   .stroke()
-    //   .text(
-    //     'VERIFICACIÓN DEL SERVICIO',
-    //     marginLeft + contentWidth / 2 - 50,
-    //     currentY,
-    //     {
-    //       align: 'center',
-    //     },
-    //   );
-
-    // currentY += 15;
+    await this.drawEquipmentDetailsTable(
+      doc,
+      activoFijo,
+      marginLeft,
+      currentY,
+      contentWidth,
+      styles,
+    );
+    currentY += 35;
 
     // Tabla principal del checklist (formato exacto de la imagen)
     console.log('Dibujando tabla principal del checklist...');
@@ -3045,43 +3027,124 @@ export class SolicitarVisitaService {
     contentWidth: number,
     styles: any,
   ) {
+    console.log('activoFijo', activoFijo);
     console.log('Dibujando tabla de información principal...');
-    // ... existing code ...
+    
     const tableData = [
-      ['SOLICITANTE', '', 'PROFESIONAL', ''],
-      ['EMPRESA', '', 'RUT TÉCNICO', ''],
-      ['FECHA', '', 'FIRMA TÉCNICO', ''],
-      ['DIRECCIÓN', '', 'HORA INICIO', ''],
-      ['TELÉFONO', '', 'HORA TÉRMINO', ''],
+      ['CODIGO', activoFijo.codigo_activo, 'MARCA', activoFijo.marca],
+      ['TIPO', activoFijo.tipo_equipo, 'REFRIGERANTE', activoFijo.refrigerante],
+      ['ONOFF', activoFijo.on_off_inverter, 'POTENCIA', activoFijo.potencia_equipo],
+      ['UBICACIÓN', activoFijo.suministra],
+      // ['TELÉFONO', activoFijo.telefono, 'HORA INICIO', activoFijo.hora_inicio],
+      // ['HORA TÉRMINO', activoFijo.hora_termino, 'HORA TÉRMINO', activoFijo.hora_termino],
     ];
 
-    const rowHeight = 20;
+    const rowHeight = 15;
     const colWidths = [120, 120, 120, 140];
-
+    const borderColor = '#cccccc';
+    const tableWidth = colWidths.reduce((sum, width) => sum + width, 0);
+    
     let yPos = currentY;
-    // for (const row of tableData) {
-    //   let xPos = marginLeft;
-    //   for (let i = 0; i < row.length; i++) {
-    //     doc
-    //       .rect(xPos, yPos, colWidths[i], rowHeight)
-    //       .fillColor(i % 2 === 0 ? '#f0f0f0' : '#ffffff')
-    //       .fill()
-    //       .strokeColor('#000000')
-    //       .lineWidth(0.5)
-    //       .stroke();
+    const pageStartY = yPos;
 
-    //     doc
-    //       .font('Helvetica-Bold')
-    //       .fontSize(7)
-    //       .fillColor('#000000')
-    //       .text(row[i], xPos + 3, yPos + 7, {
-    //         width: colWidths[i] - 6,
-    //       });
+    // Dibujar cada fila con su contenido
+    for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
+      const row = tableData[rowIndex];
+      let xPos = marginLeft;
 
-    //     xPos += colWidths[i];
-    //   }
-    //   yPos += rowHeight;
-    // }
+      // Dibujar fondo gris para columnas de etiquetas (columnas 0 y 2)
+      for (let i = 0; i < row.length; i++) {
+        if (i === 0 || i === 2) { // Columnas de etiquetas
+          doc.save();
+          doc
+            .rect(xPos, yPos, colWidths[i], rowHeight)
+            .fillColor('#f0f0f0')
+            .fill();
+          doc.restore();
+        }
+        xPos += colWidths[i];
+      }
+
+      // Dibujar contenido de cada celda
+      xPos = marginLeft;
+      for (let i = 0; i < row.length; i++) {
+        if (row[i]) { // Solo dibujar si hay contenido
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(7)
+            .fillColor('#000000')
+            .text(row[i], xPos + 3, yPos + 7, {
+              width: colWidths[i] - 6,
+            });
+        }
+        xPos += colWidths[i];
+      }
+
+      // Dibujar línea horizontal después de cada fila
+      doc
+        .moveTo(marginLeft, yPos + rowHeight)
+        .lineTo(marginLeft + tableWidth, yPos + rowHeight)
+        .strokeColor(borderColor)
+        .lineWidth(0.5)
+        .stroke();
+
+      // Dibujar líneas verticales para esta fila
+      xPos = marginLeft;
+      for (let i = 0; i < colWidths.length; i++) {
+        // Línea vertical (incluir la primera y la última)
+        doc
+          .moveTo(xPos, yPos)
+          .lineTo(xPos, yPos + rowHeight)
+          .strokeColor(borderColor)
+          .lineWidth(0.5)
+          .stroke();
+        
+        xPos += colWidths[i];
+      }
+      // Línea vertical final (borde derecho)
+      doc
+        .moveTo(xPos, yPos)
+        .lineTo(xPos, yPos + rowHeight)
+        .strokeColor(borderColor)
+        .lineWidth(0.5)
+        .stroke();
+
+      yPos += rowHeight;
+    }
+
+    // Dibujar bordes exteriores completos
+    // Borde superior
+    doc
+      .moveTo(marginLeft, pageStartY)
+      .lineTo(marginLeft + tableWidth, pageStartY)
+      .strokeColor(borderColor)
+      .lineWidth(0.7)
+      .stroke();
+
+    // Borde izquierdo
+    doc
+      .moveTo(marginLeft, pageStartY)
+      .lineTo(marginLeft, yPos)
+      .strokeColor(borderColor)
+      .lineWidth(0.7)
+      .stroke();
+    
+    // Borde derecho
+    doc
+      .moveTo(marginLeft + tableWidth, pageStartY)
+      .lineTo(marginLeft + tableWidth, yPos)
+      .strokeColor(borderColor)
+      .lineWidth(0.7)
+      .stroke();
+    
+    // Borde inferior (ya dibujado en el último ciclo, pero reforzamos)
+    doc
+      .moveTo(marginLeft, yPos)
+      .lineTo(marginLeft + tableWidth, yPos)
+      .strokeColor(borderColor)
+      .lineWidth(0.7)
+      .stroke();
+
     console.log('Tabla de información principal dibujada exitosamente');
   }
 
