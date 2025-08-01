@@ -2757,23 +2757,47 @@ export class SolicitarVisitaService {
     for (let i = 0; i < climateDataArray.length; i++) {
       const climateData = climateDataArray[i];
 
-      if (climateData && climateData.detailActivoFijo) {
-        // Agregar nueva página para cada activo fijo
-        doc.addPage();
-        console.log(
-          `Generando página ${i + 1} para activo fijo:`,
-          climateData.detailActivoFijo.codigo_activo,
-        );
-        await this.generateActivoFijoChecklistPage(
-          doc,
-          climateData,
-          styles,
-          marginLeft,
-          marginRight,
-          contentWidth,
-        );
+      if (climateData && climateData.activo_fijo_id) {
+        try {
+          // Obtener los detalles del activo fijo si no están presentes
+          if (!climateData.detailActivoFijo) {
+            const activoFijo = await this.localesRepository
+              .createQueryBuilder('local')
+              .leftJoinAndSelect('local.activoFijoLocales', 'activoFijo')
+              .where('activoFijo.id = :activoFijoId', { activoFijoId: climateData.activo_fijo_id })
+              .getOne();
+            
+            if (activoFijo && activoFijo.activoFijoLocales.length > 0) {
+              climateData.detailActivoFijo = activoFijo.activoFijoLocales[0];
+              console.log(
+                `Activo fijo obtenido dinámicamente: ${climateData.detailActivoFijo.codigo_activo}`
+              );
+            } else {
+              console.log(`No se encontró activo fijo con ID: ${climateData.activo_fijo_id}`);
+              continue;
+            }
+          }
+
+          // Agregar nueva página para cada activo fijo
+          doc.addPage();
+          console.log(
+            `Generando página ${i + 1} para activo fijo:`,
+            climateData.detailActivoFijo.codigo_activo,
+          );
+          await this.generateActivoFijoChecklistPage(
+            doc,
+            climateData,
+            styles,
+            marginLeft,
+            marginRight,
+            contentWidth,
+          );
+        } catch (error) {
+          console.error(`Error obteniendo activo fijo ${climateData.activo_fijo_id}:`, error);
+          console.log('Saltando climateData por error:', climateData);
+        }
       } else {
-        console.log('Saltando climateData inválida:', climateData);
+        console.log('Saltando climateData inválida (sin activo_fijo_id):', climateData);
       }
     }
 
@@ -3886,6 +3910,23 @@ export class SolicitarVisitaService {
       // Checklist con activos fijos (climatización)
       if (Array.isArray(climateDataArray)) {
         for (const climateData of climateDataArray) {
+          // Obtener los detalles del activo fijo si no están presentes
+          if (climateData.activo_fijo_id && !climateData.detailActivoFijo) {
+            try {
+              const activoFijo = await this.localesRepository
+                .createQueryBuilder('local')
+                .leftJoinAndSelect('local.activoFijoLocales', 'activoFijo')
+                .where('activoFijo.id = :activoFijoId', { activoFijoId: climateData.activo_fijo_id })
+                .getOne();
+              
+              if (activoFijo && activoFijo.activoFijoLocales.length > 0) {
+                climateData.detailActivoFijo = activoFijo.activoFijoLocales[0];
+              }
+            } catch (error) {
+              console.error(`Error obteniendo activo fijo para fotos ${climateData.activo_fijo_id}:`, error);
+            }
+          }
+
           if (climateData.checklist && Array.isArray(climateData.checklist)) {
             for (const categoria of climateData.checklist) {
               for (const item of categoria.items) {
