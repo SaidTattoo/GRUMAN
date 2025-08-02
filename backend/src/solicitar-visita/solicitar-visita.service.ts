@@ -2815,15 +2815,39 @@ export class SolicitarVisitaService {
     marginRight: number,
     contentWidth: number,
   ) {
-    // Agregar nueva página para el checklist
-    doc.addPage();
+    // Verificar y parsear data_normal si viene como string JSON
+    let dataNormalArray = checklist.data_normal;
 
-    if (!checklist.data_normal || checklist.data_normal.length === 0) {
-      console.log('No hay data_normal disponible');
+    if (typeof dataNormalArray === 'string') {
+      try {
+        console.log('data_normal es un string JSON, parseando...');
+        dataNormalArray = JSON.parse(dataNormalArray);
+        console.log(
+          'data_normal parseado exitosamente, length:',
+          dataNormalArray?.length,
+        );
+      } catch (error) {
+        console.error('Error parseando data_normal JSON:', error);
+        return;
+      }
+    }
+
+    if (!dataNormalArray || !Array.isArray(dataNormalArray) || dataNormalArray.length === 0) {
+      console.log('No hay data_normal válida para generar checklist. Tipo:', typeof dataNormalArray, 'Es Array:', Array.isArray(dataNormalArray));
       return;
     }
 
-    const normalData = checklist.data_normal[0];
+    // Agregar nueva página para el checklist
+    doc.addPage();
+
+    const normalData = dataNormalArray[0];
+    console.log('Procesando data_normal:', {
+      hasChecklist: !!normalData.checklist,
+      checklistLength: normalData.checklist?.length,
+      estadoOperativo: normalData.estadoOperativo,
+      solicitudId: normalData.solicitud_visita_id
+    });
+
     await this.generateNormalChecklistPage(
       doc,
       normalData,
@@ -2845,95 +2869,71 @@ export class SolicitarVisitaService {
     marginRight: number,
     contentWidth: number,
   ) {
-    let currentY = 50;
+    let currentY = 40;
     const pageHeight = doc.page.height;
+    const borderColor = '#cccccc';
 
-    // Título del checklist
-    doc.save();
+    // Debug log para entender la estructura
+    console.log('NormalData structure:', {
+      hasChecklist: !!normalData.checklist,
+      checklistLength: normalData.checklist?.length,
+      checklistType: Array.isArray(normalData.checklist),
+      firstItemStructure: normalData.checklist?.[0]
+        ? Object.keys(normalData.checklist[0])
+        : 'undefined',
+      estadoOperativo: normalData.estadoOperativo,
+      solicitudId: normalData.solicitud_visita_id,
+    });
+
+    // Encabezado principal similar al formato de la imagen
+    // Logo GRUMAN y título
     doc
-      .roundedRect(marginLeft - 10, currentY - 10, contentWidth + 20, 40, 8)
-      .fillColor('#2c3e50')
-      .fill();
-    doc.restore();
+      .font('Helvetica-Bold')
+      .fontSize(12)
+      .fillColor('#000000')
+      .text('GRUMAN', marginLeft, currentY);
 
-    // doc
-    //   .font('Helvetica-Bold')
-    //   .fontSize(16)
-    //   .fillColor('#ffffff')
-    //   .text('LISTA DE VERIFICACIÓN', marginLeft, currentY + 5, {
-    //     width: contentWidth,
-    //     align: 'center',
-    //   });
+    // Título del checklist (obtener de la categoría) con validación robusta
+    let tituloChecklist = 'Lista de verificación';
+    if (
+      normalData.checklist &&
+      Array.isArray(normalData.checklist) &&
+      normalData.checklist.length > 0
+    ) {
+      const primeraCategoria = normalData.checklist[0];
+      if (primeraCategoria && primeraCategoria.categoria) {
+        tituloChecklist = primeraCategoria.categoria;
+      }
+    }
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(12)
+      .fillColor('#000000')
+      .text(tituloChecklist, marginLeft + 200, currentY, {
+        width: contentWidth - 200,
+        align: 'center',
+      });
 
-    // currentY += 50;
-
-    // Título de verificación
-    // doc
-    //   .font('Helvetica-Bold')
-    //   .fontSize(10)
-    //   .fillColor('#333333')
-    //   .text('VERIFICACIÓN DEL SERVICIO', marginLeft, currentY);
-
-    // currentY += 25;
-
-    // Encabezados de tabla de verificación
-    const headers = [
-      'ITEM',
-      'ACTIVIDAD',
-      'ESTADO',
-      'OBSERVACIÓN / RECOMENDACIÓN',
-    ];
-    const colWidths = [40, 200, 80, contentWidth - 320];
-
-    this.drawTableHeaders(
-      doc,
-      headers,
-      colWidths,
-      marginLeft,
-      currentY,
-      styles,
-    );
     currentY += 25;
 
-    // Procesar checklist dinámicamente
-    if (normalData.checklist && normalData.checklist.length > 0) {
-      let itemCounter = 1;
-
-      for (const categoria of normalData.checklist) {
-        for (const item of categoria.items) {
-          for (const subItem of item.subItems) {
-            // Verificar si necesitamos nueva página
-            if (currentY + 30 > pageHeight - 50) {
-              doc.addPage();
-              currentY = 50;
-
-              // Repetir encabezados en nueva página
-              this.drawTableHeaders(
-                doc,
-                headers,
-                colWidths,
-                marginLeft,
-                currentY,
-                styles,
-              );
-              currentY += 25;
-            }
-
-            // Dibujar fila del subitem
-            await this.drawChecklistRow(
-              doc,
-              subItem,
-              itemCounter,
-              marginLeft,
-              currentY,
-              colWidths,
-              styles,
-            );
-            currentY += 25;
-            itemCounter++;
-          }
-        }
-      }
+    // Omitimos las tablas de información del activo fijo ya que no hay activo fijo en este flujo
+    
+    // Tabla principal del checklist (formato exacto usando la misma función)
+    console.log('Dibujando tabla principal del checklist normal...');
+    try {
+      await this.drawMainChecklistTable(
+        doc,
+        normalData,
+        marginLeft,
+        currentY,
+        contentWidth,
+        styles,
+        pageHeight,
+      );
+      console.log('Tabla principal dibujada exitosamente');
+    } catch (tableError) {
+      console.error('Error dibujando tabla principal:', tableError);
+      throw tableError;
     }
   }
 
@@ -3947,26 +3947,38 @@ export class SolicitarVisitaService {
           }
         }
       }
-    } else if (
-      !checklist.is_climate &&
-      checklist.data_normal &&
-      checklist.data_normal.length > 0
-    ) {
+    } else if (!checklist.is_climate && checklist.data_normal) {
       // Checklist sin activos fijos (normal)
-      const normalData = checklist.data_normal[0];
-      if (normalData && normalData.checklist) {
-        for (const categoria of normalData.checklist) {
-          for (const item of categoria.items) {
-            for (const subItem of item.subItems) {
-              if (subItem.fotos && subItem.fotos.length > 0) {
-                hasPhotos = true;
-                photosData.push({
-                  activoFijo: null,
-                  categoria: categoria.categoria,
-                  item: item.nombre,
-                  subItem: subItem.nombre,
-                  fotos: subItem.fotos,
-                });
+      // Parsear data_normal si viene como string JSON
+      let dataNormalArray = checklist.data_normal;
+      if (typeof dataNormalArray === 'string') {
+        try {
+          dataNormalArray = JSON.parse(dataNormalArray);
+        } catch (error) {
+          console.error(
+            'Error parseando data_normal JSON en generatePhotoPages:',
+            error,
+          );
+          dataNormalArray = [];
+        }
+      }
+
+      if (Array.isArray(dataNormalArray) && dataNormalArray.length > 0) {
+        const normalData = dataNormalArray[0];
+        if (normalData && normalData.checklist) {
+          for (const categoria of normalData.checklist) {
+            for (const item of categoria.items) {
+              for (const subItem of item.subItems) {
+                if (subItem.fotos && subItem.fotos.length > 0) {
+                  hasPhotos = true;
+                  photosData.push({
+                    activoFijo: null,
+                    categoria: categoria.categoria,
+                    item: item.nombre,
+                    subItem: subItem.nombre,
+                    fotos: subItem.fotos,
+                  });
+                }
               }
             }
           }
