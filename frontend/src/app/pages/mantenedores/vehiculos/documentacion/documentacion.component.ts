@@ -171,11 +171,11 @@ export class DocumentacionComponent implements OnInit {
         const path = `vehiculos/${this.vehiculoId}/documentos/${tipo}`;
         console.log(`Intentando eliminar documento en ${path}`);
 
-        this.uploadService.deleteFile(path).subscribe({
+        this.documentosService.eliminarDocumento(this.vehiculoId, tipo).subscribe({
           next: () => {
             Swal.fire('Eliminado', 'El documento ha sido eliminado', 'success');
             if (this.documentacion) {
-              delete this.documentacion[tipo];
+              this.documentacion[tipo] = null;
               this.cdr.detectChanges();
             }
           },

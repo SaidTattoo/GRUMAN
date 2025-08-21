@@ -23,8 +23,8 @@ export class UploadDataService {
     // Solo limpiar barras extras del path
     const cleanPath = path.replace(/^\/+|\/+$/g, '');
     
-    // Construir la URL asegurándose de que no haya dobles barras
-    const url = `${this.apiUrl}upload/${cleanPath}`;
+    // Construir la URL usando el endpoint de documentos para vehículos
+    const url = `${this.apiUrl}documentos/upload/${cleanPath}`;
     
     console.log('URL de carga:', url); // Para debugging
     

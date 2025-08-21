@@ -6,10 +6,19 @@ import { UploadService } from './upload.service';
 import { existsSync, readdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { FirebaseService } from '../firebase/firebase.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Vehiculo } from '../vehiculos/vehiculos.entity';
 
 @Controller('upload')
 export class UploadController {
-  constructor(private readonly uploadService: UploadService) {}
+  constructor(
+    private readonly uploadService: UploadService,
+    private readonly firebaseService: FirebaseService,
+    @InjectRepository(Vehiculo)
+    private vehiculosRepository: Repository<Vehiculo>,
+  ) {}
 
   @Get('vehiculos/:vehiculoId/documentos/:tipoDocumento')
   async descargarDocumento(
@@ -49,35 +58,8 @@ export class UploadController {
       throw new HttpException('Error al descargar el documento', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  /**
-   * Sube un archivo relacionado con un vehículo a una carpeta específica por tipo de documento.
-   * Utiliza un interceptor para procesar el archivo recibido.
-   * @param file - Archivo subido.
-   * @param vehiculoId - ID del vehículo asociado.
-   * @param tipo - Tipo de documento (ej. revisión técnica, seguro obligatorio, etc.).
-   * @returns Un mensaje de éxito y la ruta del archivo guardado.
-   */
-  @Post('vehiculos/:vehiculoId/documentos/:tipo')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadVehiculoFile(
-    @UploadedFile() file: Express.Multer.File,
-    @Param('vehiculoId') vehiculoId: string,
-    @Param('tipo') tipo: string,
-  ) {
-    try {
-      const result = await this.uploadService.saveFile(file, vehiculoId, tipo);
-      return {
-        message: 'Archivo subido correctamente',
-        path: result.path
-      };
-    } catch (error) {
-      // En caso de error, lanza una excepción HTTP 500
-      throw new HttpException(
-        'Error al subir el archivo',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
+  // DEPRECATED: Esta funcionalidad ahora está manejada por DocumentosController
+  // Mantenido solo para compatibilidad temporal
 
   /**
    * Descarga un archivo específico de un vehículo basado en su tipo.

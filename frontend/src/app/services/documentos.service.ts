@@ -7,8 +7,6 @@ import { environment } from '../config';
   providedIn: 'root'
 })
 export class DocumentosService {
-  private apiUrl = `${environment.apiUrl}/documentos`;
-
   constructor(private http: HttpClient) { }
 
   getDocumentos(): Observable<any[]> {
@@ -32,5 +30,9 @@ export class DocumentosService {
 
   actualizarFechaVencimiento(documentoId: number, fechaVencimiento: Date): Observable<any> {
     return this.http.patch(`${environment.apiUrl}vehiculos/documentos/${documentoId}/fecha-vencimiento`, { fechaVencimiento });
+  }
+
+  eliminarDocumento(vehiculoId: string, tipo: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}documentos/vehiculos/${vehiculoId}/documentos/${tipo}`);
   }
 }
