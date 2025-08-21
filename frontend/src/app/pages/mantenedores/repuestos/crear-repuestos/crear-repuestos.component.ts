@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule } from '@angular/material/radio';
 import { Router } from '@angular/router';
 import { RepuestosService } from 'src/app/services/repuestos.service';
 import Swal from 'sweetalert2';
@@ -11,12 +12,17 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-crear-repuestos',
   standalone: true,
-  imports: [ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatRadioModule],
   templateUrl: './crear-repuestos.component.html',
   styleUrls: ['./crear-repuestos.component.scss']
 })
 export class CrearRepuestosComponent {
   form: FormGroup;
+  availabilityOptions = [
+    { value: 'APP', label: 'APP' },
+    { value: 'APK', label: 'APK' },
+    { value: 'BOTH', label: 'Ambos' }
+  ];
 
   constructor(private fb: FormBuilder, private repuestosService: RepuestosService, private router: Router) {
     this.form = this.fb.group({
@@ -26,6 +32,7 @@ export class CrearRepuestosComponent {
       codigoBarra: ['', Validators.required],
       precio_compra: ['', [Validators.required, Validators.min(0)]],
       precio_venta: ['', [Validators.required, Validators.min(0)]],
+      is_available: ['APP', Validators.required],
     });
   }
 

@@ -55,7 +55,7 @@ registerLocaleData(localeEsCl, 'es-CL');
   ],
 })
 export class RepuestosComponent {
-  displayedColumns: string[] = ['expand', 'familia', 'articulo', 'marca', 'codigoBarra', 'precio_compra', 'precio_venta', 'acciones'];
+  displayedColumns: string[] = ['expand', 'familia', 'articulo', 'marca', 'codigoBarra', 'precio_compra', 'precio_venta', 'is_available', 'acciones'];
   dataSource = new MatTableDataSource<any>();
   clientPricesDataSource = new MatTableDataSource<any>();
   repuestos: any = [];

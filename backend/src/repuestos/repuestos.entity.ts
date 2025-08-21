@@ -31,6 +31,12 @@ export class Repuesto {
   @Column({ default: false })
   clima :boolean
 
+  @Column({
+    type: 'enum',
+    enum: ['APP', 'APK', 'BOTH'],
+    default: 'APP'
+  })
+  is_available: 'APP' | 'APK' | 'BOTH';
 
   @OneToMany(() => ClienteRepuesto, clienteRepuesto => clienteRepuesto.repuesto)
   clienteRepuestos: ClienteRepuesto[];

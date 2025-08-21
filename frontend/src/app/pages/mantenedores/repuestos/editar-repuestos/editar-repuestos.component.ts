@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule } from '@angular/material/radio';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepuestosService } from 'src/app/services/repuestos.service';
 import Swal from 'sweetalert2';
@@ -11,13 +12,18 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-editar-repuestos',
   standalone: true,
-  imports: [ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatRadioModule],
   templateUrl: './editar-repuestos.component.html',
   styleUrls: ['./editar-repuestos.component.scss']
 })
 export class EditarRepuestosComponent implements OnInit {
   form: FormGroup;
   repuestoId: number;
+  availabilityOptions = [
+    { value: 'APP', label: 'APP' },
+    { value: 'APK', label: 'APK' },
+    { value: 'BOTH', label: 'Ambos' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -32,6 +38,7 @@ export class EditarRepuestosComponent implements OnInit {
       codigoBarra: ['', Validators.required],
       precio_compra: ['', [Validators.required, Validators.min(0)]],
       precio_venta: ['', [Validators.required, Validators.min(0)]],
+      is_available: ['APP', Validators.required],
     });
   }
 
