@@ -591,6 +591,20 @@ export class SolicitarVisitaService {
         sectionsData = await this.sectionRepository.find({
           where: { id: In(sectionIds) },
           relations: ['items', 'items.subItems'],
+          select: {
+            id: true,
+            name: true,
+            items: {
+              id: true,
+              name: true,
+              subItems: {
+                id: true,
+                name: true,
+                foto_obligatoria: true,
+                disabled: true,
+              }
+            }
+          }
         });
       }
 
@@ -625,6 +639,66 @@ export class SolicitarVisitaService {
             checklist: null,
           };
         });
+    }
+
+    // Hidratar listaInspeccion con datos actuales incluyendo foto_obligatoria
+    if (solicitudBase.client.listaInspeccion && Array.isArray(solicitudBase.client.listaInspeccion)) {
+      const sectionIds = solicitudBase.client.listaInspeccion.map(section => section.id).filter(Boolean);
+      
+      if (sectionIds.length > 0) {
+        const sectionsWithCurrentData = await this.sectionRepository.find({
+          where: { id: In(sectionIds) },
+          relations: ['items', 'items.subItems'],
+          select: {
+            id: true,
+            name: true,
+            disabled: true,
+            items: {
+              id: true,
+              name: true,
+              disabled: true,
+              subItems: {
+                id: true,
+                name: true,
+                foto_obligatoria: true,
+                disabled: true,
+              }
+            }
+          }
+        });
+
+        // Mapear los datos actuales manteniendo la estructura original
+        solicitudBase.client.listaInspeccion = solicitudBase.client.listaInspeccion.map(section => {
+          const currentSectionData = sectionsWithCurrentData.find(s => s.id === section.id);
+          
+          if (currentSectionData) {
+            return {
+              ...section,
+              items: section.items?.map(item => {
+                const currentItemData = currentSectionData.items?.find(i => i.id === item.id);
+                
+                if (currentItemData) {
+                  return {
+                    ...item,
+                    subItems: item.subItems?.map(subItem => {
+                      const currentSubItemData = currentItemData.subItems?.find(si => si.id === subItem.id);
+                      
+                      return {
+                        ...subItem,
+                        foto_obligatoria: currentSubItemData?.foto_obligatoria || false
+                      };
+                    }) || []
+                  };
+                }
+                
+                return item;
+              }) || []
+            };
+          }
+          
+          return section;
+        });
+      }
     }
 
     return solicitudBase;
